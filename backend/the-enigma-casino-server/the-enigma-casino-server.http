@@ -1,0 +1,6 @@
+@the_enigma_casino_server_HostAddress = http://localhost:5057
+
+GET {{the_enigma_casino_server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

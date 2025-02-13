@@ -21,7 +21,9 @@ namespace the_enigma_casino_server
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            } 
+
+            app.UseCors();
 
             app.UseHttpsRedirection();
 
@@ -29,6 +31,8 @@ namespace the_enigma_casino_server
 
 
             app.MapControllers();
+
+            app.MapGet("/api/", () => "The Enigma Casino!");
 
             app.Run();
         }

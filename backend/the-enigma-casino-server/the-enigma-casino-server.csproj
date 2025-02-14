@@ -33,7 +33,6 @@
     <Folder Include="wwwroot\" />
     <Folder Include="WebSocket\" />
     <Folder Include="Utilities\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

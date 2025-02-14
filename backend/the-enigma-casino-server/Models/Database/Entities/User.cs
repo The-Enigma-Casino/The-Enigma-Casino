@@ -18,4 +18,11 @@ public class User
     public Role Role { get; set; }
 
     // FALTAN COSAS
+
+    public User()
+    {
+        Coins = 0;
+        IsBanned = false;
+        Role = Role.User;
+    }
 }

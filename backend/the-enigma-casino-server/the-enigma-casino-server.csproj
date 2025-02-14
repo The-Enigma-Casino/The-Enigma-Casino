@@ -30,7 +30,6 @@
     <Folder Include="Controllers\" />
     <Folder Include="Models\Dtos\" />
     <Folder Include="Models\Mappers\" />
-    <Folder Include="Models\Seeder\" />
     <Folder Include="wwwroot\" />
     <Folder Include="WebSocket\" />
     <Folder Include="Utilities\" />

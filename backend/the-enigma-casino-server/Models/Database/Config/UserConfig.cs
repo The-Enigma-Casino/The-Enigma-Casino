@@ -74,5 +74,7 @@ public class UserConfig : IEntityTypeConfiguration<User>
               .IsUnique();
         entity.HasIndex(e => e.NickName)
               .IsUnique();
+        entity.HasIndex(e => e.HashDNI)
+      .IsUnique();
     }
 }

@@ -34,7 +34,7 @@ public class Program
         //ConfigureStripe(app.Services);
 
         // Endpoint saludo
-        app.MapGet("/api/", () => "VhyperGames!");
+        app.MapGet("/api/", () => "The Enigma Casino!");
 
         // Ejecutar la aplicación web y escuchar las solicitudes entrantes
         app.Run();

@@ -1,15 +1,12 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.ML;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Stripe.Climate;
 using Stripe;
 using System.Text;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Seeder;
+using the_enigma_casino_server.Services;
 
 namespace the_enigma_casino_server;
 
@@ -49,9 +46,10 @@ public class Program
 
         // Configuración de base de datos y repositorios
         builder.Services.AddScoped<MyDbContext>();
-        //builder.Services.AddScoped<UnitOfWork>();
+        builder.Services.AddScoped<UnitOfWork>();
 
         // Inyección de servicios
+        builder.Services.AddScoped<UserService>();
 
         // Blockhain
 
@@ -73,55 +71,55 @@ public class Program
         });
 
         // Configuración de autenticación JWT
-    //    string key = Environment.GetEnvironmentVariable("JWT_KEY");
-    //    if (string.IsNullOrEmpty(key))
-    //    {
-    //        throw new InvalidOperationException("JWT_KEY is not configured in environment variables.");
-    //    }
+        string key = Environment.GetEnvironmentVariable("JWT_KEY");
+        if (string.IsNullOrEmpty(key))
+        {
+            throw new InvalidOperationException("JWT_KEY is not configured in environment variables.");
+        }
 
-    //    builder.Services.AddAuthentication()
-    //        .AddJwtBearer(options =>
-    //        {
-    //            options.SaveToken = true;
-    //            options.TokenValidationParameters = new TokenValidationParameters
-    //            {
-    //                ValidateIssuer = false,
-    //                ValidateAudience = false,
-    //                ValidateIssuerSigningKey = true,
-    //                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-    //                ValidateLifetime = true,
-    //                ClockSkew = TimeSpan.Zero
-    //            };
-    //        });
+        builder.Services.AddAuthentication()
+            .AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
 
-    //    builder.Services.AddSwaggerGen(options =>
-    //    {
-    //        options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
-    //        {
-    //            BearerFormat = "JWT",
-    //            Name = "Authorization",
-    //            Description = "Escribe SOLO tu token JWT",
-    //            In = ParameterLocation.Header,
-    //            Type = SecuritySchemeType.Http,
-    //            Scheme = JwtBearerDefaults.AuthenticationScheme
-    //        });
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+            {
+                BearerFormat = "JWT",
+                Name = "Authorization",
+                Description = "Escribe SOLO tu token JWT",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = JwtBearerDefaults.AuthenticationScheme
+            });
 
-    //        // Establecer los requisitos de seguridad para las operaciones de la API
-    //        options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    //{
-    //    {
-    //        new OpenApiSecurityScheme
-    //        {
-    //            Reference = new OpenApiReference
-    //            {
-    //                Type = ReferenceType.SecurityScheme,
-    //                Id = JwtBearerDefaults.AuthenticationScheme
-    //            }
-    //        },
-    //        new string[] { }
-    //    }
-    //});
-    //    });
+            // Establecer los requisitos de seguridad para las operaciones de la API
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = JwtBearerDefaults.AuthenticationScheme
+                }
+            },
+            new string[] { }
+        }
+    });
+        });
 
     }
 

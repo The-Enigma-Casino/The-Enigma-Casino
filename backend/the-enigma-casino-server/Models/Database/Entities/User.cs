@@ -24,5 +24,6 @@ public class User
         Coins = 0;
         IsBanned = false;
         Role = Role.User;
+        Image = "AAAAA";
     }
 }

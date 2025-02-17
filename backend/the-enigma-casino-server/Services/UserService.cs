@@ -1,7 +1,11 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using the_enigma_casino_server.Models.Database;
+using the_enigma_casino_server.Models.Database.Entities;
+using the_enigma_casino_server.Models.Dtos.Request;
 using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Services;
@@ -11,10 +15,10 @@ public class UserService
     private UnitOfWork _unitOfWork;
     private readonly TokenValidationParameters _tokenParameters;
 
-    public UserService(UnitOfWork unitOfWork, TokenValidationParameters tokenParameters)
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions)
     {
         _unitOfWork = unitOfWork;
-        _tokenParameters = tokenParameters;
+        _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
     }
 
     public async Task<(bool, string)> ExistsUser(string nickName, string email, string Dni)
@@ -35,19 +39,19 @@ public class UserService
         return (false, "Usuario no encontrado.");
     }
 
-    private string GenerateToken(string userId, string userName, string userImage, string userRole)
+    public string GenerateToken(User user)
     {
         SecurityTokenDescriptor securityTokenDescriptor = new SecurityTokenDescriptor
         {
             Claims = new Dictionary<string, object>
             {
-                { "id", userId },
-                { "name", userName },
-                { "image", userImage },
-                {ClaimTypes.Role, userRole }
+                { "id", user.Id },
+                { "name", user.NickName },
+                { "image", user.Image },
+                {ClaimTypes.Role, user.Role.ToString() }
             },
 
-            //Cambiar tiempo a 10 minutos al acabar proyecto
+            //Cambiar tiempo a 3 minutos al acabar proyecto --> 3000 segundos
             Expires = DateTime.UtcNow.AddDays(1),
             SigningCredentials = new SigningCredentials(_tokenParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha256Signature)
         };
@@ -57,5 +61,24 @@ public class UserService
         SecurityToken token = tokenHandler.CreateToken(securityTokenDescriptor);
 
         return tokenHandler.WriteToken(token);
+    }
+    
+    public async Task<User> GenerateNewUser(RegisterReq request)
+    {
+        User user = new User
+        {
+            NickName = request.NickName,
+            FullName = request.FullName,
+            Email = request.Email,
+            HashPassword = HashHelper.Hash(request.Password),
+            HashDNI = HashHelper.Hash(request.Dni),
+            Country = request.Country,
+            Address = request.Address
+        };
+
+        await _unitOfWork.UserRepository.InsertAsync(user);
+        await _unitOfWork.SaveAsync();
+
+        return user;
     }
 }

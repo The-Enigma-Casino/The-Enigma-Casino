@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using the_enigma_casino_server.Models.Database;
+using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Dtos.Request;
 using the_enigma_casino_server.Services;
 using the_enigma_casino_server.Utilities;
@@ -32,13 +33,16 @@ public class AuthController : BaseController
             if (exists)
                 return BadRequest(message);
 
-
             // Crear usuario
-            return Ok("Usuario registrado exitosamente.");
+            User newUser = await _userService.GenerateNewUser(request);
+            string token = _userService.GenerateToken(newUser);
+
+            return Ok(token);
         }
         catch (Exception ex)
         {
-
+            Console.Write(ex.ToString());
+            return StatusCode(500, "Un error ha ocurrido al enviar su petición.");
         }
     }
 

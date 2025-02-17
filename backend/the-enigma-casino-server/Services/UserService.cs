@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -21,7 +23,7 @@ public class UserService
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
     }
 
-    public async Task<(bool, string)> ExistsUser(string nickName, string email, string Dni)
+    public async Task<(bool, string)> CheckUser(string nickName, string email, string Dni)
     {
         bool existEmail = await _unitOfWork.UserRepository.ExistEmail(email);
         bool existNickname = await _unitOfWork.UserRepository.ExistNickName(nickName);
@@ -38,6 +40,15 @@ public class UserService
 
         return (false, "Usuario no encontrado.");
     }
+
+    public async Task<User> UserLogin(LoginReq request)
+    {
+        User user = await _unitOfWork.UserRepository.UserValidate(request.Identifier, request.Password);
+
+        if (user == null) return null;
+
+        return user;
+    } 
 
     public string GenerateToken(User user)
     {

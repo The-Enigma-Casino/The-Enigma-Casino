@@ -1,6 +1,7 @@
 ﻿using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Database.Entities.Enum;
+using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Models.Seeder;
 
@@ -28,7 +29,7 @@ public class UserSeeder
                 NickName = "admin",
                 FullName = "admin",
                 Email = "theenigmacasino@gmail.com",
-                HashPassword = "admin",
+                HashPassword = HashHelper.Hash("admin"),
                 Image = "default.png",
                 HashDNI = "admin",
                 Country = "ESP",

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Dtos.Request;
@@ -27,13 +28,12 @@ public class AuthController : BaseController
                 return BadRequest("Alguno de los campos enviados está vacío.");
 
 
-            // Ver si existe el usuario
-            (bool exists, string message) = await _userService.ExistsUser(request.NickName, request.Email, request.Dni);
+            (bool exists, string message) = await _userService.CheckUser(request.NickName, request.Email, request.Dni);
 
             if (exists)
                 return BadRequest(message);
 
-            // Crear usuario
+
             User newUser = await _userService.GenerateNewUser(request);
             string token = _userService.GenerateToken(newUser);
 
@@ -41,7 +41,29 @@ public class AuthController : BaseController
         }
         catch (Exception ex)
         {
-            Console.Write(ex.ToString());
+            return StatusCode(500, "Un error ha ocurrido al enviar su petición.");
+        }
+    }
+
+    [HttpPost("login")]
+    public async Task<ActionResult<string>> Login([FromBody] LoginReq request)
+    {
+        try
+        {
+            User user = await _userService.UserLogin(request);
+
+            if (user == null)
+            {
+                return Unauthorized("Identificador o contraseña inválidos");
+            }
+
+            string token = _userService.GenerateToken(user);
+
+            return Ok(token);
+        }
+
+        catch (Exception ex)
+        {
             return StatusCode(500, "Un error ha ocurrido al enviar su petición.");
         }
     }

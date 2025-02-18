@@ -1,7 +1,7 @@
 import "./App.css";
-import AuthLayout from "./layout/AuthLayout";
+import AuthLayout from "./layouts/AuthLayout";
 
-import RootLayout from "./layout/RootLayout";
+import RootLayout from "./layouts/RootLayout";
 import Error from "./pages/Error";
 import Home from "./pages/Home";
 import Login from "./pages/auth/Login";

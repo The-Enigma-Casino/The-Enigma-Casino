@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Reddit+Sans:wght@400;500;600&display=swap');
+
+:root {
+    /* Main Colors */
+    --Principal: #74C410;
+    --Coins: #FFDF31;
+    --Background-Chat: #D4EDB5;
+    --Background-Overlay: #2E2E2E;
+    --Background-Page: #0F0F0F;
+    --Color-Edit: #2457C5;
+    --Color-Cancel: #CE2E2E;
+    --Green-lines: #7FF803;
+    --Black-color: #000814;
+    --Grey-color: #505050;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    font-family: 'Reddit Sans', sans-serif;
+}

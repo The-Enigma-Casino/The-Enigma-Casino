@@ -1,11 +1,11 @@
 import "./App.css";
-import AuthLayout from "./layouts/AuthLayout";
+import AuthLayout from "./features/auth/pages/AuthLayout";
 
 import RootLayout from "./layouts/RootLayout";
-import Error from "./pages/Error";
-import Home from "./pages/Home";
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
+import Error from "./features/error/pages/Error";
+import Home from "./features/home/pages/Home";
+import Login from "./features/auth/pages/Login";
+import Register from "./features/auth/pages/Register";
 
 import {
   createBrowserRouter,

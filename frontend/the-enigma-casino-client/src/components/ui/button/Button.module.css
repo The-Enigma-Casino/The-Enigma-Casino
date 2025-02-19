@@ -1,13 +1,10 @@
 /* CSS del componente Button */
 
-/* Vhyper Games */
-
 /* Generico */
 
 button {
-  font-family: 'UniversCnBold', sans-serif;
-  color: white;
-  border-radius: 10px;
+  font-family: "Reddit Sans", sans-serif;
+  color: var(--Black-color);
   border: none;
   transition: background 0.3s ease;  
   cursor: pointer;
@@ -15,6 +12,9 @@ button {
   align-items: center;
   justify-content: center;
   margin: 2px;
+  border-radius: 20px;
+  font-size: 2rem;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 button:active {
@@ -23,73 +23,73 @@ button:active {
 
 /* Variantes de tamaños */
 
-button.short {
+button.small {
   width: 10rem; 
-  height: 3rem;
-  font-size: 1.2rem; 
+  height: 4rem;
+}
+
+button.short {
+  width: 13rem; 
+  height: 5rem;
 }
 
 button.medium {
-  width: 10rem; 
-  height: 5rem;  
-  font-size: 1.3rem;
+  width: 20rem; 
+  height: 5rem;
 }
 
 button.large {
-  width: 16rem; 
+  width: 20rem; 
   height: 4rem;   
-  font-size: 1.3rem;
 }
 
-@media (max-width: 45rem) {
+button.big {
+  width: 25rem; 
+  height: 5rem;
+  font-size: 2.4rem;   
+}
+
+/* @media (max-width: 45rem) {
   button.large {
     width: 11rem; 
     height: 4rem;   
   }
-}
+} */
 
 /* Variantes de Colores */
 
-button.morado {
-  background: var(--gradient-purple);
-  box-shadow: var(--shadow-purple);
+button.green {
+  background-color: var(--Principal);
 }
 
-button.morado:active {
-  box-shadow: var(--shadow-purple);
+/* button.green:active {
+
+} */
+
+button.yellow {
+  background-color: var(--Coins);
 }
 
-button.azul {
-  background: var(--gradient-blue);
-  box-shadow: var(--shadow-blue);
-}
+/* button.yellow:active {
 
-button.azul:active {
-  box-shadow: var(--shadow-blue);
-}
-
-button.morado-azul {
-  background: var(--gradient-purple-blue);
-  box-shadow: var(--shadow-gradient-blue-purple);
-}
-
-button.azul-morado {
-  background: var(--gradient-blue-purple);
-  box-shadow: var(--shadow-gradient-blue-purple);
-}
+} */
 
 button.red {
-  background: var(--principal-red);
-  box-shadow: var(--principal-red);
+  background-color: var(--Color-Cancel);
 }
 
-button.gradient-green {
-  background: var(--gradient-green);
-  box-shadow: var(--gradient-green);
+/* button.red:active {
+
+} */
+
+
+/* Variantes de Texto */
+
+button.medium {
+  font-weight: normal;
 }
 
-button.morado-azul:active,
-button.azul-morado:active {
-  box-shadow: var(--shadow-gradient-blue-purple);
+button.bold {
+  font-weight: bold;
 }
 

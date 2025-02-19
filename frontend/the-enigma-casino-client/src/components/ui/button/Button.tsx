@@ -5,6 +5,7 @@ interface ButtonProps {
   onClick: () => void;
   variant: string;
   color: string;
+  font: string;
 }
 
 /**
@@ -12,21 +13,22 @@ interface ButtonProps {
  * 
  * Este componente renderiza un botón personalizado, permitiendo diferentes variantes.
  *
- * @param {Object} props - Propiedades para configurar el componente.
- * @param {React.ReactNode} props.children - Contenido.
- * @param {Function} props.onClick - Función que se ejecuta.
- * @param {string} props.variant - Tamaño (`short`, `large`, `medium`).
- * @param {string} props.color - Color (`azul`, `morado`, `azul-morado`, `morado-azul`).
+ * @param {Object} props  - Propiedades del componente.
+ * @param {React.ReactNode} props.children -  Contenido del botón.
+ * @param {Function} props.onClick -  Función que se ejecuta al hacer click en el botón.
+ * @param {string} props.variant - Variante del botón.
+ * @param {string} props.color - Color del botón.
+ * @param {string} props.font - Tamaño del botón.
+ * 
+ * @example <Button variant="small" color="green" font="medium" onClick={() => }>Soy un boton</Button>
  * 
  * @returns {JSX.Element} Componente `<Button />`.
  * 
- * @example
- * <Button variant="short" color="azul" onClick={function}>Texto</Button>
  */
-function Button({ children, onClick, variant, color}: ButtonProps) {
+function Button({ children, onClick, variant, color, font}: ButtonProps) {
   return (
     <button 
-      className={`${classes[variant]} ${classes[color]}` }
+      className={`${classes[variant]} ${classes[color]} ${classes[font]}` }
       onClick={onClick}
     >
       {children}

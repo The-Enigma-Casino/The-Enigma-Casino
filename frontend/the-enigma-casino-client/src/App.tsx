@@ -1,5 +1,5 @@
 import "./App.css";
-import AuthLayout from "./features/auth/pages/AuthLayout";
+import AuthLayout from "./features/auth/layouts/AuthLayout";
 
 import RootLayout from "./layouts/RootLayout";
 import Error from "./features/error/pages/Error";

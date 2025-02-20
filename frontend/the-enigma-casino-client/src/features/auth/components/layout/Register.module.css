@@ -1,3 +1,87 @@
 .register {
-    background-color: black;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--Principal);
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px;
+    background-color: var(--Background-Page);
+}
+
+.registerLeft {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40%;
+    gap: 10px;
+    background-color: var(--Principal);
+}
+
+.register-left h1 {
+    font-size: 2.8rem;
+    font-weight: bold;
+}
+
+.title {
+    font-size: 6rem;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.registerLeft a {
+    font-size: 1.2rem;
+    text-decoration: none;
+}
+
+.register p {
+    font-size: 4rem;
+    color: var(--Black-color);
+    font-weight: bold;
+}
+
+.register-logo {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.register-logo img {
+    max-width: 100%;
+    height: auto;
+}
+
+.registerForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 40px;
+    width: 100%;
+}
+
+.checkboxContainer {
+    grid-column: 1 / 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.passwordContainer {
+    grid-column: span 2;
+    display: flex;
+    gap: 15px;
+}
+
+.passwordContainer input {
+    flex: 1;
+}
+
+.buttonRegister {
+    display: flex;
+    justify-content: center;
+    grid-column: span 2;
+    margin-top: 20px;
 }

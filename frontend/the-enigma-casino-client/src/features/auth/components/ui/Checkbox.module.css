@@ -8,14 +8,11 @@
     height: 16px;
     transform: scale(0.8);
     cursor: pointer;
+    color: white;
 }
 
 .checkboxLabel {
     color: white;
     font-size: 14px;
     margin-left: 8px;
-}
-
-.checkbox:checked {
-    background-color: #4caf50;
 }

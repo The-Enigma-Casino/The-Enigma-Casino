@@ -5,7 +5,6 @@
   color: white;
   padding: 10px;
   gap: 20px;
-  overflow-x: hidden;
 }
 
 .leftFooter {
@@ -49,8 +48,6 @@
   cursor: pointer;
   color: white;
   text-decoration: none;
-  font-size: inherit;
-  font-family: inherit;
   display: inline;
 }
 

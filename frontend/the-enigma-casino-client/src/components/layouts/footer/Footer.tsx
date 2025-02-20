@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 function Footer() {
   const navigate = useNavigate();
+  const GITHUB: string = "https://github.com/The-Enigma-Casino/The-Enigma-Casino";
 
   return (
     <footer className={classes.footer}>
@@ -19,6 +20,48 @@ function Footer() {
           <p>© 2025 | The Enigma Casino | All rights reserverd</p>
         </div>
         <div className={classes.line}></div>
+      </div>
+      <div className={classes.rightFooter}>
+        <div className={classes.textFooter}>
+          <p>Juegos de casino</p>
+          <p>Ruleta | Blackjack | Poker</p>
+        </div>
+        <div className={classes.textFooter}>
+          <p>Pagos</p>
+          <p>Euros | Ethereum </p>
+        </div>
+        <div className={classes.textFooter}>
+          <button
+            className={classes.InvisibilityButton}
+            onClick={() => navigate("/")}
+          >
+            Política de privacidad
+          </button>
+          <button
+            className={classes.InvisibilityButton}
+            onClick={() => navigate("/")}
+          >
+            Acuerdo con el usuario
+          </button>
+        </div>
+        <div className={classes.textFooter}>
+          <button
+            className={classes.InvisibilityButton}
+            onClick={() => navigate("/")}
+          >
+            Sobre nosotros
+          </button>
+          <a href={GITHUB} target="_blank" rel="noopener noreferrer">
+            GitHub
+          </a>
+        </div>
+        <div className={classes.autoExpulsion}>
+          <button
+            className={`${classes.InvisibilityButton} ${classes.autoExpulsion}`}
+          >
+            AutoExpulsion
+          </button>
+        </div>
       </div>
     </footer>
   );

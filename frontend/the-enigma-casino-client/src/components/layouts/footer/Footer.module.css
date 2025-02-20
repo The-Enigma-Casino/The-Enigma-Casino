@@ -1,10 +1,10 @@
 .footer {
   height: 10rem;
   display: flex;
-  justify-content: space-between;
   background-color: var(--Background-Overlay);
   color: white;
   padding: 10px;
+  gap: 20px;
   overflow-x: hidden;
 }
 
@@ -32,55 +32,39 @@
   background-color: white;
 }
 
-/* .rightFooter {
+.rightFooter {
   display: flex;
   gap: 20px;
   align-items: center;
-  padding: 0 20px;
-} */
-
-/* .buttons {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
 }
 
-.iconsFooter {
+.textFooter {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding-bottom: 30px;
-  font-size: 1.5rem;
-}
-
-.onlyIcons {
-  display: flex;
   gap: 10px;
 }
 
-.icon {
-  max-width: 40px;
+.InvisibilityButton {
+  all: unset;
   cursor: pointer;
-}
-
-a {
+  color: white;
   text-decoration: none;
+  font-size: inherit;
+  font-family: inherit;
+  display: inline;
 }
 
-@media (max-width: 88rem) {
-
-  .onlyIcons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+.footer a,
+.footer a:visited,
+.footer a:hover,
+.footer a:active,
+.footer a:focus {
+  text-decoration: none;
+  color: white;
 }
 
-@media (max-width: 78rem) {
-  .buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-} */
+.autoExpulsion {
+  color: var(--Principal);
+}
+
+

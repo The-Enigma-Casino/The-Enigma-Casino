@@ -1,11 +1,11 @@
 input {
-    width: 350px;
+    width: 380px;
     height: 60px;
-    padding-left: 15px;
+    padding-left: 40px;
     background-color: white;
     border-radius: 20px;
     border: 1px solid;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
 }
 
 input::placeholder {

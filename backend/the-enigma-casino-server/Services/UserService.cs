@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Dtos.Request;
+using the_enigma_casino_server.Services.Email;
 using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Services;
@@ -16,11 +19,13 @@ public class UserService
 {
     private UnitOfWork _unitOfWork;
     private readonly TokenValidationParameters _tokenParameters;
+    private readonly EmailService _emailService;
 
-    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions)
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService)
     {
         _unitOfWork = unitOfWork;
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
+        _emailService = emailService;
     }
 
     public async Task<(bool, string)> CheckUser(string nickName, string email, string Dni)
@@ -73,23 +78,72 @@ public class UserService
 
         return tokenHandler.WriteToken(token);
     }
-    
+
     public async Task<User> GenerateNewUser(RegisterReq request)
     {
-        User user = new User
+        try
         {
-            NickName = request.NickName,
-            FullName = request.FullName,
-            Email = request.Email,
-            HashPassword = HashHelper.Hash(request.Password),
-            HashDNI = HashHelper.Hash(request.Dni),
-            Country = request.Country,
-            Address = request.Address
-        };
+            User user = new User
+            {
+                NickName = request.NickName,
+                FullName = request.FullName,
+                Email = request.Email,
+                HashPassword = HashHelper.Hash(request.Password),
+                HashDNI = HashHelper.Hash(request.Dni),
+                Country = request.Country,
+                Address = request.Address
+            };
 
-        await _unitOfWork.UserRepository.InsertAsync(user);
+            await _unitOfWork.UserRepository.InsertAsync(user);
+            await _unitOfWork.SaveAsync();
+
+            return user;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al generar el usuario: {ex.Message}");
+            throw;
+        }
+    }
+
+
+    public async Task<bool> ConfirmUserEmailAsync(string token)
+    {
+        try
+        {
+
+            User user = await _unitOfWork.UserRepository.GetUserByConfirmationTokenAsync(token);
+
+            if (user == null)
+            {
+                return false;
+
+            }
+
+            user.EmailConfirm = true;
+            user.ConfirmationToken = null;
+
+            _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+
+
+    public async Task SendEmailConfirmation(User user)
+    {
+        string confirmationToken = Guid.NewGuid().ToString();
+
+        user.ConfirmationToken = confirmationToken;
+
+        _unitOfWork.UserRepository.Update(user);
         await _unitOfWork.SaveAsync();
 
-        return user;
+        await _emailService.SendEmailConfirmationAsync(user);
     }
 }

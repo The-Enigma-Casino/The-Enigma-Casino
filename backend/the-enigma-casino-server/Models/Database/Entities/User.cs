@@ -15,6 +15,8 @@ public class User
     public string Address { get; set; }
     public int Coins { get; set; }
     public bool IsBanned { get; set; }
+    public bool EmailConfirm {  get; set; }
+    public string ConfirmationToken { get; set; }
     public Role Role { get; set; }
 
     // FALTAN COSAS
@@ -23,6 +25,8 @@ public class User
     {
         Coins = 0;
         IsBanned = false;
+        EmailConfirm = false;
+        ConfirmationToken = null;
         Role = Role.User;
         Image = "AAAAA";
     }

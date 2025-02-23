@@ -15,7 +15,6 @@ public class AuthController : BaseController
     public UserService _userService;
     public AuthController(UserService userService)
     {
-
         _userService = userService;
     }
 
@@ -24,20 +23,42 @@ public class AuthController : BaseController
     {
         try
         {
-            if (string.IsNullOrEmpty(request.NickName) || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Dni)) 
+            if (string.IsNullOrEmpty(request.NickName) || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Dni))
                 return BadRequest("Alguno de los campos enviados está vacío.");
-
 
             (bool exists, string message) = await _userService.CheckUser(request.NickName, request.Email, request.Dni);
 
             if (exists)
                 return BadRequest(message);
 
-
             User newUser = await _userService.GenerateNewUser(request);
-            string token = _userService.GenerateToken(newUser);
 
-            return Ok(token);
+            await _userService.SendEmailConfirmation(newUser);
+
+            return Ok("Registro exitoso. Revisa tu email para confirmar tu cuenta.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en el registro: {ex.Message}");
+            return StatusCode(500, "Un error ha ocurrido al enviar su petición.");
+        }
+    }
+
+    [HttpGet("confirm-email")]
+    public async Task<ActionResult<string>> ConfirmEmail([FromQuery] string token)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(token))
+                return BadRequest("El token de confirmación es obligatorio.");
+
+            bool result = await _userService.ConfirmUserEmailAsync(token);
+
+            if (!result)
+                return NotFound("Token de confirmación no válido o expirado.");
+
+            return Ok("Tu cuenta ha sido confirmada exitosamente.");
+
         }
         catch (Exception ex)
         {
@@ -56,6 +77,13 @@ public class AuthController : BaseController
             {
                 return Unauthorized("Identificador o contraseña inválidos");
             }
+
+            if (!user.EmailConfirm) // Arreglar esto o añadirlo en em metodo userlogin
+            {
+                return Unauthorized("Debes confirmar tu correo antes de iniciar sesión.");
+            }
+
+
 
             string token = _userService.GenerateToken(user);
 

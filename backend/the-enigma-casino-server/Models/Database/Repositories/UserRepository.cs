@@ -29,7 +29,10 @@ public class UserRepository : Repository<User, int>
         identifier = identifier.ToLower();
 
         return await GetQueryable()
-            .FirstOrDefaultAsync(user => (user.Email == identifier || user.NickName.ToLower() == identifier) && user.HashPassword == hashPassword);
+        .FirstOrDefaultAsync(user =>
+            (user.Email.ToLower() == identifier || user.NickName.ToLower() == identifier) &&
+            (user.HashPassword == hashPassword) &&
+            user.EmailConfirm);
     }
 
 
@@ -84,6 +87,15 @@ public class UserRepository : Repository<User, int>
         List<string> nickNames = users.Select(u => u.NickName).ToList();
 
         return nickNames;
+    }
+
+    public async Task<User> GetUserByConfirmationTokenAsync(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+            return null;
+
+        return await GetQueryable()
+            .FirstOrDefaultAsync(u => u.ConfirmationToken == token);
     }
 
 }

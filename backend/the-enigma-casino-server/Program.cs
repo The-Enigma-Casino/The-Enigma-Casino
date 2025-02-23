@@ -7,6 +7,7 @@ using System.Text;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Seeder;
 using the_enigma_casino_server.Services;
+using the_enigma_casino_server.Services.Email;
 
 namespace the_enigma_casino_server;
 
@@ -50,6 +51,7 @@ public class Program
 
         // Inyección de servicios
         builder.Services.AddScoped<UserService>();
+        builder.Services.AddScoped<EmailService>();
 
         // Blockhain
 

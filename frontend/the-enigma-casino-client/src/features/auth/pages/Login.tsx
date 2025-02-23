@@ -1,8 +1,9 @@
+import LoginComponent from "../components/layout/LoginComponent";
 
 function Login() {
   return (
     <>
-      <h1>Hola Login</h1>
+      <LoginComponent/>
     </>
   );
 }

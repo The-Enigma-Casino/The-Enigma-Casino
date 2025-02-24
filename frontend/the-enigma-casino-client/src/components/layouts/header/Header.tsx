@@ -37,27 +37,14 @@ function Header() {
 
       <div className={classes.rightHeader}>
         {roles === "admin" && (
-          <>
-            <img
-              src="/svg/admin.svg"
-              alt="Admin"
-              onClick={() => navigate("/admin")}
-            />
-            <button
-              className={classes.coinsButton}
-              onClick={() => navigate("/")}
-            >
-              {fichas} <img src="/svg/coins.svg" alt="Fichas" />
-            </button>
-            <img
-              src="/svg/exit.svg"
-              alt="Cerrar sesión"
-              onClick={() => navigate("/logout")}
-            />
-          </>
+          <img
+            src="/svg/admin.svg"
+            alt="Admin"
+            onClick={() => navigate("/admin")}
+          />
         )}
 
-        {roles === "user" && (
+        {(roles === "user" || roles === "admin") && (
           <>
             <button
               className={classes.coinsButton}

@@ -1,37 +1,40 @@
 import { LOGIN_ENDPOINT, REGISTER_ENDPOINT } from "../../../config";
 import { LoginReq } from "../models/LoginReq.interface";
 import { RegisterReq } from "../models/RegisterReq.interface";
+import axios from 'axios';
 
-export const login = async (loginData: LoginReq) => {
-  const response = await fetch(LOGIN_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json', 
-    },
-    body: JSON.stringify(loginData),  
-  });
+export const login = async (loginData: LoginReq): Promise<string> => {
+  try {
+    const response = await axios.post(LOGIN_ENDPOINT, loginData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error('Identificador o contraseña inválidos');
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error('Identificador o contraseña inválidos.');
+    } else {
+      throw new Error('Hubo un error con la solicitud.');
+    }
   }
-
-  const data = await response.json();
-  return data;  
 };
 
-export const register = async (registerReq: RegisterReq) => {
-  const response = await fetch(REGISTER_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json', 
-    },
-    body: JSON.stringify(registerReq),  
-  });
+export const register = async (registerReq: RegisterReq): Promise<string> => {
+  try {
+    const response = await axios.post(REGISTER_ENDPOINT, registerReq, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error('No se que poner aqui todavia');
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error('No se ha podido realizar el registro.');
+    } else {
+      throw new Error('Hubo un error con la solicitud.');
+    }
   }
-
-  const data = await response.json();
-  return data;  
 };

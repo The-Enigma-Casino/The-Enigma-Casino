@@ -32,7 +32,7 @@ public class EmailService
         emailContent.AppendLine("<p>Haz clic en el siguiente enlace para confirmar tu dirección de correo electrónico:</p>");
 
         // Enlace de confirmación
-        string confirmationLink = $"{url}/api/auth/confirm-email?token={user.ConfirmationToken}";
+        string confirmationLink = $"{url}/api/auth/confirm-email?token={user.ConfirmationToken}"; //Llamar al front y que acepte el endpoint
 
         emailContent.AppendLine($"<a href='{confirmationLink}'>Confirmar mi correo electrónico</a>");
 

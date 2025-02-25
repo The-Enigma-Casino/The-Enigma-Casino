@@ -81,7 +81,7 @@ function RegisterComponent() {
                 }
 
             } else {
-                setErrorMessage("Ocurrió un error inesperado.");
+                setErrorMessage("Ocurrió un error inesperado");
             }
         }
     };

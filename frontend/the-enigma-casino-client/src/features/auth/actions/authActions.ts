@@ -1,7 +1,7 @@
 import axios from "axios";
 import { createEffect } from "effector";
 
-import { LOGIN_ENDPOINT, REGISTER_ENDPOINT } from "../../../config";
+import { CONFIRM_EMAIL_ENDPOINT, LOGIN_ENDPOINT, REGISTER_ENDPOINT } from "../../../config";
 import { LoginReq } from "../models/LoginReq.interface";
 import { RegisterReq } from "../models/RegisterReq.interface";
 
@@ -21,3 +21,13 @@ export const registerFx = createEffect<RegisterReq, string, Error>(async (regist
 
   return response.data;
 });
+
+export const confirmEmailFx = createEffect<string, string, Error>(async (token) => {
+  const response = await axios.put<string>(CONFIRM_EMAIL_ENDPOINT, null, {
+    params: { token },
+    headers: { "Content-Type": "application/json" },
+  });
+
+  return response.data;
+});
+

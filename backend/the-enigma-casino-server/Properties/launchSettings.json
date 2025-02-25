@@ -20,7 +20,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "JWT_KEY": "asdsadawrsfgvdfhgfjfadadfsadgdhgfjghkghfsefdfgd",
         "EMAIL_KEY": "unzo kwhj nksr nwdz",
-        "SERVER_URL": "https://localhost:7186"
+        "SERVER_URL": "https://localhost:7186",
+        "CLIENT_URL": "http://localhost:5173"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7186;http://localhost:5057"

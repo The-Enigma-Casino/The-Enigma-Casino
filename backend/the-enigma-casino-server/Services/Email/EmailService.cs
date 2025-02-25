@@ -16,7 +16,7 @@ public class EmailService
 
     public async Task SendEmailConfirmationAsync(User user)
     {
-        string url = Environment.GetEnvironmentVariable("SERVER_URL");
+        string url = Environment.GetEnvironmentVariable("CLIENT_URL");
 
         StringBuilder emailContent = new StringBuilder();
 
@@ -24,7 +24,7 @@ public class EmailService
         emailContent.AppendLine("<head>");
         emailContent.AppendLine("<style>");
         emailContent.AppendLine("body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }");
-        emailContent.AppendLine("h2 { color: #a440d2; }");
+        emailContent.AppendLine("h2 { color: #74c410; }");
         emailContent.AppendLine("</style>");
         emailContent.AppendLine("</head>");
         emailContent.AppendLine("<body>");
@@ -32,7 +32,7 @@ public class EmailService
         emailContent.AppendLine("<p>Haz clic en el siguiente enlace para confirmar tu dirección de correo electrónico:</p>");
 
         // Enlace de confirmación
-        string confirmationLink = $"{url}/api/auth/confirm-email?token={user.ConfirmationToken}"; //Llamar al front y que acepte el endpoint
+        string confirmationLink = $"{url}/auth/email-confirmation/{user.ConfirmationToken}"; //Llamar al front y que acepte el endpoint
 
         emailContent.AppendLine($"<a href='{confirmationLink}'>Confirmar mi correo electrónico</a>");
 

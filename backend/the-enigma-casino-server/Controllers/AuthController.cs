@@ -18,6 +18,7 @@ public class AuthController : BaseController
         _userService = userService;
     }
 
+
     [HttpPost("register")]
     public async Task<ActionResult<string>> Register([FromBody] RegisterReq request)
     {
@@ -44,7 +45,8 @@ public class AuthController : BaseController
         }
     }
 
-    [HttpGet("confirm-email")]
+
+    [HttpPut("confirm-email")] 
     public async Task<ActionResult<string>> ConfirmEmail([FromQuery] string token)
     {
         try

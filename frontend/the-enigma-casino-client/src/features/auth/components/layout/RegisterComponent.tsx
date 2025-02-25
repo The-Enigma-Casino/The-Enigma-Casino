@@ -2,10 +2,89 @@ import Checkbox from "../ui/Checkbox";
 import Input from "../../../../components/ui/input/Input";
 import classes from "./Register.module.css";
 import Button from "../../../../components/ui/button/Button";
+import { useState } from "react";
+import { registerFx } from "../../actions/authActions";
+import axios from "axios";
 
-
+interface FormData {
+    nickName: string;
+    fullname: string;
+    email: string;
+    dni: string;
+    address: string;
+    country: string;
+    password: string;
+    confirmPassword: string;
+}
 
 function RegisterComponent() {
+    const [formData, setFormData] = useState<FormData>({
+        nickName: "",
+        fullname: "",
+        email: "",
+        dni: "",
+        address: "",
+        country: "",
+        password: "",
+        confirmPassword: "",
+    });
+
+    const [isAdult, setIsAdult] = useState(false);
+    const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (!isAdult) {
+            setErrorMessage("Debes ser mayor de edad para registrarte.");
+            return;
+        }
+
+        if (!acceptPrivacy) {
+            setErrorMessage("Debes aceptar la política de privacidad.");
+            return;
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+            setErrorMessage("Las contraseñas no coinciden.");
+            return;
+        }
+
+        setErrorMessage("");
+        setSuccessMessage("");
+
+        try {
+            // Enviar solo los datos necesarios, sin "confirmPassword"
+            const { confirmPassword, ...formDataToSend } = formData;
+
+            const response = await registerFx(formDataToSend);
+
+            // Si es 200 muestra mensaje de exito
+            setSuccessMessage(response);
+
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error) && error.response) {
+                const { status, data } = error.response;
+
+                if (status === 400) {
+                    setErrorMessage(data || "Ocurrió un error con el registro.");
+                }
+
+            } else {
+                setErrorMessage("Ocurrió un error inesperado.");
+            }
+        }
+    };
 
     return (
         <>
@@ -21,12 +100,14 @@ function RegisterComponent() {
                 </div>
 
                 <div className={classes.registerRight}>
-                    <form className={classes.registerForm}>
+                    <form onSubmit={handleSubmit} className={classes.registerForm}>
                         <Input
                             type="text"
-                            name="username"
-                            id="username"
+                            name="nickName"
+                            id="nickName"
                             placeholder="Nombre de usuario"
+                            value={formData.nickName}
+                            onChange={handleChange}
                         />
 
                         <Input
@@ -34,6 +115,8 @@ function RegisterComponent() {
                             name="fullname"
                             id="fullname"
                             placeholder="Nombre completo"
+                            value={formData.fullname}
+                            onChange={handleChange}
                         />
 
                         <Input
@@ -41,6 +124,8 @@ function RegisterComponent() {
                             name="email"
                             id="email"
                             placeholder="Correo electrónico"
+                            value={formData.email}
+                            onChange={handleChange}
                         />
 
                         <Input
@@ -48,6 +133,8 @@ function RegisterComponent() {
                             name="dni"
                             id="dni"
                             placeholder="DNI"
+                            value={formData.dni}
+                            onChange={handleChange}
                         />
 
                         <Input
@@ -55,18 +142,22 @@ function RegisterComponent() {
                             name="address"
                             id="address"
                             placeholder="Dirección"
+                            value={formData.address}
+                            onChange={handleChange}
                         />
 
                         <Input
                             type="text"
-                            name="nationality"
-                            id="nationality"
+                            name="country"
+                            id="country"
                             placeholder="Nacionalidad"
+                            value={formData.country}
+                            onChange={handleChange}
                         />
 
                         <div className={classes.checkboxContainer}>
-                            <Checkbox labelText="Soy mayor de edad" />
-                            <Checkbox labelText="Acepto la política de privacidad" />
+                            <Checkbox labelText="Soy mayor de edad" checked={isAdult} onChange={() => setIsAdult(!isAdult)} />
+                            <Checkbox labelText="Acepto la política de privacidad" checked={acceptPrivacy} onChange={() => setAcceptPrivacy(!acceptPrivacy)} />
                         </div>
 
                         <div className={classes.passwordContainer}>
@@ -75,6 +166,8 @@ function RegisterComponent() {
                                 name="password"
                                 id="password"
                                 placeholder="Contraseña"
+                                value={formData.password}
+                                onChange={handleChange}
                             />
 
                             <Input
@@ -82,11 +175,19 @@ function RegisterComponent() {
                                 name="confirmPassword"
                                 id="confirmPassword"
                                 placeholder="Confirme la contraseña"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
                             />
                         </div>
 
+                        {/* ERROR */}
+                        {errorMessage && <p className={classes.error}>{errorMessage}</p>}
+
+                        {/* Mostrar mensaje de éxito */}
+                        {successMessage && <p className={classes.success}>{successMessage}</p>}
+
                         <div className={classes.buttonRegister}>
-                            <Button onClick={() => alert("¡Matadme!")} variant="outline" color="green" font="large">
+                            <Button type="submit" variant="outline" color="green" font="large">
                                 Registrarse
                             </Button>
                         </div>

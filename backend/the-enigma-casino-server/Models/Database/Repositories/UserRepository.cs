@@ -25,21 +25,25 @@ public class UserRepository : Repository<User, int>
 
     public async Task<User> GetDataRegister(string identifier, string password)
     {
-        string hashPassword = HashHelper.Hash(password);
         identifier = identifier.ToLower();
 
-        return await GetQueryable()
-        .FirstOrDefaultAsync(user =>
-            (user.Email.ToLower() == identifier || user.NickName.ToLower() == identifier) &&
-            (user.HashPassword == hashPassword) &&
-            user.EmailConfirm);
+        User user = await GetQueryable()
+            .FirstOrDefaultAsync(user =>
+                user.Email.ToLower() == identifier || user.NickName.ToLower() == identifier);
+
+        if (user == null) return null; 
+
+        string hashPassword = HashHelper.Hash(password);
+        if (user.HashPassword != hashPassword) return new User { Id = -1 }; 
+
+        return user; 
     }
 
 
     public async Task<bool> ExistEmail(string email)
     {
         email = email.ToLower();
-        User user = await GetQueryable().FirstOrDefaultAsync(user => user.Email == email);
+        User user = await GetQueryable().FirstOrDefaultAsync(user => user.Email.ToLower() == email);
         if (user == null)
         {
             return false;
@@ -50,7 +54,7 @@ public class UserRepository : Repository<User, int>
     public async Task<bool> ExistHashDNI(string hashDNI)
     {
         hashDNI = hashDNI.ToLower();
-        User user = await GetQueryable().FirstOrDefaultAsync(user => user.HashDNI == hashDNI);
+        User user = await GetQueryable().FirstOrDefaultAsync(user => user.HashDNI.ToLower() == hashDNI);
         if (user == null)
         {
             return false;
@@ -61,7 +65,8 @@ public class UserRepository : Repository<User, int>
     public async Task<bool> ExistNickName(string nickName)
     {
         nickName = nickName.ToLower();
-        User user = await GetQueryable().FirstOrDefaultAsync(user => user.NickName == nickName);
+        User user = await GetQueryable().FirstOrDefaultAsync(user => user.NickName.ToLower() == nickName);
+        Console.Write("ALEEEEEEEEEE",user);
         if (user == null)
         {
             return false;

@@ -5,11 +5,11 @@ import Button from "../../../../components/ui/button/Button";
 import classes from "./Login.module.css";
 
 import { loginFx } from "../../actions/authActions";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { $authError, setToken } from "../../store/authStore";
 import { useUnit } from "effector-react";
 import { useNavigate } from "react-router-dom";
-
+import toast from "react-hot-toast";
 
 function LoginComponent() {
   const navigate = useNavigate();
@@ -19,19 +19,25 @@ function LoginComponent() {
 
   const [authError, isLoading] = useUnit([$authError, loginFx.pending]);
 
-
   const toggleRememberMe = () => {
-    setRememberMe((prev) => !prev); 
+    setRememberMe((prev) => !prev);
   };
 
   const handleLogin = async () => {
     const token = await loginFx({ identifier, password });
-  
+
     if (token) {
       setToken({ token, rememberMe });
       navigate("/");
     }
   };
+
+  useEffect(() => {
+    if (authError) {
+      toast.error(authError.message);
+    }
+  }, [authError]);
+  
 
   return (
     <>
@@ -55,7 +61,6 @@ function LoginComponent() {
                 }
               />
             </div>
-
             <label className={classes.label}>Contraseña</label>
             <div className={classes.inputContainer}>
               <Input
@@ -69,7 +74,6 @@ function LoginComponent() {
                 }
               />
             </div>
-
             <div className={classes.checkboxContainer}>
               <Checkbox
                 labelText="Recuérdame"
@@ -77,10 +81,7 @@ function LoginComponent() {
                 onChange={toggleRememberMe}
               />
             </div>
-
-            {/* Mensaje de error si el login falla */}
-            {authError && <p className={classes.error}>{authError}</p>}
-
+            
             <div className={classes.buttonLogin}>
               <Button
                 onClick={handleLogin}

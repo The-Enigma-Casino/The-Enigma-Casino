@@ -1,0 +1,98 @@
+.register {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--Principal);
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--Background-Page);
+}
+
+.registerLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 60%;
+  height: 100vh;
+  background-color: var(--Principal);
+  clip-path: polygon(0 0, 100% 0, 60% 100%, 0% 100%);
+  padding: 9rem;
+  padding-right: 30rem;
+}
+
+.register-left h1 {
+  font-size: 2.8rem;
+  font-weight: bold;
+}
+
+.title {
+  font-size: 6rem;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.registerLeft a {
+  font-size: 1.2rem;
+  text-decoration: none;
+}
+
+.register p {
+  font-size: 4rem;
+  color: var(--Black-color);
+  font-weight: bold;
+  margin-top: 4rem;
+}
+
+.registerLogo {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.register-logo img {
+  max-width: 100%;
+  height: auto;
+}
+
+.registerRight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 10rem;
+}
+
+.registerForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px 40px;
+  padding: 40px;
+  width: 100%;
+}
+
+.checkboxContainer {
+  grid-column: 1 / 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.passwordContainer {
+  grid-column: span 2;
+  display: flex;
+  gap: 15px;
+}
+
+.passwordContainer input {
+  flex: 1;
+}
+
+.buttonRegister {
+  display: flex;
+  justify-content: center;
+  grid-column: span 2;
+  margin-top: 20px;
+}

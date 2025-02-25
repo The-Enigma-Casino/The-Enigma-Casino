@@ -3,9 +3,11 @@ import Header from "../../../components/layouts/header/Header";
 
 function AuthLayout() {
   return (
-    <main>
+    <main className="containerMain">
       <Header />
-      <Outlet />
+      <section className="content">
+        <Outlet />
+      </section>
     </main>
   );
 }

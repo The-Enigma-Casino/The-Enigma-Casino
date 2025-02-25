@@ -18,12 +18,12 @@ public class UserConfig : IEntityTypeConfiguration<User>
               .ValueGeneratedOnAdd();
 
         entity.Property(e => e.NickName)
-              .HasColumnName("name")
+              .HasColumnName("nickname")
               .HasMaxLength(20)
               .IsRequired();
 
         entity.Property(e => e.FullName)
-              .HasColumnName("surname")
+              .HasColumnName("fullname")
               .HasMaxLength(100)
               .IsRequired();
 
@@ -34,7 +34,7 @@ public class UserConfig : IEntityTypeConfiguration<User>
 
         entity.Property(e => e.HashPassword)
               .HasColumnName("hash_password")
-              .HasMaxLength(40)
+              .HasMaxLength(64)
               .IsRequired();
 
         entity.Property(e => e.Role)
@@ -58,7 +58,7 @@ public class UserConfig : IEntityTypeConfiguration<User>
 
         entity.Property(e => e.HashDNI)
             .HasColumnName("hash_dni")
-                .HasMaxLength(40)
+                .HasMaxLength(64)
                 .IsRequired();
 
         entity.Property(e => e.Coins)

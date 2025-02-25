@@ -50,10 +50,23 @@ public class UserService
     {
         User user = await _unitOfWork.UserRepository.UserValidate(request.Identifier, request.Password);
 
-        if (user == null) return null;
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("Identificador o contraseña inválidos."); 
+        }
+
+        if (user.Id == -1)
+        {
+            throw new UnauthorizedAccessException("Identificador o contraseña inválidos."); 
+        }
+
+        if (!user.EmailConfirm)
+        {
+            throw new UnauthorizedAccessException("Debe confirmar su correo antes de iniciar sesión.");
+        }
 
         return user;
-    } 
+    }
 
     public string GenerateToken(User user)
     {

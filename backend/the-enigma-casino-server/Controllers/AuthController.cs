@@ -39,7 +39,6 @@ public class AuthController : BaseController
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error en el registro: {ex.Message}");
             return StatusCode(500, "Un error ha ocurrido al enviar su petición.");
         }
     }
@@ -66,6 +65,7 @@ public class AuthController : BaseController
         }
     }
 
+
     [HttpPost("login")]
     public async Task<ActionResult<string>> Login([FromBody] LoginReq request)
     {
@@ -73,26 +73,17 @@ public class AuthController : BaseController
         {
             User user = await _userService.UserLogin(request);
 
-            if (user == null)
-            {
-                return Unauthorized("Identificador o contraseña inválidos");
-            }
-
-            if (!user.EmailConfirm) // Arreglar esto o añadirlo en em metodo userlogin
-            {
-                return Unauthorized("Debes confirmar tu correo antes de iniciar sesión.");
-            }
-
-
-
             string token = _userService.GenerateToken(user);
 
-            return Ok(token);
+            return Ok(new { token });
         }
-
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
-            return StatusCode(500, "Un error ha ocurrido al enviar su petición.");
+            return StatusCode(500, new { message = "Un error ha ocurrido al procesar tu solicitud." });
         }
     }
 

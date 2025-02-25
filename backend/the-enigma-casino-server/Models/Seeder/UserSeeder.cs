@@ -36,6 +36,8 @@ public class UserSeeder
                 Address = "admin",
                 Coins = 0,
                 IsBanned = false,
+                EmailConfirm = true, 
+                ConfirmationToken = null,
                 Role = Role.Admin,
             },
         };

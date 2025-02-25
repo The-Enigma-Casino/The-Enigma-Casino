@@ -1,5 +1,5 @@
 import { createStore, createEvent } from "effector";
-import { loginFx, registerFx } from "../actions/authActions";
+import { confirmEmailFx, loginFx, registerFx } from "../actions/authActions";
 import {
   deleteLocalStorage,
   deleteSessionStorage,
@@ -16,10 +16,14 @@ export const $token = createStore<string>(storedToken);
 export const setToken = createEvent<{ token: string; rememberMe: boolean }>();
 export const clearToken = createEvent();
 
-export const $authError = createStore<string | null>(null)
-  .on(loginFx.failData, (_, error) => error.message)
-  .on(registerFx.failData, (_, error) => error.message)
+export const setAuthError = createEvent<string>();
+
+export const $authError = createStore<{ message: string; time: number } | null>(null)
+  .on(setAuthError, (_, error) => ({ message: error, time: Date.now() }))
+  .on(loginFx.failData, (_, error) => ({ message: error, time: Date.now() }))
+  .on(registerFx.failData, (_, error) => ({ message: error, time: Date.now() }))
   .reset(clearToken);
+
 
 $token
   .on(setToken, (_, { token }) => token)

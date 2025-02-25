@@ -4,7 +4,7 @@
  * @param item - The object or array to be stored in localStorage.
  * @param clave - The key under which the item will be saved.
  */
-export function updateLocalStorage<T>(item: T, clave: string): void {
+export function updateLocalStorage<T>(clave: string, item: T): void {
     localStorage.setItem(clave, JSON.stringify(item));
   }
   
@@ -14,7 +14,7 @@ export function updateLocalStorage<T>(item: T, clave: string): void {
    * @param item - The object or array to be stored in sessionStorage.
    * @param clave - The key under which the item will be saved.
    */
-  export function updateSessionStorage<T>(item: T, clave: string): void {
+  export function updateSessionStorage<T>(clave: string, item: T): void {
     sessionStorage.setItem(clave, JSON.stringify(item));
   }
   

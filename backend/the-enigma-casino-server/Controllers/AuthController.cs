@@ -23,8 +23,9 @@ public class AuthController : BaseController
     {
         try
         {
-            if (string.IsNullOrEmpty(request.NickName) || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Dni))
-                return BadRequest("Alguno de los campos enviados está vacío.");
+            string validationMessage = _userService.ValidateRequestFields(request);
+            if (!string.IsNullOrEmpty(validationMessage))
+                return BadRequest(validationMessage);
 
             (bool exists, string message) = await _userService.CheckUser(request.NickName, request.Email, request.Dni);
 
@@ -86,5 +87,4 @@ public class AuthController : BaseController
             return StatusCode(500, new { message = "Un error ha ocurrido al procesar tu solicitud." });
         }
     }
-
 }

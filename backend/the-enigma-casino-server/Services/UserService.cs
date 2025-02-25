@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using the_enigma_casino_server.Models.Database;
@@ -52,12 +48,12 @@ public class UserService
 
         if (user == null)
         {
-            throw new UnauthorizedAccessException("Identificador o contraseña inválidos."); 
+            throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
         }
 
         if (user.Id == -1)
         {
-            throw new UnauthorizedAccessException("Identificador o contraseña inválidos."); 
+            throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
         }
 
         if (!user.EmailConfirm)
@@ -141,12 +137,12 @@ public class UserService
 
             return true;
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return false;
         }
     }
-
-
 
     public async Task SendEmailConfirmation(User user)
     {
@@ -158,5 +154,24 @@ public class UserService
         await _unitOfWork.SaveAsync();
 
         await _emailService.SendEmailConfirmationAsync(user);
+    }
+
+    public string ValidateRequestFields(RegisterReq request)
+    {
+        if (string.IsNullOrEmpty(request.NickName) ||
+            string.IsNullOrEmpty(request.Email) ||
+            string.IsNullOrEmpty(request.Dni))
+            return "Alguno de los campos enviados está vacío.";
+
+        if (!ValidationHelper.IsValidEmail(request.Email))
+            return "El email ingresado no es válido.";
+
+        if (!ValidationHelper.IsValidDNI(request.Dni))
+            return "El DNI ingresado no es válido.";
+
+        if (!ValidationHelper.IsValidName(request.NickName))
+            return "El nombre de usuario contiene palabras no permitidas.";
+
+        return string.Empty;
     }
 }

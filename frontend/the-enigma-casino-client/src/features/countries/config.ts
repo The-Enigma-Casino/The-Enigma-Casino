@@ -1,0 +1,1 @@
+export const COUNTRIES_API_URL: string = "https://restcountries.com/v3.1";

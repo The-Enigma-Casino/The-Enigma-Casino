@@ -66,7 +66,6 @@ public class UserRepository : Repository<User, int>
     {
         nickName = nickName.ToLower();
         User user = await GetQueryable().FirstOrDefaultAsync(user => user.NickName.ToLower() == nickName);
-        Console.Write("ALEEEEEEEEEE",user);
         if (user == null)
         {
             return false;

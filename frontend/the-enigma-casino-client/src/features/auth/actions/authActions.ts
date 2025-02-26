@@ -9,7 +9,7 @@ import {
 import { LoginReq } from "../models/LoginReq.interface";
 import { RegisterReq } from "../models/RegisterReq.interface";
 
-// 🔹 LOGIN
+// LOGIN
 export const loginFx = createEffect<LoginReq, string, string>(
   async (loginData) => {
     try {
@@ -27,7 +27,7 @@ export const loginFx = createEffect<LoginReq, string, string>(
   }
 );
 
-// 🔹 REGISTER
+// REGISTER
 export const registerFx = createEffect<RegisterReq, string, string>(
   async (registerData) => {
     try {
@@ -38,18 +38,17 @@ export const registerFx = createEffect<RegisterReq, string, string>(
           headers: { "Content-Type": "application/json" },
         }
       );
-
       return response.data;
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message ||
+        error.response?.data ||
         "Ocurrió un error inesperado en el registro.";
       throw errorMessage;
     }
   }
 );
 
-// 🔹 CONFIRM EMAIL
+// CONFIRM EMAIL
 export const confirmEmailFx = createEffect<string, string, string>(
   async (token) => {
     try {

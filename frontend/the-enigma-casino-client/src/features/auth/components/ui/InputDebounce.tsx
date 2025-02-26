@@ -33,7 +33,7 @@ const InputDebounce = ({ placeholder, onSelect }: SearchInputProps) => {
   
 
   return (
-    <div style={{ position: "relative" }}>
+    <div >
       <input
         type="text"
         placeholder={placeholder}
@@ -51,7 +51,7 @@ const InputDebounce = ({ placeholder, onSelect }: SearchInputProps) => {
               <img
                 src={country.flags.svg}
                 alt={`Bandera de ${country.name.common}`}
-                style={{ width: "20px", height: "15px", borderRadius: "2px" }}
+
               />
               {country.name.common}
             </li>

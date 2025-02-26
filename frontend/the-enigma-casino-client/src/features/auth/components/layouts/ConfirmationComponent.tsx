@@ -1,18 +1,36 @@
-import { useEffect } from "react";
 import classes from "./ConfirmationComponent.module.css";
+import { useEffect } from "react";
 import { confirmEmailFx } from "../../actions/authActions";
+import toast from "react-hot-toast";
 
 interface ConfirmationProps {
   token: string;
 }
 
 const ConfirmationComponent = ({ token }: ConfirmationProps) => {
-
   useEffect(() => {
     if (token) {
-      confirmEmailFx(token);
+      const toastId = toast.loading("Confirmando tu email...");
 
-      return () => {};
+      confirmEmailFx(token)
+        .then((response) => {
+          console.log(response);
+          toast.success("Email confirmado exitosamente! 🙂", { id: toastId, className: "text-xl font-bold p-4" } );
+          const timer = setTimeout(() => {
+            window.close();
+          }, 9000);
+
+          return () => clearTimeout(timer);
+        })
+        .catch((error) => {
+          console.error(error);
+          toast.error("No se pudo confirmar el email. 😟", {  id: toastId, className: "text-xl font-bold p-4" });
+          const timer = setTimeout(() => {
+            window.close();
+          }, 6000);
+
+          return () => clearTimeout(timer);
+        });
     }
   }, [token]);
 

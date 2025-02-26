@@ -5,6 +5,7 @@ import Button from "../../../../components/ui/button/Button";
 import { useState } from "react";
 import { registerFx } from "../../actions/authActions";
 import axios from "axios";
+import InputDebounce from "../ui/InputDebounce";
 
 interface FormData {
   nickName: string;
@@ -42,6 +43,14 @@ function RegisterComponent() {
     }));
   };
 
+  const handleCountrySelect = (countryCode: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: countryCode, 
+    }));
+    console.log("aaaaa",countryCode);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -67,6 +76,7 @@ function RegisterComponent() {
       // Enviar solo los datos necesarios, sin "confirmPassword"
       const { confirmPassword, ...formDataToSend } = formData;
 
+      console.log("formDataToSend", formDataToSend);
       const response = await registerFx(formDataToSend);
 
       // Si es 200 muestra mensaje de exito
@@ -144,13 +154,9 @@ function RegisterComponent() {
               onChange={handleChange}
             />
 
-            <Input
-              type="text"
-              name="country"
-              id="country"
+            <InputDebounce
               placeholder="Nacionalidad"
-              value={formData.country}
-              onChange={handleChange}
+              onSelect={handleCountrySelect}
             />
 
             <div className={classes.checkboxContainer}>

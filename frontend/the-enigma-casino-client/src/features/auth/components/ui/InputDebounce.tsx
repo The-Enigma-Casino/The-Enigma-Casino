@@ -1,30 +1,39 @@
-import React, { useState } from 'react';
+import classes from "./InputDebounce.module.css";
 
-import { Country } from '../../../countries/models/country.interface';
-import { searchCountryByName } from '../../../countries/actions/countriesActions';
+import React, { useState } from "react";
+import { Country } from "../../../countries/models/country.interface";
+import { searchCountryByName } from "../../../countries/actions/countriesActions";
 
 type SearchInputProps = {
   placeholder: string;
+  onSelect: (countryCode: string) => void; 
 };
 
-const SearchInput = ({ placeholder }: SearchInputProps) => {
+const InputDebounce = ({ placeholder, onSelect }: SearchInputProps) => {
   const [results, setResults] = useState<Country[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
 
     if (value) {
-      const countries = await searchCountryByName(value); 
-      setResults(countries);
+      const countries = await searchCountryByName(value);
+      setResults(countries.slice(0, 3));
     } else {
       setResults([]);
     }
   };
 
+  const handleSelectCountry = (country: Country) => {
+    setSearchTerm(country.name.common); 
+    setResults([]);
+    onSelect(country.cca3); 
+  };
+  
+
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       <input
         type="text"
         placeholder={placeholder}
@@ -32,9 +41,20 @@ const SearchInput = ({ placeholder }: SearchInputProps) => {
         onChange={handleSearch}
       />
       {results.length > 0 && (
-        <ul>
+        <ul className={classes.results} 
+        >
           {results.map((country) => (
-            <li key={country.cca3}>{country.name.common}</li>
+            <li className={classes.list}
+              key={country.cca3}
+              onClick={() => handleSelectCountry(country)}
+            >
+              <img
+                src={country.flags.svg}
+                alt={`Bandera de ${country.name.common}`}
+                style={{ width: "20px", height: "15px", borderRadius: "2px" }}
+              />
+              {country.name.common}
+            </li>
           ))}
         </ul>
       )}
@@ -42,4 +62,4 @@ const SearchInput = ({ placeholder }: SearchInputProps) => {
   );
 };
 
-export { SearchInput };
+export default InputDebounce;

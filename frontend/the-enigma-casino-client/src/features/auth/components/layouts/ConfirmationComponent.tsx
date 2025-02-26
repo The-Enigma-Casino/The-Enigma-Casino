@@ -14,7 +14,6 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
 
       confirmEmailFx(token)
         .then((response) => {
-          console.log(response);
           toast.success("Email confirmado exitosamente! 🙂", { id: toastId, className: "text-xl font-bold p-4" } );
           const timer = setTimeout(() => {
             window.close();
@@ -23,7 +22,6 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
           return () => clearTimeout(timer);
         })
         .catch((error) => {
-          console.error(error);
           toast.error("No se pudo confirmar el email. 😟", {  id: toastId, className: "text-xl font-bold p-4" });
           const timer = setTimeout(() => {
             window.close();

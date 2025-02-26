@@ -1,26 +1,20 @@
 import { useEffect } from "react";
 import classes from "./ConfirmationComponent.module.css";
 import { confirmEmailFx } from "../../actions/authActions";
-import { useNavigate } from "react-router-dom";
 
 interface ConfirmationProps {
   token: string;
 }
 
 const ConfirmationComponent = ({ token }: ConfirmationProps) => {
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (token) {
       confirmEmailFx(token);
 
-      const timer = setTimeout(() => {
-        navigate("/auth/login");
-      }, 300);
-
-      return () => clearTimeout(timer);
+      return () => {};
     }
-  }, [token, navigate]);
+  }, [token]);
 
   return (
     <div className={classes.container}>

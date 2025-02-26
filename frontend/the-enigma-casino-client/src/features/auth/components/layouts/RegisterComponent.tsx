@@ -6,6 +6,7 @@ import { useState } from "react";
 import { registerFx } from "../../actions/authActions";
 import axios from "axios";
 import InputDebounce from "../ui/InputDebounce";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
   nickName: string;
@@ -19,6 +20,7 @@ interface FormData {
 }
 
 function RegisterComponent() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     nickName: "",
     fullname: "",
@@ -102,7 +104,7 @@ function RegisterComponent() {
           <div className={classes.registerLogo}>
             <img src="/img/icono.webp" alt="Logo Enigma" />
           </div>
-          <a href="#">
+          <a href="" onClick={() => navigate("/auth/login")}>
             <p>¿Tienes cuenta?</p>
           </a>
         </div>

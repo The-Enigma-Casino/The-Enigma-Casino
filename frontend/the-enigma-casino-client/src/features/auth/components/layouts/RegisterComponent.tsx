@@ -7,6 +7,7 @@ import { registerFx } from "../../actions/authActions";
 import InputDebounce from "../ui/InputDebounce";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { isValidDNI, isValidEmail, isValidName, nicknameValidator, isValidPassword } from "../../../../utils/validatorsUser";
 
 interface FormData {
   nickName: string;
@@ -66,6 +67,31 @@ function RegisterComponent() {
       return;
     }
 
+    if (!isValidEmail(formData.email)) {
+      toast.error("El correo electrónico no es válido.");
+      return;
+    }
+
+    if (!nicknameValidator(formData.nickName)) {
+      toast.error("El nombre de usuario debe tener entre 3 y 20 caracteres.");
+      return;
+    }
+
+    if (!isValidDNI(formData.dni)) {
+      toast.error("El DNI no es válido. Necesita 8 números y 1 letra");
+      return;
+    }
+
+    if (!isValidPassword(formData.password)) {
+      toast.error("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.");
+      return;
+    }
+
+    if (!isValidName(formData.fullname)) {
+      toast.error("El nombre completo debe tener entre 3 y 100 caracteres.");
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast.error("Las contraseñas no coinciden.");
       return;
@@ -74,17 +100,24 @@ function RegisterComponent() {
     try {
       const { confirmPassword, ...formDataToSend } = formData;
 
-      toast.promise(
+      await toast.promise(
         registerFx(formDataToSend),
         {
-          loading: 'Registrando...',
-          success: (response) => <b>{response}</b>,
+          loading: "Registrando...",
+          success: (response) => {
+            setTimeout(() => {
+              navigate("/auth/login");
+            }, 3000); // 3 segundos después de registrarse
+
+            return <b>{response}</b>;
+          },
           error: (error) => <b>{error || "Ocurrió un error inesperado."}</b>,
         }
       );
     } catch (error: any) {
       console.error(error);
     }
+
   };
 
   return (

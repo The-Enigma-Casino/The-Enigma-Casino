@@ -17,7 +17,13 @@ export default {
         'Black-color': '#000814',
         'Grey-color': '#505050',
       },
+      fontFamily: {
+        reddit: ['Reddit Sans', 'sans-serif'],
+      },
     },
+  },
+  corePlugins: {
+    preflight: false, 
   },
   plugins: [],
 }

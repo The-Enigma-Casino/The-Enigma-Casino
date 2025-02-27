@@ -34,3 +34,10 @@ html, body {
 body {
   font-family: "Reddit Sans", sans-serif;
 }
+
+@layer base {
+  body {
+    @apply font-reddit;
+  }
+}
+

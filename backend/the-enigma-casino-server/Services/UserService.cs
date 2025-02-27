@@ -161,7 +161,7 @@ public class UserService
         if (string.IsNullOrEmpty(request.NickName) ||
             string.IsNullOrEmpty(request.Email) ||
             string.IsNullOrEmpty(request.Dni))
-            return "Alguno de los campos enviados está vacío.";
+            return "Alguno de los campos enviados están vacíos.";
 
         if (!ValidationHelper.IsValidEmail(request.Email))
             return "El email ingresado no es válido.";

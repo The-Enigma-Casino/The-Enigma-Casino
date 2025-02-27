@@ -7,7 +7,6 @@
     background-color: var(--Background-Page);
 }
 
-
 .loginRight {
     display: flex;
     flex-direction: column;
@@ -52,8 +51,6 @@
     font-weight: bold;
 }
 
-
-
 .loginLeft {
     display: flex;
     flex-direction: column;
@@ -75,7 +72,6 @@
     color: white;
     font-size: 1.5rem;
     font-weight: bold;
-    
 }
 
 .inputContainer {
@@ -101,3 +97,105 @@
     margin-top: 20px;
 }
 
+/* Media Queries para hacer el diseño responsive */
+
+@media (max-width: 1200px) {
+    .loginRight {
+        padding-left: 20rem;
+    }
+
+    .loginLeft {
+        width: 50%;
+        margin-left: 5rem;
+    }
+
+    .title {
+        font-size: 5rem;
+    }
+
+    .loginRight p {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .login {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .loginRight {
+        width: 100%;
+        height: auto;
+        clip-path: none;
+        padding: 2rem;
+        padding-left: 0;
+    }
+
+    .loginLeft {
+        width: 80%;
+        margin-left: 0;
+        margin-bottom: 2rem;
+    }
+
+    .loginLogo {
+        margin-top: 2rem;
+    }
+
+    .title {
+        font-size: 4rem;
+    }
+
+    .loginRight p {
+        font-size: 2rem;
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .loginLeft {
+        width: 90%;
+    }
+
+    .title {
+        font-size: 3.5rem;
+    }
+
+    .loginRight p {
+        font-size: 1.8rem;
+    }
+
+    .loginForm {
+        padding: 20px;
+    }
+
+    .loginLeft label {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .loginLeft {
+        width: 100%;
+    }
+
+    .title {
+        font-size: 3rem;
+    }
+
+    .loginRight p {
+        font-size: 1.5rem;
+    }
+
+    .loginForm {
+        padding: 10px;
+    }
+
+    .loginLeft label {
+        font-size: 1rem;
+    }
+
+    .buttonLogin {
+        justify-content: center;
+    }
+}

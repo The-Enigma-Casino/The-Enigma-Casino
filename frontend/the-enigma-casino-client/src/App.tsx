@@ -8,7 +8,18 @@ import { RouterProvider } from "react-router-dom";
 function App() {
   return (
     <>
-      <Toaster position="bottom-left" reverseOrder={false} />
+      <Toaster
+        position="top-left"
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            fontSize: "1.5rem",
+            marginTop: "10rem",
+          },
+        }}
+      />
+
+
       <RouterProvider router={router}></RouterProvider>
     </>
   );

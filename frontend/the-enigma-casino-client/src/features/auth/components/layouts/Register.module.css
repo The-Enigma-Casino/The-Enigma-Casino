@@ -1,10 +1,9 @@
 .register {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  overflow-x: hidden;
+  justify-content: center; 
   background: var(--Principal);
-  width: 100vw;
+  width: 100%;
   min-height: 100vh;
   background-color: var(--Background-Page);
 }
@@ -13,36 +12,32 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 60%;
+  justify-content: center; 
+  width: 60%; 
   height: 100vh;
   background-color: var(--Principal);
   clip-path: polygon(0 0, 100% 0, 60% 100%, 0% 100%);
-  padding: 9rem;
-  padding-right: 30rem;
-}
-
-.register-left h1 {
-  font-size: 2.8rem;
-  font-weight: bold;
+  padding: 3rem;
+  padding-right: 10rem; 
 }
 
 .title {
-  font-size: 6rem;
+  font-size: 5rem;
   color: #fff;
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem; 
 }
 
 .registerLeft a {
-  font-size: 1.2rem;
   text-decoration: none;
 }
 
 .register p {
-  font-size: 4rem;
+  font-size: 3rem;
   color: var(--Black-color);
   font-weight: bold;
-  margin-top: 4rem;
+  margin-top: 2rem; 
+  text-align: center; 
 }
 
 .registerLogo {
@@ -54,7 +49,7 @@
 }
 
 .register-logo img {
-  max-width: 100%;
+  max-width: 60%; 
   height: auto;
 }
 
@@ -62,15 +57,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 10rem;
+  width: 60%; 
+  padding: 2rem; 
 }
 
 .registerForm {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 25px 40px;
-  padding: 40px;
+  gap: 20px; 
+  padding: 20px;
   width: 100%;
+  max-width: 800px; 
 }
 
 .checkboxContainer {
@@ -87,8 +84,8 @@
   gap: 15px;
 }
 
-.passwordContainer input {
-  flex: 1;
+.passwordContainer .input {
+  flex: 1; 
 }
 
 .buttonRegister {
@@ -98,102 +95,89 @@
   margin-top: 20px;
 }
 
-
-.register {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--Principal);
-  width: 100%;
-  min-height: 100vh;
-  background-color: var(--Background-Page);
+@media (max-width: 1200px) {
+  .registerLeft {
+    padding: 2rem; 
+    padding-right: 8rem; 
+  }
 }
 
-.registerLeft {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 60%;
-  height: 100vh;
-  background-color: var(--Principal);
-  clip-path: polygon(0 0, 100% 0, 60% 100%, 0% 100%);
-  padding: 9rem;
-  padding-right: 30rem;
+@media (max-width: 768px) {
+  .register {
+    flex-direction: column; 
+    align-items: center; 
+  }
+
+  .registerLeft {
+    width: 100%; 
+    height: auto; 
+    clip-path: none; 
+    padding: 2rem; 
+    padding-right: 2rem;
+    text-align: center; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+  }
+
+  .registerRight {
+    width: 100%; 
+    padding: 2rem; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+  }
+
+  .registerForm {
+    display: flex;
+    flex-direction: column; 
+    gap: 15px; 
+    padding: 15px;
+    width: 100%; 
+    max-width: 100%; 
+    align-items: center; 
+  }
+
+  .passwordContainer {
+    flex-direction: column; 
+    gap: 15px;
+    width: 100%; 
+    align-items: center;
+  }
+
+  .checkboxContainer {
+    display: flex;
+    flex-direction: column; 
+    gap: 10px;
+  }
+
+  .buttonRegister {
+    width: 100%; 
+    display: flex;
+    justify-content: center;
+  }
 }
 
-.register-left h1 {
-  font-size: 2.8rem;
-  font-weight: bold;
-}
+@media (max-width: 480px) {
+  .title {
+    font-size: 2rem; 
+  }
 
-.title {
-  font-size: 6rem;
-  color: #fff;
-  text-align: center;
-  margin-bottom: 3rem;
-}
+  .register p {
+    font-size: 1.2rem;
+  }
 
-.registerLeft a {
-  font-size: 1.2rem;
-  text-decoration: none;
-}
+  .registerLogo {
+    width: 40%; 
+  }
 
-.register p {
-  font-size: 4rem;
-  color: var(--Black-color);
-  font-weight: bold;
-  margin-top: 4rem;
-}
+  .register-logo img {
+    max-width: 60%; 
+  }
 
-.registerLogo {
-  width: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 2rem;
-}
-
-.register-logo img {
-  max-width: 100%;
-  height: auto;
-}
-
-.registerRight {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 10rem;
-}
-
-.registerForm {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 25px 40px;
-  padding: 40px;
-  width: 100%;
-}
-
-.checkboxContainer {
-  grid-column: 1 / 2;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.passwordContainer {
-  grid-column: span 2;
-  display: flex;
-  gap: 15px;
-}
-
-.passwordContainer input {
-  flex: 1;
-}
-
-.buttonRegister {
-  display: flex;
-  justify-content: center;
-  grid-column: span 2;
-  margin-top: 20px;
+  .registerForm {
+    padding: 10px; 
+  }
 }

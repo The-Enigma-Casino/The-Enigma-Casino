@@ -1,19 +1,38 @@
 input {
-    width: 380px;
+    width: 100%;
+    max-width: 380px;
     height: 60px;
     padding-left: 40px;
     background-color: white;
     border-radius: 20px;
     border: 1px solid;
     font-size: 1.5rem;
+    box-sizing: border-box;
 }
 
-input::placeholder {
+.input::placeholder {
     color: var(--Black-color);
-}
-
-input:focus {
+  }
+  
+  .input:focus {
     outline: none;
     border: 1px solid;
     border-color: var(--Grey-color);
-}
+  }
+  
+  
+  @media (max-width: 768px) {
+    .input {
+      font-size: 1.2rem; 
+      padding-left: 20px; 
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .input {
+      height: 50px; 
+      font-size: 1rem; 
+      padding-left: 15px; 
+    }
+  }
+

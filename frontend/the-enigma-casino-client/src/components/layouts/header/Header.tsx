@@ -23,8 +23,8 @@ function Header() {
             alt="Gacha"
             onClick={() => navigate("/")}
           />
-          <p>Gachapón</p>
-          <p>de la suerte</p>
+          <p className={classes.text}>Gachapón</p>
+          <p className={classes.text}>de la suerte</p>
         </div>
         {roles !== null && (
           <img

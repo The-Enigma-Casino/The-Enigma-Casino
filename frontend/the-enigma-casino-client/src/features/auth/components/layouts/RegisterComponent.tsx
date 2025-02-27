@@ -7,7 +7,13 @@ import { registerFx } from "../../actions/authActions";
 import InputDebounce from "../ui/InputDebounce";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { isValidDNI, isValidEmail, isValidName, nicknameValidator, isValidPassword } from "../../../../utils/validatorsUser";
+import {
+  isValidDNI,
+  isValidEmail,
+  isValidName,
+  nicknameValidator,
+  isValidPassword,
+} from "../../../../utils/validatorsUser";
 
 interface FormData {
   nickName: string;
@@ -83,7 +89,9 @@ function RegisterComponent() {
     }
 
     if (!isValidPassword(formData.password)) {
-      toast.error("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.");
+      toast.error(
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial."
+      );
       return;
     }
 
@@ -100,24 +108,35 @@ function RegisterComponent() {
     try {
       const { confirmPassword, ...formDataToSend } = formData;
 
-      await toast.promise(
-        registerFx(formDataToSend),
-        {
-          loading: "Registrando...",
-          success: (response) => {
-            setTimeout(() => {
-              navigate("/auth/login");
-            }, 3000); // 3 segundos después de registrarse
+      await toast.promise(registerFx(formDataToSend), {
+        loading: "Registrando...",
+        success: (response) => {
+          setTimeout(() => {
+            setFormData({
+              nickName: "",
+              fullname: "",
+              email: "",
+              dni: "",
+              address: "",
+              country: "",
+              password: "",
+              confirmPassword: "",
+            });
+            setIsAdult(false);
+            setAcceptPrivacy(false);
 
-            return <b>{response}</b>;
-          },
-          error: (error) => <b>{error || "Ocurrió un error inesperado."}</b>,
-        }
-      );
+            navigate("/auth/login", { replace: true });
+
+            toast.dismiss();
+          }, 3000);
+
+          return <b>{response} Navegando al login...</b>;
+        },
+        error: (error) => <b>{error || "Ocurrió un error inesperado."}</b>,
+      });
     } catch (error: any) {
       console.error(error);
     }
-
   };
 
   return (
@@ -125,7 +144,7 @@ function RegisterComponent() {
       <div className={classes.registerLeft}>
         <h1 className={classes.title}>REGISTRO</h1>
         <div className={classes.registerLogo}>
-          <img src="/img/icono.webp" alt="Logo Enigma" />
+          <img src="/img/icono.webp" alt="Logo Enigma" onClick={() => navigate("/")}/>
         </div>
         <a href="" onClick={() => navigate("/auth/login")}>
           <p>¿Tienes cuenta?</p>
@@ -218,12 +237,7 @@ function RegisterComponent() {
           </div>
 
           <div className={classes.buttonRegister}>
-            <Button
-              type="submit"
-              variant="outline"
-              color="green"
-              font="large"
-            >
+            <Button type="submit" variant="outline" color="green" font="large">
               Registrarse
             </Button>
           </div>

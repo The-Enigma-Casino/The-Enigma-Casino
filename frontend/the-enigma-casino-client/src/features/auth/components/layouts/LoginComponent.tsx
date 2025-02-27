@@ -98,7 +98,7 @@ function LoginComponent() {
 
         <div className={classes.loginRight}>
           <div className={classes.loginLogo}>
-            <img src="/img/icono.webp" alt="Logo Enigma" />
+          <img src="/img/icono.webp" alt="Logo Enigma" onClick={() => navigate("/")}/>
           </div>
           <a href="" onClick={() => navigate("/auth/register")}>
             <p>¿No tienes cuenta?</p>

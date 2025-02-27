@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; 
+  justify-content: right;
   width: 60%; 
   height: 100vh;
   background-color: var(--Principal);
@@ -26,6 +26,7 @@
   color: #fff;
   text-align: center;
   margin-bottom: 2rem; 
+  margin-top: 10rem;
 }
 
 .registerLeft a {
@@ -45,7 +46,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 2rem;
+
 }
 
 .register-logo img {

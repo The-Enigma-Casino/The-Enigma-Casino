@@ -53,7 +53,7 @@ function LoginComponent() {
                 type="text"
                 name="identifier"
                 id="identifier"
-                placeholder="Correo o nombre de usuario"
+                placeholder="Correo o nombre"
                 value={identifier}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setIdentifier(e.target.value)

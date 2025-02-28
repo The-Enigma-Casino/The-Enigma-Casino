@@ -37,7 +37,6 @@ function LoginComponent() {
       toast.error(authError.message);
     }
   }, [authError]);
-  
 
   return (
     <>
@@ -81,7 +80,7 @@ function LoginComponent() {
                 onChange={toggleRememberMe}
               />
             </div>
-            
+
             <div className={classes.buttonLogin}>
               <Button
                 onClick={handleLogin}
@@ -98,10 +97,14 @@ function LoginComponent() {
 
         <div className={classes.loginRight}>
           <div className={classes.loginLogo}>
-          <img src="/img/icono.webp" alt="Logo Enigma" onClick={() => navigate("/")}/>
+            <img
+              src="/img/icono.webp"
+              alt="Logo Enigma"
+              onClick={() => navigate("/")}
+            />
           </div>
-          <a href="" onClick={() => navigate("/auth/register")}>
-            <p>¿No tienes cuenta?</p>
+          <a className={classes.register} href="" onClick={() => navigate("/auth/register")}>
+            <p >¿No tienes cuenta?</p>
           </a>
         </div>
       </div>

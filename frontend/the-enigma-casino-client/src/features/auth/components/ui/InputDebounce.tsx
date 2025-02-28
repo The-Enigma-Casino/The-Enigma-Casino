@@ -34,7 +34,7 @@ const InputDebounce = ({ placeholder, onSelect }: SearchInputProps) => {
 
   return (
     <div >
-      <input
+      <input className={classes.input}
         type="text"
         placeholder={placeholder}
         value={searchTerm}

@@ -33,8 +33,7 @@
 }
 
 .list:hover {
-  background-color: var(--Grey-color);
-  color: white;
+  background: var(--Background-Chat);
   border-radius: 20px;
 }
 
@@ -42,4 +41,9 @@
   width: 25px;
   height: 18px;
   border-radius: 3px;
+}
+
+
+.input {
+  width: 100%;
 }

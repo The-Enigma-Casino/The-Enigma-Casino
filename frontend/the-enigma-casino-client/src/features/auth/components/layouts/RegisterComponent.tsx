@@ -128,7 +128,7 @@ function RegisterComponent() {
             navigate("/auth/login", { replace: true });
 
             toast.dismiss();
-          }, 3000);
+          }, 6000);
 
           return <b>{response} Navegando al login...</b>;
         },

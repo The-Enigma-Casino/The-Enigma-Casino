@@ -4,8 +4,19 @@ import Header from "../../../components/layouts/header/Header";
 
 function AuthLayout() {
   useEffect(() => {
-    document.body.style.overflow = "hidden";
+    const updateOverflow = () => {
+      if (window.innerWidth > 768) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "auto";
+      }
+    };
+
+    updateOverflow();
+    window.addEventListener("resize", updateOverflow);
+
     return () => {
+      window.removeEventListener("resize", updateOverflow);
       document.body.style.overflow = "auto";
     };
   }, []);

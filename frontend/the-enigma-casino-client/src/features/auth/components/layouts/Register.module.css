@@ -44,8 +44,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 50%;
-  max-width: 300px; 
+  width: 70%;
+  max-width: 380px;
   transition: transform 0.3s ease-in-out; 
 }
 
@@ -97,7 +97,6 @@
   grid-column: span 2;
   margin-top: 20px;
 }
-
 
 @media (max-width: 1200px) {
   .registerLeft {

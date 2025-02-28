@@ -4,7 +4,6 @@
   justify-content: center;
   width: 100%;
   min-height: 100vh;
-  background: var(--Principal);
   background-color: var(--Background-Page);
 }
 
@@ -180,13 +179,19 @@
 }
 
 @media (max-width: 480px) {
+  .registerLeft {
+    background-color: var(--Background-Page);
+  }
+
   .title {
     font-size: 3rem;
     margin-top:  1rem;
+    color: var(--Principal);
   }
 
   .register p {
     font-size: 2rem;
+    color: white;
   }
 
   .registerLogo {

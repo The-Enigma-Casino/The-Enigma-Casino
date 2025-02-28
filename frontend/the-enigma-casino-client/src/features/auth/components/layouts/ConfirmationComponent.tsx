@@ -25,7 +25,7 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
           toast.error("No se pudo confirmar el email. 😟", {  id: toastId, className: "text-xl font-bold p-4" });
           const timer = setTimeout(() => {
             window.close();
-          }, 6000);
+          }, 9000); 
 
           return () => clearTimeout(timer);
         });

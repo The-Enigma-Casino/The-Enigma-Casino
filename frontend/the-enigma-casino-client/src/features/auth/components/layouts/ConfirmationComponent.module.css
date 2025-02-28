@@ -5,7 +5,7 @@
   align-items: center;
   background-color: var(--Background-Page);
   width: 100%;
-  height: 89vh;
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -14,4 +14,11 @@
   color: var(--Principal);
   text-align: center;
   margin-bottom: 3rem;
+}
+
+
+@media (max-width: 480px) {
+  .title { 
+    font-size: 4rem;
+  }
 }

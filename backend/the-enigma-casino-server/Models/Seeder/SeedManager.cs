@@ -15,5 +15,8 @@ public class SeedManager
     {
         UserSeeder userSeeder = new UserSeeder(_context);
         userSeeder.Seed();
+
+        CoinsPackSeeder coinsPackSeeder = new CoinsPackSeeder(_context);
+        coinsPackSeeder.Seed();
     }
 }

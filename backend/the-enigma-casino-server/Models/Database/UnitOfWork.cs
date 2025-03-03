@@ -7,8 +7,10 @@ public class UnitOfWork
     private readonly MyDbContext _context;
 
     private UserRepository _userRepository;
+    private CoinsPackRepository _coinsPackRepository;
 
     public UserRepository UserRepository => _userRepository ??= new UserRepository(_context);
+    public CoinsPackRepository CoinsPackRepository => _coinsPackRepository ??= new CoinsPackRepository(_context);
 
     public UnitOfWork(MyDbContext myDbContext)
     {

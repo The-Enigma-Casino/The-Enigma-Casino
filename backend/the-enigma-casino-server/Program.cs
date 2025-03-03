@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Stripe;
@@ -52,6 +53,7 @@ public class Program
         // Inyección de servicios
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<EmailService>();
+        builder.Services.AddScoped<CatalogService>();
 
         // Blockhain
 
@@ -127,18 +129,14 @@ public class Program
 
     private static void ConfigureMiddleware(WebApplication app)
     {
-        //app.UseStaticFiles(new StaticFileOptions
-        //{
-        //    FileProvider = new PhysicalFileProvider(
-        //            Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
-        //});
-
-
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
+        });
 
         // Creación de la base de datos y el Seeder
         SeedDatabase(app.Services);
-
-
 
         // Middleware de desarrollo (Swagger y CORS)
         if (app.Environment.IsDevelopment())

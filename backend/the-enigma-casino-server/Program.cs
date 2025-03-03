@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using Stripe;
 using System.Text;
 using the_enigma_casino_server.Models.Database;
+using the_enigma_casino_server.Models.Mappers;
 using the_enigma_casino_server.Models.Seeder;
 using the_enigma_casino_server.Services;
 using the_enigma_casino_server.Services.Email;
@@ -53,16 +54,17 @@ public class Program
         // Inyección de servicios
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<EmailService>();
-        builder.Services.AddScoped<CatalogService>();
+        builder.Services.AddScoped<CoinsPackService>();
 
         // Blockhain
 
         // Inyeccion Hosted Services
 
         //Inyección de mappers
+        builder.Services.AddScoped<StripeMapper>();
 
         // Stripe
-        //builder.Services.AddTransient<StripeService>();
+        builder.Services.AddTransient<StripeService>();
 
         // Configuración de CORS
 

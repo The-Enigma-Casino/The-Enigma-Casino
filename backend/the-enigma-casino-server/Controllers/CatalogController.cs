@@ -10,9 +10,9 @@ namespace the_enigma_casino_server.Controllers;
 [ApiController]
 public class CatalogController : BaseController
 {
-    public CatalogService _catalogService;
+    public CoinsPackService _catalogService;
 
-    public CatalogController(CatalogService catalogService)
+    public CatalogController(CoinsPackService catalogService)
     {
         _catalogService = catalogService;
     }

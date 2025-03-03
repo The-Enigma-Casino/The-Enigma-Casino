@@ -21,7 +21,8 @@
         "JWT_KEY": "asdsadawrsfgvdfhgfjfadadfsadgdhgfjghkghfsefdfgd",
         "EMAIL_KEY": "unzo kwhj nksr nwdz",
         "SERVER_URL": "https://localhost:7186",
-        "CLIENT_URL": "http://localhost:5173"
+        "CLIENT_URL": "http://localhost:5173",
+        "STRIPE_KEY": "sk_test_51QycSMI67bCGMSdVXERbpnRrMN04wI8ZMvr6bz4N32pQDlddWAmQ5c9LEPg7DHK78GZmEgWawsQaiCOStZFe87U500l6v3FkAK"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7186;http://localhost:5057"

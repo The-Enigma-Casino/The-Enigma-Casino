@@ -1,7 +1,7 @@
 import RootLayout from "./layouts/RootLayout";
 import Home from "./features/home/pages/Home";
 import Error from "./features/error/pages/Error";
-import Coins from "./features/catalog/components/Coins";
+import Catalog from "./features/catalog/pages/Catalog";
 
 import routeAuth from "./features/auth/routes";
 
@@ -16,7 +16,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "payment", element: <PaymentPage /> },
-      { path: "coins", element: <Coins /> },
+      { path: "catalog", element: <Catalog /> },
     ],
   },
   ...routeAuth,

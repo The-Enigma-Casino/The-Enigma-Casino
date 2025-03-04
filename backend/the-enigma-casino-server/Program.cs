@@ -31,7 +31,7 @@ public class Program
         ConfigureMiddleware(app);
 
         // Configura stripe
-        //ConfigureStripe(app.Services);
+        ConfigureStripe(app.Services);
 
         // Endpoint saludo
         app.MapGet("/api/", () => "The Enigma Casino!");

@@ -5,4 +5,5 @@ export const API_BASE_URL: string = `${BASE_URL}api/`;
 /* ENDPOINTS DE LOGIN Y REGISTRO */
 export const LOGIN_ENDPOINT = `${API_BASE_URL}Auth/login`;
 export const REGISTER_ENDPOINT = `${API_BASE_URL}Auth/register`;
-export const CONFIRM_EMAIL_ENDPOINT =  `${API_BASE_URL}Auth/confirm-email`;
+export const CONFIRM_EMAIL_ENDPOINT = `${API_BASE_URL}Auth/confirm-email`;
+export const COINS_PACK = `${API_BASE_URL}Catalog/coins-packs`;

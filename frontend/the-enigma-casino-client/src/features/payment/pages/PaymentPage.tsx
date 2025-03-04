@@ -8,7 +8,7 @@ function PaymentPage() {
 
   return (
     <>
-      <div>
+      <div className="min-h-screen bg-Background-Page">
         <div>Aqui va la tarjeta</div>
         <div>
           {method === "stripe" && <StripePayment />}

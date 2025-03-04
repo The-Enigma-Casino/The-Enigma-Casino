@@ -16,7 +16,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "payment", element: <PaymentPage /> },
-      {path: "coins", element: <Coins />},
+      { path: "coins", element: <Coins /> },
     ],
   },
   ...routeAuth,

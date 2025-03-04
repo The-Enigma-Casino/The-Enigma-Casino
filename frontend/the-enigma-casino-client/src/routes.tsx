@@ -1,7 +1,7 @@
 import RootLayout from "./layouts/RootLayout";
 import Home from "./features/home/pages/Home";
 import Error from "./features/error/pages/Error";
-import Coins from "./features/catalog/components/Coins";
+import Catalog from "./features/catalog/pages/Catalog";
 
 import routeAuth from "./features/auth/routes";
 
@@ -14,13 +14,10 @@ const router = createBrowserRouter([
     errorElement: <Error />,
     children: [
       { index: true, element: <Home /> },
+      { path: "catalog", element: <Catalog /> },
     ],
   },
-  {
-    path: "coins",
-    element: <Coins />,
-    errorElement: <Error />,
-  },
+
   ...routeAuth
 ]);
 

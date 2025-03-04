@@ -35,7 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Dtos\" />
     <Folder Include="wwwroot\" />
     <Folder Include="WebSocket\" />
   </ItemGroup>

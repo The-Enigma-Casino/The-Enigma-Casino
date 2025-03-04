@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Stripe.Checkout;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
+using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Services;
 
 namespace the_enigma_casino_server.Controllers;
@@ -12,31 +13,16 @@ namespace the_enigma_casino_server.Controllers;
 public class StripeController : BaseController
 {
     private readonly StripeService _stripeService;
+    private readonly Services.OrderService _orderService;
     private readonly CoinsPackService _coinsPackService;
+    private readonly UnitOfWork _unitOfWork;
 
-    public StripeController(StripeService stripeService, CoinsPackService coinsPackService)
+    public StripeController(StripeService stripeService, CoinsPackService coinsPackService, Services.OrderService orderService, UnitOfWork unitOfWork)
     {
         _stripeService = stripeService;
         _coinsPackService = coinsPackService;
-    }
-
-    [HttpGet("details")]
-    [Authorize]
-    public async Task<ActionResult<CoinsPack>> GetReserveDetails([FromQuery] int coinsPackId)
-    {
-        try
-        {
-            CoinsPack coinsPack = await _coinsPackService.GetByIdAsync(coinsPackId);
-            return Ok(coinsPack);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = "Error inesperado", detail = ex.Message });
-        }
+        _orderService = orderService;
+        _unitOfWork = unitOfWork;
     }
 
     [HttpPost("embedded-checkout")]
@@ -52,6 +38,8 @@ public class StripeController : BaseController
             SessionService sessionService = new SessionService();
             Session session = await sessionService.CreateAsync(options);
 
+            Models.Database.Entities.Order order = await _orderService.NewOrder(userId, coinsPackId, session.Id);
+
             return Ok(new { clientSecret = session.ClientSecret });
         }
         catch (Exception ex)
@@ -60,15 +48,21 @@ public class StripeController : BaseController
         }
     }
 
-    //[HttpGet("status/{reserveId}")]
-    //public async Task<ActionResult> SessionStatus(int coiId)
-    //{
-    //    Reserve reserve = await _unitOfWork.ReserveRepository.GetReserveById(reserveId);
+    [HttpGet("status/{orderId}")]
+    public async Task<ActionResult> GetSessionStatus(int orderId)
+    {
+        Models.Database.Entities.Order order = await _unitOfWork.OrderRepository.GetByIdAsync(orderId);
 
-    //    Session session = await _stripeService.SessionStatus(reserve.SessionId);
+        if (order == null)
+        {
+            throw new NullReferenceException($"Error al obtener la orden con ID {orderId}.");
+        }
 
-    //    string paymentStatus = await _stripeService.GetPaymentStatus(reserve.SessionId);
+        Session session = await _stripeService.SessionStatus(order.StripeSessionId);
 
-    //    return Ok(new { status = session.Status, customerEmail = session.CustomerEmail, paymentStatus });
-    //}
+        string paymentStatus = await _stripeService.GetPaymentStatus(order.StripeSessionId);
+
+        return Ok(new { status = session.Status, customerEmail = session.CustomerEmail, paymentStatus });
+    }
+
 }

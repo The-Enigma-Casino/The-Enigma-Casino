@@ -19,6 +19,8 @@ public class User
     public string ConfirmationToken { get; set; }
     public Role Role { get; set; }
 
+    public List<Order> Orders { get; set; }
+
     // FALTAN COSAS
 
     public User()

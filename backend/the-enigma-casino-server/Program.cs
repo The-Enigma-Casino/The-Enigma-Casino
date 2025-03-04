@@ -55,6 +55,7 @@ public class Program
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<EmailService>();
         builder.Services.AddScoped<CoinsPackService>();
+        builder.Services.AddScoped<OrderService>();
 
         // Blockhain
 

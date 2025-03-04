@@ -11,10 +11,13 @@ public class StripeService
 
     private readonly StripeMapper _stripeMapper;
 
-    public StripeService(UnitOfWork unitOfWork, StripeMapper stripeMapper)
+    private readonly OrderService _orderService;
+
+    public StripeService(UnitOfWork unitOfWork, StripeMapper stripeMapper, OrderService orderService)
     {
         _unitOfWork = unitOfWork;
         _stripeMapper = stripeMapper;
+        _orderService = orderService;
     }
 
     public async Task<SessionCreateOptions> EmbededCheckout(int userId, int coinsPackId)

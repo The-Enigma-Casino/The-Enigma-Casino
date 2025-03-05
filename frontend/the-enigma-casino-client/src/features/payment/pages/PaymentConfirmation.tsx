@@ -1,4 +1,4 @@
-import CoinsCard from "../../catalog/components/CoinsCard";
+// import CoinsCard from "../../catalog/components/CoinsCard";
 
 function PaymentConfirmation() {
   return (
@@ -8,14 +8,14 @@ function PaymentConfirmation() {
           PAGO REALIZADO
         </h1>
         <div>
-          <CoinsCard
+          {/* <CoinsCard
             key={1}
             id={1}
             price={1000}
             quantity={100}
             image={"/img/pack1.webp"}
             offer={0}
-          />
+          /> */}
           {/* Mi nuevo componente */}
         </div>
         <h1 className="text-Principal text-[6rem] font-bold text-center font-reddit">

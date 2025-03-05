@@ -75,6 +75,7 @@ public class StripeService
     public async Task<string> GetPaymentStatus(string sessionId)
     {
         Session session = await GetSessionAsync(sessionId);
+
         return session.PaymentStatus;
     }
 

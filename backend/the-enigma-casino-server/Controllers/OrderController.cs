@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 using the_enigma_casino_server.Models.Database.Entities;
+using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Services;
 
 namespace the_enigma_casino_server.Controllers;
@@ -17,7 +18,7 @@ public class OrderController : BaseController
     }
 
     [HttpGet("last-order-by-user-id")]
-    public async Task<Order> GetLastOrderByUserId()
+    public async Task<OrderDto> GetLastOrderByUserId()
     {
         int userId = GetUserId();
 

@@ -63,6 +63,7 @@ public class Program
 
         //Inyección de mappers
         builder.Services.AddScoped<StripeMapper>();
+        builder.Services.AddScoped<OrderMapper>();
 
         // Stripe
         builder.Services.AddTransient<StripeService>();

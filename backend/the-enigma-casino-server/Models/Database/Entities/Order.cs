@@ -1,4 +1,6 @@
 ﻿
+using the_enigma_casino_server.Models.Database.Entities.Enum;
+
 namespace the_enigma_casino_server.Models.Database.Entities;
 
 public class Order
@@ -21,6 +23,10 @@ public class Order
 
     public DateTime PaidDate { get; set; }
 
+    public int Price { get; set; }
+
+    public PayMode PayMode { get; set; }
+
     public Order()
     {
 
@@ -36,6 +42,8 @@ public class Order
 
         CoinsPack = coinsPack;
         CoinsPackId = coinsPack.Id;
+
+        Price = coinsPack.Price;
     }
 
 }

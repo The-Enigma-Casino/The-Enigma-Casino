@@ -1,15 +1,21 @@
-﻿using the_enigma_casino_server.Models.Database;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
+using the_enigma_casino_server.Models.Database.Entities.Enum;
+using the_enigma_casino_server.Models.Dtos;
+using the_enigma_casino_server.Models.Mappers;
 
 namespace the_enigma_casino_server.Services;
 
 public class OrderService
 {
     private readonly UnitOfWork _unitOfWork;
+    private readonly OrderMapper _orderMapper;
 
-    public OrderService(UnitOfWork unitOfWork)
+    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper)
     {
         _unitOfWork = unitOfWork;
+        _orderMapper = orderMapper;
     }
 
     public async Task<Order> NewOrder(int userId, int coinsPackId, string sessionId)
@@ -28,7 +34,8 @@ public class OrderService
 
         Order order = new Order(user, coinsPack)
         {
-            StripeSessionId = sessionId
+            StripeSessionId = sessionId,
+            PayMode = PayMode.CreditCard,
         };
 
         await _unitOfWork.OrderRepository.InsertAsync(order);
@@ -37,9 +44,19 @@ public class OrderService
         return order;
     }
 
-    public async Task<Order> GetLastOrderByUserIdAsync(int userId)
+    public async Task<OrderDto> GetLastOrderByUserIdAsync(int userId)
     {
-        return await _unitOfWork.OrderRepository.GetLastOrderAsync(userId);
+        Order order = await _unitOfWork.OrderRepository.GetLastOrderAsync(userId);
+        return _orderMapper.ToOrderDto(order);
+    }
+
+    public async Task UpdatePaid(Order order)
+    {
+        order.IsPaid = true;
+        order.PaidDate = DateTime.Now;
+        order.StripeSessionId = "";
+
+        await _unitOfWork.SaveAsync();
     }
 
 

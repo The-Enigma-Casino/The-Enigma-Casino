@@ -5,4 +5,3 @@ export interface CoinsPack {
   offer: number;
   image: string;
 }
-

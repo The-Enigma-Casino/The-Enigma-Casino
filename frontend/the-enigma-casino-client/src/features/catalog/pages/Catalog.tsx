@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import CoinsCard from "../components/CoinsCard";
 import PaymentMethod from "../components/PaymentMethod";
+import { CoinsPack } from "../models/CoinsPack.interface";
 
 const Catalog = () => {
     const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
 
-    const packs = [
+    const packs: CoinsPack[] = [
         { id: 1, price: 1000, quantity: 100, image: "/img/pack1.webp", offer: 100 },
         { id: 2, price: 2000, quantity: 200, image: "/img/pack1.webp", offer: 0 },
         { id: 3, price: 5000, quantity: 500, image: "/img/pack1.webp", offer: 0 },

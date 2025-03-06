@@ -106,7 +106,7 @@ button.green {
 
 button.selected {
   background-color: var(--Principal);
-  color: white;
+  color: var(--Black-color);
 }
 
 button.disabled {

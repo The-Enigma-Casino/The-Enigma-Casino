@@ -6,11 +6,14 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: string;
   color?: string;
   font?: string;
+  disabled?: boolean;
+  selectedPayment?: boolean;
+  selectedCard?: boolean;
 }
 
 /**
  * Button Component
- * 
+ *
  * Este componente renderiza un botón personalizado, permitiendo diferentes variantes.
  *
  * @param {Object} props - Propiedades del componente.
@@ -18,20 +21,39 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
  * @param {string} [props.variant] - Variante del botón (ej: "small", "large").
  * @param {string} [props.color] - Color del botón (ej: "green", "red").
  * @param {string} [props.font] - Tamaño del botón (ej: "medium", "large").
- * 
- * @example 
+ *
+ * @example
  * <Button variant="small" color="green" font="medium" onClick={() => alert("Hola")}>
  *   Soy un botón
  * </Button>
- * 
+ *
  * @returns {JSX.Element} Componente `<Button />`.
  */
 
-const Button: React.FC<ButtonProps> = ({ children, variant, color, font, className, ...props }) => {
+const Button: React.FC<ButtonProps> = ({
+  children,
+  variant,
+  color,
+  font,
+  className,
+  disabled,
+  selectedPayment,
+  selectedCard,
+  ...props
+}) => {
+  // Lógica de clases dinámicas dependiendo de la selección
+  const buttonClasses = `${classes[variant || "default"]}
+      ${classes[color || "default"]}
+      ${classes[font || "default"]}
+      ${selectedPayment && selectedCard ? classes.selected : ""}
+      ${disabled ? classes.disabled : ""}
+      ${className || ""}`.trim();
+
   return (
     <button
-      className={`${classes[variant || "default"]} ${classes[color || "default"]} ${classes[font || "default"]} ${className || ""}`}
-      {...props} 
+      className={buttonClasses}
+      disabled={disabled || !(selectedPayment && selectedCard)}
+      {...props}
     >
       {children}
     </button>

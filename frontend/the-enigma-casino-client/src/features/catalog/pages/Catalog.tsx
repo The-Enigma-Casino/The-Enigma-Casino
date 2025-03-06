@@ -21,7 +21,7 @@ const Catalog = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row bg-Background-Page">
+    <div className="flex flex-col md:flex-row bg-Background-Page h-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 md:gap-6 md:p-6 flex-grow">
         {packs.map((pack) => (
           <CoinsCard

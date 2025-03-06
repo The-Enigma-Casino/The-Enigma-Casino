@@ -2,7 +2,6 @@ import React from "react";
 import { selectCard } from "../store/paymentStore";
 import { convertCentsToEuros } from "../../../utils/priceUtils";
 
-
 interface CoinsProps {
   id: number;
   price: number;
@@ -17,21 +16,24 @@ interface CoinsProps {
 const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "small", isSelected = false, onSelect = () => { }, offer }) => {
   const containerClasses = size === "large"
     ? "w-[50rem] h-[40rem]"
-    : "w-[25rem] h-[30rem]"; //Small
+    : "w-[25rem] h-[30rem]"; // Small
 
   const imageClasses = size === "large"
     ? "w-[25rem] h-[25rem]"
-    : "w-[15rem] h-[15rem]"; //Small
+    : "w-[15rem] h-[15rem]"; // Small
 
   const selectedClasses = isSelected ? "border-2 border-Principal" : "";
 
-
+  // Lógica para manejar la selección y deselección
   const handleSelection = () => {
     const selectedData = { id, price, quantity, image, offer };
-    selectCard(selectedData);
+    if (isSelected) {
+      selectCard(null);
+    } else {
+      selectCard(selectedData);
+    }
     onSelect(id);
   };
-
 
   return (
     <div className={`flex items-center justify-center`} onClick={handleSelection}>
@@ -47,7 +49,7 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
           />
 
           {offer > 0 && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white text-2xl font-bold px-3 py-1 rounded-full">
+            <div className="absolute top-[-1rem] left-[-2rem] bg-Color-Cancel text-white text-2xl font-bold px-3 py-1 rounded-full">
               % OFERTA
             </div>
           )}
@@ -59,7 +61,7 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
 
         <div className="flex items-center gap-4 mt-4">
           {offer > 0 && (
-            <div className="border-2 border-Principal text-red-500 px-4 py-2 rounded-full line-through">
+            <div className="border-2 border-Principal text-Color-Cancel px-4 py-2 rounded-full line-through">
               <p className="text-xl font-bold">{convertCentsToEuros(price)} €</p>
             </div>
           )}
@@ -68,7 +70,7 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 

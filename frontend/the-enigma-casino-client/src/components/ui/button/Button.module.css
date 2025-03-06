@@ -6,7 +6,7 @@ button {
   font-family: "Reddit Sans", sans-serif;
   color: var(--Black-color);
   border: none;
-  transition: background 0.3s ease;  
+  transition: background 0.3s ease;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -24,35 +24,40 @@ button:active {
 /* Variantes de tamaños */
 
 button.small {
-  width: 10rem; 
+  width: 10rem;
   height: 4rem;
 }
 
 button.short {
-  width: 13rem; 
+  width: 13rem;
   height: 5rem;
 }
 
 button.medium {
-  width: 20rem; 
+  width: 20rem;
   height: 5rem;
+}
+
+button.md{
+  width: 14rem;
+  height: 3rem;
 }
 
 button.large {
-  width: 20rem; 
-  height: 4rem;   
+  width: 20rem;
+  height: 4rem;
 }
 
 button.big {
-  width: 25rem; 
+  width: 25rem;
   height: 5rem;
-  font-size: 2.4rem;   
+  font-size: 2.4rem;
 }
 
 /* @media (max-width: 45rem) {
   button.large {
-    width: 11rem; 
-    height: 4rem;   
+    width: 11rem;
+    height: 4rem;
   }
 } */
 
@@ -91,5 +96,31 @@ button.medium {
 
 button.bold {
   font-weight: bold;
+}
+
+/* Variantes de colores */
+
+button.green {
+  background-color: var(--Principal);
+}
+
+button.selected {
+  background-color: var(--Principal);
+  color: white;
+}
+
+button.disabled {
+  background-color: var(--Grey-color);
+  color: var(--Black-color);
+  cursor: not-allowed;
+}
+
+
+button.selected:active {
+  background-color: var(--PrincipalDark);
+}
+
+button:active {
+  transform: translateY(2px);
 }
 

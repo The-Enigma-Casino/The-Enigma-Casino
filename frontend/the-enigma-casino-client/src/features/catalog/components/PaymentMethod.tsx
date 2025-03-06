@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import { $selectedCard, selectPaymentMethod } from "../store/paymentStore";
 import { useNavigate } from "react-router-dom";
+import Button from "../../../components/ui/button/Button";
 
 const PaymentMethod: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<string | null>("Stripe"); //Stripe por defecto
@@ -19,12 +20,13 @@ const PaymentMethod: React.FC = () => {
     }
   };
 
+
   return (
-    <div className="bg-Background-Overlay p-6 rounded-2xl shadow-lg flex flex-col items-center w-80">
+    <div className="bg-Background-Overlay p-6 rounded-2xl shadow-lg flex flex-col items-center w-80 gap-6">
       <h2 className="text-4xl font-extrabold text-white mb-4">Método de Pago</h2>
 
       <div
-        className={`w-full flex flex-col gap-4 items-center p-4 border-2 rounded-lg cursor-pointer mb-3 ${selectedPayment === "Stripe" ? "border-Principal" : "border-gray-500"
+        className={`w-full flex flex-col gap-4 items-center p-4 border-2 rounded-lg cursor-pointer mb-3 ${selectedPayment === "Stripe" ? "border-Principal" : "border-Grey-color"
           }`}
         onClick={() => handlePaymentSelection("Stripe")}
       >
@@ -34,7 +36,7 @@ const PaymentMethod: React.FC = () => {
       </div>
 
       <div
-        className={`w-full flex gap-4 flex-col items-center p-4 border-2 rounded-lg cursor-pointer ${selectedPayment === "Ethereum" ? "border-Principal" : "border-gray-500"
+        className={`w-full flex gap-4 flex-col items-center p-4 border-2 rounded-lg cursor-pointer ${selectedPayment === "Ethereum" ? "border-Principal" : "border-Grey-color"
           }`}
         onClick={() => handlePaymentSelection("Ethereum")}
       >
@@ -43,17 +45,17 @@ const PaymentMethod: React.FC = () => {
         <span className="text-white text-lg">Pagar con Ethereum</span>
       </div>
 
-      <button
-        className={`mt-6 px-6 py-3 text-2xl text-Black-color font-bold rounded-lg w-full ${selectedPayment && selectedCard
-          ? "bg-Principal text-white hover:bg-Coins"
-          : "bg-gray-500 text-gray-300 cursor-not-allowed"
-          }`}
-        disabled={!selectedPayment || !selectedCard}
+      <Button
+        variant="md"
+        font="bold"
+        selectedPayment={!!selectedPayment}
+        selectedCard={!!selectedCard}
+        disabled={!selectedPayment || !selectedCard} // Si falta cualquiera, se deshabilita
         onClick={handlePayment}
       >
         Pagar
-      </button>
-    </div>
+      </Button>
+    </div >
   );
 };
 

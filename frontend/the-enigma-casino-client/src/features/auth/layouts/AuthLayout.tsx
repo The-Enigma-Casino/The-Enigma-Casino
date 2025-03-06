@@ -1,31 +1,15 @@
-import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "../../../components/layouts/header/Header";
+import styles from "./AuthLayout.module.css"
 
 function AuthLayout() {
-  useEffect(() => {
-    const updateOverflow = () => {
-      if (window.innerWidth > 768) {
-        document.body.style.overflow = "hidden";
-      } else {
-        document.body.style.overflow = "auto";
-      }
-    };
-
-    updateOverflow();
-    window.addEventListener("resize", updateOverflow);
-
-    return () => {
-      window.removeEventListener("resize", updateOverflow);
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
   return (
-    <main>
+    <div className={styles.authLayout}>
       <Header />
-      <Outlet />
-    </main>
+      <main className={styles.authContent}>
+        <Outlet />
+      </main>
+    </div>
   );
 }
 

@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
   background-color: var(--Background-Page);
 }
 
@@ -11,13 +11,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: right;
-  width: 60%;
-  height: 100vh;
-  background-color: var(--Principal);
   clip-path: polygon(0 0, 100% 0, 60% 100%, 0% 100%);
-  padding: 3rem;
-  padding-right: 10rem;
+  width: 60%;
+  height: 100%;
+  background-color: var(--Principal);
+  padding-right: 20rem;
 }
 
 .title {
@@ -33,7 +31,7 @@
 }
 
 .register p {
-  font-size: 3rem;
+  font-size: 4rem;
   color: var(--Black-color);
   font-weight: bold;
   margin-top: 2rem;
@@ -42,26 +40,20 @@
 
 .registerLogo {
   display: flex;
-  justify-content: center;
-  align-items: center;
   width: 70%;
   max-width: 380px;
-  transition: transform 0.3s ease-in-out; 
 }
 
 .registerLogo img {
   width: 100%;
   height: auto;
   max-width: 100%;
-  transition: transform 0.3s ease-in-out;
 }
 
 .registerRight {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 60%;
-  padding: 2rem;
+  padding-bottom: 30px;
 }
 
 .registerForm {

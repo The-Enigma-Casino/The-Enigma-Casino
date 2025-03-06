@@ -21,8 +21,8 @@ function PaymentConfirmation() {
 
   return (
     <>
-      <section className="min-h-screen bg-Background-Page">
-        <h1 className="text-Coins text-[6rem] font-bold text-center font-reddit">
+      <section className="min-h-screen bg-Background-Page flex flex-col gap-[9rem]">
+      <h1 className="text-Coins text-[6rem] font-bold text-center font-reddit pt-8">
           PAGO REALIZADO
         </h1>
         <InfoOrder order={order} />

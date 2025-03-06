@@ -1,5 +1,8 @@
+import classes from "./infoOrder.module.css";
+
 import CoinsCard from "../../catalog/components/CoinsCard";
 import { OrderDto } from "../models/OrderDto.interface";
+import { formatPriceWithCurrency } from "../../../utils/priceUtils";
 
 interface InfoOrderProps {
   order: OrderDto;
@@ -8,10 +11,12 @@ interface InfoOrderProps {
 const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
   const date = `Fecha: ${order.paidDate.toLocaleDateString()}`;
   const paidWith = `Pagado con: ${order.payMode}`;
-  const totalPaid = `Total pagado: ${order.coinsPack.price}`;
+  const totalPaid = `Total pagado: ${formatPriceWithCurrency(
+    order.coinsPack.price
+  )}`;
 
   return (
-    <div>
+    <div className={classes.infoOrderContainer}>
       <CoinsCard
         id={order.id}
         price={order.coinsPack.price}
@@ -21,14 +26,14 @@ const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
         isSelected={false}
         onSelect={() => {}}
       />
-      <div>
-        <div>
-          <p>+{order.coinsPack.price}</p>
-          <img src="/svg/coins.svg" alt="coins" />
+      <div className={classes.infoOrderDetails}>
+        <div className={classes.coinsInfo}>
+          <p className={classes.coinsPrice}>+{order.coinsPack.price}</p>
+          <img className={classes.coinsImg} src="/svg/coins.svg" alt="coins" />
         </div>
-        <p>{date}</p>
-        <p>{paidWith}</p>
-        <p>{totalPaid}</p>
+        <p className={classes.text}>{date}</p>
+        <p className={classes.text}>{paidWith}</p>
+        <p className={classes.text}>{totalPaid}</p>
       </div>
     </div>
   );

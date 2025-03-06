@@ -13,7 +13,6 @@
   font-family: 'Reddit Sans', sans-serif;
   font-size: 1.2rem;
   color: white;
-  align-items: center;
 }
 
 .coinsInfo {
@@ -40,5 +39,30 @@
 
 .coinsInfo p {
   font-size: 2rem;
+}
+
+
+@media (max-width: 768px) {
+  .infoOrderContainer {
+    flex-direction: column;
+    gap: 4rem;
+  }
+
+  .infoOrderDetails {
+    align-items: center;
+    gap: 2rem
+  }
+
+  .coinsInfo {
+    justify-content: center;
+  }
+
+  .coinsPrice {
+    font-size: 1.5rem;
+  }
+
+  .coinsInfo p {
+    font-size: 1.5rem;
+  }
 }
 

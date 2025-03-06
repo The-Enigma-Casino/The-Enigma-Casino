@@ -59,5 +59,11 @@ public class OrderService
         await _unitOfWork.SaveAsync();
     }
 
+    public async Task<int> GetLastOrderIdByUserIdAsync(int userId)
+    {
+        Order order = await _unitOfWork.OrderRepository.GetLastOrderAsync(userId);
+        return order.Id;
+    }
+       
 
 }

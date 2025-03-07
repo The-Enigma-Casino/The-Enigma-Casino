@@ -4,7 +4,7 @@ import PaymentMethod from "../components/PaymentMethod";
 import { CoinsPack } from "../models/CoinsPack.interface";
 import { useUnit } from "effector-react";
 import { getCoinsPacksFx } from "../actions/catalogActions";
-import { $coinsPacks } from "../store/paymentStore"
+import { $coinsPacks } from "../store/catalogStore"
 
 
 const Catalog = () => {
@@ -36,7 +36,7 @@ const Catalog = () => {
           />
         ))}
       </div>
-      <div className="mt-4 md:mt-0 md:ml-4 p-4 flex items-center">
+      <div className="mt-4 md:mt-0 md:ml-4 p-4 flex items-center justify-center">
         <PaymentMethod />
       </div>
     </div>

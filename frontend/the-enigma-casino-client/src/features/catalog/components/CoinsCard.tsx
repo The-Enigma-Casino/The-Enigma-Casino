@@ -1,6 +1,7 @@
 import React from "react";
-import { selectCard } from "../store/paymentStore";
+import { selectCard } from "../store/catalogStore";
 import { convertCentsToEuros } from "../../../utils/priceUtils";
+import { BASE_URL } from "../../../config"
 
 interface CoinsProps {
   id: number;
@@ -24,6 +25,8 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
 
   const selectedClasses = isSelected ? "border-2 border-Principal" : "";
 
+  console.log(image)
+
   // Lógica para manejar la selección y deselección
   const handleSelection = () => {
     const selectedData = { id, price, quantity, image, offer };
@@ -36,14 +39,14 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
   };
 
   return (
-    <div className={`flex items-center justify-center`} onClick={handleSelection}>
+    <div className={`flex items-center justify-center md:flex-col`} onClick={handleSelection}>
       <div
         className={`bg-Background-Overlay rounded-3xl p-6 shadow-lg text-center flex flex-col items-center justify-center ${containerClasses} hover:Principal
                 *:transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:bg-Background-Overlay hover:border-amber-40 hover:shadow-[0_0_20px_5px_#74c410] cursor-pointer ${selectedClasses}`}
       >
         <div className="relative">
           <img
-            src={image || "/img/pack1.webp"}
+            src={`${BASE_URL}${image}`}
             alt="pack"
             className={`object-cover rounded-lg ${imageClasses}`}
           />

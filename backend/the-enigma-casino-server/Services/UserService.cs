@@ -174,4 +174,14 @@ public class UserService
 
         return string.Empty;
     }
+
+    public async Task UpdateCoins(int id , int quantity) { 
+    
+        User user = await _unitOfWork.UserRepository.GetByIdAsync(id);
+
+        user.Coins += quantity;
+
+        await _unitOfWork.SaveAsync();
+    }
+
 }

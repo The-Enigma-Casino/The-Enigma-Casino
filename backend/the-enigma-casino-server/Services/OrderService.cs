@@ -11,11 +11,13 @@ public class OrderService
 {
     private readonly UnitOfWork _unitOfWork;
     private readonly OrderMapper _orderMapper;
+    private readonly UserService _userService;
 
-    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper)
+    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService)
     {
         _unitOfWork = unitOfWork;
         _orderMapper = orderMapper;
+        _userService = userService;
     }
 
     public async Task<Order> NewOrder(int userId, int coinsPackId, string sessionId)
@@ -57,6 +59,9 @@ public class OrderService
         order.StripeSessionId = "";
 
         await _unitOfWork.SaveAsync();
+
+        await _userService.UpdateCoins(order.UserId, order.CoinsPack.Quantity);
+
     }
 
     public async Task<int> GetLastOrderIdByUserIdAsync(int userId)

@@ -66,7 +66,7 @@ public class StripeController : BaseController
 
         if ( paymentStatus == "paid")
         {
-           await _orderService.UpdatePaid(order);
+           await _orderService.UpdatePaid(order); 
         }
 
         return Ok(new { status = session.Status, customerEmail = session.CustomerEmail, paymentStatus });

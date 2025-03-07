@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
-import { $selectedCard, selectPaymentMethod } from "../store/paymentStore";
+import { $selectedCard, selectPaymentMethod } from "../store/catalogStore";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/ui/button/Button";
 
@@ -24,26 +24,28 @@ const PaymentMethod: React.FC = () => {
   return (
     <div className="bg-Background-Overlay p-6 rounded-2xl shadow-lg flex flex-col items-center w-80 gap-6">
       <h2 className="text-4xl font-extrabold text-white mb-4">Método de Pago</h2>
+      <div className="w-full flex flex-row md:flex-col gap-4 items-center justify-center">
+        <div
+          className={`w-full flex flex-col gap-4 items-center p-4 border-2 rounded-lg cursor-pointer mb-3 ${selectedPayment === "Stripe" ? "border-Principal" : "border-Grey-color"
+            }`}
+          onClick={() => handlePaymentSelection("Stripe")}
+        >
+          <img src="/img/pago-stripe.webp" alt="Stripe" />
+          <input type="radio" checked={selectedPayment === "Stripe"} readOnly className="mr-3 w-5 h-5" />
+          <span className="text-white text-lg">Pagar con Stripe</span>
+        </div>
 
-      <div
-        className={`w-full flex flex-col gap-4 items-center p-4 border-2 rounded-lg cursor-pointer mb-3 ${selectedPayment === "Stripe" ? "border-Principal" : "border-Grey-color"
-          }`}
-        onClick={() => handlePaymentSelection("Stripe")}
-      >
-        <img src="/img/pago-stripe.webp" alt="Stripe" />
-        <input type="radio" checked={selectedPayment === "Stripe"} readOnly className="mr-3 w-5 h-5" />
-        <span className="text-white text-lg">Pagar con Stripe</span>
+        <div
+          className={`w-full flex gap-4 flex-col items-center p-4 border-2 rounded-lg cursor-pointer ${selectedPayment === "Ethereum" ? "border-Principal" : "border-Grey-color"
+            }`}
+          onClick={() => handlePaymentSelection("Ethereum")}
+        >
+          <img src="/img/pago-ethereum.webp" alt="Stripe" />
+          <input type="radio" checked={selectedPayment === "Ethereum"} readOnly className="mr-3 w-5 h-5" />
+          <span className="text-white text-lg">Pagar con Ethereum</span>
+        </div>
       </div>
 
-      <div
-        className={`w-full flex gap-4 flex-col items-center p-4 border-2 rounded-lg cursor-pointer ${selectedPayment === "Ethereum" ? "border-Principal" : "border-Grey-color"
-          }`}
-        onClick={() => handlePaymentSelection("Ethereum")}
-      >
-        <img src="/img/pago-ethereum.webp" alt="Stripe" />
-        <input type="radio" checked={selectedPayment === "Ethereum"} readOnly className="mr-3 w-5 h-5" />
-        <span className="text-white text-lg">Pagar con Ethereum</span>
-      </div>
 
       <Button
         variant="md"

@@ -8,7 +8,7 @@ export const REGISTER_ENDPOINT = `${API_BASE_URL}Auth/register`;
 export const CONFIRM_EMAIL_ENDPOINT = `${API_BASE_URL}Auth/confirm-email`;
 
 /* ENDPOINTS DE COINSPACK */
-export const COINS_PACK = `${API_BASE_URL}Catalog/coins-packs`;
+export const COINS_PACK = `${API_BASE_URL}CoinsPack/coins-packs`;
 export const COINS_PACK_ID = `${API_BASE_URL}Catalog/coins-packs-by-id`;
 
 /* ENDPOINTS DE PAYMENT */

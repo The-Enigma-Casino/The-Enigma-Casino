@@ -1,10 +1,20 @@
 import { createEvent, createStore } from "effector";
+import { CoinsPack } from "../models/CoinsPack.interface";
+import { getCoinsPacksFx } from "../actions/catalogActions";
 
 // Evento para seleccionar una tarjeta
 export const selectCard = createEvent<any>();
 
 // Evento para seleccionar un método de pago
 export const selectPaymentMethod = createEvent<string>();
+
+// GET coins packs
+export const $coinsPacks = createStore<CoinsPack[]>([])
+  .on(getCoinsPacksFx.doneData, (_, packs) => packs)
+  .on(getCoinsPacksFx.failData, (_, error) => {
+    console.error("Error al obtener los packs de monedas:", error);
+    return [];
+  });
 
 // Store que guarda la tarjeta seleccionada
 export const $selectedCard = createStore<any>(null).on(selectCard, (_, card) => card);

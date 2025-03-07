@@ -17,7 +17,7 @@ public class OrderController : BaseController
         _orderService = orderService;
     }
 
-    [HttpGet("last-order-by-user-id")]
+    [HttpGet("last-order")]
     public async Task<OrderDto> GetLastOrderByUserId()
     {
         int userId = GetUserId();
@@ -25,7 +25,7 @@ public class OrderController : BaseController
         return await _orderService.GetLastOrderByUserIdAsync(userId);
     }
 
-    [HttpGet("last-order-id-by-user-id")]
+    [HttpGet("last-order-id")]
     public async Task<int> GetLastOrderIdByUserIdAsync()
     {
         int userId = GetUserId();

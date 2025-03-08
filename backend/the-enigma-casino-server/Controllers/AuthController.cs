@@ -78,7 +78,7 @@ public class AuthController : BaseController
 
             string token = _userService.GenerateToken(user);
 
-            return Ok(new { token });
+            return Ok(token);
         }
         catch (UnauthorizedAccessException ex)
         {

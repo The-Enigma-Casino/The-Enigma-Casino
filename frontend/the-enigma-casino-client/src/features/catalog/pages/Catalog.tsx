@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import CoinsCard from "../components/CoinsCard";
 import PaymentMethod from "../components/PaymentMethod";
-import { CoinsPack } from "../models/CoinsPack.interface";
 import { useUnit } from "effector-react";
 import { getCoinsPacksFx } from "../actions/catalogActions";
 import { $coinsPacks } from "../store/catalogStore"

@@ -1,5 +1,5 @@
 import { createEffect } from "effector";
-import { LAST_ORDER, LAST_ORDER_ID } from "../../../config";
+import { LAST_ORDER_ID, LAST_ORDER } from "../../../config";
 import { getAuthHeaders } from "../../auth/utils/autHeaders";
 
 export const fetchLastOrderFx = createEffect(async () => {

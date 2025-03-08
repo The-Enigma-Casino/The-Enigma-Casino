@@ -2,10 +2,12 @@ import { useUnit } from "effector-react";
 import EthereumPayment from "../components/EthereumPayment";
 import StripePayment from "../components/StripePayment";
 import CoinsCards from "../components/CoinsCard";
-import { $paymentMethod } from "../store/PaymentStore";
+import { $paymentMethod } from "../../catalog/store/catalogStore";
 
 function PaymentPage() {
   const method = useUnit($paymentMethod);
+
+  console.log("Método de pago seleccionado:", method);
 
   return (
     <>
@@ -23,8 +25,8 @@ function PaymentPage() {
           </div>
 
           <div className="col-start-2 row-start-1 flex place-self-center justify-self-end">
-            {method === "stripe" && <StripePayment />}
-            {method === "ethereum" && <EthereumPayment />}
+            {method === "Stripe" && <StripePayment />}
+            {method === "Ethereum" && <EthereumPayment />}
           </div>
         </div>
       </div>

@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   EmbeddedCheckoutProvider,
@@ -7,56 +6,102 @@ import {
 } from "@stripe/react-stripe-js";
 import { useUnit } from "effector-react";
 import { $token } from "../../auth/store/authStore";
-import { $orderId, $clientSecret, $error, confirmOrder, createPaymentSessionFx, getSessionStripeFx, setClientSecret, setError } from "../store/PaymentStore";
-// import { CREATE_PAYMENT_SESSION, CONFIRM_ORDER, PAYMENT_STATUS } from "../../config";
-import { deleteLocalStorage } from "../../../utils/storageUtils";
+import {
+  $clientSecret,
+  $lastOrder,
+  $paymentError,
+  $paymentStatus,
+} from "../store/PaymentStore";
+import {
+  fetchClientSecretFx,
+  fetchPaymentStatusFx,
+} from "../actions/stripeActions";
+import { $selectedCard } from "../../catalog/store/catalogStore";
+import { useNavigate } from "react-router-dom";
+import { fetchLastOrderFx } from "../actions/orderActions";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 function StripePayment() {
   const token = useUnit($token);
-  const orderId = useUnit($orderId);
   const clientSecret = useUnit($clientSecret);
-  const error = useUnit($error);
+  const paymentStatus = useUnit($paymentStatus);
+  const paymentError = useUnit($paymentError);
+  const coinCard = useUnit($selectedCard);
+  
+  const [orderId, setOrderId] = useState<number | null>(null);
+  const [isCheckoutReady, setIsCheckoutReady] = useState(false); // ✅ Control de renderización
+  
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   if (!token) {
-  //     setError("No se encontró el token de autenticación.");
-  //     return;
-  //   }
-  //   createPaymentSessionFx({ url: CREATE_PAYMENT_SESSION, token, orderId })
-  //     .then((data) => setClientSecret(data.clientSecret))
-  //     .catch((err) => setError(`Error: ${err.message}`));
-  // }, [token, orderId]);
+  useEffect(() => {
+    if (!token) {
+      console.log("No se encontró el token de autenticación.");
+      return;
+    }
+
+    if (!coinCard) {
+      console.log("No se encontró ninguna tarjeta seleccionada.");
+      return;
+    }
+
+    console.log("Iniciando fetchClientSecretFx con cardId:", coinCard.id);
+    fetchClientSecretFx(coinCard.id);
+  }, [token, coinCard]);
 
   useEffect(() => {
-    return () => {
-      deleteLocalStorage("order");
-    };
-  }, []);
-
-  const handleComplete = async () => {
-    try {
-      const status = await getSessionStripeFx({ url: PAYMENT_STATUS, orderId, token });
-      if (status.paymentStatus === "paid") {
-        const confirmedOrderId = await confirmOrder({ url: CONFIRM_ORDER, orderId, token });
-        navigate("/paymentConfirmation", { state: { status: "success", orderId: confirmedOrderId } });
-      } else {
-        navigate("/paymentConfirmation", { state: { status: "failure" } });
-      }
-    } catch (err) {
-      navigate("/paymentConfirmation", { state: { status: "failure" } });
+    if (paymentStatus === "paid") {
+      console.log("✅ Pago exitoso. Redirigiendo a la página de confirmación...");
+      navigate("/paymentConfirmation?pagado=true");
     }
+
+    if (paymentError) {
+      console.log("❌ Error en el pago. Redirigiendo a la página de error...");
+      navigate("/paymentConfirmation?error=true");
+    }
+  }, [paymentStatus, paymentError, navigate]);
+
+  useEffect(() => {
+    // ✅ Solo se actualiza `orderId` cuando cambia `$lastOrder`
+    const newOrderId = $lastOrder.getState();
+    if (newOrderId) {
+      console.log("📦 Actualizando `orderId` en estado:", newOrderId);
+      setOrderId(newOrderId);
+      setIsCheckoutReady(true); // ✅ Solo activamos el renderizado cuando haya un `orderId`
+    }
+  }, [$lastOrder]);
+
+  const handleOnComplete = async () => {
+    console.log("✅ onComplete ha sido ejecutado, verificando orderId...");
+
+    let finalOrderId = orderId;
+
+    if (!finalOrderId) {
+      console.log("🔄 orderId no disponible, esperando actualización...");
+      await fetchLastOrderFx();
+      finalOrderId = $lastOrder.getState();
+      console.log("🔍 orderId después de esperar:", finalOrderId);
+      setOrderId(finalOrderId);
+    }
+
+    if (!finalOrderId) {
+      console.error("❌ No se pudo obtener orderId para verificar el pago.");
+      return;
+    }
+
+    console.log(`📡 Enviando petición para verificar pago de orderId: ${finalOrderId}`);
+    fetchPaymentStatusFx(finalOrderId);
   };
 
   return (
     <>
-      {error && <p>{error}</p>}
-      {clientSecret && (
+      {clientSecret && isCheckoutReady && ( // ✅ Evita renderizar si `clientSecret` cambia
         <EmbeddedCheckoutProvider
           stripe={stripePromise}
-          options={{ clientSecret, onComplete: handleComplete }}
+          options={{
+            clientSecret,
+            onComplete: handleOnComplete, // ✅ `onComplete` es siempre el mismo
+          }}
         >
           <EmbeddedCheckout />
         </EmbeddedCheckoutProvider>

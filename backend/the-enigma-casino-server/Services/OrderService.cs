@@ -69,6 +69,17 @@ public class OrderService
         Order order = await _unitOfWork.OrderRepository.GetLastOrderAsync(userId);
         return order.Id;
     }
-       
 
+    //Usado en Ethereum
+    public async Task<decimal> GetCoinsPackPrice(int coinsPackId)
+    {
+        CoinsPack coinsPack = await _unitOfWork.CoinsPackRepository.GetByIdAsync(coinsPackId);
+
+        if (coinsPack == null)
+        {
+            throw new KeyNotFoundException($"No hay pack de monedas con este ID {coinsPackId}");
+        }
+
+        return (decimal)coinsPack.Price; // Se convierte el precio a decimal para ETH
+    }
 }

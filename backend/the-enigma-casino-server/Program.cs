@@ -9,6 +9,7 @@ using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Mappers;
 using the_enigma_casino_server.Models.Seeder;
 using the_enigma_casino_server.Services;
+using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Services.Email;
 
 namespace the_enigma_casino_server;
@@ -58,6 +59,7 @@ public class Program
         builder.Services.AddScoped<OrderService>();
 
         // Blockhain
+        builder.Services.AddScoped<BlockchainService>();
 
         // Inyeccion Hosted Services
 
@@ -162,6 +164,7 @@ public class Program
         // Mapear rutas de controladores
         app.MapControllers();
     }
+
 
     private static void SeedDatabase(IServiceProvider serviceProvider)
     {

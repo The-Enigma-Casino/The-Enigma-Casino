@@ -11,7 +11,7 @@ namespace the_enigma_casino_server.Controllers;
 public class CoinsPackController : BaseController
 {
     private readonly CoinsPackService _coinsPackService;
-
+    private readonly OrderService _orderService;
     public CoinsPackController(CoinsPackService coinsPackService)
     {
         _coinsPackService = coinsPackService;

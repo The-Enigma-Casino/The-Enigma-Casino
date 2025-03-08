@@ -11,13 +11,13 @@ export const CONFIRM_EMAIL_ENDPOINT = `${API_BASE_URL}Auth/confirm-email`;
 export const COINS_PACK = `${API_BASE_URL}CoinsPack/coins-packs`;
 export const COINS_PACK_ID = `${API_BASE_URL}CoinsPack/coins-packs-by-id`;
 
+/* ENDPOINTS DE PAYMENT */
+export const PAYMENT_STATUS = `${API_BASE_URL}Stripe/status`;
+export const EMBBEDED_CHECKOUT = `${API_BASE_URL}Stripe/embedded-checkout`;
+
 /* ENDPOINTS DE ORDER */
 export const LAST_ORDER = `${API_BASE_URL}Order/last-order`
 export const LAST_ORDER_ID = `${API_BASE_URL}Order/last-order-id`
-
-/* ENDPOINTS DE STRIPE */
-export const PAYMENT_STATUS = `${API_BASE_URL}Stripe/status/`;
-export const EMBBEDED_CHECKOUT = `${API_BASE_URL}Stripe/embedded-checkout/`;
 
 /* ENDPOINTS DE USER */
 export const USER_COINS = `${API_BASE_URL}User/coins`;

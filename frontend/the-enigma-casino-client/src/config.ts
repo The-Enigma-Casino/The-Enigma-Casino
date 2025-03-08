@@ -16,5 +16,8 @@ export const PAYMENT_STATUS = `${API_BASE_URL}Stripe/status`;
 export const EMBBEDED_CHECKOUT = `${API_BASE_URL}Stripe/embedded-checkout`;
 
 /* ENDPOINTS DE ORDER */
-export const LAST_ORDER = `${API_BASE_URL}Order/last-order`;
-export const LAST_ORDER_ID = `${API_BASE_URL}Order/last-order-id`;
+export const LAST_ORDER = `${API_BASE_URL}Order/last-order`
+export const LAST_ORDER_ID = `${API_BASE_URL}Order/last-order-id`
+
+/* ENDPOINTS DE USER */
+export const USER_COINS = `${API_BASE_URL}User/coins`;

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUnit } from "effector-react";
+import { useUnit } from "effector-react"; // Para consumir el store
 import { jwtDecode } from "jwt-decode";
 
 import { $token, clearToken } from "../../../features/auth/store/authStore";
+import { $coins, loadCoins } from "../../../features/coins/store/coinsStore"; // Importamos el store de las monedas
 
 import Button from "../../ui/button/Button";
 import classes from "./Header.module.css";
@@ -13,10 +14,9 @@ function Header() {
   const navigate = useNavigate();
 
   const token = useUnit($token);
+  const coins = useUnit($coins);
 
   const [role, setRole] = useState<string | null>(null);
-
-  const fichas: number = 1000;
 
   useEffect(() => {
     if (token) {
@@ -25,12 +25,15 @@ function Header() {
         console.log("Decoded token:", decoded);
 
         setRole(decoded?.role || null);
+
+        loadCoins();
       } catch (error) {
         console.log(error);
         setRole(null);
       }
     }
-  }, [token]);
+    console.log(coins);
+  }, [token, coins]);
 
   const handleLogout = () => {
     clearToken();
@@ -81,7 +84,7 @@ function Header() {
               className={classes.coinsButton}
               onClick={() => navigate("/catalog")}
             >
-              {fichas} <img src="/svg/coins.svg" alt="Fichas" />
+              {coins} <img src="/svg/coins.svg" alt="Fichas" />
             </button>
             <img
               src="/svg/exit.svg"

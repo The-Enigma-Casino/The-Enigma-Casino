@@ -1,25 +1,34 @@
-import { createStore, createEvent } from "effector";
+import { createStore } from "effector";
 import { fetchLastOrderFx, fetchLastOrderIdFx } from "../actions/orderActions";
-import { fetchStripePaymentStatusFx } from "../actions/stripeActions";
+import { fetchClientSecretFx, fetchPaymentStatusFx } from "../actions/stripeActions";
 
-export const setPaymentMethod = createEvent<string>();
-export const $paymentMethod = createStore<string>("stripe").on(
-  setPaymentMethod,
-  (_, method) => method
-);
+export const $clientSecret = createStore<string | null>(null)
+  .on(fetchClientSecretFx.doneData, (_, data) => {
+    console.log("Actualizando store con clientSecret:", data);
+    return data.clientSecret; // 🔹 Aquí asegúrate de que la API devuelve { clientSecret: "valor" }
+  });
 
-export const $lastOrder = createStore(null)
-  .on(fetchLastOrderFx.doneData, (_, order) => order)
+
+  export const $lastOrder = createStore<number | null>(null)
+  .on(fetchLastOrderFx.doneData, (_, order) => {
+    console.log("💾 Actualizando $lastOrder con:", order);
+    return order.id;
+  })
   .reset(fetchLastOrderFx.fail);
+
 
 export const $lastOrderId = createStore<number | null>(null)
   .on(fetchLastOrderIdFx.doneData, (_, id) => id)
   .reset(fetchLastOrderIdFx.fail);
 
-export const $paymentStatus = createStore<string | null>(null)
-  .on(fetchStripePaymentStatusFx.doneData, (_, status) => status)
-  .reset(fetchStripePaymentStatusFx.fail);
+  export const $paymentStatus = createStore<string | null>(null)
+  .on(fetchPaymentStatusFx.doneData, (_, paymentStatus) => {
+    console.log("💾 Guardando estado del pago en Effector:", paymentStatus);
+    return paymentStatus; // 
+  })
+  .reset(fetchPaymentStatusFx.fail);
+
 
 export const $paymentError = createStore<string | null>(null)
-  .on(fetchStripePaymentStatusFx.failData, (_, error) => error.message)
-  .reset(fetchStripePaymentStatusFx.done);
+  .on(fetchPaymentStatusFx.failData, (_, error) => error.message)
+  .reset(fetchPaymentStatusFx.done);

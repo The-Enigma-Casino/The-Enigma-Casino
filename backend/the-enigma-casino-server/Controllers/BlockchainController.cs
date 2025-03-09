@@ -1,6 +1,8 @@
 ﻿using Examples.WebApi.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using the_enigma_casino_server.Models.Database.Entities;
+using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Dtos.BlockchainDtos;
 using the_enigma_casino_server.Services;
 using the_enigma_casino_server.Services.Blockchain;
@@ -21,40 +23,80 @@ public class BlockchainController : BaseController
         _orderService = orderService;
     }
 
-    [HttpPost("transaction")] //Devuelve TOTAL EUROS de los pack y TOTAL ETHEREUM convertido
+    [HttpPost("transaction")]  //Cambiar nombre
     [Authorize]
-    public async Task<EthereumTransaction> CreateTransaction([FromBody] OrderTransactionRequest request) 
+    public async Task<IActionResult> CreateTransaction([FromBody] OrderTransactionRequest request)
     {
-
-        decimal totalEuros = (await _orderService.GetCoinsPackPrice(request.CoinsPackId)) / 100m; //100m aquí porque el metodo se usa en otros endpoint  ORDER ID hacer este metodo para order
-
-        string ethNetworkUrl = Environment.GetEnvironmentVariable("NETWORKURL");
-        if (string.IsNullOrEmpty(ethNetworkUrl))
+        try
         {
-            throw new InvalidOperationException("La variable de entorno 'NETWORKURL' no está configurada.");
+            if (request == null || request.CoinsPackId < 1 || request.CoinsPackId > 6) // 6 Packs
+            {
+                return BadRequest("El ID del paquete de fichas es inválido.");
+            }
+
+            decimal totalEuros = await _orderService.GetCoinsPackPrice(request.CoinsPackId);
+            if (totalEuros <= 0)
+            {
+                return BadRequest("El precio del paquete de fichas no es válido.");
+            }
+
+            string ethNetworkUrl = Environment.GetEnvironmentVariable("NETWORKURL");
+            if (string.IsNullOrEmpty(ethNetworkUrl))
+            {
+                return StatusCode(500, "Error en la configuración del servidor.");
+            }
+
+            var transactionRequest = new CreateTransactionRequest
+            {
+                NetworkUrl = ethNetworkUrl,
+                Euros = totalEuros
+            };
+
+            var ethereumTransaction = await _blockchainService.GetEthereumInfoAsync(transactionRequest);
+
+            decimal ethPriceInEuros = await _blockchainService.GetEthereumPriceInEurosAsync();
+            if (ethPriceInEuros <= 0)
+            {
+                return StatusCode(500, "Error al obtener el precio de Ethereum.");
+            }
+
+            // Calcular la equivalencia en ETH
+            decimal equivalentEth = totalEuros / ethPriceInEuros;
+            ethereumTransaction.TotalEuros = totalEuros;
+            ethereumTransaction.EquivalentEthereum = Math.Round(equivalentEth, 6).ToString("0.######");
+
+            return Ok(ethereumTransaction);
         }
-
-        var transactionRequest = new CreateTransactionRequest
+        catch (Exception ex)
         {
-            NetworkUrl = ethNetworkUrl,
-            Euros = totalEuros
-        };
-
-        var ethereumTransaction = await _blockchainService.GetEthereumInfoAsync(transactionRequest);
-
-        decimal ethPriceInEuros = await _blockchainService.GetEthereumPriceInEurosAsync(); 
-        decimal equivalentEth = totalEuros / ethPriceInEuros;
-
-        ethereumTransaction.TotalEuros = totalEuros;
-        ethereumTransaction.EquivalentEthereum = equivalentEth.ToString("0.000000");
-
-        return ethereumTransaction;
+            return StatusCode(500, "Ocurrió un error procesando la transacción.");
+        }
     }
 
-    [HttpPost("check")] // Si devuelve TRUE la transaccion se completa, unirlo al front para la billetera de Metamask
+    [HttpPost("check")] //Cambiar nombre
     [Authorize]
-    public async Task<bool> CheckTransactionAsync([FromBody] CheckTransactionRequest data)
+    public async Task<IActionResult> CheckTransactionAsync([FromBody] CheckTransactionRequest data)
     {
-        return await _blockchainService.CheckTransactionAsync(data);
+        try
+        {
+            bool isTransactionValid = await _blockchainService.CheckTransactionAsync(data);
+
+            if (!isTransactionValid)
+            {
+                return BadRequest("La transacción no es válida.");
+            }
+
+            int userId = GetUserId();
+
+            Order order = await _orderService.NewEthereumOrder(userId, data.CoinsPackId, data.Hash);
+
+            //Retorno order Cambiar?
+            return Ok(order);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Ocurrió un error procesando la transacción.");
+        }
     }
+
 }

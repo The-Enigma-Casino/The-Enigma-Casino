@@ -80,6 +80,38 @@ public class OrderService
             throw new KeyNotFoundException($"No hay pack de monedas con este ID {coinsPackId}");
         }
 
-        return (decimal)coinsPack.Price; // Se convierte el precio a decimal para ETH
+        return coinsPack.Price / 100m; // Se convierte el precio a decimal para ETH
     }
+
+    //Ethereum
+    public async Task<Order> NewEthereumOrder(int userId, int coinsPackId, string txHash)
+    {
+        User user = await _unitOfWork.UserRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
+        }
+
+        CoinsPack coinsPack = await _unitOfWork.CoinsPackRepository.GetByIdAsync(coinsPackId);
+        if (coinsPack == null)
+        {
+            throw new KeyNotFoundException($"No se encontró un paquete de monedas con el ID {coinsPackId}.");
+        }
+
+        Order order = new Order(user, coinsPack)
+        {
+            EthereumTransactionHash = txHash,  
+            PayMode = PayMode.Ethereum,  
+            Price = coinsPack.Price,
+            IsPaid = true,
+            PaidDate = DateTime.Now,
+            CreatedAt = DateTime.Now,
+        };
+
+        await _unitOfWork.OrderRepository.InsertAsync(order);
+        await _unitOfWork.SaveAsync();
+
+        return order;
+    }
+
 }

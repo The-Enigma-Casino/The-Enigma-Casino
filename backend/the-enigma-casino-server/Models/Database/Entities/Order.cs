@@ -17,6 +17,8 @@ public class Order
 
     public string StripeSessionId { get; set; }
 
+    public string EthereumTransactionHash { get; set; }
+
     public bool IsPaid { get; set; }
 
     public DateTime CreatedAt { get; set; }

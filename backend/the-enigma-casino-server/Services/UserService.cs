@@ -175,13 +175,49 @@ public class UserService
         return string.Empty;
     }
 
-    public async Task UpdateCoins(int id , int quantity) { 
-    
-        User user = await _unitOfWork.UserRepository.GetByIdAsync(id);
+    public async Task<int> GetCoins(int id)
+    {
+        try
+        {
+            User user = await _unitOfWork.UserRepository.GetByIdAsync(id);
 
-        user.Coins += quantity;
+            if (user == null)
+                throw new KeyNotFoundException($"No hay usuario con este ID {id}");
 
-        await _unitOfWork.SaveAsync();
+            return user.Coins;
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new KeyNotFoundException(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Hubo un error al obtener las monedas", ex);
+        }
     }
+
+    public async Task UpdateCoins(int id, int quantity)
+    {
+        try
+        {
+            User user = await _unitOfWork.UserRepository.GetByIdAsync(id);
+
+            if (user == null)
+                throw new KeyNotFoundException($"No hay usuario con este ID {id}");
+
+            user.Coins += quantity;
+
+            await _unitOfWork.SaveAsync();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new KeyNotFoundException(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Hubo un error al actualizar las monedas", ex);
+        }
+    }
+
 
 }

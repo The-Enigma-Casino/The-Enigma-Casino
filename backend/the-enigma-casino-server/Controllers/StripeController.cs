@@ -24,20 +24,35 @@ public class StripeController : BaseController
         _unitOfWork = unitOfWork;
     }
 
+    public class EmbeddedCheckoutRequest
+    {
+        public int CoinsPackId { get; set; }
+    }
+
     [HttpPost("embedded-checkout")]
     [Authorize]
-    public async Task<IActionResult> EmbeddedCheckout([FromBody] int coinsPackId)
+    public async Task<IActionResult> EmbeddedCheckout([FromBody] EmbeddedCheckoutRequest request)
     {
         try
         {
+            if (request == null || request.CoinsPackId == 0)
+            {
+                return BadRequest(new { message = "ID de paquete de monedas inválido." });
+            }
+
             int userId = GetUserId();
 
-            SessionCreateOptions options = await _stripeService.EmbededCheckout(userId, coinsPackId);
+            SessionCreateOptions options = await _stripeService.EmbededCheckout(userId, request.CoinsPackId);
 
             SessionService sessionService = new SessionService();
             Session session = await sessionService.CreateAsync(options);
 
-            Order order = await _orderService.NewOrder(userId, coinsPackId, session.Id);
+            Order order = await _orderService.NewOrder(userId, request.CoinsPackId, session.Id);
+
+            if (session.ClientSecret == null)
+            {
+                return StatusCode(500, new { message = "Stripe no devolvió un ClientSecret válido." });
+            }
 
             return Ok(new { clientSecret = session.ClientSecret });
         }
@@ -46,6 +61,7 @@ public class StripeController : BaseController
             return StatusCode(500, new { message = "Error al generar la sesión de pago.", detail = ex.Message });
         }
     }
+
 
     [HttpGet("status/{orderId}")]
     [Authorize]

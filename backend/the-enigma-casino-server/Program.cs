@@ -74,11 +74,15 @@ public class Program
 
         builder.Services.AddCors(options =>
         {
-            options.AddDefaultPolicy(builder =>
+            options.AddPolicy("MyPolicy", policy =>
             {
-                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                policy.WithOrigins("http://localhost:5173") // Cambia esto según la URL de tu frontend
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials(); // Esto permite el uso de credenciales
             });
         });
+
 
         // Configuración de autenticación JWT
         string key = Environment.GetEnvironmentVariable("JWT_KEY");
@@ -151,8 +155,9 @@ public class Program
             app.UseSwaggerUI();
 
         }
+        app.UseRouting();
 
-        app.UseCors();
+        app.UseCors("MyPolicy");
 
         // Redirigir HTTP a HTTPS
         app.UseHttpsRedirection();

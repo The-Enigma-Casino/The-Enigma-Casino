@@ -6,6 +6,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: string;
   color?: string;
   font?: string;
+  disabled?: boolean;
+  selectedPayment?: boolean;
+  selectedCard?: boolean;
 }
 
 /**
@@ -27,10 +30,29 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
  * @returns {JSX.Element} Componente `<Button />`.
  */
 
-const Button: React.FC<ButtonProps> = ({ children, variant, color, font, className, ...props }) => {
+const Button: React.FC<ButtonProps> = ({
+  children,
+  variant,
+  color,
+  font,
+  className,
+  disabled,
+  selectedPayment,
+  selectedCard,
+  ...props
+}) => {
+  // Lógica de clases dinámicas dependiendo de la selección
+  const buttonClasses = `${classes[variant || "default"]}
+      ${classes[color || "default"]}
+      ${classes[font || "default"]}
+      ${selectedPayment && selectedCard ? classes.selected : ""}
+      ${disabled ? classes.disabled : ""}
+      ${className || ""}`.trim();
+
   return (
     <button
-      className={`${classes[variant || "default"]} ${classes[color || "default"]} ${classes[font || "default"]} ${className || ""}`}
+      className={buttonClasses}
+      disabled={disabled || !(selectedPayment && selectedCard)}
       {...props}
     >
       {children}

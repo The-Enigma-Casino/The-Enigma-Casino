@@ -57,3 +57,11 @@ export function deleteLocalStorage(clave: string): void {
 export function deleteSessionStorage(clave: string): void {
   sessionStorage.removeItem(clave);
 }
+
+/**
+ * Clear all local and session storage in the browser.
+ */
+export function clearStorage() {
+  localStorage.clear();
+  sessionStorage.clear();
+}

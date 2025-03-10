@@ -1,12 +1,29 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUnit } from "effector-react";
+import { $role, clearToken } from "../../../features/auth/store/authStore";
+import { $coins, loadCoins, resetCoins } from "../../../features/coins/store/coinsStore"; // Importamos el store y la acción
+
 import Button from "../../ui/button/Button";
 import classes from "./Header.module.css";
-import { useNavigate } from "react-router-dom";
+import { clearStorage } from "../../../utils/storageUtils";
 
 function Header() {
   const navigate = useNavigate();
-  const BELL_ICONS: string[] = ["bell", "bell-ringing", "notification-bell"];
-  const fichas: number = 1000;
-  const roles: "admin" | "user" | null = null;
+
+  const role = useUnit($role);
+  const coins = useUnit($coins);
+
+  useEffect(() => {
+    loadCoins();
+  }, []);
+
+  const handleLogout = () => {
+    clearToken();
+    clearStorage();
+    resetCoins();
+    navigate("/");
+  };
 
   return (
     <header className={classes.header}>
@@ -26,9 +43,9 @@ function Header() {
           <p className={classes.text}>Gachapón</p>
           <p className={classes.text}>de la suerte</p>
         </div>
-        {roles !== null && (
+        {role && (
           <img
-            src={`/svg/${BELL_ICONS[2]}.svg`}
+            src={`/svg/notification-bell.svg`}
             alt="Notificaciones"
             onClick={() => navigate("/")}
           />
@@ -36,7 +53,7 @@ function Header() {
       </div>
 
       <div className={classes.rightHeader}>
-        {roles === "admin" && (
+        {role?.toLowerCase() === "admin" && (
           <img
             src="/svg/admin.svg"
             alt="Admin"
@@ -44,23 +61,23 @@ function Header() {
           />
         )}
 
-        {(roles === "user" || roles === "admin") && (
+        {(role?.toLowerCase() === "user" || role?.toLowerCase() === "admin") && (
           <>
             <button
               className={classes.coinsButton}
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/catalog")}
             >
-              {fichas} <img src="/svg/coins.svg" alt="Fichas" />
+              {coins} <img src="/svg/coins.svg" alt="Fichas" />
             </button>
             <img
               src="/svg/exit.svg"
               alt="Cerrar sesión"
-              onClick={() => navigate("/logout")}
+              onClick={handleLogout}
             />
           </>
         )}
 
-        {roles === null && (
+        {!role && (
           <Button
             variant="large"
             color="green"

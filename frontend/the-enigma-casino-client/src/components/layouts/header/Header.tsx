@@ -1,10 +1,7 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUnit } from "effector-react"; // Para consumir el store
-import { jwtDecode } from "jwt-decode";
-
-import { $token, clearToken } from "../../../features/auth/store/authStore";
-import { $coins, loadCoins } from "../../../features/coins/store/coinsStore"; // Importamos el store de las monedas
+import { useUnit } from "effector-react";
+import { $token, $role, clearToken } from "../../../features/auth/store/authStore";
+// import { $coins, loadCoins } from "../../../features/coins/store/coinsStore";
 
 import Button from "../../ui/button/Button";
 import classes from "./Header.module.css";
@@ -13,32 +10,13 @@ import { clearStorage } from "../../../utils/storageUtils";
 function Header() {
   const navigate = useNavigate();
 
-  const token = useUnit($token);
-  const coins = useUnit($coins);
-
-  const [role, setRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        console.log("Decoded token:", decoded);
-
-        setRole(decoded?.role || null);
-
-        loadCoins();
-      } catch (error) {
-        console.log(error);
-        setRole(null);
-      }
-    }
-    console.log(coins);
-  }, [token, coins]);
+  const role = useUnit($role);
+  // const coins = useUnit($coins);
+  const coins = 1000;
 
   const handleLogout = () => {
     clearToken();
     clearStorage();
-    setRole(null);
     navigate("/");
   };
 

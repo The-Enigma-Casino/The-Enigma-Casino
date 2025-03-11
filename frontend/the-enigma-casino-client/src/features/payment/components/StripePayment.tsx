@@ -14,7 +14,13 @@ import {
 import { $selectedCard } from "../../catalog/store/catalogStore";
 import { useNavigate } from "react-router-dom";
 import { fetchLastOrderFx } from "../actions/orderActions";
-import { $clientSecret, $lastOrder, $paymentError, $paymentStatus } from "../store/PaymentStore";
+import {
+  $clientSecret,
+  $paymentError,
+  $paymentStatus,
+} from "../store/PaymentStore";
+
+import styles from "./StripePayment.module.css";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -24,7 +30,6 @@ function StripePayment() {
   const paymentStatus = useUnit($paymentStatus);
   const paymentError = useUnit($paymentError);
   const coinCard = useUnit($selectedCard);
-  const orderId = useUnit($lastOrder);
 
   const navigate = useNavigate();
 
@@ -44,10 +49,10 @@ function StripePayment() {
 
   const handleOnComplete = async () => {
     console.log("🔄 Fetching last order...");
-    
+
     const fetchedOrder = await fetchLastOrderFx();
     console.log("✅ Última orden después del fetch:", fetchedOrder);
-  
+
     if (fetchedOrder?.id) {
       await fetchPaymentStatusFx(fetchedOrder.id);
     } else {
@@ -55,7 +60,6 @@ function StripePayment() {
       return;
     }
   };
-  
 
   useEffect(() => {
     if (paymentStatus === "paid") {
@@ -66,8 +70,6 @@ function StripePayment() {
       navigate("/payment-confirmation?error=true");
     }
   }, [paymentStatus, paymentError, navigate]);
-  
-  
 
   return (
     <>
@@ -79,7 +81,7 @@ function StripePayment() {
             onComplete: handleOnComplete,
           }}
         >
-          <EmbeddedCheckout />
+          <EmbeddedCheckout className={styles["App-Container"]} />
         </EmbeddedCheckoutProvider>
       )}
     </>

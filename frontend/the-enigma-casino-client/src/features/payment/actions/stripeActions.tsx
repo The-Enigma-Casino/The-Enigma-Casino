@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 import { createEffect } from "effector";
 import { PAYMENT_STATUS, EMBBEDED_CHECKOUT } from "../../../config";

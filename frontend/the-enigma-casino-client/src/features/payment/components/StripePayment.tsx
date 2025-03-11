@@ -28,10 +28,10 @@ function StripePayment() {
   const paymentStatus = useUnit($paymentStatus);
   const paymentError = useUnit($paymentError);
   const coinCard = useUnit($selectedCard);
-  
+
   const [orderId, setOrderId] = useState<number | null>(null);
   const [isCheckoutReady, setIsCheckoutReady] = useState(false); // ✅ Control de renderización
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,12 +52,12 @@ function StripePayment() {
   useEffect(() => {
     if (paymentStatus === "paid") {
       console.log("✅ Pago exitoso. Redirigiendo a la página de confirmación...");
-      navigate("/paymentConfirmation?pagado=true");
+      navigate("/payment-confirmation?pagado=true");
     }
 
     if (paymentError) {
       console.log("❌ Error en el pago. Redirigiendo a la página de error...");
-      navigate("/paymentConfirmation?error=true");
+      navigate("/payment-confirmation?error=true");
     }
   }, [paymentStatus, paymentError, navigate]);
 

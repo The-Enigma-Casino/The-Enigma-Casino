@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnit } from "effector-react";
-import { jwtDecode } from "jwt-decode";
-
-import { $token, clearToken } from "../../../features/auth/store/authStore";
+import { $role, clearToken } from "../../../features/auth/store/authStore";
+import { $coins, loadCoins, resetCoins } from "../../../features/coins/store/coinsStore"; // Importamos el store y la acción
 
 import Button from "../../ui/button/Button";
 import classes from "./Header.module.css";
@@ -12,30 +11,17 @@ import { clearStorage } from "../../../utils/storageUtils";
 function Header() {
   const navigate = useNavigate();
 
-  const token = useUnit($token);
-
-  const [role, setRole] = useState<string | null>(null);
-
-  const fichas: number = 1000;
+  const role = useUnit($role);
+  const coins = useUnit($coins);
 
   useEffect(() => {
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        console.log("Decoded token:", decoded);
-
-        setRole(decoded?.role || null);
-      } catch (error) {
-        console.log(error);
-        setRole(null);
-      }
-    }
-  }, [token]);
+    loadCoins();
+  }, []);
 
   const handleLogout = () => {
     clearToken();
     clearStorage();
-    setRole(null);
+    resetCoins();
     navigate("/");
   };
 
@@ -81,7 +67,7 @@ function Header() {
               className={classes.coinsButton}
               onClick={() => navigate("/catalog")}
             >
-              {fichas} <img src="/svg/coins.svg" alt="Fichas" />
+              {coins} <img src="/svg/coins.svg" alt="Fichas" />
             </button>
             <img
               src="/svg/exit.svg"

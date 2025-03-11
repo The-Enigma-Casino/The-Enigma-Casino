@@ -1,10 +1,14 @@
+import { useUnit } from "effector-react";
 import classes from "./Footer.module.css";
 
 import { useNavigate } from "react-router-dom";
+import { $role } from "../../../features/auth/store/authStore";
 
 function Footer() {
   const navigate = useNavigate();
   const GITHUB: string = "https://github.com/The-Enigma-Casino/The-Enigma-Casino";
+
+  const role = useUnit($role);
 
   return (
     <footer className={classes.footer}>
@@ -55,13 +59,15 @@ function Footer() {
             GitHub
           </a>
         </div>
-        <div className={classes.autoExpulsion}>
-          <button
-            className={`${classes.InvisibilityButton} ${classes.autoExpulsion}`}
-          >
-            AutoExpulsion
-          </button>
-        </div>
+        {role?.toLowerCase() === "user" && (
+          <div className={classes.autoExpulsion}>
+            <button
+              className={`${classes.InvisibilityButton} ${classes.autoExpulsion}`}
+            >
+              AutoExpulsión
+            </button>
+          </div>
+        )}
       </div>
     </footer>
   );

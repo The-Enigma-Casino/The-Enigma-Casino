@@ -1,4 +1,4 @@
-import { createStore, createEvent } from "effector";
+import { createStore, createEvent, sample } from "effector";
 import { confirmEmailFx, loginFx, registerFx } from "../actions/authActions";
 import {
   deleteLocalStorage,
@@ -9,12 +9,17 @@ import {
   updateSessionStorage,
 } from "../../../utils/storageUtils";
 
+import { jwtDecode } from "jwt-decode";
+
 const storedToken: string =
   getVarLS("token") || getVarSessionStorage("token") || "";
 
 export const $token = createStore<string>(storedToken);
 export const setToken = createEvent<{ token: string; rememberMe: boolean }>();
 export const clearToken = createEvent();
+
+export const $role = createStore<string>("");
+export const setRole = createEvent<string>();
 
 export const setAuthError = createEvent<string>();
 
@@ -30,6 +35,7 @@ $token
   .on(clearToken, () => "")
   .on(loginFx.doneData, (_, token) => token);
 
+
 setToken.watch(({ token, rememberMe }) => {
   if (token) {
     if (rememberMe) {
@@ -42,3 +48,17 @@ setToken.watch(({ token, rememberMe }) => {
     deleteSessionStorage("token");
   }
 });
+
+sample({
+  source: $token,
+  fn: (token) => {
+    try {
+      const decoded: any = jwtDecode(token);
+      return decoded?.role || "";
+    } catch {
+      return "";
+    }
+  },
+  target: $role,
+});
+

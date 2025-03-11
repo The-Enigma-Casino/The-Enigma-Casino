@@ -6,6 +6,8 @@ using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Dtos.BlockchainDtos;
 using the_enigma_casino_server.Services;
 using the_enigma_casino_server.Services.Blockchain;
+using the_enigma_casino_server.Models.Dtos;
+using the_enigma_casino_server.Models.Mappers;
 
 
 namespace the_enigma_casino_server.Controllers;
@@ -16,11 +18,13 @@ public class BlockchainController : BaseController
 {
     private readonly BlockchainService _blockchainService;
     private readonly OrderService _orderService;
+    private readonly OrderMapper _orderMapper;
 
-    public BlockchainController(BlockchainService blockchainService, OrderService orderService)
+    public BlockchainController(BlockchainService blockchainService, OrderService orderService, OrderMapper orderMapper)
     {
         _blockchainService = blockchainService;
         _orderService = orderService;
+        _orderMapper = orderMapper;
     }
 
     [HttpPost("transaction")]  //Cambiar nombre
@@ -90,8 +94,10 @@ public class BlockchainController : BaseController
 
             Order order = await _orderService.NewEthereumOrder(userId, data.CoinsPackId, data.Hash);
 
+            OrderDto orderDto = _orderMapper.ToOrderDto(order);
+
             //Retorno order Cambiar?
-            return Ok(order);
+            return Ok(orderDto);
         }
         catch (Exception ex)
         {

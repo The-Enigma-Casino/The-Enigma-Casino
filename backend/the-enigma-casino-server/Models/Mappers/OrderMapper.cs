@@ -13,5 +13,29 @@ namespace the_enigma_casino_server.Models.Mappers
 
             return orderDto;
         }
+
+        public OrderDto ToOrderDtoWithCoinsPackDto(Order order)
+        {
+            
+            CoinsPackDto coinsPackDto = new CoinsPackDto
+            {
+                Id = order.CoinsPack.Id,       
+                Price = order.CoinsPack.Price
+            };
+
+            
+            OrderDto orderDto = new OrderDto(
+                order.Id,                         
+                coinsPackDto,                     
+                order.IsPaid,                     
+                order.PaidDate,                   
+                order.PayMode                     
+            );
+
+            
+            orderDto.Coins = Coinsify.CoinsifyByCent(order.Price);
+
+            return orderDto;  
+        }
     }
 }

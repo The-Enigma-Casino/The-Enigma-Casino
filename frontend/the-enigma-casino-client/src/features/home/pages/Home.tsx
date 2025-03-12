@@ -1,8 +1,11 @@
+import SidebarMenu from "../../../components/layouts/sidebarMenu/SidebarMenu";
+import Carousel from "../components/ui/Carousel";
 
 function Home() {
   return (
     <>
-      <h1>HOME</h1>
+      <SidebarMenu />
+      <Carousel />
     </>
   );
 }

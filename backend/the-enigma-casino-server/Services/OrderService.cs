@@ -58,6 +58,7 @@ public class OrderService
         order.PaidDate = DateTime.Now;
         order.StripeSessionId = "";
 
+        _unitOfWork.OrderRepository.Update(order);
         await _unitOfWork.SaveAsync();
 
         await _userService.UpdateCoins(order.UserId, order.CoinsPack.Quantity);

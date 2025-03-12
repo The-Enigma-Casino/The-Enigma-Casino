@@ -8,7 +8,8 @@ import PaymentConfirmation from "./features/payment/pages/PaymentConfirmation";
 import routeAuth from "./features/auth/routes";
 
 import { createBrowserRouter } from "react-router-dom";
-import EthereumPayment from "./features/payment/components/EthereumPayment";
+import WithdrawConfirmation from "./features/withdraw/pages/WithdrawConfirmation";
+import Withdraw from "./features/withdraw/pages/Withdraw";
 
 const router = createBrowserRouter([
   {
@@ -18,9 +19,10 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "payment", element: <PaymentPage /> },
-      { path: "paymentConfirmation", element: <PaymentConfirmation /> },
+      { path: "payment-confirmation", element: <PaymentConfirmation /> },
+      { path: "withdraw", element: <Withdraw /> },
+      { path: "withdraw-confirmation", element: <WithdrawConfirmation /> },
       { path: "catalog", element: <Catalog /> },
-      { path: "ethereum", element: <EthereumPayment /> }
     ],
   },
   ...routeAuth,

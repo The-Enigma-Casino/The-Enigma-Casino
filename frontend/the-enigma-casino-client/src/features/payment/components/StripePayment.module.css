@@ -1,0 +1,13 @@
+iframe {
+  width: 100% !important;
+  max-width: 500px !important;
+  min-height: 700px !important;
+  height: auto !important;
+  border-radius: 1.5rem;
+}
+
+.App-Container {
+  width: 35vw !important;
+  max-width: 600px !important;
+  min-width: 400px !important;
+}

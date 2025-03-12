@@ -12,9 +12,10 @@ interface CoinsProps {
   size?: "small" | "large";
   isSelected?: boolean;
   onSelect?: (id: number) => void;
+  clickable?: boolean;
 }
 
-const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "small", isSelected = false, onSelect = () => { }, offer }) => {
+const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "small", isSelected = false, onSelect = () => { }, offer, clickable = true }) => {
   const containerClasses = size === "large"
     ? "w-[50rem] h-[40rem]"
     : "w-[25rem] h-[30rem]"; // Small
@@ -24,11 +25,13 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
     : "w-[15rem] h-[15rem]"; // Small
 
   const selectedClasses = isSelected ? "border-2 border-Principal" : "";
+  const cursorClass = clickable ? "cursor-pointer" : "";
 
   console.log(image)
 
   // Lógica para manejar la selección y deselección
   const handleSelection = () => {
+    if (!clickable) return;
     const selectedData = { id, price, quantity, image, offer };
     if (isSelected) {
       selectCard(null);
@@ -42,7 +45,7 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
     <div className={`flex items-center justify-center md:flex-col`} onClick={handleSelection}>
       <div
         className={`bg-Background-Overlay rounded-3xl p-6 shadow-lg text-center flex flex-col items-center justify-center ${containerClasses} hover:Principal
-                *:transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:bg-Background-Overlay hover:border-amber-40 hover:shadow-[0_0_20px_5px_#74c410] cursor-pointer ${selectedClasses}`}
+                *:transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:bg-Background-Overlay hover:border-amber-40 hover:shadow-[0_0_20px_5px_#74c410] ${cursorClass} ${selectedClasses}`}
       >
         <div className="relative">
           <img

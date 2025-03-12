@@ -5,8 +5,8 @@ import MetaMaskLogo from "@metamask/logo";
 import { useUnit } from "effector-react";
 import { $token } from "../../auth/store/authStore";
 import { ETHEREUM_PAYMENT_CHECK, ETHEREUM_CHECK_TRANSACTION } from "../../../config";
+import { $selectedCard } from "../../catalog/store/catalogStore";
 
-// Define the shape of the transaction data expected from the API
 interface TransactionData {
   totalEuros: number;
   equivalentEthereum: string;
@@ -22,8 +22,11 @@ const Ethereum: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [transactionEnd, setTransactionEnd] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const coinCard = useUnit($selectedCard); //Contiene ID de coins
+  const orderPackId = coinCard.id;
+
   const token = useUnit($token);
-  const orderPackId = 5;
+
 
   const navigate = useNavigate();
   const logoRef = useRef<HTMLDivElement | null>(null);
@@ -172,7 +175,7 @@ const Ethereum: React.FC = () => {
 
       // Verificar la transacción
       const order = await verifyTransaction(txHash, connectedWallet, transactionData, token);
-
+      console.log("order", order)
       if (order && order.id) {
         setTransactionEnd(true);
       } else {
@@ -192,27 +195,34 @@ const Ethereum: React.FC = () => {
 
 
   return (
-    <div>
-      <h1>Pagar con Ethereum</h1>
-      <div ref={logoRef}></div>
+    <div className="max-w-md mx-auto mt-12 p-5 text-center text-white border-4 rounded-md">
+      <h1 className="text-xl font-bold">Pagar con Ethereum</h1>
 
-      {loading && <p>Procesando pago...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {transactionEnd && <p style={{ color: "green" }}>Transacción completada con éxito</p>}
+      <div className="my-5" ref={logoRef}></div>
+
+      {loading && <p className="text-lg">Procesando pago...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+      {transactionEnd && <p className="text-green-500">Transacción completada con éxito</p>}
 
       {transactionData ? (
-        <div>
+        <div className="my-5 text-2xl">
           <p>{transactionData.totalEuros.toFixed(2).replace(".", ",")} €</p>
-          <p>
+          <p className="flex items-center justify-center gap-2">
             {transactionData.equivalentEthereum} ETH
-            <img src="/icon/ethereum.svg" alt="Ethereum logo" />
+            <img src="/icon/ethereum.svg" className="w-6 h-6" alt="Ethereum logo" />
           </p>
-          <button onClick={handleComplete}>Completar pago</button>
+          <button
+            onClick={handleComplete}
+            className="mt-4 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition"
+          >
+            Completar pago
+          </button>
         </div>
       ) : (
-        <p>Obteniendo datos de la transacción...</p>
+        <p className="text-lg">Obteniendo datos de la transacción...</p>
       )}
     </div>
+
   );
 };
 

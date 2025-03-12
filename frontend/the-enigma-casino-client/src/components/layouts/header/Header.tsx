@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnit } from "effector-react";
-import { $role, $token, clearToken } from "../../../features/auth/store/authStore";
+import { $role, $token, clearToken, loadRole } from "../../../features/auth/store/authStore";
 import { $coins, loadCoins, resetCoins } from "../../../features/coins/store/coinsStore"; // Importamos el store y la acción
 
 import Button from "../../ui/button/Button";
@@ -17,7 +17,8 @@ function Header() {
 
   useEffect(() => {
     loadCoins();
-  }, [token, role]);
+    loadRole();
+  }, [token]);
 
   const handleLogout = () => {
     clearToken();

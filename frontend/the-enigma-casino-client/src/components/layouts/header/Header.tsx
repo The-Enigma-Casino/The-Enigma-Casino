@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnit } from "effector-react";
-import { $role, clearToken } from "../../../features/auth/store/authStore";
+import { $role, $token, clearToken, loadRole } from "../../../features/auth/store/authStore";
 import { $coins, loadCoins, resetCoins } from "../../../features/coins/store/coinsStore"; // Importamos el store y la acción
 
 import Button from "../../ui/button/Button";
@@ -11,12 +11,14 @@ import { clearStorage } from "../../../utils/storageUtils";
 function Header() {
   const navigate = useNavigate();
 
+  const token = useUnit($token);
   const role = useUnit($role);
   const coins = useUnit($coins);
 
   useEffect(() => {
     loadCoins();
-  }, []);
+    loadRole();
+  }, [token]);
 
   const handleLogout = () => {
     clearToken();

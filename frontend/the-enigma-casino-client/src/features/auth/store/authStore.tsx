@@ -10,6 +10,7 @@ import {
 } from "../../../utils/storageUtils";
 
 import { jwtDecode } from "jwt-decode";
+import { DecodedToken } from "../models/DecodedToken .interface";
 
 const storedToken: string =
   getVarLS("token") || getVarSessionStorage("token") || "";
@@ -20,6 +21,7 @@ export const clearToken = createEvent();
 
 export const $role = createStore<string>("");
 export const setRole = createEvent<string>();
+export const loadRole = createEvent();
 
 export const setAuthError = createEvent<string>();
 
@@ -50,10 +52,11 @@ setToken.watch(({ token, rememberMe }) => {
 });
 
 sample({
+  clock: loadRole,
   source: $token,
   fn: (token) => {
     try {
-      const decoded: any = jwtDecode(token);
+      const decoded: DecodedToken = jwtDecode(token);
       return decoded?.role || "";
     } catch {
       return "";

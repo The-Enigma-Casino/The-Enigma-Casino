@@ -2,13 +2,19 @@ import { useUnit } from "effector-react";
 import classes from "./Footer.module.css";
 
 import { useNavigate } from "react-router-dom";
-import { $role } from "../../../features/auth/store/authStore";
+import { $role, $token, loadRole } from "../../../features/auth/store/authStore";
+import { useEffect } from "react";
 
 function Footer() {
   const navigate = useNavigate();
   const GITHUB: string = "https://github.com/The-Enigma-Casino/The-Enigma-Casino";
 
-  const role = useUnit($role);
+    const token = useUnit($token);
+    const role = useUnit($role);
+
+    useEffect(() => {
+      loadRole();
+    }, [token]);
 
   return (
     <footer className={classes.footer}>

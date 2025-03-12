@@ -4,6 +4,7 @@ import {
   fetchClientSecretFx,
   fetchPaymentStatusFx,
 } from "../actions/stripeActions";
+import { OrderDto } from "../models/OrderDto.interface";
 
 export const $clientSecret = createStore<string | null>(null).on(
   fetchClientSecretFx.doneData,
@@ -13,10 +14,10 @@ export const $clientSecret = createStore<string | null>(null).on(
   }
 );
 
-export const $lastOrder = createStore<number | null>(null)
+export const $lastOrder = createStore<OrderDto | null>(null)
   .on(fetchLastOrderFx.doneData, (_, order) => {
     console.log("💾 Actualizando $lastOrder con:", order);
-    return order.id;
+    return order;
   })
   .reset(fetchLastOrderFx.fail);
 

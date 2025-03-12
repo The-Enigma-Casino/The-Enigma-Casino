@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import InfoOrder from "../components/InfoOrder";
-import { OrderDto } from "../models/OrderDto.interface";
-import { PayMode } from "../models/PayMode.enum";
+import { $lastOrder } from "../store/PaymentStore";
+import { useUnit } from "effector-react";
 
 function PaymentConfirmation() {
   const location = useLocation();
@@ -9,26 +9,12 @@ function PaymentConfirmation() {
 
   const isPaid = queryParams.get("pagado") === "true";
   const hasError = queryParams.get("error") === "true";
-
-  const order: OrderDto = {
-    id: 1,
-    coinsPack: {
-      id: 1,
-      price: 1000,
-      quantity: 100,
-      image: "images/coins/pack1.webp",
-      offer: 100,
-    },
-    isPaid: isPaid,
-    paidDate: new Date("2024-03-06T12:00:00Z"),
-    coins: 110,
-    payMode: PayMode.Euro,
-  };
+  const order = useUnit($lastOrder);
 
   return (
     <>
       <section className="min-h-full bg-Background-Page flex flex-col gap-[4rem] lg:gap-[9rem]">
-        {isPaid && (
+        {isPaid && order && (
           <>
             <h1 className="text-Coins text-[4rem] font-bold text-center font-reddit pt-8 lg:text-[6rem]">
               PAGO REALIZADO

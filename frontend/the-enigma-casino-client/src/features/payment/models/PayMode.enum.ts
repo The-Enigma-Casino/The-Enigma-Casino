@@ -1,4 +1,4 @@
 export enum PayMode {
-  Euro = "Euro",
-  Etherium = "Etherium"
+  Ethereum = 0,
+  CreditCard = 1,
 }

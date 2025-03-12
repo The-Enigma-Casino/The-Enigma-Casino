@@ -3,14 +3,26 @@ import classes from "./infoOrder.module.css";
 import CoinsCard from "../../catalog/components/CoinsCard";
 import { OrderDto } from "../models/OrderDto.interface";
 import { formatPriceWithCurrency } from "../../../utils/priceUtils";
+import { PayMode } from "../models/PayMode.enum";
 
 interface InfoOrderProps {
   order: OrderDto;
 }
 
 const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
-  const date = `Fecha: ${order.paidDate.toLocaleDateString()}`;
-  const paidWith = `Pagado con: ${order.payMode}`;
+  const date = `Fecha: ${new Date(order.paidDate).toLocaleDateString()}`;
+
+  const orderPaidmode = order.payMode;
+  let paidWith = "Pagado con: ";
+  
+  if (orderPaidmode === PayMode.Ethereum) {
+    paidWith += "Ethereum";
+  } else if (orderPaidmode === PayMode.CreditCard) {
+    paidWith += "Tarjeta de Crédito";
+  } else {
+    paidWith += "Desconocido";
+  }
+
   const totalPaid = `Total pagado: ${formatPriceWithCurrency(
     order.coinsPack.price
   )}`;
@@ -28,7 +40,7 @@ const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
       />
       <div className={classes.infoOrderDetails}>
         <div className={classes.coinsInfo}>
-          <p className={classes.coinsPrice}>+{order.coinsPack.price}</p>
+          <p className={classes.coinsPrice}>+{order.coinsPack.quantity}</p>
           <img className={classes.coinsImg} src="/svg/coins.svg" alt="coins" />
         </div>
         <p className={classes.text}>{date}</p>

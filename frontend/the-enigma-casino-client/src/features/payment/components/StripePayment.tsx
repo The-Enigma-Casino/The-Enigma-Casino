@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   EmbeddedCheckoutProvider,
@@ -13,7 +13,7 @@ import {
 } from "../actions/stripeActions";
 import { $selectedCard } from "../../catalog/store/catalogStore";
 import { useNavigate } from "react-router-dom";
-import { fetchLastOrderFx } from "../actions/orderActions";
+import { fetchLastOrderFx, fetchLastOrderIdFx } from "../actions/orderActions";
 import {
   $clientSecret,
   $paymentError,
@@ -50,11 +50,11 @@ function StripePayment() {
   const handleOnComplete = async () => {
     console.log("🔄 Fetching last order...");
 
-    const fetchedOrder = await fetchLastOrderFx();
-    console.log("✅ Última orden después del fetch:", fetchedOrder);
+    const fetchedOrderId = await fetchLastOrderIdFx();
+    console.log("✅ Última orden después del fetch:", fetchedOrderId);
 
-    if (fetchedOrder?.id) {
-      await fetchPaymentStatusFx(fetchedOrder.id);
+    if (fetchedOrderId) {
+      await fetchPaymentStatusFx(fetchedOrderId);
     } else {
       console.error("❌ La orden sigue siendo null después del fetch.");
       return;
@@ -64,6 +64,7 @@ function StripePayment() {
   useEffect(() => {
     if (paymentStatus === "paid") {
       console.log("✅ Pago confirmado, redirigiendo...");
+      fetchLastOrderFx();
       navigate("/payment-confirmation?pagado=true");
     } else if (paymentError) {
       console.log("❌ Error en el pago, redirigiendo...");

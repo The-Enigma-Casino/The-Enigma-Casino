@@ -1,7 +1,7 @@
 .footer {
   height: 10rem;
   display: flex;
-  background-color: var(--Background-Overlay);
+  background-color: var(--Background-Nav);
   color: white;
   padding: 10px;
   gap: 20px;
@@ -67,9 +67,9 @@
 
 @media (max-width: 988px) {
   .footer {
-    flex-direction: column; 
-    height: auto; 
-    padding: 20px; 
+    flex-direction: column;
+    height: auto;
+    padding: 20px;
   }
 
   .leftFooter {
@@ -90,10 +90,10 @@
   .rightFooter {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto auto; 
-    gap: 20px; 
-    justify-items: start; 
-    align-items: start; 
+    grid-template-rows: auto auto auto;
+    gap: 20px;
+    justify-items: start;
+    align-items: start;
   }
 
   .textFooter {

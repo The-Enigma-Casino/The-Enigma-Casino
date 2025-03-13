@@ -30,7 +30,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const Button: React.FC<ButtonProps> = ({ children, variant, color, font, className, ...props }) => {
   return (
     <button
-      className={`${classes[variant || "default"]} ${classes[color || "default"]} ${classes[font || "default"]} ${className || ""}`}
+      className={`${classes.button} ${variant ? classes[variant] : ""} ${color ? classes[color] : ""} ${font ? classes[font] : ""} ${className || ""}`}
       {...props}
     >
       {children}

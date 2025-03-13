@@ -1,0 +1,33 @@
+.cardGameContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 30rem;
+  height: 25rem;
+  background-color: var(--Background-Overlay);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.cardGameImage {
+  width: 10rem;
+  height: 10rem;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cardGameImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.title {
+  font-size: 3rem;
+  color: white;
+  text-align: center;
+}

@@ -54,6 +54,12 @@
   width: 100%;
 }
 
+.titleFriend {
+  color: white;
+  font-size: 1.6rem;
+  padding-top: 1rem;
+}
+
 .totalUser {
   display: flex;
   align-items: center;

@@ -22,11 +22,3 @@ export const $selectedCard = createStore<any>(null).on(selectCard, (_, card) => 
 // Store que guarda el método de pago seleccionado
 export const $paymentMethod = createStore<string | null>("Stripe").on(selectPaymentMethod, (_, method) => method);
 
-// Mostrar en consola cuando cambia la tarjeta seleccionada
-$selectedCard.watch((card) => {
-  console.log("Datos seleccionados:", card);
-});
-
-$paymentMethod.watch((method) => {
-  console.log("Método de pago seleccionado:", method);
-});

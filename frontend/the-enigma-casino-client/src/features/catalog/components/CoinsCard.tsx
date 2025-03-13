@@ -27,8 +27,6 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
   const selectedClasses = isSelected ? "border-2 border-Principal" : "";
   const cursorClass = clickable ? "cursor-pointer" : "";
 
-  console.log(image)
-
   // Lógica para manejar la selección y deselección
   const handleSelection = () => {
     if (!clickable) return;

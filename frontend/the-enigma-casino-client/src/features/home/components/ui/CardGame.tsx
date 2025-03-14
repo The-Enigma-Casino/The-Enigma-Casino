@@ -20,7 +20,7 @@ const CardGame: React.FC<CardGameProps> = ({ imageUrl, altText, navigateTo, name
           onClick={() => navigate(navigateTo)}
         />
       </div>
-      <h1 className={classes.title}>{name}</h1>
+      <h2 className={classes.title}>{name}</h2>
     </div>
   );
 };

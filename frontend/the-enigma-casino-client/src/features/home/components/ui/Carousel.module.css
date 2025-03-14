@@ -1,29 +1,17 @@
 .carrouselContainer {
   width: 100%;
-  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  padding-top: 1rem;
 }
 
 .carrousel {
-  border-radius: 20px;
+  width: 80%;
+  max-width: 130rem;
+  border-radius: 4rem;
 }
 
 .bannerImg {
-  margin-bottom: -6px;
   width: 100%;
-}
-
-@media (max-width: 720px) {
-  .carrouselContainer{
-    margin-top: 0;
-
-  }
-
-  .carrousel{
-      border-radius: 0%;
-      height: 20rem;
-  }
-  .bannerImg{
-      height: 20rem;
-
-  }
+  display: block;
 }

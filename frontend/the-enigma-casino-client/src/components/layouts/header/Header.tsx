@@ -33,6 +33,7 @@ function Header() {
   }, [token]);
 
   const handleLogout = () => {
+    setIsLogoutModalOpen(false);
     clearToken();
     clearStorage();
     resetCoins();

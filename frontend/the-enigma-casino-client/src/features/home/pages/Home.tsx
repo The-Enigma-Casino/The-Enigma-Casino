@@ -6,11 +6,10 @@ function Home() {
   return (
     <div className={classes.homeContainer}>
       <SidebarMenu />
-      <section className={classes.homeSeption}>
-      <Carousel />
-      <h1>Hola mundo</h1>
+      <section className={classes.homeSection}>
+        <Carousel />
+        <h1>Hola mundo</h1>
       </section>
-
     </div>
   );
 }

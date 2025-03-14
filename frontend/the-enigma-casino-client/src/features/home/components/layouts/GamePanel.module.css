@@ -1,11 +1,21 @@
 
 .panelContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
+  color: var(--Principal);
+  gap: 2rem;
 }
 
 .cardContainer {
   display: flex;
-  justify-content: space-around;
-  gap: 20px;
+  gap: 10rem;
+  justify-content: center;
 }
 
+.title {
+  font-size: 3rem;
+  font-weight: 1000;
+  color: var(--Principal);
+}

@@ -6,13 +6,14 @@
   width: 30rem;
   height: 25rem;
   background-color: var(--Background-Overlay);
-  border-radius: 10px;
-  padding: 1rem;
+  border-radius: 40px;
+  color: white;
+  gap: 2rem;
 }
 
 .cardGameImage {
-  width: 10rem;
-  height: 10rem;
+  width: 14rem;
+  height: 14rem;
   border-radius: 50%;
   overflow: hidden;
   display: flex;
@@ -31,3 +32,4 @@
   color: white;
   text-align: center;
 }
+

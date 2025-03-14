@@ -11,13 +11,6 @@
 .homeSeption {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 2rem;
   width: 100%;
-}
-
-.homeSeption h1 {
-  font-size: 3rem;
-  font-weight: 700;
-  color: #000;
 }

@@ -4,7 +4,6 @@ import { createEffect } from "effector";
 import { ETHEREUM_PAYMENT_CHECK, ETHEREUM_CHECK_TRANSACTION } from "../../../config";
 
 export const fetchTransactionEthereumFx = createEffect(async ({ packId, token }: { packId: number; token: string }) => {
-
   try {
     const response = await axios.post(
       ETHEREUM_CHECK_TRANSACTION,
@@ -19,15 +18,18 @@ export const fetchTransactionEthereumFx = createEffect(async ({ packId, token }:
 
     return response.data;
   } catch (error) {
+    const unknownError = "Error en la API";
     if (axios.isAxiosError(error)) {
-      console.error("Error de Axios:", error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || "Error en la solicitud a la API");
+      const errorMessage = error.response?.data?.message || error.message;
+      console.error("Error de Axios:", errorMessage);
+      throw new Error(unknownError);
     } else {
       console.error("Error desconocido:", error);
-      throw error;
+      throw new Error(unknownError);
     }
   }
 });
+
 
 
 export const verifyTransactionEthereumFx = createEffect(

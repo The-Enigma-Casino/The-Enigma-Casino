@@ -6,9 +6,10 @@ import { useUnit } from "effector-react";
 import { $token } from "../../auth/store/authStore";
 import { $selectedCard } from "../../catalog/store/catalogStore";
 import { fetchTransactionEthereumFx, verifyTransactionEthereumFx } from "../actions/ethereumActions";
-import { $transactionData, $verifyTransactionData, $loading, $error, $transactionEnd, setLoading, setError, setTransactionEnd, $paymentStatus, $paymentError } from "../store/EthereumStore";
+import { $transactionData, $verifyTransactionData, $loading, $error, $transactionEnd, setLoading, setTransactionEnd, $paymentStatus, $paymentError, resetTransactionData, resetError } from "../store/EthereumStore";
 import { fetchLastOrderFx } from "../actions/orderActions";
 import toast from "react-hot-toast";
+import Button from "../../../components/ui/button/Button";
 
 const Ethereum: React.FC = () => {
   const navigate = useNavigate();
@@ -42,12 +43,23 @@ const Ethereum: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      resetTransactionData()
+      setTransactionEnd(false);
+      setLoading(false);
+      resetError();
+    };
+  }, [navigate]);
+
   // Solicita API precio packFichas
   useEffect(() => {
     if (orderPackId && token) {
       fetchTransactionEthereumFx({ packId: orderPackId, token });
     }
   }, [orderPackId, token]);
+
+
 
   // Flujo completo
   const handleComplete = async () => {
@@ -124,25 +136,38 @@ const Ethereum: React.FC = () => {
       if (order && order.id) {
         setTransactionEnd(true);
       } else {
-        setError("La transacción no es válida.");
+        toast.error("La transacción no es válida, volviendo a catálogo.");
+        setTimeout(() => {
+          navigate("/catalog");
+        }, 3000);
+        return;
       }
 
       if (paymentStatus === "paid") {
-        console.log(paymentStatus);
-        console.log("✅ Pago confirmado, redirigiendo...");
+        toast.error("✅ Pago confirmado, redirigiendo...");
         fetchLastOrderFx();
-        navigate("/payment-confirmation?pagado=true");
+        setTimeout(() => {
+          navigate("/payment-confirmation?pagado=true");
+        }, 3000);
       } else if (paymentError) {
-        console.log("❌ Error en el pago, redirigiendo...");
-        navigate("/payment-confirmation?error=true");
+        toast.error("❌ Error en el pago, redirigiendo...");
+        setTimeout(() => {
+          navigate("/payment-confirmation?error=true");
+        }, 3000);
       }
 
 
     } catch (error) {
       if (error.message.includes("MetaMask Tx Signature: User denied transaction signature")) {
-        setError("La transacción fue rechazada por el usuario.");
+        toast.error("La transacción fue rechazada por el usuario.");
+        setTimeout(() => {
+          navigate("/catalog");
+        }, 3000);
       } else {
-        setError("Hubo un error con la transacción. Intenta nuevamente.");
+        toast.error("Hubo un error con la transacción. Intenta nuevamente.");
+        setTimeout(() => {
+          navigate("/catalog");
+        }, 3000);
       }
     } finally {
       setLoading(false);
@@ -155,35 +180,53 @@ const Ethereum: React.FC = () => {
     }
   }, [verifyTransactionData]);
 
-  return (
-    <div className="flex flex-col items-center max-w-md mx-auto mt-12 p-5 text-center text-white border-2 rounded-2xl border-Principal w-[30rem] h-[30rem] relative">
+  const handleErrorRedirect = () => {
+    setTimeout(() => {
+      navigate("/catalog");
+    }, 3000);
+  };
 
-      <img src="/img/backgroundETH.webp" className="absolute inset-0 w-full h-full object-cover rounded-2xl" />
+  return (
+    <div className="flex flex-col items-center max-w-md mx-auto mt-12 p-5 text-center gap-7 text-white border-2 rounded-2xl border-Principal w-[30rem] h-[50rem] relative bg-Background-Overlay">
 
       <div className="relative z-10 flex flex-col items-center justify-center h-full">
-        <h1 className="text-5xl font-bold">Pagar con Ethereum</h1>
+        <h1 className="text-4xl font-bold">Pagar con Ethereum</h1>
 
         <div className="flex justify-center items-center my-5" ref={logoRef}></div>
 
-        {loading && <p className="text-lg">Procesando pago...</p>}
+        {loading && <p className="text-3xl">Procesando pago...</p>}
         {transactionEnd && <p className="text-green-500">Transacción completada con éxito</p>}
 
         {transactionData ? (
-          <div className="my-5 text-3xl">
-            <p>{transactionData.totalEuros.toFixed(2).replace(".", ",")} €</p>
-            <p className="flex items-center justify-center gap-2">
+          <div className="flex flex-col items-center justify-center my-5 text-3xl">
+            <div className="flex">
+              <p>{transactionData.totalEuros.toFixed(2).replace(".", ",")}</p>
+              <img src="/svg/euro.svg" className="w-10 h-10" alt="Ethereum logo" />
+            </div>
+            <p className="flex items-center justify-center gap-2 mt-2">
               {transactionData.equivalentEthereum} ETH
-              <img src="/icon/ethereum.svg" className="w-6 h-6" alt="Ethereum logo" />
+              <img src="/svg/ethereum.svg" className="w-10 h-10" alt="Ethereum logo" />
             </p>
-            <button
+            <Button
               onClick={handleComplete}
-              className="mt-4 px-6 py-2 bg-Principal hover:bg-Green-lines text-white font-semibold rounded-lg transition"
+              variant="default"
+              color="green"
+              font="large"
+              className="mt-6 px-6 py-2"
             >
               Completar pago
-            </button>
+            </Button>
           </div>
+        ) : error ? (
+          <>
+            <p className="text-3xl text-red-600 p-4 rounded-lg">
+              {error}
+            </p>
+            {toast.error("Volviendo al catálogo.")}
+            {handleErrorRedirect()}
+          </>
         ) : (
-          <p className="text-lg">Obteniendo datos de la transacción...</p>
+          <p className="text-3xl">⌛ Obteniendo datos de la transacción...</p>
         )}
       </div>
     </div>

@@ -9,12 +9,16 @@ export const setTransactionData = createEvent<TransactionData | null>();
 
 export const setLoading = createEvent<boolean>();
 export const setTransactionEnd = createEvent<boolean>();
-export const setError = createEvent<string | null>();
+export const setError = createEvent<string>();
+export const resetTransactionData = createEvent();
+export const resetError = createEvent();
 
 
 export const $wallet = createStore<string | null>(null).on(setWallet, (_, wallet) => wallet);
-export const $transactionData = createStore<TransactionData | null>(null)
-  .on(fetchTransactionEthereumFx.doneData, (_, data) => data);
+
+export const $transactionData = createStore<any | null>(null)
+  .on(fetchTransactionEthereumFx.doneData, (_, data) => data)  // Si la transacción es exitosa
+  .reset(resetTransactionData);
 
 export const $verifyTransactionData = createStore<any | null>(null)
   .on(verifyTransactionEthereumFx.doneData, (_, data) => data);
@@ -26,12 +30,14 @@ export const $transactionEnd = createStore<boolean>(false)
   .on(setTransactionEnd, (_, end) => end);
 
 export const $error = createStore<string | null>(null)
-  .on(setError, (_, error) => error);
+  .on(fetchTransactionEthereumFx.failData, (_, error) => error.message)
+  .reset(fetchTransactionEthereumFx.done)
+  .on(resetError, () => null);
 
 export const $paymentStatus = createStore<string | null>(null)
   .on(fetchPaymentStatusFx.doneData, (_, paymentStatus) => {
     console.log("💾 Guardando estado del pago en Effector:", paymentStatus);
-    return paymentStatus; //
+    return paymentStatus;
   })
   .reset(fetchPaymentStatusFx.fail);
 

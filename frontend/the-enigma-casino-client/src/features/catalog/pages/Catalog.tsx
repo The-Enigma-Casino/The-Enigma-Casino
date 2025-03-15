@@ -2,16 +2,16 @@ import { useEffect, useState } from "react";
 import CoinsCard from "../components/CoinsCard";
 import PaymentMethod from "../components/PaymentMethod";
 import { useUnit } from "effector-react";
-import { getCoinsPacksFx } from "../actions/catalogActions";
-import { $coinsPacks } from "../store/catalogStore"
-
+import { $coinsPacks, loadPack } from "../store/catalogStore"
+import { resetPayment } from "../store/catalogStore";
 
 const Catalog = () => {
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const coinsPacks = useUnit($coinsPacks);
 
   useEffect(() => {
-    getCoinsPacksFx();
+    loadPack(); //Llama a la peticion
+    resetPayment();
   }, []);
 
 

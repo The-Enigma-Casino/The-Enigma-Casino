@@ -2,6 +2,8 @@ import { useLocation } from "react-router-dom";
 import InfoOrder from "../components/InfoOrder";
 import { $lastOrder } from "../store/PaymentStore";
 import { useUnit } from "effector-react";
+import { useEffect } from "react";
+import { loadCoins } from "../../coins/store/coinsStore";
 
 function PaymentConfirmation() {
   const location = useLocation();
@@ -10,6 +12,12 @@ function PaymentConfirmation() {
   const isPaid = queryParams.get("pagado") === "true";
   const hasError = queryParams.get("error") === "true";
   const order = useUnit($lastOrder);
+
+  useEffect(() => {
+    if (isPaid) {
+      loadCoins();
+    }
+  }, [isPaid]);
 
   return (
     <>

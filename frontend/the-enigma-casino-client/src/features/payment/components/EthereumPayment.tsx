@@ -164,7 +164,7 @@ const Ethereum: React.FC = () => {
           navigate("/catalog");
         }, 3000);
       } else {
-        toast.error("Hubo un error con la transacción. Intenta nuevamente.");
+        toast.error("Hubo un error con la transacción. Intenta nuevamente."); //COMPROBAR ESTE ERROR AL PAGAR
         setTimeout(() => {
           navigate("/catalog");
         }, 3000);

@@ -16,6 +16,7 @@ export default {
         'Green-lines': '#7ff803',
         'Black-color': '#000814',
         'Grey-color': '#505050',
+        'Background-nav': '#1c1c1c',
       },
       fontFamily: {
         reddit: ['Reddit Sans', 'sans-serif'],

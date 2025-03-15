@@ -1,5 +1,5 @@
 import { createStore, createEvent, sample } from "effector";
-import { confirmEmailFx, loginFx, registerFx } from "../actions/authActions";
+import { loginFx, registerFx } from "../actions/authActions";
 import {
   deleteLocalStorage,
   deleteSessionStorage,
@@ -23,20 +23,24 @@ export const $role = createStore<string>("");
 export const setRole = createEvent<string>();
 export const loadRole = createEvent();
 
+export const $name = createStore<string>("");
+export const setName = createEvent<string>();
+export const loadName = createEvent();
+
 export const setAuthError = createEvent<string>();
 
-export const $authError = createStore<{ message: string; time: number } | null>(null)
+export const $authError = createStore<{ message: string; time: number } | null>(
+  null
+)
   .on(setAuthError, (_, error) => ({ message: error, time: Date.now() }))
   .on(loginFx.failData, (_, error) => ({ message: error, time: Date.now() }))
   .on(registerFx.failData, (_, error) => ({ message: error, time: Date.now() }))
   .reset(clearToken);
 
-
 $token
   .on(setToken, (_, { token }) => token)
   .on(clearToken, () => "")
   .on(loginFx.doneData, (_, token) => token);
-
 
 setToken.watch(({ token, rememberMe }) => {
   if (token) {
@@ -65,3 +69,17 @@ sample({
   target: $role,
 });
 
+sample({
+  clock: loadName,
+  source: $token,
+  fn: (token) => {
+    try {
+      const decoded: DecodedToken = jwtDecode(token);
+      console.log("name: ",decoded?.name);
+      return decoded?.name || "";
+    } catch {
+      return "";
+    }
+  },
+  target: $name,
+});

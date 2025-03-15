@@ -1,0 +1,21 @@
+
+.panelContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  color: var(--Principal);
+  gap: 2rem;
+}
+
+.cardContainer {
+  display: flex;
+  gap: 10rem;
+  justify-content: center;
+}
+
+.title {
+  font-size: 10rem;
+  font-weight: bold;
+  color: var(--Principal);
+}

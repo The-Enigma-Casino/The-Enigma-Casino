@@ -11,16 +11,18 @@ function Carousel() {
       partialVisibilityGutter: 20,
     },
     tablet: {
-      breakpoint: { max: 1024, min: 464 },
+      breakpoint: { max: 1024, min: 768 },
       items: 1,
       partialVisibilityGutter: 20,
     },
     mobile: {
-      breakpoint: { max: 464, min: 0 },
+      breakpoint: { max: 767, min: 0 },
       items: 1,
       partialVisibilityGutter: 20,
     },
   }
+
+  console.log(responsive);
 
   return (
     <div className={classes.carrouselContainer}>

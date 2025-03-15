@@ -1,7 +1,7 @@
 .header {
   height: 10rem;
   display: flex;
-  background-color: var(--Background-Overlay);
+  background-color: var(--Background-Nav);
   color: white;
   align-items: center;
   justify-content: space-between;
@@ -55,6 +55,18 @@
   gap: 0.5rem;
 }
 
+.modalText {
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-size: 3.2rem;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: center; 
+}
+
 @media (max-width: 500px) {
   .text {
     display: none;
@@ -89,5 +101,15 @@
 
   .rightHeader {
     gap: 8px;
+  }
+
+  .modalText {
+    font-size: 2rem;
+  }
+
+  .modalButtons {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
   }
 }

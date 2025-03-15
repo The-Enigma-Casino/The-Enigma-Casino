@@ -3,7 +3,7 @@ import { useUnit } from "effector-react";
 import { $selectedCard, selectPaymentMethod } from "../store/catalogStore";
 import { useNavigate } from "react-router-dom";
 // import Button from "../../../components/ui/button/Button";
-import Button2 from "../../../components/ui/button/Button2";
+import ButtonCard from "./ButtonCard";
 
 const PaymentMethod: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<string | null>("Stripe"); //Stripe por defecto
@@ -48,16 +48,14 @@ const PaymentMethod: React.FC = () => {
       </div>
 
 
-      <Button2
-        variant="md"
-        font="bold"
+      <ButtonCard
         selectedPayment={!!selectedPayment}
         selectedCard={!!selectedCard}
         disabled={!selectedPayment || !selectedCard} // Si falta cualquiera, se deshabilita
         onClick={handlePayment}
       >
         Pagar
-      </Button2>
+      </ButtonCard>
     </div >
   );
 };

@@ -1,0 +1,34 @@
+.button {
+  font-family: "Reddit Sans", sans-serif;
+  color: var(--Black-color);
+  border: none;
+  transition: background 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px;
+  border-radius: 20px;
+  font-size: 2rem;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+  width: 14rem;
+  height: 3rem;
+  font-weight: bold;
+}
+
+.button:active {
+  transform: translateY(2px);
+}
+
+.button.selected {
+  background-color: var(--Principal);
+}
+
+.button.disabled {
+  background-color: var(--Grey-color);
+  cursor: not-allowed;
+}
+
+.button.selected:active {
+  background-color: var(--PrincipalDark);
+}

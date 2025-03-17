@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Stripe;
 using System.Text;
+using the_enigma_casino_server.Games.BlackJack.Services;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Mappers;
 using the_enigma_casino_server.Models.Seeder;
@@ -57,6 +58,8 @@ public class Program
         builder.Services.AddScoped<EmailService>();
         builder.Services.AddScoped<CoinsPackService>();
         builder.Services.AddScoped<OrderService>();
+        // BlackJack
+        builder.Services.AddScoped<DeckService>();
 
         // Blockhain
         builder.Services.AddScoped<BlockchainService>();

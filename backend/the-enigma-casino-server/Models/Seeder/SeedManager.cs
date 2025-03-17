@@ -18,5 +18,8 @@ public class SeedManager
 
         CoinsPackSeeder coinsPackSeeder = new CoinsPackSeeder(_context);
         coinsPackSeeder.Seed();
+
+        CardSeeder cardSeeder = new CardSeeder(_context);
+        cardSeeder.Seed();
     }
 }

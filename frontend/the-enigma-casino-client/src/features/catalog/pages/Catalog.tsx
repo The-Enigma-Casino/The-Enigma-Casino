@@ -9,6 +9,7 @@ const Catalog = () => {
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const coinsPacks = useUnit($coinsPacks);
 
+
   useEffect(() => {
     loadPack(); //Llama a la peticion
     resetPayment();

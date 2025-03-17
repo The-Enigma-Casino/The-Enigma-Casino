@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import { $selectedCard, selectPaymentMethod } from "../store/catalogStore";
 import { useNavigate } from "react-router-dom";
-// import Button from "../../../components/ui/button/Button";
+import { $token } from "../../auth/store/authStore";
 import ButtonCard from "./ButtonCard";
+import toast from "react-hot-toast";
 
 const PaymentMethod: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<string | null>("Stripe"); //Stripe por defecto
   const selectedCard = useUnit($selectedCard);
   const navigate = useNavigate();
+  const token = useUnit($token);
 
   const handlePaymentSelection = (method: string) => {
     setSelectedPayment(method);
@@ -16,8 +18,15 @@ const PaymentMethod: React.FC = () => {
   };
 
   const handlePayment = () => {
-    if (selectedPayment && selectedCard) {
-      navigate("/payment", { state: { ...selectedCard, paymentMethod: selectedPayment } }); //Ruta navegar PAGO
+    if (!token) {
+      toast.error("Por favor, inicie sesión para continuar con el pago.");
+      setTimeout(() => {
+        navigate("/auth/login")
+      }, 3000);
+    } else if (selectedPayment && selectedCard) {
+      navigate("/payment", { state: { ...selectedCard, paymentMethod: selectedPayment } });
+    } else {
+      toast.error("Por favor, selecciona una forma de pago y una tarjeta.");
     }
   };
 

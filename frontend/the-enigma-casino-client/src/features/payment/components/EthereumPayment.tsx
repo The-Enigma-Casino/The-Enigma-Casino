@@ -50,7 +50,7 @@ const Ethereum: React.FC = () => {
       setLoading(false);
       resetError();
     };
-  }, [navigate]);
+  }, []);
 
   // Solicita API precio packFichas
   useEffect(() => {
@@ -59,6 +59,13 @@ const Ethereum: React.FC = () => {
     }
   }, [orderPackId, token]);
 
+
+  // Redirección
+  const redirectToCatalog = () => {
+    setTimeout(() => {
+      navigate("/catalog");
+    }, 3000);
+  };
 
 
   // Flujo completo
@@ -80,9 +87,7 @@ const Ethereum: React.FC = () => {
             Volviendo al catálogo...
           </span>
         );
-        setTimeout(() => {
-          navigate("/catalog");
-        }, 3000);
+        redirectToCatalog();
         return;
       }
 
@@ -94,9 +99,7 @@ const Ethereum: React.FC = () => {
 
       if (accounts.length === 0) {
         toast.error("No tienes cuenta en Metamask. Redirigiendo al catálogo...");
-        setTimeout(() => {
-          navigate("/catalog");
-        }, 3000);
+        redirectToCatalog();
         return;
       }
 
@@ -105,9 +108,7 @@ const Ethereum: React.FC = () => {
 
       if (!transactionData) {
         toast.error("Datos de transacción no disponibles. Redirigiendo al carrito...");
-        setTimeout(() => {
-          navigate("/catalog");
-        }, 3000);
+        redirectToCatalog();
         return;
       }
 
@@ -135,56 +136,39 @@ const Ethereum: React.FC = () => {
       const order = await verifyTransactionEthereumFx(verifyData);
       if (order && order.id) {
         setTransactionEnd(true);
+        if (order.isPaid) {
+          toast.success("Pago confirmado, redirigiendo...");
+          fetchLastOrderFx();
+          setTimeout(() => {
+            navigate("/payment-confirmation?pagado=true");
+          }, 3000);
+        } else {
+          toast.error("Error en el pago, redirigiendo...");
+          setTimeout(() => {
+            navigate("/payment-confirmation?error=true");
+          }, 3000);
+        }
+
       } else {
         toast.error("La transacción no es válida, volviendo a catálogo.");
-        setTimeout(() => {
-          navigate("/catalog");
-        }, 3000);
+        redirectToCatalog();
         return;
       }
-
-      if (paymentStatus === "paid") {
-        toast.error("✅ Pago confirmado, redirigiendo...");
-        fetchLastOrderFx();
-        setTimeout(() => {
-          navigate("/payment-confirmation?pagado=true");
-        }, 3000);
-      } else if (paymentError) {
-        toast.error("❌ Error en el pago, redirigiendo...");
-        setTimeout(() => {
-          navigate("/payment-confirmation?error=true");
-        }, 3000);
-      }
-
 
     } catch (error) {
       if (error.message.includes("MetaMask Tx Signature: User denied transaction signature")) {
         toast.error("La transacción fue rechazada por el usuario.");
-        setTimeout(() => {
-          navigate("/catalog");
-        }, 3000);
+        redirectToCatalog();
       } else {
         toast.error("Hubo un error con la transacción. Intenta nuevamente."); //COMPROBAR ESTE ERROR AL PAGAR
-        setTimeout(() => {
-          navigate("/catalog");
-        }, 3000);
+        redirectToCatalog();
       }
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (verifyTransactionData && verifyTransactionData.id) {
-      setTransactionEnd(true);
-    }
-  }, [verifyTransactionData]);
 
-  const handleErrorRedirect = () => {
-    setTimeout(() => {
-      navigate("/catalog");
-    }, 3000);
-  };
 
   return (
     <div className="flex flex-col items-center max-w-md mx-auto mt-12 p-5 text-center gap-7 text-white border-2 rounded-2xl border-Principal w-[30rem] h-[50rem] relative bg-Background-Overlay">
@@ -195,7 +179,7 @@ const Ethereum: React.FC = () => {
         <div className="flex justify-center items-center my-5" ref={logoRef}></div>
 
         {loading && <p className="text-3xl">Procesando pago...</p>}
-        {transactionEnd && <p className="text-green-500">Transacción completada con éxito</p>}
+        {transactionEnd && <p className="text-green-500 text-3xl">Transacción completada con éxito</p>}
 
         {transactionData ? (
           <div className="flex flex-col items-center justify-center my-5 text-3xl">
@@ -203,7 +187,7 @@ const Ethereum: React.FC = () => {
               <p>{transactionData.totalEuros.toFixed(2).replace(".", ",")}</p>
               <img src="/svg/euro.svg" className="w-10 h-10" alt="Ethereum logo" />
             </div>
-            <p className="flex items-center justify-center gap-2 mt-2">
+            <p className="flex items-center justify-center gap-2 mt-2 mb-3">
               {transactionData.equivalentEthereum} ETH
               <img src="/svg/ethereum.svg" className="w-10 h-10" alt="Ethereum logo" />
             </p>
@@ -212,7 +196,7 @@ const Ethereum: React.FC = () => {
               variant="default"
               color="green"
               font="large"
-              className="mt-6 px-6 py-2"
+              className="mt-6 px-6 py-2 "
             >
               Completar pago
             </Button>
@@ -223,7 +207,6 @@ const Ethereum: React.FC = () => {
               {error}
             </p>
             {toast.error("Volviendo al catálogo.")}
-            {handleErrorRedirect()}
           </>
         ) : (
           <p className="text-3xl">⌛ Obteniendo datos de la transacción...</p>

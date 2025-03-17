@@ -94,6 +94,11 @@ public class BlockchainController : BaseController
 
             Order order = await _orderService.NewEthereumOrder(userId, data.CoinsPackId, data.Hash);
 
+            if (order.IsPaid)
+            {
+                await _orderService.UpdatePaid(order);
+            }
+
             OrderDto orderDto = _orderMapper.ToOrderDto(order);
 
             //Retorno order Cambiar?

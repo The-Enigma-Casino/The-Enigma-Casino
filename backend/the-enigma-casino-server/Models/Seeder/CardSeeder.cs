@@ -15,17 +15,32 @@ public class CardSeeder
 
     public void Seed()
     {
-        var existingCards = _context.Cards.AsNoTracking().ToList();
+        var existingCards = _context.Cards.ToList();
 
         List<Card> newCards = new List<Card>();
 
         foreach (Suit suit in Enum.GetValues(typeof(Suit)))
         {
-            foreach (CardRank rank in Enum.GetValues(typeof(CardRank)))
+            foreach (string rankName in Enum.GetNames(typeof(CardRank)))
             {
-                if (!existingCards.Any(c => c.Name == rank && c.Suit == suit))
+                CardRank rank = Enum.Parse<CardRank>(rankName);
+                string imageUrl = $"/images/cards/{rankName.ToLower()}_{suit.ToString().ToLower()}.webp";
+
+                var existingCard = existingCards.FirstOrDefault(c => c.Name == rank && c.Suit == suit);
+
+                if (existingCard == null)
                 {
-                    newCards.Add(new Card(rank, suit));
+                    var newCard = new Card(rank, suit) { ImageUrl = imageUrl };
+                    newCards.Add(newCard);
+                }
+                else
+                {
+
+                    if (existingCard.ImageUrl != imageUrl)
+                    {
+                        existingCard.ImageUrl = imageUrl;
+                        _context.Entry(existingCard).State = EntityState.Modified;
+                    }
                 }
             }
         }
@@ -33,12 +48,8 @@ public class CardSeeder
         if (newCards.Count > 0)
         {
             _context.Cards.AddRange(newCards);
-            _context.SaveChanges();
-            Console.WriteLine($"{newCards.Count} cartas insertadas correctamente en la base de datos.");
         }
-        else
-        {
-            Console.WriteLine("Todas las cartas ya existen en la base de datos.");
-        }
+
+        _context.SaveChanges();
     }
 }

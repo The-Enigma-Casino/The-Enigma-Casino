@@ -1,4 +1,4 @@
-﻿namespace the_enigma_casino_server.Games.BlackJack.Entities;
+﻿namespace the_enigma_casino_server.Games.Entities.Enum;
 
 public enum CardRank
 {
@@ -11,8 +11,8 @@ public enum CardRank
     Eight = 8,
     Nine = 9,
     Ten = 10,
-    Jack = 10,
-    Queen = 10,
-    King = 10,
-    Ace = 11
+    Jack = 11,
+    Queen = 12,
+    King = 13,
+    Ace = 14
 }

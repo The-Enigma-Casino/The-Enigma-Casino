@@ -1,4 +1,4 @@
-﻿namespace the_enigma_casino_server.Games.BlackJack.Entities; 
+﻿namespace the_enigma_casino_server.Games.Entities.Enum;
 
 public enum Suit
 {

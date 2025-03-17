@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using the_enigma_casino_server.Games.BlackJack.Entities;
+using the_enigma_casino_server.Games.Entities;
+using the_enigma_casino_server.Games.Entities.Enum;
 using the_enigma_casino_server.Models.Database;
 
 namespace the_enigma_casino_server.Models.Seeder;
@@ -26,7 +27,7 @@ public class CardSeeder
                 CardRank rank = Enum.Parse<CardRank>(rankName);
                 string imageUrl = $"/images/cards/{rankName.ToLower()}_{suit.ToString().ToLower()}.webp";
 
-                var existingCard = existingCards.FirstOrDefault(c => c.Name == rank && c.Suit == suit);
+                var existingCard = existingCards.FirstOrDefault(c => c.CardRank == rank && c.Suit == suit);
 
                 if (existingCard == null)
                 {

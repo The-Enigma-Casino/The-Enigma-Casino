@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using the_enigma_casino_server.Games.BlackJack.Entities;
+using the_enigma_casino_server.Games.Entities;
+using the_enigma_casino_server.Games.Entities.Enum;
 
 namespace the_enigma_casino_server.Models.Database.Config;
 
@@ -17,8 +18,8 @@ public class CardConfig : IEntityTypeConfiguration<Card>
               .IsRequired()
               .ValueGeneratedOnAdd();
 
-        entity.Property(e => e.Name)
-                .HasColumnName("name")
+        entity.Property(e => e.CardRank)
+                .HasColumnName("card_rank")
                 .IsRequired()
                 .HasConversion(
                     v => v.ToString(),

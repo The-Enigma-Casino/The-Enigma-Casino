@@ -1,9 +1,43 @@
 ﻿using the_enigma_casino_server.Games.BlackJack.Entities;
+using the_enigma_casino_server.Games.Entities;
+using the_enigma_casino_server.Games.Entities.Enum;
+using the_enigma_casino_server.Models.Database;
 
 namespace the_enigma_casino_server.Games.BlackJack.Services;
 
 public class DeckService
 {
+
+    private readonly UnitOfWork _unitOfWork;
+
+    public DeckService(UnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Deck> CreateDeck(GameSession gameSession)
+    {
+        Deck deck = new Deck
+        {
+            GameSessionId = gameSession.Id,
+        };
+
+        foreach (Suit suit in Enum.GetValues(typeof(Suit)))
+        {
+            foreach (CardRank rank in Enum.GetValues(typeof(CardRank)))
+            {
+                deck.Cards.Add(new Card(rank, suit));
+            }
+        }
+
+        Shuffle(deck);
+
+        await _unitOfWork.DeckRepository.InsertAsync(deck);
+        await _unitOfWork.SaveAsync();
+
+        return deck;
+    }
+
     public void Shuffle(Deck deck)
     {
         Random random = new Random();

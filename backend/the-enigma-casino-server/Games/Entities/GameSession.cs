@@ -8,6 +8,10 @@ public class GameSession
 
     public GameType GameType { get; set; }
 
+    public int? DeckId { get; set; }
+
+    public Deck Deck { get; set; }
+
     public int MaxPlayer  { get; set; }
     
     public int MinPlayer { get; set; }

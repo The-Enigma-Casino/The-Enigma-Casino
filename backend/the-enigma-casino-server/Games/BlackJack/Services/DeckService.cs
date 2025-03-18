@@ -1,5 +1,4 @@
-﻿using the_enigma_casino_server.Games.BlackJack.Entities;
-using the_enigma_casino_server.Games.Entities;
+﻿using the_enigma_casino_server.Games.Entities;
 using the_enigma_casino_server.Games.Entities.Enum;
 using the_enigma_casino_server.Models.Database;
 
@@ -53,13 +52,18 @@ public class DeckService
         }
     }
 
-    public Card DrawCard(Deck deck)
+    public async Task<Card> DrawCard(Deck deck)
     {
         if (deck.Cards.Count == 0)
             throw new Exception("No quedan cartas en el mazo.");
 
         Card card = deck.Cards[0];
         deck.Cards.RemoveAt(0);
+        _unitOfWork.DeckRepository.Update(deck);
+        await _unitOfWork.SaveAsync();
+
         return card;
     }
+
+
 }

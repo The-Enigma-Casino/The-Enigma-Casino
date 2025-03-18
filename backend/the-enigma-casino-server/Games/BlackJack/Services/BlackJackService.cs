@@ -1,4 +1,4 @@
-﻿using the_enigma_casino_server.Games.BlackJack.Entities;
+﻿using the_enigma_casino_server.Games.Entities;
 
 namespace the_enigma_casino_server.Games.BlackJack.Services;
 

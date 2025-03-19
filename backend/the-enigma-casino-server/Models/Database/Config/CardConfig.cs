@@ -18,6 +18,12 @@ public class CardConfig : IEntityTypeConfiguration<Card>
               .IsRequired()
               .ValueGeneratedOnAdd();
 
+
+        entity.Property(e => e.Suit)
+        .HasColumnName("suit")
+        .IsRequired()
+        .HasConversion<int>();
+
         entity.Property(e => e.CardRank)
                 .HasColumnName("card_rank")
                 .IsRequired()
@@ -26,13 +32,18 @@ public class CardConfig : IEntityTypeConfiguration<Card>
                     v => (CardRank)Enum.Parse(typeof(CardRank), v)
         );
 
-        entity.Property(e => e.Suit)
-            .HasColumnName("suit")
-            .IsRequired();
-
         entity.Property(e => e.ImageUrl)
             .HasColumnName("image")
             .HasMaxLength(200)
             .IsRequired();
+
+        entity.Property(e => e.DefaultValue)
+            .HasColumnName("default_value")
+            .IsRequired();
+
+        entity.Property(e => e.GameType)
+            .HasColumnName("game_type")
+            .IsRequired()
+            .HasConversion<int>();
     }
 }

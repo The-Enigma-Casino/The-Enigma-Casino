@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Games\BlackJack\Entities\**" />
+    <Compile Remove="Games\BlackJack\Repository\**" />
+    <Content Remove="Games\BlackJack\Entities\**" />
+    <Content Remove="Games\BlackJack\Repository\**" />
+    <EmbeddedResource Remove="Games\BlackJack\Entities\**" />
+    <EmbeddedResource Remove="Games\BlackJack\Repository\**" />
+    <None Remove="Games\BlackJack\Entities\**" />
+    <None Remove="Games\BlackJack\Repository\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Utilities\es_words.txt" />
   </ItemGroup>
 
@@ -35,8 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Games\BlackJack\Entities\" />
-    <Folder Include="Games\BlackJack\Repository\" />
     <Folder Include="wwwroot\" />
     <Folder Include="WebSocket\" />
   </ItemGroup>

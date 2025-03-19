@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using the_enigma_casino_server.Games.Entities;
+using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Models.Database.Entities;
 
 namespace the_enigma_casino_server.Models.Database;

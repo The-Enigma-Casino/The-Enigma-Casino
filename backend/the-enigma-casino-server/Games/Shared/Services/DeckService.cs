@@ -1,8 +1,8 @@
-﻿using the_enigma_casino_server.Games.Entities;
-using the_enigma_casino_server.Games.Entities.Enum;
+﻿using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Games.Shared.Entities.Enum;
 using the_enigma_casino_server.Models.Database;
 
-namespace the_enigma_casino_server.Games.BlackJack.Services;
+namespace the_enigma_casino_server.Games.Shared.Services;
 
 public class DeckService
 {
@@ -14,11 +14,11 @@ public class DeckService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Deck> CreateDeck(GameSession gameSession)
+    public async Task<Deck> CreateDeck(GameMatch gameMatch)
     {
         Deck deck = new Deck
         {
-            GameSessionId = gameSession.Id,
+            GameMatchId = gameMatch.Id,
         };
 
         foreach (Suit suit in Enum.GetValues(typeof(Suit)))

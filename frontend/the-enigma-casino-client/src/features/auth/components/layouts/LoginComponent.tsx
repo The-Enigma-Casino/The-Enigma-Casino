@@ -1,5 +1,5 @@
 import Checkbox from "../ui/Checkbox";
-import Input from "../../../../components/ui/input/Input";
+import Input from "../../../../components/ui/input/CustomInput";
 import Button from "../../../../components/ui/button/Button";
 
 import classes from "./Login.module.css";

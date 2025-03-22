@@ -1,0 +1,47 @@
+.customHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.select {
+  background-color: var(--Background-Nav);
+  color: white;
+  border: 1px solid var(--Principal);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.select option {
+  background-color: var(--Background-Nav);
+  color: white;
+}
+
+.select::-webkit-scrollbar {
+  width: 6px;
+}
+
+.select::-webkit-scrollbar-thumb {
+  background-color: var(--Principal);
+  border-radius: 3px;
+}
+
+.navButton {
+  background: none;
+  border: none;
+  color: var(--Principal);
+  font-size: 1.6rem;
+  cursor: pointer;
+}
+
+.navButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

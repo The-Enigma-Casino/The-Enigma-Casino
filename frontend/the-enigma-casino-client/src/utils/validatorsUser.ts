@@ -19,11 +19,6 @@ export const isValidPassword = (password: string): boolean => {
   );
 };
 
-export const isValidDNI = (dni: string): boolean  => {
-  const regex = /^\d{8}[A-Za-z]$/;
-  return regex.test(dni);
-}
-
 export const nicknameValidator = (name: string): boolean => { 
   return name.length >= 3 && name.length <= 20;
 };

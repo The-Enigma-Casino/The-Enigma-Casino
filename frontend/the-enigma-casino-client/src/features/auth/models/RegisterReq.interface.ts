@@ -3,7 +3,7 @@ export interface RegisterReq {
   fullname: string;
   email: string;
   password: string;
-  dni: string;
+  dateOfBirth: string;
   country: string;
   address: string;
 }

@@ -1,4 +1,4 @@
-input {
+.customInput {
   width: 100%;
   max-width: 380px;
   height: 60px;
@@ -10,25 +10,25 @@ input {
   box-sizing: border-box;
 }
 
-.input::placeholder {
-  color: var(--Black-color);
+.customInput::placeholder {
+  color: var(--Light-Grey-color);
 }
 
-.input:focus {
+.customInput:focus {
   outline: none;
   border: 1px solid;
   border-color: var(--Grey-color);
 }
 
 @media (max-width: 768px) {
-  .input {
+  .customInput {
     font-size: 1.2rem;
     padding-left: 20px;
   }
 }
 
 @media (max-width: 480px) {
-  .input {
+  .customInput {
     height: 50px;
     font-size: 1rem;
     padding-left: 15px;

@@ -8,12 +8,10 @@ public class GameMatchService
 {
 
     private readonly UnitOfWork _unitOfWork;
-    private readonly DeckService _deckService;
 
-    public GameMatchService(UnitOfWork unitOfWork, DeckService deckService)
+    public GameMatchService(UnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _deckService = deckService;
     }
 
 
@@ -31,9 +29,9 @@ public class GameMatchService
 
         if (gameSession.GameType == GameType.BlackJack || gameSession.GameType == GameType.Poker)
         {
-            Deck deck = await _deckService.CreateDeck(gameMatch);
-            gameMatch.DeckId = deck.Id;
-            gameMatch.Deck = deck;
+            //Deck deck = await _deckService.CreateDeck(gameMatch);
+            //gameMatch.DeckId = deck.Id;
+            //gameMatch.Deck = deck;
         }
 
         await _unitOfWork.GameMatchRepository.InsertAsync(gameMatch);

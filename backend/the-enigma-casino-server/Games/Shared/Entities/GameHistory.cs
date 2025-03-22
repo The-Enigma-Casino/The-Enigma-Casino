@@ -1,4 +1,5 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities.Enum;
+using the_enigma_casino_server.Models.Database.Entities;
 
 namespace the_enigma_casino_server.Games.Shared.Entities;
 
@@ -6,19 +7,20 @@ public class GameHistory
 {
     public int Id { get; set; }
 
-    public int GameSessionId { get; set; }
-    public GameSession GameSession { get; set; }
-
-    public int PlayerId { get; set; }
-    public Player Player { get; set; }
+    public int GameTableId { get; set; }
+    public GameTable GameTable { get; set; }
+    public int UserId { get; set; }
+    public User User { get; set; }
 
     public GameType GameType { get; set; }
 
-    public int BetAmount { get; set; }
-    public DateTime Timestamp { get; set; }
+    public int TotalMatchesPlayed { get; set; }
 
-    public GameHistory()
-    {
-        Timestamp = DateTime.UtcNow;
-    }
+    public int TotalBetAmount { get; set; } 
+
+    public int ChipResult { get; set; } 
+
+    public DateTime JoinedAt { get; set; } =  DateTime.UtcNow;
+
+    public DateTime LeftAt { get; set; }
 }

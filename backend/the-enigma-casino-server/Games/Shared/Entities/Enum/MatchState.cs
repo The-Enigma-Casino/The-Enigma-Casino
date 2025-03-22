@@ -1,8 +1,8 @@
 ﻿namespace the_enigma_casino_server.Games.Shared.Entities.Enum;
 
-public enum GameState
+public enum MatchState
 {
     Waiting,
-    Playing,
+    InProgress,
     Finished
 }

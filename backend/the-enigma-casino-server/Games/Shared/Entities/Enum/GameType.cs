@@ -2,7 +2,6 @@
 
 public enum GameType
 {
-    Undefined,
     BlackJack,
     Poker,
     Roulette

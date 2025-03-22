@@ -1,4 +1,5 @@
 ﻿using the_enigma_casino_server.Models.Database;
+using the_enigma_casino_server.Models.Seeder.GameSeeders;
 
 namespace the_enigma_casino_server.Models.Seeder;
 
@@ -19,7 +20,7 @@ public class SeedManager
         CoinsPackSeeder coinsPackSeeder = new CoinsPackSeeder(_context);
         coinsPackSeeder.Seed();
 
-        CardSeeder cardSeeder = new CardSeeder(_context);
-        cardSeeder.Seed();
+        GameTableSeeder gameTableSeeder = new GameTableSeeder(_context);
+        gameTableSeeder.Seed();
     }
 }

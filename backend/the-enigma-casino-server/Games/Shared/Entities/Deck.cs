@@ -1,7 +1,9 @@
 ﻿
+
+using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Entities.Enum;
 
-namespace the_enigma_casino_server.Games.Shared.Entities;
+
 
 public class Deck
 {
@@ -17,17 +19,17 @@ public class Deck
     {
         Cards = new List<Card>();
     }
-    
-    //public void CreateDeck()
-    //{
-    //    foreach (Suit suit in Enum.GetValues(typeof(Suit)))
-    //    {
-    //        foreach (CardRank rank in Enum.GetValues(typeof(CardRank)))
-    //        {
-    //            Cards.Add(new Card(rank, suit));
-    //        }
-    //    }
-    //}
+
+    public void CreateDeck()
+    {
+        foreach (Suit suit in Enum.GetValues(typeof(Suit)))
+        {
+            foreach (CardRank rank in Enum.GetValues(typeof(CardRank)))
+            {
+                Cards.Add(new Card(rank, suit));
+            }
+        }
+    }
 
     public void Shuffle()
     {

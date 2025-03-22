@@ -16,8 +16,7 @@ public class MyDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<CoinsPack> CoinsPacks { get; set; }
     public DbSet<Order> Orders { get; set; }
-    public DbSet<Card> Cards { get; set; }
-    //public DbSet<Deck> Decks { get; set; }
+    public DbSet<GameTable> GameTables { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {

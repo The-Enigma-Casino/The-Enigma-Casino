@@ -51,17 +51,6 @@ public class UserRepository : Repository<User, int>
         return true;
     }
 
-    public async Task<bool> ExistHashDNI(string hashDNI)
-    {
-        hashDNI = hashDNI.ToLower();
-        User user = await GetQueryable().FirstOrDefaultAsync(user => user.HashDNI.ToLower() == hashDNI);
-        if (user == null)
-        {
-            return false;
-        }
-        return true;
-    }
-
     public async Task<bool> ExistNickName(string nickName)
     {
         nickName = nickName.ToLower();

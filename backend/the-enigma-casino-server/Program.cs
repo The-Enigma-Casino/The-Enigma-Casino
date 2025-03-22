@@ -58,8 +58,6 @@ public class Program
         builder.Services.AddScoped<EmailService>();
         builder.Services.AddScoped<CoinsPackService>();
         builder.Services.AddScoped<OrderService>();
-        // BlackJack
-        builder.Services.AddScoped<DeckService>();
 
         // Blockhain
         builder.Services.AddScoped<BlockchainService>();

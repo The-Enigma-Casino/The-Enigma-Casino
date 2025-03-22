@@ -63,6 +63,9 @@ public class Program
 
         // Inyeccion Hosted Services
 
+        // Servicios Singleton
+        builder.Services.AddSingleton<ValidationService>();
+
         //Inyección de mappers
         builder.Services.AddScoped<StripeMapper>();
         builder.Services.AddScoped<OrderMapper>();

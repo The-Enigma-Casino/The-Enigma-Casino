@@ -28,10 +28,10 @@ public class AuthController : BaseController
             if (!string.IsNullOrEmpty(validationMessage))
                 return BadRequest(validationMessage);
 
-            (bool exists, string message) = await _userService.CheckUser(request.NickName, request.Email, request.Dni);
-
-            if (exists)
+            (bool exists, string message) = await _userService.CheckUser(request.NickName, request.Email);
+            if (exists) 
                 return BadRequest(message);
+
 
             User newUser = await _userService.GenerateNewUser(request);
 

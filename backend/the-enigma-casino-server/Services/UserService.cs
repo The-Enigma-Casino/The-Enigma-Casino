@@ -16,19 +16,20 @@ public class UserService
     private UnitOfWork _unitOfWork;
     private readonly TokenValidationParameters _tokenParameters;
     private readonly EmailService _emailService;
+    private readonly ValidationService _validation;
 
-    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService)
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService)
     {
         _unitOfWork = unitOfWork;
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
         _emailService = emailService;
+        _validation = validationService;
     }
 
-    public async Task<(bool, string)> CheckUser(string nickName, string email, string Dni)
+    public async Task<(bool, string)> CheckUser(string nickName, string email)
     {
         bool existEmail = await _unitOfWork.UserRepository.ExistEmail(email);
         bool existNickname = await _unitOfWork.UserRepository.ExistNickName(nickName);
-        bool existDni = await _unitOfWork.UserRepository.ExistHashDNI(HashHelper.Hash(Dni));
 
         if (existEmail)
             return (true, "El email ya está registrado.");
@@ -36,8 +37,6 @@ public class UserService
         if (existNickname)
             return (true, "El nickname ya está en uso.");
 
-        if (existDni)
-            return (true, "El DNI ya está registrado.");
 
         return (false, "Usuario no encontrado.");
     }
@@ -98,7 +97,7 @@ public class UserService
                 FullName = request.FullName,
                 Email = request.Email,
                 HashPassword = HashHelper.Hash(request.Password),
-                HashDNI = HashHelper.Hash(request.Dni),
+                DateOfBirth = request.DateOfBirth,
                 Country = request.Country,
                 Address = request.Address
             };
@@ -160,20 +159,25 @@ public class UserService
     {
         if (string.IsNullOrEmpty(request.NickName) ||
             string.IsNullOrEmpty(request.Email) ||
-            string.IsNullOrEmpty(request.Dni))
+            string.IsNullOrEmpty(request.Password) ||
+            string.IsNullOrEmpty(request.Country) ||
+            string.IsNullOrEmpty(request.Address))
+        {
             return "Alguno de los campos enviados están vacíos.";
+        }
 
-        if (!ValidationHelper.IsValidEmail(request.Email))
+        if (!_validation.IsValidEmail(request.Email))
             return "El email ingresado no es válido.";
 
-        if (!ValidationHelper.IsValidDNI(request.Dni))
-            return "El DNI ingresado no es válido.";
-
-        if (!ValidationHelper.IsValidName(request.NickName))
+        if (!_validation.IsValidName(request.NickName))
             return "El nombre de usuario contiene palabras no permitidas.";
+
+        if (!_validation.IsAdult(request.DateOfBirth))
+            return "Debes ser mayor de edad para registrarte.";
 
         return string.Empty;
     }
+
 
     public async Task<int> GetCoins(int id)
     {

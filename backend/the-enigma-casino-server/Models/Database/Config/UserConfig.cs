@@ -56,10 +56,6 @@ public class UserConfig : IEntityTypeConfiguration<User>
                 .HasMaxLength(100)
                 .IsRequired();
 
-        entity.Property(e => e.HashDNI)
-            .HasColumnName("hash_dni")
-                .HasMaxLength(64)
-                .IsRequired();
 
         entity.Property(e => e.Coins)
             .HasColumnName("coins")
@@ -69,12 +65,14 @@ public class UserConfig : IEntityTypeConfiguration<User>
             .HasColumnName("is_banned")
                 .IsRequired();
 
+        entity.Property(e => e.DateOfBirth)
+              .HasColumnName("date_of_birth")
+              .IsRequired();
+
         // IsUnique 
         entity.HasIndex(e => e.Email)
               .IsUnique();
         entity.HasIndex(e => e.NickName)
               .IsUnique();
-        entity.HasIndex(e => e.HashDNI)
-      .IsUnique();
     }
 }

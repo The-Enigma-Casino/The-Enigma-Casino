@@ -1,4 +1,5 @@
-﻿using the_enigma_casino_server.Models.Database.Entities.Enum;
+﻿using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Models.Database.Entities.Enum;
 
 namespace the_enigma_casino_server.Models.Database.Entities;
 
@@ -10,7 +11,7 @@ public class User
     public string Email { get; set; }
     public string HashPassword { get; set; }
     public string Image {  get; set; }
-    public string HashDNI { get; set; }
+    public DateTime DateOfBirth { get; set; }
     public string Country { get; set; }
     public string Address { get; set; }
     public int Coins { get; set; }
@@ -18,8 +19,9 @@ public class User
     public bool EmailConfirm {  get; set; }
     public string ConfirmationToken { get; set; }
     public Role Role { get; set; }
-
     public List<Order> Orders { get; set; }
+    public List<GameHistory> GameHistories { get; set; }
+
 
     // FALTAN COSAS
 

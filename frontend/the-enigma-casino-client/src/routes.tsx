@@ -10,8 +10,13 @@ import routeAuth from "./features/auth/routes";
 import { createBrowserRouter } from "react-router-dom";
 import WithdrawConfirmation from "./features/withdraw/pages/WithdrawConfirmation";
 import Withdraw from "./features/withdraw/pages/Withdraw";
+import LandingPage from "./features/landingPage/pages/LandingPage";
 
 const router = createBrowserRouter([
+  {
+    path: "/landing",
+    element: <LandingPage />,
+  },
   {
     path: "/",
     element: <RootLayout />,

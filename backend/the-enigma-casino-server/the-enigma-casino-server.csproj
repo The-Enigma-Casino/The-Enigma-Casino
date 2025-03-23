@@ -10,16 +10,12 @@
   <ItemGroup>
     <Compile Remove="Games\BlackJack\**" />
     <Compile Remove="Games\Shared\Repository\**" />
-    <Compile Remove="Games\Shared\Services\**" />
     <Content Remove="Games\BlackJack\**" />
     <Content Remove="Games\Shared\Repository\**" />
-    <Content Remove="Games\Shared\Services\**" />
     <EmbeddedResource Remove="Games\BlackJack\**" />
     <EmbeddedResource Remove="Games\Shared\Repository\**" />
-    <EmbeddedResource Remove="Games\Shared\Services\**" />
     <None Remove="Games\BlackJack\**" />
     <None Remove="Games\Shared\Repository\**" />
-    <None Remove="Games\Shared\Services\**" />
   </ItemGroup>
 
   <ItemGroup>

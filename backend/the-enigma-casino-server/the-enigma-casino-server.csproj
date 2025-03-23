@@ -27,6 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Games\BlackJack\BlackjackGame.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
 	  <None Include="Utilities\es_words.txt" />
   </ItemGroup>
 
@@ -50,7 +54,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Games\BlackJack\" />
     <Folder Include="wwwroot\" />
     <Folder Include="WebSocket\" />
   </ItemGroup>

@@ -14,6 +14,7 @@
     "@stripe/react-stripe-js": "^3.3.0",
     "@stripe/stripe-js": "^5.10.0",
     "axios": "^1.7.9",
+    "canvas-confetti": "^1.9.3",
     "date-fns": "^4.1.0",
     "effector": "^23.3.0",
     "effector-react": "^23.3.0",

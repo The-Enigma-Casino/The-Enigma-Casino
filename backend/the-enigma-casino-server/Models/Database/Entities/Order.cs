@@ -27,6 +27,8 @@ public class Order
 
     public int Price { get; set; }
 
+    public int Coins { get; set; }
+
     public PayMode PayMode { get; set; }
 
     public Order()
@@ -46,6 +48,7 @@ public class Order
         CoinsPackId = coinsPack.Id;
 
         Price = coinsPack.Price;
+        Coins = coinsPack.Quantity;
     }
 
 }

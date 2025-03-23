@@ -47,8 +47,6 @@
 
   <ItemGroup>
     <Folder Include="Games\BlackJack\" />
-    <Folder Include="Games\Shared\Repository\" />
-    <Folder Include="Games\Shared\Services\" />
     <Folder Include="wwwroot\" />
     <Folder Include="WebSocket\" />
   </ItemGroup>

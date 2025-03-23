@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Games\BlackJack\" />
     <Folder Include="wwwroot\" />
     <Folder Include="WebSocket\" />
   </ItemGroup>

@@ -69,6 +69,13 @@ public class UserConfig : IEntityTypeConfiguration<User>
               .HasColumnName("date_of_birth")
               .IsRequired();
 
+        entity.Property(e => e.EmailConfirm)
+              .HasColumnName("email_confirm")
+              .IsRequired();
+
+        entity.Property(e => e.ConfirmationToken)
+            .HasColumnName("confirmation_token");
+
         // IsUnique 
         entity.HasIndex(e => e.Email)
               .IsUnique();

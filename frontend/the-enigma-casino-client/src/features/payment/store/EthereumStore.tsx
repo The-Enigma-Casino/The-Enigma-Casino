@@ -2,7 +2,6 @@ import { createStore, createEvent } from "effector";
 import { TransactionData } from "../models/EthereumTransaction.interface";
 import { fetchTransactionEthereumFx, verifyTransactionEthereumFx } from "../actions/ethereumActions";
 import { fetchPaymentStatusFx } from "../actions/stripeActions";
-import { OrderDto } from "../models/OrderDto.interface";
 
 export const setWallet = createEvent<string | null>();
 export const setTransactionData = createEvent<TransactionData | null>();

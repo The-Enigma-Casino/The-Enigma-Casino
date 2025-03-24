@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import InfoOrder from "../components/InfoOrder";
-import { $lastOrder } from "../store/PaymentStore";
+import { $lastOrder, resetLastOrder, resetPaymentStatus } from "../store/PaymentStore";
 import { useUnit } from "effector-react";
 import { useEffect } from "react";
 import { loadCoins } from "../../coins/store/coinsStore";
@@ -17,6 +17,15 @@ function PaymentConfirmation() {
     if (isPaid) {
       loadCoins();
     }
+  }, [isPaid]);
+
+  useEffect(() => {
+    return () => {
+      if (isPaid) {
+        resetLastOrder();
+        resetPaymentStatus();
+      }
+    };
   }, [isPaid]);
 
   return (

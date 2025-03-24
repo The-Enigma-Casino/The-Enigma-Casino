@@ -9,6 +9,14 @@
   border-radius: 40px;
   color: white;
   gap: 2rem;
+  cursor: pointer;
+  transition: transform 0.3s, shadow 0.3s;
+}
+
+.cardGameContainer:hover {
+  border: 2px solid var(--Principal);
+  box-shadow: 0 0 20px var(--Principal);
+  transform: scale(1.05);
 }
 
 .cardGameImage {

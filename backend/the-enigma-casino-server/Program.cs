@@ -12,6 +12,10 @@ using the_enigma_casino_server.Models.Seeder;
 using the_enigma_casino_server.Services;
 using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Services.Email;
+using the_enigma_casino_server.WS;
+using the_enigma_casino_server.WS.Base;
+using the_enigma_casino_server.WS.GameWS;
+
 
 namespace the_enigma_casino_server;
 
@@ -68,6 +72,12 @@ public class Program
 
         // Servicios Singleton
         builder.Services.AddSingleton<ValidationService>();
+
+        // Inyección de servicios de WebSocket
+        builder.Services.AddSingleton<WebSocketService>();
+        builder.Services.AddSingleton<ConnectionManagerWS>();
+
+        builder.Services.AddSingleton<GameTableWS>();
 
         //Inyección de mappers
         builder.Services.AddScoped<StripeMapper>();
@@ -162,6 +172,8 @@ public class Program
 
         }
         app.UseRouting();
+
+        app.UseWebSockets();
 
         app.UseCors("MyPolicy");
 

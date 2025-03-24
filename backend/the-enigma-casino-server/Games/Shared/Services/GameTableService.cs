@@ -17,4 +17,9 @@ public class GametableService
     {
         return await _unitOfWork.GameTableRepository.GetByGameTypeAsync(gameType);
     }
+
+    public async Task<GameTable> GetTableByIdAsync(int id)
+    {
+        return await _unitOfWork.GameTableRepository.GetByIdAsync(id);
+    }
 }

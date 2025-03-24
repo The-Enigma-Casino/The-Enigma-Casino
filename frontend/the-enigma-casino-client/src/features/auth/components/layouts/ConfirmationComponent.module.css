@@ -9,7 +9,6 @@
   overflow: hidden;
 }
 
-/* Animación de puertas */
 .door {
   position: absolute;
   top: 0;
@@ -31,7 +30,6 @@
   border-left: 1px solid #333;
 }
 
-/* Solo se abren si el email fue confirmado */
 .open .left {
   transform: translateX(-100%);
 }
@@ -40,7 +38,6 @@
   transform: translateX(100%);
 }
 
-/* Contenido después de la apertura */
 .content {
   position: absolute;
   top: 50%;
@@ -55,47 +52,60 @@
   align-items: center;
 }
 
-/* Animación de aparición */
 @keyframes fadeIn {
   to {
     opacity: 1;
   }
 }
 
-/* Estilos del título con efecto de oro y reflejo */
-.title {
-  font-size: 5rem;
-  color: #d4af37; /* Color dorado */
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
-  font-weight: bold;
-  background: linear-gradient(90deg, #f7e900, #cda300, #f7e900); /* Dorado con gradiente */
-  -webkit-background-clip: text;
-  background-clip: text;
-  display: inline-block;
-  position: relative;
+@keyframes blink {
+  0% {
+    box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.8);
+    border-radius: 28px;
+  }
+  50% {
+    box-shadow: 0 0 55px 15px rgba(255, 215, 0, 1);
+    border-radius: 28px;
+  }
+  100% {
+    box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.8);
+    border-radius: 28px;
+  }
 }
 
-.title::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.5);
-  opacity: 0.3;
-  transform: scaleY(-1);
-  filter: blur(4px);
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+
 }
 
-/* Estilos del duende */
+  .title {
+    font-size: 5rem;
+    color: var(--Coins);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    -webkit-background-clip: text;
+    background-clip: text;
+    display: inline-block;
+    position: relative;
+    animation: blink 1s infinite, pulse 1.5s infinite ease-in-out;
+  }
+
+
+
 .elf {
   width: 200px;
   height: auto;
 }
 
-/* Mensaje de error */
 .errorMessage {
   position: absolute;
   top: 50%;
@@ -109,7 +119,6 @@
   z-index: 1;
 }
 
-/* Responsividad */
 @media (max-width: 480px) {
   .title {
     font-size: 3.5rem;

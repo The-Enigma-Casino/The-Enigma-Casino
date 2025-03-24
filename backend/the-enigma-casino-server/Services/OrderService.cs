@@ -2,8 +2,10 @@
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Database.Entities.Enum;
+using the_enigma_casino_server.Models.Database.Repositories;
 using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Models.Mappers;
+using the_enigma_casino_server.Services.Email;
 
 namespace the_enigma_casino_server.Services;
 
@@ -12,12 +14,14 @@ public class OrderService
     private readonly UnitOfWork _unitOfWork;
     private readonly OrderMapper _orderMapper;
     private readonly UserService _userService;
+    private readonly EmailService _emailService;
 
-    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService)
+    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService, EmailService emailService)
     {
         _unitOfWork = unitOfWork;
         _orderMapper = orderMapper;
         _userService = userService;
+        _emailService = emailService;
     }
 
     public async Task<Order> NewOrder(int userId, int coinsPackId, string sessionId)
@@ -62,6 +66,13 @@ public class OrderService
         await _unitOfWork.SaveAsync();
 
         await _userService.UpdateCoins(order.UserId, order.CoinsPack.Quantity);
+
+        User user = await _unitOfWork.UserRepository.GetByIdAsync(order.UserId);
+
+        if (user != null)
+        {
+           await _emailService.SendInvoiceAsync(order, user);
+        }
 
     }
 

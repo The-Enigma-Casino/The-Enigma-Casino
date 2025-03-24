@@ -11,6 +11,7 @@ import { createBrowserRouter } from "react-router-dom";
 import WithdrawConfirmation from "./features/withdraw/pages/WithdrawConfirmation";
 import Withdraw from "./features/withdraw/pages/Withdraw";
 import LandingPage from "./features/landingPage/pages/LandingPage";
+import GameTable from "./features/gameTables/pages/GameTable";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: "withdraw", element: <Withdraw /> },
       { path: "withdraw-confirmation", element: <WithdrawConfirmation /> },
       { path: "catalog", element: <Catalog /> },
+      { path: "/tables/:gameType", element: < GameTable /> },
     ],
   },
   ...routeAuth,

@@ -4,20 +4,19 @@ import classes from "./CardGame.module.css";
 interface CardGameProps {
   imageUrl: string;
   altText: string;
-  navigateTo: string;
   name: string;
+  gameType: number;
 }
 
-const CardGame: React.FC<CardGameProps> = ({ imageUrl, altText, navigateTo, name }) => {
+const CardGame: React.FC<CardGameProps> = ({ imageUrl, altText, gameType, name }) => {
   const navigate = useNavigate();
 
   return (
-    <div className={classes.cardGameContainer}>
+    <div className={classes.cardGameContainer} onClick={() => navigate(`/tables/${gameType}`)}>
       <div className={classes.cardGameImage}>
         <img
           src={imageUrl}
           alt={altText}
-          onClick={() => navigate(navigateTo)}
         />
       </div>
       <h2 className={classes.title}>{name}</h2>

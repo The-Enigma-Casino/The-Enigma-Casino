@@ -5,20 +5,20 @@ function GamePanel() {
 
   const cardData = [
     {
-      imageUrl: "/img/poker.webp",
-      navigateTo: "/",
-      name: "POKER",
+      imageUrl: "/img/blackjack.webp",
+      name: "BLACKJACK",
+      gameType: 0,
     },
     {
-      imageUrl: "/img/blackjack.webp",
-      navigateTo: "/",
-      name: "BLACKJACK",
+      imageUrl: "/img/poker.webp",
+      name: "POKER",
+      gameType: 1,
     },
     {
       imageUrl: "/img/roulette.webp",
-      navigateTo: "/",
       name: "RULETA",
-    }
+      gameType: 2,
+    },
   ];
 
   return (
@@ -31,7 +31,7 @@ function GamePanel() {
             key={index}
             imageUrl={card.imageUrl}
             altText={card.name}
-            navigateTo={card.navigateTo}
+            gameType={card.gameType}
             name={card.name}
           />
         ))}

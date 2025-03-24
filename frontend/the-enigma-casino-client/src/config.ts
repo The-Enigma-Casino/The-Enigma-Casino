@@ -24,3 +24,6 @@ export const LAST_ORDER_ID = `${API_BASE_URL}Order/last-order-id`
 
 /* ENDPOINTS DE USER */
 export const USER_COINS = `${API_BASE_URL}User/coins`;
+
+/* ENDPOINTS DE GAME TABLES */
+export const GAMETABLES_ENDPOINT = `${API_BASE_URL}GameTable/tables`;

@@ -22,7 +22,7 @@ public class UserSeeder
             return;
         }
 
-        var users = new List<User>
+        List<User> users = new List<User>
         {
             new User
             {
@@ -39,6 +39,38 @@ public class UserSeeder
                 EmailConfirm = true, 
                 ConfirmationToken = null,
                 Role = Role.Admin,
+            },
+            new User
+            {
+                NickName = "user",
+                FullName = "user",
+                Email = "user@gmail.com",
+                HashPassword = HashHelper.Hash("user"),
+                Image = "default.png",
+                Country = "ESP",
+                Address = "admin",
+                DateOfBirth = new DateTime(1990, 5, 16),
+                Coins = 0,
+                IsBanned = false,
+                EmailConfirm = true,
+                ConfirmationToken = null,
+                Role = Role.User,
+            },
+            new User
+            {
+                NickName = "prueba",
+                FullName = "prueba",
+                Email = "prueba@gmail.com",
+                HashPassword = HashHelper.Hash("user"),
+                Image = "default.png",
+                Country = "ESP",
+                Address = "admin",
+                DateOfBirth = new DateTime(1990, 5, 17),
+                Coins = 0,
+                IsBanned = false,
+                EmailConfirm = true,
+                ConfirmationToken = null,
+                Role = Role.User,
             },
         };
 

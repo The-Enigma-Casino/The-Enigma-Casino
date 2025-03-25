@@ -1,108 +1,118 @@
-import { createStore, createEvent, sample } from "effector";
-import { $token } from "../features/auth/store/authStore";
+import { createStore, createEvent, createEffect, sample } from "effector";
 import { jwtDecode } from "jwt-decode";
+import { $token, clearToken } from "../features/auth/store/authStore";
 
 // Eventos
-export const setOnlineUsers = createEvent<number>();
-export const setWebSocket = createEvent<WebSocket | null>();
-export const connectWebSocket = createEvent<string>();
-export const disconnectWebSocket = createEvent();
-export const setError = createEvent<string>();
+export const connectSocket = createEvent();
+const disconnectSocket = createEvent();
+const messageSent = createEvent<string>();
+const rawMessageReceived = createEvent<string>();
+const socketError = createEvent<Error>();
 
-// Stores
-export const $socket = createStore<WebSocket | null>(null).on(setWebSocket, (_, socket) => socket);
-export const $onlineUsers = createStore<number>(0).on(setOnlineUsers, (_, count) => count);
-export const $error = createStore<string | null>(null).on(setError, (_, error) => error);
+// Usuarios en linea
+export const updateOnlineUsers = createEvent<number>();
+export const $onlineUsers = createStore<number>(0).on(updateOnlineUsers, (_, count) => count);
 
+// Estado para controlar reconexiones
+const reconnectDelay = 5000; // 5 segundos
 let reconnectTimeout: NodeJS.Timeout | null = null;
 
-export const connect = (userId: string) => {
-  const socketUrl = `ws://localhost:7186/socket?userId=${userId}`;
-  console.log("Intentando conectar a:", socketUrl);
+// Efecto para conectar WebSocket
+const connectWebSocketFx = createEffect(async (token: string) => {
+  if (!token) throw new Error("No token disponible");
 
-  let socket: WebSocket | null = new WebSocket(socketUrl);
+  let decoded;
+  try {
+    decoded = jwtDecode<{ id: string }>(token);
+  } catch (error) {
+    throw new Error("Token inválido");
+  }
 
-  socket.onopen = () => {
-    console.log("WebSocket conectado");
-    setWebSocket(socket);
-    if (reconnectTimeout) {
-      clearTimeout(reconnectTimeout); // Cancela el intento de reconexión
-      reconnectTimeout = null;
-    }
-  };
+  const userId = decoded?.id;
+  console.log(userId)
+  if (!userId) throw new Error("El token no tiene userId");
 
-  socket.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      if (data.type === "onlineUsers") {
-        setOnlineUsers(data.count);
+  console.log(`Intetando conectar WebSocket con userId=${userId}`);
+
+  const ws = new WebSocket(`wss://localhost:7186/socket?userId=${userId}`);
+
+  return new Promise<WebSocket>((resolve, reject) => {
+    ws.onopen = () => {
+      console.log("WebSocket conectado");
+      resolve(ws);
+    };
+
+    ws.onmessage = (event) => {
+      console.log("mensaje recibido:", event.data);
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "onlineUsers") {
+          updateOnlineUsers(data.count);
+        }
+      } catch (error) {
+        console.error("Error al procesar el mensaje:", error);
       }
-      console.log("Mensaje recibido:", data);
-    } catch (e) {
-      console.error("Error al procesar el mensaje WebSocket", e);
-      setError("Error al procesar el mensaje WebSocket");
-    }
-  };
+    };
 
-  socket.onerror = (error) => {
-    console.error("WebSocket Error:", error);
-    setError("Error en WebSocket");
-  };
+    ws.onerror = (err) => {
+      console.error("WebSocket error:", err);
+      socketError(new Error("Error en WebSocket"));
+      reject(err);
+    };
 
-  socket.onclose = () => {
-    console.log("WebSocket cerrado.");
-    setWebSocket(null);
+    ws.onclose = () => {
+      console.warn("WebSocket cerrado, intentando reconectar...");
+      disconnectSocket();
 
-  };
-
-  return socket;
-};
-
-// Conectar el WebSocket cuando se emite el evento connectWebSocket
-sample({
-  clock: connectWebSocket,
-  fn: (userId) => {
-    const currentSocket = $socket.getState();
-    if (currentSocket) {
-      console.log("Cerrando conexión WebSocket anterior...");
-      currentSocket.close();
-    }
-    return connect(userId);
-  },
-  target: setWebSocket,
+      // Intentar reconectar después de un tiempo
+      if (reconnectTimeout === null) {
+        reconnectTimeout = setTimeout(() => {
+          reconnectTimeout = null;
+          connectSocket();
+        }, reconnectDelay);
+      }
+    };
+  });
 });
 
-// Desconectar el WebSocket cuando se emite el evento disconnectWebSocket
-sample({
-  clock: disconnectWebSocket,
-  fn: () => {
-    const socket = $socket.getState();
-    if (socket) {
-      console.log("Desconectando WebSocket...");
-      socket.close();
-    }
-    return null;
-  },
-  target: setWebSocket,
-});
+// Estado de la conexión WebSocket
+const $connection = createStore<WebSocket | null>(null)
+  .on(connectWebSocketFx.doneData, (_, ws) => ws)
+  .reset(disconnectSocket);
 
-$token.watch((token) => {
-  if (token) {
-    try {
-      // Decodifica el token y extrae el userId
-      const decodedToken = jwtDecode<any>(token);
-      const userId = decodedToken?.id;
-      console.log("UserID obtenido:", userId);
-
-      if (userId) {
-        connectWebSocket(userId.toString()); // Emitir el evento de conexión con el userId
-      } else {
-        console.error("UserId no encontrado en el token");
-        setError("UserId no encontrado en el token");
-      }
-    } catch (error) {
-      console.error("Error al decodificar el token:", error);
-      setError("Error al decodificar el token");
-    }
+// Efecto para enviar mensajes
+const sendMessageFx = createEffect((params: { socket: WebSocket; message: string }) => {
+  if (params.socket.readyState === WebSocket.OPEN) {
+    console.log("Enviando mensaje:", params.message);
+    params.socket.send(params.message);
+  } else {
+    console.error("No se pudo enviar el mensaje, WebSocket no está abierto");
   }
 });
+
+// Vincular eventos con estados
+sample({
+  clock: connectSocket,
+  source: $token,
+  filter: (token) => Boolean(token),
+  target: connectWebSocketFx,
+});
+
+sample({
+  clock: messageSent,
+  source: $connection,
+  filter: (socket) => socket !== null,
+  fn: (socket, message) => ({ socket, message }),
+  target: sendMessageFx,
+});
+
+// Cerrar conexión al cerrar sesión
+sample({
+  clock: clearToken,
+  target: disconnectSocket,
+});
+
+
+if ($token.getState()) {
+  connectSocket();
+}

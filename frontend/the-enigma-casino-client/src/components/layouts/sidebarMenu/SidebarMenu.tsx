@@ -9,12 +9,15 @@ import {
 import { useEffect } from "react";
 import { useUnit } from "effector-react";
 import FriendsPanel from "../../../features/friends/components/layouts/friendsPanel";
+import { $onlineUsers } from "../../../wsStore/webSocketStore";
+
 
 function SidebarMenu() {
-  const userLive: number = 777;
+  // const userLive: number = 777;
   const token = useUnit($token);
   const name = useUnit($name);
   const navigate = useNavigate();
+  const userLive = useUnit($onlineUsers);
 
   useEffect(() => {
     loadName();

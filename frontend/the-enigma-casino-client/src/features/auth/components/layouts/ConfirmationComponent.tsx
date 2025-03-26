@@ -41,7 +41,8 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
 
       {isConfirmed && (
         <div className={classes.content}>
-          <h1 className={classes.title}>Bienvenido a The Enigma Casino</h1>
+          <h1 className={classes.title}>¡Bienvenido!</h1>
+          <h1 className={classes.title}>The Enigma Casino</h1>
           <img src="/img/jumping-elf.webp" alt="Mascota" className={classes.elf} />
         </div>
       )}

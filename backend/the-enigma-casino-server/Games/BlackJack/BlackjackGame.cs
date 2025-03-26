@@ -48,7 +48,17 @@ public class BlackjackGame
 
     public void CroupierTurn()
     {
-        while (_gameMatch.GameTable.Croupier.Hand.GetTotal() < 17)
+        bool anyPlayerUnder21 = false;
+
+        foreach (Player player in _gameMatch.Players)
+        {
+            if (player.Hand.GetTotal() <= 21)
+            {
+                anyPlayerUnder21 = true;
+            }
+        }
+
+        while (_gameMatch.GameTable.Croupier.Hand.GetTotal() < 17 && anyPlayerUnder21)
         {
             _gameMatch.GameTable.Croupier.Hand.AddCard(Deck.Draw());
         }
@@ -86,6 +96,29 @@ public class BlackjackGame
                 Console.WriteLine($"{player.User.NickName} ha empatado.");
             }
         }
+    }
+
+    public void DoubleDown(Player player)
+    {
+
+        if (player.PlayerState != PlayerState.Playing)
+        {
+            Console.WriteLine($"{player.User.NickName} no puede doblar su apuesta en este momento.");
+        }
+
+        int doubleBet = player.CurrentBet * 2;
+
+        if (doubleBet > player.User.Coins)
+        {
+            Console.WriteLine($"{player.User.NickName} no tiene suficientes monedas para doblar la apuesta.");
+        }
+
+        player.User.Coins -= player.CurrentBet;
+        player.CurrentBet = doubleBet;
+
+        Console.WriteLine($"{player.User.NickName} ha doblado su apuesta a {player.CurrentBet} monedas.");
+        PlayerHit(player);
+
     }
 
     public void ResetHands()

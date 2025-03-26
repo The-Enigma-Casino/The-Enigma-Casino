@@ -12,16 +12,15 @@
  
 ### Backend
 - **Lenguaje:** C#  
-- **Framework:** .NET 8  
-- **Persistencia:** Entity Framework Core  
+- **Framework:** .NET 8   
 - **Comunicación en tiempo real:** WebSockets  
 - **Base de datos:** MySQL y SQLite  
  
 ### Frontend
+- **Lenguaje:** TS 
 - **Framework:** React  
 - **Gestión de estado:** Effector  
-- **Estilos:** Tailwind CSS y CSS
-- **Consumo WebSocket:** Cliente personalizado con reconexión automática  
+- **Estilos:** Tailwind CSS y CSS 
 
 ### Despliegue
 - **AWS**

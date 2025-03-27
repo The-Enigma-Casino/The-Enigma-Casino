@@ -43,28 +43,4 @@ public class Player
     {
         PlayerState = PlayerState.Stand;
     }
-
-    public void DoubleDown()
-    {
-        if (PlayerState != PlayerState.Playing)
-        {
-            Console.WriteLine($"{User.NickName} no puede doblar su apuesta en este momento.");
-            return;
-        }
-
-        int doubleBet = CurrentBet * 2;
-
-        if (doubleBet > User.Coins)
-        {
-            Console.WriteLine($"{User.NickName} no tiene suficientes monedas para doblar la apuesta.");
-            return;
-        }
-
-        User.Coins -= CurrentBet;
-        CurrentBet = doubleBet;
-
-        Console.WriteLine($"{User.NickName} ha doblado su apuesta a {CurrentBet} monedas.");
-    }
-
-
 }

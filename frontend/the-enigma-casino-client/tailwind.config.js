@@ -21,6 +21,10 @@ export default {
       fontFamily: {
         reddit: ['Reddit Sans', 'sans-serif'],
       },
+      boxShadow: {
+        'custom-white': '0px 8px 16px rgba(255, 255, 255, 0.2), 0px 3px 6px rgba(255, 255, 255, 0.15)',
+        'custom-gray': '0px 6px 12px rgba(169, 169, 169, 0.4), 0px 2px 4px rgba(169, 169, 169, 0.3)',
+      },
     },
   },
   corePlugins: {

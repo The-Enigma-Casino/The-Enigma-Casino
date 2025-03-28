@@ -104,6 +104,7 @@ public class BlackjackGame
         if (player.PlayerState != PlayerState.Playing)
         {
             Console.WriteLine($"{player.User.NickName} no puede doblar su apuesta en este momento.");
+            return;
         }
 
         int doubleBet = player.CurrentBet * 2;
@@ -111,6 +112,7 @@ public class BlackjackGame
         if (doubleBet > player.User.Coins)
         {
             Console.WriteLine($"{player.User.NickName} no tiene suficientes monedas para doblar la apuesta.");
+            return;
         }
 
         player.User.Coins -= player.CurrentBet;
@@ -120,6 +122,7 @@ public class BlackjackGame
         PlayerHit(player);
 
     }
+
 
     public void ResetHands()
     {

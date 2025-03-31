@@ -1,5 +1,4 @@
-﻿
-using the_enigma_casino_server.Models.Database.Entities.Enum;
+﻿using the_enigma_casino_server.Models.Database.Entities.Enum;
 
 namespace the_enigma_casino_server.Models.Database.Entities;
 
@@ -30,6 +29,8 @@ public class Order
     public int Coins { get; set; }
 
     public PayMode PayMode { get; set; }
+
+    public OrderType OrderType { get; set; }
 
     public Order()
     {

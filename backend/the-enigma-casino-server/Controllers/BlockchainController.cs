@@ -8,6 +8,8 @@ using the_enigma_casino_server.Services;
 using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Models.Mappers;
+using Nethereum.RPC.Eth.DTOs;
+using System.Web;
 
 
 namespace the_enigma_casino_server.Controllers;
@@ -101,7 +103,6 @@ public class BlockchainController : BaseController
 
             OrderDto orderDto = _orderMapper.ToOrderDto(order);
 
-            //Retorno order Cambiar?
             return Ok(orderDto);
         }
         catch (Exception ex)
@@ -110,4 +111,13 @@ public class BlockchainController : BaseController
         }
     }
 
+
+    [HttpPost("withdrawal")]
+    [Authorize]
+    public Task<TransactionDto> CreateTransactionAsync([FromBody] CreateTransactionRequest data)
+    {
+        data.NetworkUrl = HttpUtility.UrlDecode(data.NetworkUrl);
+
+        return _blockchainService.CreateTransactionAsync(data);
+    }
 }

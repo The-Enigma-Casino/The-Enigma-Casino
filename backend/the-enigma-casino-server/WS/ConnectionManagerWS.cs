@@ -9,12 +9,45 @@ public class ConnectionManagerWS
 
     public void AddConnection(string userId, WebSocket webSocket)
     {
+        if (_connections.TryGetValue(userId, out var existingSocket))
+        {
+            if (existingSocket.State == WebSocketState.Open || existingSocket.State == WebSocketState.Connecting)
+            {
+                try
+                {
+                    existingSocket.Abort(); // cierre inmediato
+                    existingSocket.Dispose();
+                    Console.WriteLine($"🔁 Reemplazada conexión previa de {userId}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Error cerrando WebSocket anterior para {userId}: {ex.Message}");
+                }
+            }
+        }
+
         _connections[userId] = webSocket;
+        Console.WriteLine($"✅ Conexión WebSocket activa para {userId}");
     }
 
-    public void RemoveConnection(string userId)
+    public async Task RemoveConnectionAsync(string userId)
     {
-        _connections.TryRemove(userId, out _);  
+        if (_connections.TryRemove(userId, out var socket))
+        {
+            try
+            {
+                if (socket.State == WebSocketState.Open)
+                {
+                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Cierre limpio", CancellationToken.None);
+                }
+                socket.Dispose();
+                Console.WriteLine($"❎ Conexión eliminada para {userId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error al cerrar conexión de {userId}: {ex.Message}");
+            }
+        }
     }
 
     public bool TryGetConnection(string userId, out WebSocket webSocket)
@@ -22,9 +55,9 @@ public class ConnectionManagerWS
         return _connections.TryGetValue(userId, out webSocket);
     }
 
-    public WebSocket GetConnectionById(string userId)
+    public WebSocket? GetConnectionById(string userId)
     {
-        return _connections.TryGetValue(userId, out WebSocket socket) ? socket : null;
+        return _connections.TryGetValue(userId, out var socket) ? socket : null;
     }
 
     public IEnumerable<WebSocket> GetAllConnections()

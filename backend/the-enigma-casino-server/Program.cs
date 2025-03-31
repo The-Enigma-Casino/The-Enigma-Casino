@@ -1,11 +1,13 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Stripe;
 using System.Text;
 using the_enigma_casino_server.Games.Shared.Services;
+using the_enigma_casino_server.Middleware;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Mappers;
 using the_enigma_casino_server.Models.Seeder;
@@ -74,8 +76,10 @@ public class Program
         builder.Services.AddSingleton<ValidationService>();
 
         // Inyección de servicios de WebSocket
+        builder.Services.AddTransient<WebsocketMiddleware>();
         builder.Services.AddSingleton<WebSocketService>();
         builder.Services.AddSingleton<ConnectionManagerWS>();
+
 
         builder.Services.AddSingleton<GameTableWS>();
 
@@ -156,6 +160,9 @@ public class Program
 
     private static void ConfigureMiddleware(WebApplication app)
     {
+        // Redirigir HTTP a HTTPS
+        app.UseHttpsRedirection();
+
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(
@@ -165,6 +172,8 @@ public class Program
         // Creación de la base de datos y el Seeder
         SeedDatabase(app.Services);
 
+        app.UseRouting();
+
         // Middleware de desarrollo (Swagger y CORS)
         if (app.Environment.IsDevelopment())
         {
@@ -172,14 +181,12 @@ public class Program
             app.UseSwaggerUI();
 
         }
-        app.UseRouting();
-
-        app.UseWebSockets();
 
         app.UseCors("MyPolicy");
 
-        // Redirigir HTTP a HTTPS
-        app.UseHttpsRedirection();
+        app.UseWebSockets();
+        app.UseMiddleware<WebSocketMiddleware>();
+
 
         // Middleware de autenticación y autorización
         app.UseAuthentication();

@@ -159,6 +159,9 @@ public class Program
 
     private static void ConfigureMiddleware(WebApplication app)
     {
+        // Redirigir HTTP a HTTPS
+        app.UseHttpsRedirection();
+
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(
@@ -168,6 +171,8 @@ public class Program
         // Creación de la base de datos y el Seeder
         SeedDatabase(app.Services);
 
+        app.UseRouting();
+
         // Middleware de desarrollo (Swagger y CORS)
         if (app.Environment.IsDevelopment())
         {
@@ -175,15 +180,12 @@ public class Program
             app.UseSwaggerUI();
 
         }
-        app.UseRouting();
+
+        app.UseCors("MyPolicy");
 
         app.UseWebSockets();
         app.UseMiddleware<WebSocketMiddleware>();
 
-        app.UseCors("MyPolicy");
-
-        // Redirigir HTTP a HTTPS
-        app.UseHttpsRedirection();
 
         // Middleware de autenticación y autorización
         app.UseAuthentication();

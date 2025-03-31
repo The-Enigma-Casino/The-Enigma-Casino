@@ -41,13 +41,9 @@ namespace the_enigma_casino_server.Services
             }
             finally
             {
-                _connectionManager.RemoveConnection(userId);
+                await _connectionManager.RemoveConnectionAsync(userId);
                 await BroadcastOnlineUsersAsync();
 
-                if (webSocket.State == WebSocketState.Open)
-                {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Cerrado por el servidor", CancellationToken.None);
-                }
             }
         }
 

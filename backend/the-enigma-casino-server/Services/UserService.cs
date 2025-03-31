@@ -5,7 +5,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
+using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Models.Dtos.Request;
+using the_enigma_casino_server.Models.Mappers;
 using the_enigma_casino_server.Services.Email;
 using the_enigma_casino_server.Utilities;
 
@@ -17,13 +19,15 @@ public class UserService
     private readonly TokenValidationParameters _tokenParameters;
     private readonly EmailService _emailService;
     private readonly ValidationService _validation;
+    private readonly UserMapper _userMapper;
 
-    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService)
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper)
     {
         _unitOfWork = unitOfWork;
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
         _emailService = emailService;
         _validation = validationService;
+        _userMapper = userMapper;
     }
 
     public async Task<(bool, string)> CheckUser(string nickName, string email)
@@ -221,6 +225,30 @@ public class UserService
         {
             throw new Exception("Hubo un error al actualizar las monedas", ex);
         }
+    }
+
+    public async Task<UserDto> GetProfile(int id)
+    {
+        try
+        {
+            User user = await _unitOfWork.UserRepository.GetByIdAsync(id);
+
+            if (user == null)
+                throw new KeyNotFoundException($"No hay usuario con este ID {id}");
+
+            return _userMapper.ToUserDto(user);
+
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new KeyNotFoundException(ex.Message);
+
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Hubo un error al traer al usuario", ex);
+        }
+
     }
 
 

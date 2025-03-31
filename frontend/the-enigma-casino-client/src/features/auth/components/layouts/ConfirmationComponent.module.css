@@ -1,6 +1,6 @@
 .container {
+  position: relative;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   background-color: var(--Background-Page);
@@ -9,16 +9,127 @@
   overflow: hidden;
 }
 
-.title {
-  font-size: 6rem;
-  color: var(--Principal);
-  text-align: center;
-  margin-bottom: 3rem;
+.door {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, #222, #111);
+  z-index: 2;
+  transition: transform 1.5s ease-in-out;
 }
 
+.left {
+  left: 0;
+  border-right: 1px solid #333;
+}
+
+.right {
+  right: 0;
+  background: linear-gradient(to left, #222, #111);
+  border-left: 1px solid #333;
+}
+
+.open .left {
+  transform: translateX(-100%);
+}
+
+.open .right {
+  transform: translateX(100%);
+}
+
+.content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 1;
+  opacity: 0;
+  animation: fadeIn 1s ease-in-out 1s forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes blink {
+  0% {
+    box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.8);
+    border-radius: 28px;
+  }
+  50% {
+    box-shadow: 0 0 55px 15px rgba(255, 215, 0, 1);
+    border-radius: 28px;
+  }
+  100% {
+    box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.8);
+    border-radius: 28px;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+
+}
+
+  .title {
+    font-size: 5rem;
+    color: var(--Coins);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    -webkit-background-clip: text;
+    background-clip: text;
+    display: inline-block;
+    position: relative;
+    animation: blink 1s infinite, pulse 1.5s infinite ease-in-out;
+  }
+
+
+
+.elf {
+  width: 200px;
+  height: auto;
+}
+
+.errorMessage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  z-index: 1;
+}
 
 @media (max-width: 480px) {
-  .title { 
-    font-size: 4rem;
+  .title {
+    font-size: 3.5rem;
+  }
+
+  .elf {
+    width: 150px;
+  }
+
+  .errorMessage {
+    width: 90%;
+    padding: 1.5rem;
   }
 }

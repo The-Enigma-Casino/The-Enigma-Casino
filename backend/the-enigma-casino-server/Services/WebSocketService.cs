@@ -22,6 +22,7 @@ namespace the_enigma_casino_server.Services
         public virtual async Task HandleAsync(WebSocket webSocket, string userId)
         {
             _connectionManager.AddConnection(userId, webSocket);
+            await BroadcastOnlineUsersAsync();
 
             try
             {
@@ -41,6 +42,7 @@ namespace the_enigma_casino_server.Services
             finally
             {
                 _connectionManager.RemoveConnection(userId);
+                await BroadcastOnlineUsersAsync();
 
                 if (webSocket.State == WebSocketState.Open)
                 {
@@ -87,6 +89,30 @@ namespace the_enigma_casino_server.Services
                 true,
                 CancellationToken.None
             );
+        }
+
+        // Devuelve usuarios en linea
+        public async Task BroadcastOnlineUsersAsync()
+        {
+            var connections = _connectionManager.GetAllConnections();
+            int onlineUsers = connections.Count();
+
+            var message = new
+            {
+                type = "onlineUsers",
+                count = onlineUsers
+            };
+
+            string jsonMessage = JsonSerializer.Serialize(message);
+            byte[] buffer = Encoding.UTF8.GetBytes(jsonMessage);
+
+            foreach (var socket in connections)
+            {
+                if (socket.State == WebSocketState.Open)
+                {
+                    await socket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
+                }
+            }
         }
     }
 }

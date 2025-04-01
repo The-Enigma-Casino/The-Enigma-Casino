@@ -30,7 +30,6 @@ namespace the_enigma_casino_server.Services
                 {
                     string? message = await ReadAsync(webSocket);
 
-                    // Si se corta la conexión o el cliente se va
                     if (message == null)
                         break;
 
@@ -70,7 +69,7 @@ namespace the_enigma_casino_server.Services
                     if (result.CloseStatus.HasValue)
                     {
                         await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, cancellation);
-                        return null; // 👈 Indica cierre limpio o esperado
+                        return null; 
                     }
 
                     endOfMessage = result.EndOfMessage;
@@ -82,7 +81,7 @@ namespace the_enigma_casino_server.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"⚠️ WebSocket desconectado abruptamente: {ex.Message}");
-                return null; // 👈 indica que se cortó la conexión
+                return null; 
             }
         }
 
@@ -100,7 +99,6 @@ namespace the_enigma_casino_server.Services
             );
         }
 
-        // Devuelve usuarios en linea
         public async Task BroadcastOnlineUsersAsync()
         {
             var connections = _connectionManager.GetAllConnections();

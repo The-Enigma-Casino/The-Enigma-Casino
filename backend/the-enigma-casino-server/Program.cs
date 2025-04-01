@@ -17,6 +17,7 @@ using the_enigma_casino_server.Services.Email;
 using the_enigma_casino_server.WS;
 using the_enigma_casino_server.WS.Base;
 using the_enigma_casino_server.WS.GameWS;
+using the_enigma_casino_server.WS.GameWS.Services;
 
 
 namespace the_enigma_casino_server;
@@ -82,6 +83,7 @@ public class Program
 
 
         builder.Services.AddSingleton<GameTableWS>();
+        builder.Services.AddSingleton<GameTableManager>();
 
         //Inyección de mappers
         builder.Services.AddScoped<StripeMapper>();

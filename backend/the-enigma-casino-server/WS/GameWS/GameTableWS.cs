@@ -6,20 +6,28 @@ using the_enigma_casino_server.Games.Shared.Services;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.WS.Base;
+using the_enigma_casino_server.WS.GameWS.Services;
+using the_enigma_casino_server.WS.GameWS.Messages;
+using the_enigma_casino_server.WS.GameWS.Services.Models;
+
 
 namespace the_enigma_casino_server.WS.GameWS
 {
     public class GameTableWS : BaseWebSocketHandler
     {
-        // Diccionario que mantiene en memoria las mesas activas (con jugadores conectados)
+
         private readonly ConcurrentDictionary<int, ActiveGameSession> _activeTables = new();
 
-        public GameTableWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
+        private readonly GameTableManager _tableManager;
+
+        public GameTableWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider, GameTableManager tableManager)
             : base(connectionManager, serviceProvider)
         {
+            _tableManager = tableManager;
+            connectionManager.OnUserDisconnected += HandleUserDisconnection;
         }
 
-        // Método para manejar los mensajes WebSocket
+
         public async Task HandleAsync(string userId, JsonElement message)
         {
             if (message.TryGetProperty("type", out JsonElement typeProp))
@@ -28,25 +36,26 @@ namespace the_enigma_casino_server.WS.GameWS
 
                 await (type switch
                 {
-                    "join_table" => HandleJoinTableAsync(userId, message),  
-                    _ => Task.CompletedTask 
+                    GameTableMessageTypes.JoinTable => HandleJoinTableAsync(userId, message),
+                    GameTableMessageTypes.LeaveTable => HandleLeaveTableAsync(userId, message),
+                    _ => Task.CompletedTask
                 });
             }
         }
 
-        // Lógica que se ejecuta cuando un jugador quiere unirse a una mesa
+        
         private async Task HandleJoinTableAsync(string userId, JsonElement message)
         {
-            // Validar ID de la mesa
+       
             if (!message.TryGetProperty("tableId", out JsonElement tableIdProp) ||
                 !int.TryParse(tableIdProp.GetString(), out int tableId))
                 return;
 
-            // Validar ID del usuario
+         
             if (!int.TryParse(userId, out int userIdInt))
                 return;
 
-            // Obtener repositorio de usuarios usando UnitOfWork y servicio scoped
+           
             IServiceScope scope;
             UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out scope);
             using (scope)
@@ -58,7 +67,13 @@ namespace the_enigma_casino_server.WS.GameWS
                     return;
                 }
 
-                // Cargar o reutilizar la mesa en memoria
+                if (!_tableManager.CanJoinTable(user.Id))
+                {
+                    await SendToUserAsync(userId, new { type = "error", message = "Debes esperar antes de volver a unirte." });
+                    return;
+                }
+
+  
                 ActiveGameSession session = await GetOrLoadTableAsync(tableId);
                 if (session == null)
                 {
@@ -68,43 +83,35 @@ namespace the_enigma_casino_server.WS.GameWS
 
                 GameTable table = session.Table;
 
-                // Bloqueo de concurrencia para evitar conflictos si varios se unen a la vez
+                (bool success, string? errorMessage) addResult;
+
                 lock (table)
                 {
-                    if (table.TableState != TableState.Waiting)
-                    {
-                        Console.WriteLine($"[DEBUG] Mesa {table.Id} en estado {table.TableState}, se esperaba 'Waiting'.");
-                        return;
-                    }
-
-                    if (table.Players.Any(p => p.UserId == user.Id))
-                    {
-                        Console.WriteLine($"[DEBUG] Usuario {user.Id} ya estaba en la mesa {table.Id}.");
-                        return;
-                    }
-
-                    if (table.Players.Count >= table.MaxPlayer)
-                    {
-                        Console.WriteLine($"[DEBUG] Mesa {table.Id} está llena ({table.Players.Count}/{table.MaxPlayer}).");
-                        return;
-                    }
-
-                    table.Players.Add(new Player(user));
-                    Console.WriteLine($"[GameTableWS] {user.NickName} se unió a la mesa {table.Id}.");
+                    addResult = _tableManager.TryAddPlayer(table, user);
                 }
 
-                // Enviar a todos los jugadores conectados la actualización de estado
+                if (!addResult.success)
+                {
+                    await SendToUserAsync(userId, new
+                    {
+                        type = "error",
+                        message = addResult.errorMessage
+                    });
+                    return;
+                }
+
+
                 await BroadcastToUsersAsync(
                     session.GetConnectedUserIds(),
                     new
                     {
-                        type = "table_update",
+                        type = GameTableMessageTypes.TableUpdate,
                         tableId = session.Table.Id,
                         players = session.GetPlayerNames(),
                         state = session.Table.TableState.ToString()
                     });
 
-                // Si ya hay suficientes jugadores, iniciar la cuenta atrás
+
                 if (table.Players.Count >= table.MinPlayer)
                 {
                     session.StartOrRestartCountdown();
@@ -114,7 +121,7 @@ namespace the_enigma_casino_server.WS.GameWS
                     session.GetConnectedUserIds(),
                     new
                     {
-                        type = "countdown_started",
+                        type = GameTableMessageTypes.CountdownStarted,
                         tableId = table.Id,
                         countdown = 30
                     });
@@ -122,8 +129,7 @@ namespace the_enigma_casino_server.WS.GameWS
             }
         }
 
-        // Recupera la mesa desde memoria o desde base de datos
-        private async Task<ActiveGameSession?> GetOrLoadTableAsync(int tableId)
+        private async Task<ActiveGameSession> GetOrLoadTableAsync(int tableId)
         {
             if (_activeTables.TryGetValue(tableId, out ActiveGameSession existingSession))
                 return existingSession;
@@ -135,10 +141,10 @@ namespace the_enigma_casino_server.WS.GameWS
                 GameTable? table = await gametableService.GetTableByIdAsync(tableId);
                 if (table != null)
                 {
-                    // Creamos una nueva sesión con la mesa
+
                     ActiveGameSession newSession = new ActiveGameSession(
                         table,
-                        OnStartMatchTimerFinished // Callback que implementaremos luego
+                        OnStartMatchTimerFinished 
                     );
 
                     _activeTables[tableId] = newSession;
@@ -149,7 +155,7 @@ namespace the_enigma_casino_server.WS.GameWS
             }
         }
 
-        // Lógica cuando la cuenta atrás para iniciar la partida se ha completado
+
         private async void OnStartMatchTimerFinished(int tableId)
         {
             if (!_activeTables.TryGetValue(tableId, out ActiveGameSession session))
@@ -159,27 +165,111 @@ namespace the_enigma_casino_server.WS.GameWS
             }
 
             GameTable table = session.Table;
+            bool shouldStart = false;
+            List<string> userIds;
 
             lock (table)
             {
                 if (table.TableState != TableState.Waiting)
                 {
-                    Console.WriteLine($"[GameTableWS] El estado de la mesa {tableId} ya no es 'Waiting'.");
+                    Console.WriteLine($"[GameTableWS] El estado de la mesa {tableId} ya no es 'Waiting' (es {table.TableState}).");
                     return;
                 }
 
                 table.TableState = TableState.InProgress;
+                shouldStart = true;
+                userIds = table.Players.Select(p => p.UserId.ToString()).ToList();
             }
 
-            Console.WriteLine($"[GameTableWS] Iniciando partida en la mesa {tableId} automáticamente.");
+            if (shouldStart)
+            {
+                Console.WriteLine($"[GameTableWS] Iniciando partida en la mesa {tableId} automáticamente.");
 
-            await BroadcastToUsersAsync(
-                session.Table.Players.Select(p => p.UserId.ToString()),
-                new
+                await BroadcastToUsersAsync(userIds, new
                 {
-                    type = "game_start",
-                    tableId = session.Table.Id
+                   type = GameTableMessageTypes.GameStart,
+                    tableId = table.Id
                 });
+            }
+        }
+
+
+        private async Task HandleLeaveTableAsync(string userId, JsonElement message)
+        {
+            if (!message.TryGetProperty("tableId", out JsonElement tableIdProp) ||
+                !int.TryParse(tableIdProp.GetString(), out int tableId) ||
+                !int.TryParse(userId, out int userIdInt))
+                return;
+
+            if (!_activeTables.TryGetValue(tableId, out ActiveGameSession session))
+                return;
+
+            GameTable table = session.Table;
+
+            PlayerLeaveResult result;
+
+            lock (table)
+            {
+                result = _tableManager.ProcessPlayerLeaving(table, session, userIdInt);
+                if (!result.PlayerRemoved)
+                    return;
+            }
+
+            if (result.StopCountdown)
+            {
+                await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
+            }
+
+            await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
+
+        }
+
+
+        private async void HandleUserDisconnection(string userId)
+        {
+            if (!int.TryParse(userId, out int userIdInt))
+                return;
+
+            foreach (var session in _activeTables.Values)
+            {
+                GameTable table = session.Table;
+
+                PlayerLeaveResult result;
+
+                lock (table)
+                {
+                    result = _tableManager.ProcessPlayerLeaving(table, session, userIdInt);
+                    if (!result.PlayerRemoved)
+                        return;
+                }
+
+                if (result.StopCountdown)
+                {
+                    await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
+                }
+
+                await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
+            }
+        }
+
+        private Task BroadcastTableUpdateAsync(GameTable table, IEnumerable<string> userIds, string[] playerNames)
+        {
+            return BroadcastToUsersAsync(userIds, new
+            {
+                type = GameTableMessageTypes.TableUpdate,
+                tableId = table.Id,
+                players = playerNames,
+                state = table.TableState.ToString()
+            });
+        }
+
+        private Task BroadcastCountdownStoppedAsync(int tableId, IEnumerable<string> userIds)
+        {
+            return BroadcastToUsersAsync(userIds, new
+            {
+                type = GameTableMessageTypes.CountdownStopped,
+                tableId
+            });
         }
     }
 }

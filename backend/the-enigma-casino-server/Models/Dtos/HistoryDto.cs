@@ -6,9 +6,12 @@ public class HistoryDto
 
     public int TotalPages { get; set; }
 
-    public HistoryDto(List<GamesDto> gamesDtos, int pages)
+    public int Page {  get; set; }
+
+    public HistoryDto(List<GamesDto> gamesDtos, int pages, int page)
     {
         GamesDtos = gamesDtos;
         TotalPages = pages;
+        Page = page;
     }
 }

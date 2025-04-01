@@ -64,6 +64,7 @@ public class Program
         builder.Services.AddScoped<EmailService>();
         builder.Services.AddScoped<CoinsPackService>();
         builder.Services.AddScoped<OrderService>();
+        builder.Services.AddScoped<HistoryService>();
 
         builder.Services.AddScoped<GametableService>();
 
@@ -87,6 +88,7 @@ public class Program
         builder.Services.AddScoped<StripeMapper>();
         builder.Services.AddScoped<OrderMapper>();
         builder.Services.AddScoped<UserMapper>();
+        builder.Services.AddScoped<GameHistoryMapper>();
 
         // Stripe
         builder.Services.AddTransient<StripeService>();

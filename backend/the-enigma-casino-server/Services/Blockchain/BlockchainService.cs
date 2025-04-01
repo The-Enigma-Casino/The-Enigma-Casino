@@ -4,9 +4,6 @@ using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
-using Stripe;
-using the_enigma_casino_server.Models.Database;
-using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Dtos.BlockchainDtos;
 
 namespace the_enigma_casino_server.Services.Blockchain;
@@ -123,10 +120,14 @@ public class BlockchainService
         }
 
         decimal euros = coins * coinValueInEuros;
+
         decimal ethEurPrice = await GetEthereumPriceAsync();
 
-        return euros / ethEurPrice;
+        decimal ethereums = euros / ethEurPrice;
+
+        return ethereums;
     }
+
 
 
     private Task<decimal> GetEthereumPriceAsync()

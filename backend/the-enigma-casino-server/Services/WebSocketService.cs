@@ -28,12 +28,15 @@ namespace the_enigma_casino_server.Services
             {
                 while (webSocket.State == WebSocketState.Open)
                 {
-                    string message = await ReadAsync(webSocket);
+                    string? message = await ReadAsync(webSocket);
+
+                    // Si se corta la conexión o el cliente se va
+                    if (message == null)
+                        break;
 
                     if (!string.IsNullOrWhiteSpace(message))
                     {
                         var messageData = JsonDocument.Parse(message).RootElement;
-
                         var gameTableHandler = _serviceProvider.GetRequiredService<GameTableWS>();
                         await gameTableHandler.HandleAsync(userId, messageData);
                     }
@@ -48,31 +51,41 @@ namespace the_enigma_casino_server.Services
         }
 
         // Método para leer los mensajes del WebSocket
-        protected virtual async Task<string> ReadAsync(WebSocket webSocket, CancellationToken cancellation = default)
+        protected virtual async Task<string?> ReadAsync(WebSocket webSocket, CancellationToken cancellation = default)
         {
             byte[] buffer = new byte[4096];
             StringBuilder stringBuilder = new StringBuilder();
 
-            bool endOfMessage = false;
-
-            do
+            try
             {
-                WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellation);
+                bool endOfMessage = false;
 
-                string partialMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                stringBuilder.Append(partialMessage);
-
-                if (result.CloseStatus.HasValue)
+                do
                 {
-                    await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, cancellation);
-                }
+                    WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellation);
 
-                endOfMessage = result.EndOfMessage;
+                    string partialMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    stringBuilder.Append(partialMessage);
+
+                    if (result.CloseStatus.HasValue)
+                    {
+                        await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, cancellation);
+                        return null; // 👈 Indica cierre limpio o esperado
+                    }
+
+                    endOfMessage = result.EndOfMessage;
+
+                } while (!endOfMessage);
+
+                return stringBuilder.ToString();
             }
-            while (!endOfMessage);
-
-            return stringBuilder.ToString();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ WebSocket desconectado abruptamente: {ex.Message}");
+                return null; // 👈 indica que se cortó la conexión
+            }
         }
+
 
         // Método para enviar mensajes a un WebSocket
         protected async Task SendAsync(WebSocket socket, object payload)

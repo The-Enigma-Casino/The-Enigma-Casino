@@ -22,5 +22,8 @@ public class SeedManager
 
         GameTableSeeder gameTableSeeder = new GameTableSeeder(_context);
         gameTableSeeder.Seed();
+
+        GameHistorySeeder gameHistorySeeder = new GameHistorySeeder(_context);
+        gameHistorySeeder.Seed();
     }
 }

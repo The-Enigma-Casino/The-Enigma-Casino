@@ -2,79 +2,71 @@
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Models.Database;
 
-namespace the_enigma_casino_server.Models.Seeder.GameSeeders;
-
-public class GameHistorySeeder
+namespace the_enigma_casino_server.Models.Seeder.GameSeeders
 {
-    private readonly MyDbContext _context;
-
-    public GameHistorySeeder(MyDbContext context)
+    public class GameHistorySeeder
     {
-        _context = context;
-    }
+        private readonly MyDbContext _context;
+        private readonly Random _random;
 
-    public void Seed()
-    {
-        if (_context.GameHistory.Any())
+        public GameHistorySeeder(MyDbContext context)
         {
-            return;
+            _context = context;
+            _random = new Random();
         }
 
-        List<GameHistory> gameHistoryUser1 = new List<GameHistory>
+        public void Seed()
         {
-            new GameHistory
+            if (_context.GameHistory.Any())
             {
-                GameTableId = 1, 
-                UserId = 1,
-                GameType = GameType.Poker,
-                TotalMatchesPlayed = 10,
-                TotalBetAmount = 5000,
-                ChipResult = 2000,
-                JoinedAt = DateTime.UtcNow.AddMinutes(-30),
-                LeftAt = DateTime.UtcNow.AddMinutes(-15)
-            },
-            new GameHistory
-            {
-                GameTableId = 2,
-                UserId = 1,
-                GameType = GameType.BlackJack,
-                TotalMatchesPlayed = 5,
-                TotalBetAmount = 3000,
-                ChipResult = -500,
-                JoinedAt = DateTime.UtcNow.AddMinutes(-60),
-                LeftAt = DateTime.UtcNow.AddMinutes(-45)
+                return;
             }
-        };
 
-        List<GameHistory> gameHistoryUser2 = new List<GameHistory>
+            List<GameHistory> gameHistories = new List<GameHistory>();
+
+ 
+            gameHistories.AddRange(GenerateGameHistories(1, 22));
+            gameHistories.AddRange(GenerateGameHistories(2, 3));
+
+            _context.GameHistory.AddRange(gameHistories);
+            _context.SaveChanges();
+        }
+
+        private List<GameHistory> GenerateGameHistories(int userId, int numGames)
         {
-            new GameHistory
+            List<GameHistory> userGameHistories = new List<GameHistory>();
+
+            for (int i = 0; i < numGames; i++)
             {
-                GameTableId = 3,
-                UserId = 2,
-                GameType = GameType.Roulette, 
-                TotalMatchesPlayed = 15,
-                TotalBetAmount = 10000,
-                ChipResult = 3000,
-                JoinedAt = DateTime.UtcNow.AddMinutes(-120),
-                LeftAt = DateTime.UtcNow.AddMinutes(-90)
-            },
-            new GameHistory
-            {
-                GameTableId = 4,
-                UserId = 2,
-                GameType = GameType.Poker,
-                TotalMatchesPlayed = 7,
-                TotalBetAmount = 7000,
-                ChipResult = -1500,
-                JoinedAt = DateTime.UtcNow.AddMinutes(-150),
-                LeftAt = DateTime.UtcNow.AddMinutes(-130)
+                GameType gameType = GetRandomGameType();
+                int totalMatchesPlayed = _random.Next(5, 20);
+                int totalBetAmount = _random.Next(1000, 10000);
+                int chipResult = _random.Next(-2000, 5000);
+                DateTime joinedAt = DateTime.UtcNow.AddMinutes(-_random.Next(30, 180));
+                DateTime leftAt = joinedAt.AddMinutes(_random.Next(5, 60));
+
+                GameHistory gameHistory = new GameHistory
+                {
+                    GameTableId = _random.Next(1, 10),
+                    UserId = userId,
+                    GameType = gameType,
+                    TotalMatchesPlayed = totalMatchesPlayed,
+                    TotalBetAmount = totalBetAmount,
+                    ChipResult = chipResult,
+                    JoinedAt = joinedAt,
+                    LeftAt = leftAt
+                };
+
+                userGameHistories.Add(gameHistory);
             }
-        };
 
-        _context.GameHistory.AddRange(gameHistoryUser1);
-        _context.GameHistory.AddRange(gameHistoryUser2);
+            return userGameHistories;
+        }
 
-        _context.SaveChanges();
+        private GameType GetRandomGameType()
+        {
+            Array gameTypes = Enum.GetValues(typeof(GameType));
+            return (GameType)gameTypes.GetValue(_random.Next(gameTypes.Length));
+        }
     }
 }

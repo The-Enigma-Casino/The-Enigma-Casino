@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Services;
 
 namespace the_enigma_casino_server.Controllers;
@@ -19,7 +20,7 @@ public class UserController : BaseController
         try
         {
             int id = GetUserId(); 
-            var coins = await _userService.GetCoins(id);
+            int coins = await _userService.GetCoins(id);
 
             return Ok(coins); 
         }
@@ -30,6 +31,26 @@ public class UserController : BaseController
         catch (Exception ex)
         {
             return StatusCode(500, $"Hubo un error al obtener las monedas: {ex.Message}");
+        }
+    }
+
+    [HttpGet("profile")]
+    public async Task<ActionResult<UserDto>> GetProfile()
+    {
+        try
+        {
+            int id = GetUserId();
+            UserDto userDto = await _userService.GetProfile(id);
+
+            return userDto;
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno: {ex.Message}");
         }
     }
 

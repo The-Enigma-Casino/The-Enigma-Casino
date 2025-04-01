@@ -28,12 +28,14 @@ namespace the_enigma_casino_server.Services
             {
                 while (webSocket.State == WebSocketState.Open)
                 {
-                    string message = await ReadAsync(webSocket);
+                    string? message = await ReadAsync(webSocket);
+
+                    if (message == null)
+                        break;
 
                     if (!string.IsNullOrWhiteSpace(message))
                     {
                         var messageData = JsonDocument.Parse(message).RootElement;
-
                         var gameTableHandler = _serviceProvider.GetRequiredService<GameTableWS>();
                         await gameTableHandler.HandleAsync(userId, messageData);
                     }
@@ -41,42 +43,48 @@ namespace the_enigma_casino_server.Services
             }
             finally
             {
-                _connectionManager.RemoveConnection(userId);
+                await _connectionManager.RemoveConnectionAsync(userId);
                 await BroadcastOnlineUsersAsync();
 
-                if (webSocket.State == WebSocketState.Open)
-                {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Cerrado por el servidor", CancellationToken.None);
-                }
             }
         }
 
         // Método para leer los mensajes del WebSocket
-        protected virtual async Task<string> ReadAsync(WebSocket webSocket, CancellationToken cancellation = default)
+        protected virtual async Task<string?> ReadAsync(WebSocket webSocket, CancellationToken cancellation = default)
         {
             byte[] buffer = new byte[4096];
             StringBuilder stringBuilder = new StringBuilder();
 
-            bool endOfMessage = false;
-
-            do
+            try
             {
-                WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellation);
+                bool endOfMessage = false;
 
-                string partialMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                stringBuilder.Append(partialMessage);
-
-                if (result.CloseStatus.HasValue)
+                do
                 {
-                    await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, cancellation);
-                }
+                    WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellation);
 
-                endOfMessage = result.EndOfMessage;
+                    string partialMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    stringBuilder.Append(partialMessage);
+
+                    if (result.CloseStatus.HasValue)
+                    {
+                        await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, cancellation);
+                        return null; 
+                    }
+
+                    endOfMessage = result.EndOfMessage;
+
+                } while (!endOfMessage);
+
+                return stringBuilder.ToString();
             }
-            while (!endOfMessage);
-
-            return stringBuilder.ToString();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ WebSocket desconectado abruptamente: {ex.Message}");
+                return null; 
+            }
         }
+
 
         // Método para enviar mensajes a un WebSocket
         protected async Task SendAsync(WebSocket socket, object payload)
@@ -91,7 +99,6 @@ namespace the_enigma_casino_server.Services
             );
         }
 
-        // Devuelve usuarios en linea
         public async Task BroadcastOnlineUsersAsync()
         {
             var connections = _connectionManager.GetAllConnections();

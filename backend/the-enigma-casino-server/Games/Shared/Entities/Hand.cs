@@ -16,7 +16,7 @@ public class Hand
     public int GetTotal()
     {
         int total = Cards.Sum(c => c.Value);
-        int aceCount = Cards.Count(c => c.CardRank == CardRank.Ace);
+        int aceCount = Cards.Count(c => c.Rank == CardRank.Ace);
 
         while (total > 21 && aceCount > 0)
         {

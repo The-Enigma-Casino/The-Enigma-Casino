@@ -33,5 +33,4 @@ public class Deck
         _cards.RemoveAt(0);
         return card;
     }
-
 }

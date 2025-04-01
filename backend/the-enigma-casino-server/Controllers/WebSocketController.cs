@@ -6,8 +6,8 @@ using the_enigma_casino_server.Services;
 
 namespace the_enigma_casino_server.Controllers;
 
-[Route("socket")]
 [ApiController]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class WebSocketController : ControllerBase
 {
     private readonly WebSocketService _websocketService;
@@ -19,40 +19,36 @@ public class WebSocketController : ControllerBase
         _unitOfWork = unitOfWork;
     }
 
-    [HttpGet]
-    //[Authorize]
-    public async Task ConnectAsync()
+    [Route("/socket")] 
+    public async Task Get()
     {
+        if (HttpContext.WebSockets.IsWebSocketRequest)
         {
-            if (HttpContext.WebSockets.IsWebSocketRequest)
+            string userId = HttpContext.Request.Query["userId"];
+
+            if (!string.IsNullOrEmpty(userId))
             {
-                string userId = HttpContext.Request.Query["userId"];
-
-
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    User user = await _unitOfWork.UserRepository.GetByIdAsync(int.Parse(userId));
-                    if (user == null)
-                    {
-                        HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        await HttpContext.Response.WriteAsync("Usuario no encontrado.");
-                        return;
-                    }
-
-
-                    WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                    await _websocketService.HandleAsync(webSocket, userId);
-                }
-                else
+                var user = await _unitOfWork.UserRepository.GetByIdAsync(int.Parse(userId));
+                if (user == null)
                 {
                     HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    await HttpContext.Response.WriteAsync("Se necesita un UserId");
+                    await HttpContext.Response.WriteAsync("Usuario no encontrado.");
+                    return;
                 }
+
+                WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                await _websocketService.HandleAsync(webSocket, userId);
             }
             else
             {
                 HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await HttpContext.Response.WriteAsync("Se necesita un UserId");
             }
+        }
+        else
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await HttpContext.Response.WriteAsync("No es una solicitud WebSocket");
         }
     }
 }

@@ -15,8 +15,10 @@ export const COINS_PACK_ID = `${API_BASE_URL}CoinsPack/coins-packs-by-id`;
 export const PAYMENT_STATUS = `${API_BASE_URL}Stripe/status`;
 export const EMBBEDED_CHECKOUT = `${API_BASE_URL}Stripe/embedded-checkout`;
 
+/* ENDPOINTS DE ETHEREUM */
 export const ETHEREUM_PAYMENT_CHECK = `${API_BASE_URL}Blockchain/check`;
 export const ETHEREUM_CHECK_TRANSACTION = `${API_BASE_URL}Blockchain/transaction`;
+export const ETHEREUM_WITHDRAWAL = `${API_BASE_URL}Blockchain/withdrawal`;
 
 /* ENDPOINTS DE ORDER */
 export const LAST_ORDER = `${API_BASE_URL}Order/last-order`

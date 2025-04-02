@@ -48,6 +48,9 @@ public class OrderMapper
         if (order.OrderType == OrderType.Purchase)
             orderHistoryDto.Image = order.CoinsPack.Image;
 
+        if (order.PayMode == PayMode.Ethereum)
+            orderHistoryDto.EthereumPrice = order.EthereumPrice;
+
         return orderHistoryDto;
     }
 

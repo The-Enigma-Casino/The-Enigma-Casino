@@ -18,6 +18,8 @@ public class OrderHistoryDto
 
     public OrderType OrderType { get; set; }
 
+    public decimal EthereumPrice { get; set; }
+
     public OrderHistoryDto() { }
 
     public OrderHistoryDto(int id, DateTime paidDate, int price, int coins, PayMode payMode, OrderType orderType)
@@ -26,6 +28,7 @@ public class OrderHistoryDto
         PaidDate = paidDate;
         Image = "";
         Price = price;
+        EthereumPrice = 0;
         Coins = coins;
         PayMode = payMode;
         OrderType = orderType;

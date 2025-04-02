@@ -7,6 +7,8 @@ public class ConnectionManagerWS
 {
     private readonly ConcurrentDictionary<string, WebSocket> _connections = new();
 
+    public event Action<string> OnUserDisconnected;
+
     public void AddConnection(string userId, WebSocket webSocket)
     {
         if (_connections.TryGetValue(userId, out var existingSocket))
@@ -47,8 +49,11 @@ public class ConnectionManagerWS
             {
                 Console.WriteLine($"❌ Error al cerrar conexión de {userId}: {ex.Message}");
             }
+
+            OnUserDisconnected?.Invoke(userId);
         }
     }
+
 
     public bool TryGetConnection(string userId, out WebSocket webSocket)
     {

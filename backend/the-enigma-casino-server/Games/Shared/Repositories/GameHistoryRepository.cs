@@ -15,6 +15,7 @@ namespace the_enigma_casino_server.Games.Shared.Repositories
         {
             return await Context.Set<GameHistory>()
                 .Where(h => h.UserId == userId)
+                .OrderByDescending(h => h.JoinedAt)
                 .ToListAsync();
         }
     }

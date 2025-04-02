@@ -126,36 +126,39 @@ public class OrderService
         return order;
     }
 
-    //public async Task<Order> EthereumWithdrawalOrder(int userId, int coinsWithdrawal, string txHash)
-    //{
-    //    User user = await _unitOfWork.UserRepository.GetUserById(userId);
+    public async Task EthereumWithdrawalOrder(int userId, int coinsWithdrawal, string txHash, decimal ethereum)
+    {
+        User user = await _unitOfWork.UserRepository.GetUserById(userId);
 
-    //    if(user == null)
-    //    {
-    //        throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
-    //    }
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
+        }
 
-    //    if (user.Coins < coinsWithdrawal)
-    //    {
-    //        throw new InvalidOperationException("Fichas insuficiente para realizar el retiro.");
-    //    }
+        if (user.Coins < coinsWithdrawal)
+        {
+            throw new InvalidOperationException("Fichas insuficiente para realizar el retiro.");
+        }
 
-    //    Order order = new Order
-    //    {
-    //        UserId = user.Id,  
-    //        CoinsPackId = -1,
-    //        EthereumTransactionHash = txHash, 
-    //        CreatedAt = DateTime.Now,  
-    //        OrderType = OrderType.Withdrawal,
-    //        Coins = coinsWithdrawal,
-    //        EthereumPrice = ??,
-    //        IsPaid = true
-    //    };
+        if (ethereum <= 0)
+        {
+            throw new InvalidOperationException("El valor de Ethereum debe ser mayor que 0.");
+        }
 
-    //    await _unitOfWork.OrderRepository.InsertAsync(order);
-    //    await _unitOfWork.SaveAsync();
+        Order order = new Order
+        {
+            UserId = user.Id,
+            CoinsPackId = -1,
+            EthereumTransactionHash = txHash,
+            CreatedAt = DateTime.Now,
+            PayMode= PayMode.Ethereum,
+            OrderType = OrderType.Withdrawal,
+            Coins = coinsWithdrawal,
+            EthereumPrice = ethereum,
+            IsPaid = true
+        };
 
-    //    return order;
-    //}
-    
+        await _unitOfWork.OrderRepository.InsertAsync(order);
+        await _unitOfWork.SaveAsync();
+    }
 }

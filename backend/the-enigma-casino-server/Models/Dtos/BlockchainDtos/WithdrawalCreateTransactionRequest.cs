@@ -4,5 +4,5 @@ public class WithdrawalCreateTransactionRequest
 {
     public string NetworkUrl { get; set; }
     public string To { get; set; }
-    public int coinsWithdrawal { get; set; }
+    public int CoinsWithdrawal { get; set; }
 }

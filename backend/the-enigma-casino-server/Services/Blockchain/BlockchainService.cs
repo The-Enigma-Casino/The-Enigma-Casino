@@ -4,12 +4,20 @@ using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using Stripe.Climate;
+using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Dtos.BlockchainDtos;
 
 namespace the_enigma_casino_server.Services.Blockchain;
 
 public class BlockchainService
 {
+    private readonly OrderService _orderService;
+
+    public BlockchainService(OrderService orderService)
+    {
+        _orderService = orderService;
+    }
     public async Task<EthereumTransaction> GetEthereumInfoAsync(CreateTransactionRequest data)
     {
         CoinGeckoApi coinGeckoApi = new CoinGeckoApi();
@@ -68,8 +76,8 @@ public class BlockchainService
     }
 
     //RETIRADA
-    public async Task<TransactionDto> CreateTransactionAsync(WithdrawalCreateTransactionRequest data)
-    {   
+    public async Task<TransactionDto> CreateTransactionAsync(WithdrawalCreateTransactionRequest data, int userId)
+    {
 
         string networkUrl = Environment.GetEnvironmentVariable("NETWORKURL");
         if (string.IsNullOrEmpty(networkUrl))
@@ -84,22 +92,27 @@ public class BlockchainService
             throw new InvalidOperationException("La variable de entorno 'METAMASK_PRIVATE_WALLET' no está configurada.");
         }
 
-        if (data.coinsWithdrawal <= 0)
+        if (data.CoinsWithdrawal <= 0)
         {
-            throw new ArgumentException("El número de fichas a retirar debe ser mayor que 0.", nameof(data.coinsWithdrawal));
+            throw new ArgumentException("El número de fichas a retirar debe ser mayor que 0.", nameof(data.CoinsWithdrawal));
         }
 
         EthereumService ethereumService = new EthereumService(networkUrl);
-        decimal ethereums = await ConvertCoinsToEthereumAsync(data.coinsWithdrawal);
+        decimal ethereums = await ConvertCoinsToEthereumAsync(data.CoinsWithdrawal);
 
         try
         {
             TransactionReceipt txReceipt = await ethereumService.CreateTransactionAsync(fromPrivateKey, data.To, ethereums);
+
+            await _orderService.
+
             return new TransactionDto
             {
                 Hash = txReceipt.TransactionHash,
-                Success = txReceipt.Succeeded()
+                Success = txReceipt.Succeeded(),
             };
+
+
         }
         catch (Exception ex)
         {
@@ -126,6 +139,7 @@ public class BlockchainService
 
         return ethereums;
     }
+
     private Task<decimal> GetEthereumPriceAsync()
     {
         CoinGeckoApi coinGeckoApi = new CoinGeckoApi();

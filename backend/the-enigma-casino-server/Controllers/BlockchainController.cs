@@ -114,10 +114,11 @@ public class BlockchainController : BaseController
 
     [HttpPost("withdrawal")]
     [Authorize]
-    public Task<TransactionDto> CreateTransactionAsync([FromBody] WithdrawalCreateTransactionRequest data)
+    public async Task<TransactionDto> CreateTransactionAsync([FromBody] WithdrawalCreateTransactionRequest data)
     {
         data.NetworkUrl = HttpUtility.UrlDecode(data.NetworkUrl);
+        int userId = GetUserId();
 
-        return _blockchainService.CreateTransactionAsync(data);
+        return await  _blockchainService.CreateTransactionAsync(data, userId);
     }
 }

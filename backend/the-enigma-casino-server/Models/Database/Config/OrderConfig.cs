@@ -51,6 +51,12 @@ public class OrderConfig : IEntityTypeConfiguration<Order>
         entity.Property(e => e.PayMode)
             .HasColumnName("pay_mode");
 
+        entity.Property(e => e.OrderType)
+            .HasColumnName("order_type");
+
+        entity.Property(e => e.EthereumPrice)
+            .HasColumnName("ethereum_price");
+
         entity.HasOne(o => o.User)
             .WithMany(u => u.Orders)
             .HasForeignKey(o => o.UserId);

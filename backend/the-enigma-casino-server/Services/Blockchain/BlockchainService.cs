@@ -10,7 +10,6 @@ namespace the_enigma_casino_server.Services.Blockchain;
 
 public class BlockchainService
 {
-
     public async Task<EthereumTransaction> GetEthereumInfoAsync(CreateTransactionRequest data)
     {
         CoinGeckoApi coinGeckoApi = new CoinGeckoApi();
@@ -69,7 +68,7 @@ public class BlockchainService
     }
 
     //RETIRADA
-    public async Task<TransactionDto> CreateTransactionAsync(CreateTransactionRequest data)
+    public async Task<TransactionDto> CreateTransactionAsync(WithdrawalCreateTransactionRequest data)
     {   
 
         string networkUrl = Environment.GetEnvironmentVariable("NETWORKURL");
@@ -127,15 +126,11 @@ public class BlockchainService
 
         return ethereums;
     }
-
-
-
     private Task<decimal> GetEthereumPriceAsync()
     {
         CoinGeckoApi coinGeckoApi = new CoinGeckoApi();
 
         return coinGeckoApi.GetEthereumPriceAsync();
     }
-
 }
 

@@ -157,5 +157,13 @@ public class OrderService
 
     //    return order;
     //}
-    
+
+    public async Task<OrderHistoryDto> GetOrdersByUser(int userId)
+    {
+        User user = await _unitOfWork.UserRepository.GetUserById(userId);
+        if (user == null)
+            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
+
+        return null;
+    }
 }

@@ -27,6 +27,9 @@ export const $name = createStore<string>("");
 export const setName = createEvent<string>();
 export const loadName = createEvent();
 
+export const $userId = createStore<string>("");
+export const loadUserId = createEvent();
+
 export const setAuthError = createEvent<string>();
 
 export const $authError = createStore<{ message: string; time: number } | null>(
@@ -44,6 +47,7 @@ $token
 
 setToken.watch(({ token, rememberMe }) => {
   if (token) {
+    loadUserId();
     if (rememberMe) {
       updateLocalStorage("token", token);
     } else {
@@ -75,11 +79,25 @@ sample({
   fn: (token) => {
     try {
       const decoded: DecodedToken = jwtDecode(token);
-      console.log("name: ",decoded?.name);
+      console.log("name: ", decoded?.name);
       return decoded?.name || "";
     } catch {
       return "";
     }
   },
   target: $name,
+});
+
+sample({
+  clock: loadUserId,
+  source: $token,
+  fn: (token): string => {
+    try {
+      const decoded: DecodedToken = jwtDecode(token);
+      return String(decoded?.id) || "";
+    } catch {
+      return "";
+    }
+  },
+  target: $userId,
 });

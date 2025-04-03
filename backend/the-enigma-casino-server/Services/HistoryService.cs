@@ -6,22 +6,20 @@ using the_enigma_casino_server.Models.Mappers;
 
 namespace the_enigma_casino_server.Services;
 
-public class HistoryService
+public class HistoryService : BaseService
 {
-    private UnitOfWork _unitOfWork;
     private GameHistoryMapper _gameHistoryMapper;
 
     private readonly static int AMOUNT = 5;
 
-    public HistoryService(UnitOfWork unitOfWork, GameHistoryMapper gameHistoryMapper)
+    public HistoryService(UnitOfWork unitOfWork, GameHistoryMapper gameHistoryMapper): base(unitOfWork)
     {
-        _unitOfWork = unitOfWork;
         _gameHistoryMapper = gameHistoryMapper;
     }
 
     public async Task<HistoryDto> GetHistory(int id, int page)
     {
-        User user = await _unitOfWork.UserRepository.GetByIdAsync(id);
+        User user = await GetUserById(id);
 
         if (user == null)
             throw new KeyNotFoundException($"No se encontró un usuario con el ID {id}.");

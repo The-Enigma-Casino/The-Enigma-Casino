@@ -1,6 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
-using the_enigma_casino_server.Models.Database.Entities;
+﻿using Microsoft.AspNetCore.Mvc;
 using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Services;
 
@@ -33,4 +31,26 @@ public class OrderController : BaseController
         return await _orderService.GetLastOrderIdByUserIdAsync(userId);
     }
 
+    [HttpGet("orders")]
+    public async Task<ActionResult<OrderHistoryDto>> GetOrdersByUser(int page)
+    {
+        try
+        {
+            int userId = GetUserId();
+
+            return Ok(await _orderService.GetOrdersByUser(userId, page));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+        }
+    }
 }

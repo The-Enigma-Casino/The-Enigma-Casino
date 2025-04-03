@@ -13,17 +13,15 @@ using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Services;
 
-public class UserService
+public class UserService : BaseService
 {
-    private UnitOfWork _unitOfWork;
     private readonly TokenValidationParameters _tokenParameters;
     private readonly EmailService _emailService;
     private readonly ValidationService _validation;
     private readonly UserMapper _userMapper;
 
-    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper)
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper): base(unitOfWork)
     {
-        _unitOfWork = unitOfWork;
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
         _emailService = emailService;
         _validation = validationService;
@@ -187,10 +185,7 @@ public class UserService
     {
         try
         {
-            User user = await _unitOfWork.UserRepository.GetByIdAsync(id);
-
-            if (user == null)
-                throw new KeyNotFoundException($"No hay usuario con este ID {id}");
+            User user = await GetUserById(id);
 
             return user.Coins;
         }
@@ -208,10 +203,7 @@ public class UserService
     {
         try
         {
-            User user = await _unitOfWork.UserRepository.GetByIdAsync(id);
-
-            if (user == null)
-                throw new KeyNotFoundException($"No hay usuario con este ID {id}");
+            User user = await GetUserById(id);
 
             user.Coins += quantity;
 
@@ -231,10 +223,7 @@ public class UserService
     {
         try
         {
-            User user = await _unitOfWork.UserRepository.GetByIdAsync(id);
-
-            if (user == null)
-                throw new KeyNotFoundException($"No hay usuario con este ID {id}");
+            User user = await GetUserById(id);
 
             return _userMapper.ToUserDto(user);
 

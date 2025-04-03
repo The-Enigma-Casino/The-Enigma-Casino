@@ -3,5 +3,6 @@
 public class CreateTransactionRequest
 {
     public string NetworkUrl { get; set; }
+    public string To { get; set; }
     public decimal Euros { get; set; }
 }

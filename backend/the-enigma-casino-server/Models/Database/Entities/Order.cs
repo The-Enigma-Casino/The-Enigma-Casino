@@ -1,4 +1,4 @@
-﻿
+﻿using Nethereum.Util;
 using the_enigma_casino_server.Models.Database.Entities.Enum;
 
 namespace the_enigma_casino_server.Models.Database.Entities;
@@ -31,6 +31,10 @@ public class Order
 
     public PayMode PayMode { get; set; }
 
+    public OrderType OrderType { get; set; }
+
+    public decimal EthereumPrice { get; set; }
+
     public Order()
     {
 
@@ -49,6 +53,8 @@ public class Order
 
         Price = coinsPack.Price;
         Coins = coinsPack.Quantity;
+
+        EthereumPrice = 0;
     }
 
 }

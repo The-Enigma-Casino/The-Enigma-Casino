@@ -2,6 +2,8 @@
 using Nethereum.Hex.HexTypes;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using Nethereum.Web3.Accounts;
+
 
 namespace the_enigma_casino_server.Services.Blockchain;
 
@@ -11,10 +13,12 @@ public class EthereumService
     private const int GAS = 30_000;
     private const int TRANSACTION_SUCCESS_STATUS = 1;
 
+    private readonly string _networkUrl;
     private readonly Web3 _web3;
 
     public EthereumService(string networkUrl)
     {
+        _networkUrl = networkUrl;
         _web3 = new Web3(networkUrl);
         _web3.TransactionReceiptPolling.SetPollingRetryIntervalInMilliseconds(POLLY_INTERVAL_MS);
     }
@@ -65,4 +69,14 @@ public class EthereumService
     {
         return hex1.Equals(hex2, StringComparison.OrdinalIgnoreCase);
     }
+
+
+    public Task<TransactionReceipt> CreateTransactionAsync(string fromPrivateKey, string to, decimal ethereums)
+    {
+        Account account = new Account(fromPrivateKey);
+        Web3 web3 = new Web3(account, _networkUrl);
+
+        return web3.Eth.GetEtherTransferService().TransferEtherAndWaitForReceiptAsync(to, ethereums, gas: GetGas());
+    }
+
 }

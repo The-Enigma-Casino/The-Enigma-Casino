@@ -41,9 +41,9 @@ public class OrderMapper
         return orderDto;
     }
 
-    public OrderHistoryDto ToOrderHistoryDto(Order order)
+    public OrderHistoryItemDto ToOrderHistoryItemDto(Order order)
     {
-        OrderHistoryDto orderHistoryDto = new OrderHistoryDto(order.Id, order.PaidDate, order.Price, order.Coins, order.PayMode, order.OrderType);
+        OrderHistoryItemDto orderHistoryDto = new OrderHistoryItemDto(order.Id, order.PaidDate, order.Price, order.Coins, order.PayMode, order.OrderType);
 
         if (order.OrderType == OrderType.Purchase)
             orderHistoryDto.Image = order.CoinsPack.Image;
@@ -54,13 +54,13 @@ public class OrderMapper
         return orderHistoryDto;
     }
 
-    public List<OrderHistoryDto> ToListOrderHistoryDto(List<Order> orders)
+    public List<OrderHistoryItemDto> ToListOrderHistoryItemDto(List<Order> orders)
     {
-        List<OrderHistoryDto> orderHistoryDtos = new List<OrderHistoryDto>();
+        List<OrderHistoryItemDto> orderHistoryDtos = new List<OrderHistoryItemDto>();
 
         foreach (Order order in orders)
         {
-            orderHistoryDtos.Add(ToOrderHistoryDto(order));
+            orderHistoryDtos.Add(ToOrderHistoryItemDto(order));
         }
 
         return orderHistoryDtos;

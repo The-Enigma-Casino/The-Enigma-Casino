@@ -1,37 +1,17 @@
-﻿using the_enigma_casino_server.Models.Database.Entities.Enum;
-
-namespace the_enigma_casino_server.Models.Dtos;
+﻿namespace the_enigma_casino_server.Models.Dtos;
 
 public class OrderHistoryDto
 {
-    public int Id { get; set; }
+    public List<OrderHistoryItemDto> Orders { get; set; }
 
-    public DateTime PaidDate { get; set; }
+    public int TotalPages { get; set; }
 
-    public string Image { get; set; }
+    public int Page { get; set; }
 
-    public int Price { get; set; }
-
-    public int Coins { get; set; }
-
-    public PayMode PayMode { get; set; }
-
-    public OrderType OrderType { get; set; }
-
-    public decimal EthereumPrice { get; set; }
-
-    public OrderHistoryDto() { }
-
-    public OrderHistoryDto(int id, DateTime paidDate, int price, int coins, PayMode payMode, OrderType orderType)
+    public OrderHistoryDto(List<OrderHistoryItemDto> orders, int totalPages, int page)
     {
-        Id = id;
-        PaidDate = paidDate;
-        Image = "";
-        Price = price;
-        EthereumPrice = 0;
-        Coins = coins;
-        PayMode = payMode;
-        OrderType = orderType;
+        Orders = orders;
+        TotalPages = totalPages;
+        Page = page;
     }
-
 }

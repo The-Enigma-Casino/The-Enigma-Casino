@@ -7,18 +7,16 @@ using the_enigma_casino_server.Services.Email;
 
 namespace the_enigma_casino_server.Services;
 
-public class OrderService
+public class OrderService : BaseService
 {
-    private readonly UnitOfWork _unitOfWork;
     private readonly OrderMapper _orderMapper;
     private readonly UserService _userService;
     private readonly EmailService _emailService;
 
     private readonly static int AMOUNT = 5;
 
-    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService, EmailService emailService)
+    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService, EmailService emailService): base(unitOfWork)
     {
-        _unitOfWork = unitOfWork;
         _orderMapper = orderMapper;
         _userService = userService;
         _emailService = emailService;
@@ -26,11 +24,7 @@ public class OrderService
 
     public async Task<Order> NewOrder(int userId, int coinsPackId, string sessionId)
     {
-        User user = await _unitOfWork.UserRepository.GetUserById(userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
-        }
+        User user = await GetUserById(userId);
 
         CoinsPack coinsPack = await _unitOfWork.CoinsPackRepository.GetByIdAsync(coinsPackId);
         if (coinsPack == null)
@@ -98,11 +92,7 @@ public class OrderService
     //Ethereum
     public async Task<Order> NewEthereumOrder(int userId, int coinsPackId, string txHash)
     {
-        User user = await _unitOfWork.UserRepository.GetUserById(userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
-        }
+        User user = await GetUserById(userId);
 
         CoinsPack coinsPack = await _unitOfWork.CoinsPackRepository.GetByIdAsync(coinsPackId);
         if (coinsPack == null)
@@ -160,10 +150,7 @@ public class OrderService
 
     public async Task<OrderHistoryDto> GetOrdersByUser(int userId, int page)
     {
-        User user = await _unitOfWork.UserRepository.GetUserById(userId);
-        if (user == null)
-            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
-
+        User user = await GetUserById(userId);
 
         List<Order> orders = await _unitOfWork.OrderRepository.GetOrdersByUserIdAsync(userId);
 

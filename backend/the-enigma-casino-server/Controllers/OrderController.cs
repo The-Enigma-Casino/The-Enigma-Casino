@@ -32,11 +32,25 @@ public class OrderController : BaseController
     }
 
     [HttpGet("orders")]
-    public async Task<OrderHistoryDto> GetOrdersByUser(int page)
+    public async Task<ActionResult<OrderHistoryDto>> GetOrdersByUser(int page)
     {
-        int userId = GetUserId();
+        try
+        {
+            int userId = GetUserId();
 
-        return await _orderService.GetOrdersByUser(userId, page);
+            return Ok(await _orderService.GetOrdersByUser(userId, page));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+        }
     }
-
 }

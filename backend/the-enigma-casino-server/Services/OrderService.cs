@@ -85,7 +85,6 @@ public class OrderService
         return order.Id;
     }
 
-    //Usado en Ethereum
     public async Task<decimal> GetCoinsPackPrice(int coinsPackId)
     {
         CoinsPack coinsPack = await _unitOfWork.CoinsPackRepository.GetByIdAsync(coinsPackId);
@@ -143,7 +142,7 @@ public class OrderService
 
         if (user.Coins < coinsWithdrawal)
         {
-            throw new InvalidOperationException("Fichas insuficiente para realizar el retiro.");
+            throw new InvalidOperationException("Fichas insuficientes para realizar el retiro.");
         }
 
         if (ethereum <= 0)
@@ -151,20 +150,36 @@ public class OrderService
             throw new InvalidOperationException("El valor de Ethereum debe ser mayor que 0.");
         }
 
-        Order order = new Order
+        string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
+
+        // Transforma fichas retiradas a euros
+        if (string.IsNullOrEmpty(coinValueStr) || !decimal.TryParse(coinValueStr, out decimal coinValueInEuros))
         {
-            UserId = user.Id,
-            CoinsPackId = -1,
+            throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
+        }
+
+        decimal eurosConvertion = coinsWithdrawal * coinValueInEuros * 100;
+
+        int eurosConvertionInt = (int)eurosConvertion;
+
+        Order order = new Order(user)
+        {
+            CoinsPackId = 7,
             EthereumTransactionHash = txHash,
             CreatedAt = DateTime.Now,
-            PayMode= PayMode.Ethereum,
+            PayMode = PayMode.Ethereum,
             OrderType = OrderType.Withdrawal,
             Coins = coinsWithdrawal,
             EthereumPrice = ethereum,
-            IsPaid = true
+            IsPaid = true,
+            PaidDate = DateTime.Now, 
+            Price = eurosConvertionInt,
         };
+
+        await _userService.UpdateCoins(userId, (coinsWithdrawal * -1));
 
         await _unitOfWork.OrderRepository.InsertAsync(order);
         await _unitOfWork.SaveAsync();
     }
+
 }

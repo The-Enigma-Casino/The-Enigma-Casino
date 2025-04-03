@@ -116,9 +116,21 @@ public class BlockchainController : BaseController
     [Authorize]
     public async Task<TransactionDto> CreateTransactionAsync([FromBody] WithdrawalCreateTransactionRequest data)
     {
-        data.NetworkUrl = HttpUtility.UrlDecode(data.NetworkUrl);
-        int userId = GetUserId();
+        try
+        {
+            data.NetworkUrl = HttpUtility.UrlDecode(data.NetworkUrl);
+            int userId = GetUserId();
 
-        return await  _blockchainService.CreateTransactionAsync(data, userId);
+            var (transactionDto, ethereums) = await _blockchainService.CreateTransactionAsync(data, userId);
+
+            await _orderService.EthereumWithdrawalOrder(userId, data.CoinsWithdrawal, transactionDto.Hash, ethereums);
+
+            return transactionDto;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
     }
+
 }

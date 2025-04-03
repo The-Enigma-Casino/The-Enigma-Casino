@@ -71,6 +71,13 @@ public class CoinsPackSeeder
                 Offer = 0,
                 Image = "images/coins/pack6.webp",
             },
+            new CoinsPack
+            {
+                Price = 0,
+                Quantity = 0,
+                Offer = 0,
+                Image = "images/cards/as_clubs.webp",
+            },
 
         };
 

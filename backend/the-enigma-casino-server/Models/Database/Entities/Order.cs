@@ -57,4 +57,8 @@ public class Order
         EthereumPrice = 0;
     }
 
+    public Order(User user)
+    {
+        User = user;
+    }
 }

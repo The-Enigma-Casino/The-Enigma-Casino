@@ -70,7 +70,7 @@ public class BlockchainService
     }
 
     //RETIRADA
-    public async Task<TransactionDto> CreateTransactionAsync(WithdrawalCreateTransactionRequest data, int userId)
+    public async Task<(TransactionDto transaction, decimal ethereums)> CreateTransactionAsync(WithdrawalCreateTransactionRequest data, int userId)
     {
 
         string networkUrl = Environment.GetEnvironmentVariable("NETWORKURL");
@@ -98,19 +98,18 @@ public class BlockchainService
         {
             TransactionReceipt txReceipt = await ethereumService.CreateTransactionAsync(fromPrivateKey, data.To, ethereums);
 
-            return new TransactionDto
+            var transactionDto = new TransactionDto
             {
                 Hash = txReceipt.TransactionHash,
-                Success = txReceipt.Succeeded(),
+                Success = txReceipt.Succeeded()
             };
 
-
+            return (transactionDto, ethereums);
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException("Error al procesar la transacción en la blockchain.", ex);
         }
-
     }
 
 

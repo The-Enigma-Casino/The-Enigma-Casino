@@ -11,7 +11,7 @@ import { createBrowserRouter } from "react-router-dom";
 import WithdrawConfirmation from "./features/withdraw/pages/WithdrawConfirmation";
 import Withdraw from "./features/withdraw/pages/Withdraw";
 import LandingPage from "./features/landingPage/pages/LandingPage";
-import GameTable from "./features/gameTables/pages/GameTable";
+import GameTable from "./features/gameTables/pages/GameTablePage";
 
 const router = createBrowserRouter([
   {

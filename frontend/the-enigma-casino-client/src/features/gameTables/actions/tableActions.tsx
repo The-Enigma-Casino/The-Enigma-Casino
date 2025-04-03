@@ -1,8 +1,7 @@
-import { createStore, createEffect } from "effector";
+import { createEffect } from "effector";
 import { $token } from "../../auth/store/authStore";
 import { GAMETABLES_ENDPOINT } from "../../../config";
 import axios from "axios";
-
 
 export const fetchTables = createEffect<number, any>(async (gameType) => {
   try {
@@ -13,14 +12,12 @@ export const fetchTables = createEffect<number, any>(async (gameType) => {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-      }
+      },
     });
 
     return response.data;
-
   } catch (error) {
     console.error("Error al obtener las mesas", error);
     throw new Error("No se pudieron cargar las mesas");
   }
-}
-)
+});

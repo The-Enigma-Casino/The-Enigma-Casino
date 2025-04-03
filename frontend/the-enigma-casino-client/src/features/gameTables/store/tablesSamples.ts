@@ -5,13 +5,16 @@ import { $userId } from "../../auth/store/authStore";
 
 sample({
   clock: joinTableClicked,
-  fn: (tableId) =>
-    JSON.stringify({
+  fn: (tableId) => {
+    console.log("⚡ SAMPLE ejecutado para join_table con:", tableId);
+    return JSON.stringify({
       type: "join_table",
       tableId: String(tableId),
-    }),
+    });
+  },
   target: messageSent,
 });
+
 
 sample({
   clock: sendLeaveTableMessage,

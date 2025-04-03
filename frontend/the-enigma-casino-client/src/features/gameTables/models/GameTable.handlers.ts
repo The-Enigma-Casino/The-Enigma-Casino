@@ -20,6 +20,7 @@ export const errorReceived = createEvent<string>();
 
 // Enrutamiento por tipo
 socketMessageReceived.watch((data) => {
+  console.log("📨 [tableHandlers] mensaje recibido:", data);
   switch (data.type) {
     case "table_update":
       tableUpdated(data);

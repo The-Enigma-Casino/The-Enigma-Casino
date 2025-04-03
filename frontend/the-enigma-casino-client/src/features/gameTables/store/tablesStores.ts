@@ -1,8 +1,19 @@
 import { createStore } from "effector";
-import { countdownCleared, countdownTicked, joinTableClicked, leaveTableClicked, setGameType } from "./tablesIndex";
+import {
+  countdownCleared,
+  countdownTicked,
+  joinTableClicked,
+  leaveTableClicked,
+  setGameType,
+} from "./tablesIndex";
 import { GameTable } from "../models/GameTable.interface";
-import { countdownStarted, countdownStopped, gameStarted, tableUpdated } from "../models/GameTable.handlers";
-
+import {
+  countdownStarted,
+  countdownStopped,
+  gameStarted,
+  tableUpdated,
+} from "../models/GameTable.handlers";
+import { fetchTables } from "../actions/tableActions";
 
 export const $gameType = createStore<number>(0).on(
   setGameType,
@@ -14,6 +25,7 @@ export const $currentTableId = createStore<number | null>(null)
   .on(leaveTableClicked, () => null);
 
 export const $tables = createStore<GameTable[]>([])
+  .on(fetchTables.doneData, (_, tables) => tables)
   .on(tableUpdated, (tables, updatedTable) =>
     tables.map((table) =>
       table.id === updatedTable.tableId

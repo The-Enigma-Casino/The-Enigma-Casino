@@ -13,16 +13,15 @@ sample({
 
 // Enviar mensaje cuando haya WebSocket válido
 sample({
-    clock: $wsConnection,
-    source: messageSent,
-    filter: () => $wsConnection.getState() !== null,
-    fn: (message) => ({
-      socket: $wsConnection.getState()!,
-      message,
-    }),
-    target: sendMessageFx,
-  });
-  
+  clock: messageSent,
+  source: $wsConnection,
+  filter: (socket): socket is WebSocket => socket !== null,
+  fn: (socket: WebSocket, message: string) => ({
+    socket,
+    message,
+  }),
+  target: sendMessageFx,
+});
 
 // Cierre manual con logout
 sample({

@@ -1,19 +1,20 @@
-import { JSX, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { useUnit } from "effector-react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   $countdowns,
   $currentTableId,
   $tables,
-} from "../store/tablesStores";
-import { fetchTables } from "../actions/tableActions";
+  joinTableClicked,
+  leaveTableClicked,
+  sendLeaveTableMessage,
+} from "../store/tablesIndex";
 import { GameTable, Player } from "../models/GameTable.interface";
-import { joinTableClicked, leaveTableClicked, sendLeaveTableMessage } from "../store/tablesIndex";
+import { JSX, useEffect } from "react";
+import { fetchTables } from "../actions/tableActions";
 
 function GameTablePage() {
-
   const navigate = useNavigate();
-  
+
   const { gameType } = useParams<string>();
   const tables = useUnit($tables) as GameTable[];
   const countdowns = useUnit($countdowns);
@@ -29,6 +30,7 @@ function GameTablePage() {
   const gameName = gameNames[parseInt(gameType ?? "")] || "Desconocido";
 
   const handleJoinTable = (tableId: number) => {
+    console.log("🟢 joinTableClicked lanzado para:", tableId);
     joinTableClicked(tableId);
   };
 

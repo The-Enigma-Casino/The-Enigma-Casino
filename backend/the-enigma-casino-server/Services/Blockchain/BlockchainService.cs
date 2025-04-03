@@ -12,12 +12,6 @@ namespace the_enigma_casino_server.Services.Blockchain;
 
 public class BlockchainService
 {
-    private readonly OrderService _orderService;
-
-    public BlockchainService(OrderService orderService)
-    {
-        _orderService = orderService;
-    }
     public async Task<EthereumTransaction> GetEthereumInfoAsync(CreateTransactionRequest data)
     {
         CoinGeckoApi coinGeckoApi = new CoinGeckoApi();
@@ -104,8 +98,6 @@ public class BlockchainService
         {
             TransactionReceipt txReceipt = await ethereumService.CreateTransactionAsync(fromPrivateKey, data.To, ethereums);
 
-            await _orderService.
-
             return new TransactionDto
             {
                 Hash = txReceipt.TransactionHash,
@@ -122,7 +114,7 @@ public class BlockchainService
     }
 
 
-    private async Task<decimal> ConvertCoinsToEthereumAsync(int coins)
+    public async Task<decimal> ConvertCoinsToEthereumAsync(int coins)
     {
         string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
 

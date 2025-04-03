@@ -5,6 +5,7 @@ using the_enigma_casino_server.Models.Database.Entities.Enum;
 using the_enigma_casino_server.Models.Database.Repositories;
 using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Models.Mappers;
+using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Services.Email;
 
 namespace the_enigma_casino_server.Services;
@@ -15,13 +16,15 @@ public class OrderService
     private readonly OrderMapper _orderMapper;
     private readonly UserService _userService;
     private readonly EmailService _emailService;
+    private readonly BlockchainService _blockchainService;
 
-    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService, EmailService emailService)
+    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService, EmailService emailService, BlockchainService blockchainService)
     {
         _unitOfWork = unitOfWork;
         _orderMapper = orderMapper;
         _userService = userService;
         _emailService = emailService;
+        _blockchainService = blockchainService;
     }
 
     public async Task<Order> NewOrder(int userId, int coinsPackId, string sessionId)
@@ -110,6 +113,8 @@ public class OrderService
             throw new KeyNotFoundException($"No se encontró un paquete de monedas con el ID {coinsPackId}.");
         }
 
+        decimal ethereum = await _blockchainService.ConvertCoinsToEthereumAsync(coinsPack.Quantity);
+
         Order order = new Order(user, coinsPack)
         {
             EthereumTransactionHash = txHash,  
@@ -118,6 +123,7 @@ public class OrderService
             IsPaid = true,
             PaidDate = DateTime.Now,
             CreatedAt = DateTime.Now,
+            EthereumPrice = ethereum,
         };
 
         await _unitOfWork.OrderRepository.InsertAsync(order);

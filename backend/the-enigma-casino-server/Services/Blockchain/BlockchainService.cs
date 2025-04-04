@@ -112,6 +112,19 @@ public class BlockchainService
         }
     }
 
+    public decimal ConvertCoinsToEuros(int coins)
+    {
+        string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
+
+        if (string.IsNullOrEmpty(coinValueStr) || !decimal.TryParse(coinValueStr, out decimal coinValueInEuros))
+        {
+            throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
+        }
+
+        decimal euros = coins * coinValueInEuros;
+        return euros;
+    }
+
 
     public async Task<decimal> ConvertCoinsToEthereumAsync(int coins)
     {
@@ -122,13 +135,25 @@ public class BlockchainService
             throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
         }
 
-        decimal euros = coins * coinValueInEuros;
+        decimal euros = ConvertCoinsToEuros(coins);
 
         decimal ethEurPrice = await GetEthereumPriceAsync();
 
         decimal ethereums = euros / ethEurPrice;
 
         return ethereums;
+    }
+
+    public async Task<ConvertWithdrawalDto> ConvertWithdrawal(int coins)
+    {
+        decimal totalEthereum = await ConvertCoinsToEthereumAsync(coins);
+        decimal totalEuros = ConvertCoinsToEuros(coins);
+
+        return new ConvertWithdrawalDto
+        {
+            TotalEthereum = totalEthereum,
+            TotalEuros = totalEuros
+        };
     }
 
     private Task<decimal> GetEthereumPriceAsync()

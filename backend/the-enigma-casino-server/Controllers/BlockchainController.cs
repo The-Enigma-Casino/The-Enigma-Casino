@@ -29,7 +29,7 @@ public class BlockchainController : BaseController
         _orderMapper = orderMapper;
     }
 
-    [HttpPost("transaction")]  //Cambiar nombre
+    [HttpPost("transaction")]
     [Authorize]
     public async Task<IActionResult> CreateTransaction([FromBody] OrderTransactionRequest request)
     {
@@ -79,7 +79,7 @@ public class BlockchainController : BaseController
         }
     }
 
-    [HttpPost("check")] //Cambiar nombre
+    [HttpPost("check")]
     [Authorize]
     public async Task<IActionResult> CheckTransactionAsync([FromBody] CheckTransactionRequest data)
     {
@@ -133,4 +133,24 @@ public class BlockchainController : BaseController
         }
     }
 
+    [HttpPost("convertWithdrawal")]  
+    [Authorize]
+    public async Task<IActionResult> ConvertWithdrawal([FromBody] ConvertWithdrawalRequest request)
+    {
+        try
+        {
+            if (request == null || request.Withdrawalcoins <= 0) 
+            {
+                return BadRequest("El número de fichas no puede ser menor o igual a cero.");
+            }
+
+            ConvertWithdrawalDto convertWithdrawalDto = await _blockchainService.ConvertWithdrawal(request.Withdrawalcoins);
+
+            return Ok(convertWithdrawalDto);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Ocurrió un error procesando la conversión.");
+        }
+    }
 }

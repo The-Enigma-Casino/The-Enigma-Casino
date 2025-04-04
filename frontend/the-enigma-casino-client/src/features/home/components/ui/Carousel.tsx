@@ -22,8 +22,6 @@ function Carousel() {
     },
   }
 
-  console.log(responsive);
-
   return (
     <div className={classes.carrouselContainer}>
       <CarouselPack

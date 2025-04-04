@@ -1,10 +1,10 @@
-import { createEvent, createStore } from "effector"
+import { createEvent, createStore, sample } from "effector"
 import { fetchWithrawalFx } from "../actions/withdrawalActions"
 
 // EVENTS
 export const resetWithdrawalData = createEvent();
 export const resetError = createEvent();
-export const setTransactionEnd = createEvent();
+export const setTransactionEnd = createEvent<boolean>();
 export const setLoading = createEvent<boolean>();
 
 // STORE
@@ -23,3 +23,9 @@ export const $error = createStore<string | null>(null)
 
 export const $transactionEnd = createStore<boolean>(false)
   .on(setTransactionEnd, (_, end) => end);
+
+sample({
+  clock: fetchWithrawalFx.doneData,
+  fn: () => true,
+  target: setTransactionEnd,
+})

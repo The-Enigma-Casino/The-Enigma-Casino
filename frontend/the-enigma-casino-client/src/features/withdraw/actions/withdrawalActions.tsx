@@ -20,4 +20,4 @@ export const fetchWithrawalFx = createEffect(async ({ token, to, coinsWithdrawal
     console.error("Error en la transacción de retiro:", error);
     throw new Error("Error en la transacción de retiro");
   }
-})
+});

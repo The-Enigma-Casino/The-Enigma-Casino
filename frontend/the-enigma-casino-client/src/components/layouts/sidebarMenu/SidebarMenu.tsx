@@ -9,7 +9,7 @@ import {
 import { useEffect } from "react";
 import { useUnit } from "effector-react";
 import FriendsPanel from "../../../features/friends/components/layouts/friendsPanel";
-import { $onlineUsers } from "../../../wsStore/webSocketStore";
+import { $onlineUsers } from "../../../websocket/store/wsIndex";
 
 
 function SidebarMenu() {

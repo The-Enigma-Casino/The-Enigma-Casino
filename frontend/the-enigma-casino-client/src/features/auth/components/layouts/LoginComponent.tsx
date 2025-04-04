@@ -10,7 +10,7 @@ import { $authError, setToken } from "../../store/authStore";
 import { useUnit } from "effector-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { connectSocket } from "../../../../wsStore/webSocketStore";
+import { connectSocket } from "../../../../websocket/store/wsIndex";
 
 function LoginComponent() {
   const navigate = useNavigate();

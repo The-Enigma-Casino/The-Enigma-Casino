@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using the_enigma_casino_server.Models.Database;
+﻿using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Database.Entities.Enum;
-using the_enigma_casino_server.Models.Database.Repositories;
 using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Models.Mappers;
 using the_enigma_casino_server.Services.Blockchain;
@@ -10,17 +8,17 @@ using the_enigma_casino_server.Services.Email;
 
 namespace the_enigma_casino_server.Services;
 
-public class OrderService
+public class OrderService : BaseService
 {
-    private readonly UnitOfWork _unitOfWork;
     private readonly OrderMapper _orderMapper;
     private readonly UserService _userService;
     private readonly EmailService _emailService;
     private readonly BlockchainService _blockchainService;
 
-    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService, EmailService emailService, BlockchainService blockchainService)
+    private readonly static int AMOUNT = 5;
+
+    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService, EmailService emailService, BlockchainService blockchainService): base(unitOfWork)
     {
-        _unitOfWork = unitOfWork;
         _orderMapper = orderMapper;
         _userService = userService;
         _emailService = emailService;
@@ -29,11 +27,7 @@ public class OrderService
 
     public async Task<Order> NewOrder(int userId, int coinsPackId, string sessionId)
     {
-        User user = await _unitOfWork.UserRepository.GetUserById(userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
-        }
+        User user = await GetUserById(userId);
 
         CoinsPack coinsPack = await _unitOfWork.CoinsPackRepository.GetByIdAsync(coinsPackId);
         if (coinsPack == null)
@@ -74,7 +68,7 @@ public class OrderService
 
         if (user != null)
         {
-           await _emailService.SendInvoiceAsync(order, user);
+            await _emailService.SendInvoiceAsync(order, user);
         }
 
     }
@@ -100,11 +94,7 @@ public class OrderService
     //Ethereum
     public async Task<Order> NewEthereumOrder(int userId, int coinsPackId, string txHash)
     {
-        User user = await _unitOfWork.UserRepository.GetUserById(userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
-        }
+        User user = await GetUserById(userId);
 
         CoinsPack coinsPack = await _unitOfWork.CoinsPackRepository.GetByIdAsync(coinsPackId);
         if (coinsPack == null)
@@ -116,8 +106,8 @@ public class OrderService
 
         Order order = new Order(user, coinsPack)
         {
-            EthereumTransactionHash = txHash,  
-            PayMode = PayMode.Ethereum,  
+            EthereumTransactionHash = txHash,
+            PayMode = PayMode.Ethereum,
             Price = coinsPack.Price,
             IsPaid = true,
             PaidDate = DateTime.Now,
@@ -182,4 +172,27 @@ public class OrderService
         await _unitOfWork.SaveAsync();
     }
 
+    public async Task<OrderHistoryDto> GetOrdersByUser(int userId, int page)
+    {
+        User user = await GetUserById(userId);
+
+        List<Order> orders = await _unitOfWork.OrderRepository.GetOrdersByUserIdAsync(userId);
+
+        if (orders == null || orders.Count == 0)
+            throw new KeyNotFoundException($"El usuario con ID {user.Id} no tiene pedidos.");
+
+        int totalPages = (int)Math.Ceiling(orders.Count / (double)AMOUNT);
+
+        if (page < 1 || page > totalPages)
+            throw new ArgumentOutOfRangeException(nameof(page), $"La página {page} está fuera del rango permitido (1 - {totalPages}).");
+
+        List<Order> orderPage = orders
+            .Skip((page - 1) * AMOUNT)
+            .Take(AMOUNT)
+            .ToList();
+
+        List<OrderHistoryItemDto> orderHistoryItemDtos = _orderMapper.ToListOrderHistoryItemDto(orderPage);
+
+        return new OrderHistoryDto(orderHistoryItemDtos, totalPages, page);
+    }
 }

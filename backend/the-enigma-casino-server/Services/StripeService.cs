@@ -5,29 +5,22 @@ using the_enigma_casino_server.Models.Mappers;
 
 namespace the_enigma_casino_server.Services;
 
-public class StripeService
+public class StripeService : BaseService
 {
-    private readonly UnitOfWork _unitOfWork;
 
     private readonly StripeMapper _stripeMapper;
 
     private readonly OrderService _orderService;
 
-    public StripeService(UnitOfWork unitOfWork, StripeMapper stripeMapper, OrderService orderService)
+    public StripeService(UnitOfWork unitOfWork, StripeMapper stripeMapper, OrderService orderService) : base(unitOfWork)
     {
-        _unitOfWork = unitOfWork;
         _stripeMapper = stripeMapper;
         _orderService = orderService;
     }
 
     public async Task<SessionCreateOptions> EmbededCheckout(int userId, int coinsPackId)
     {
-        User user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"No hay usuario con este ID {userId}");
-        }
+        User user = await GetUserById(userId);
 
         CoinsPack coinsPack = await _unitOfWork.CoinsPackRepository.GetByIdAsync(coinsPackId);
 

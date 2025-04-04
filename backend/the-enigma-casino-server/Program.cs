@@ -61,6 +61,7 @@ public class Program
         builder.Services.AddScoped<UnitOfWork>();
 
         // Inyección de servicios
+        builder.Services.AddScoped<BaseService>();
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<EmailService>();
         builder.Services.AddScoped<CoinsPackService>();

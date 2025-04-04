@@ -135,4 +135,10 @@ public class BlackjackGame
         Deck = new Deck(GameType.BlackJack);
         Deck.Shuffle();
     }
+
+    public Card GetCroupierVisibleCard()
+    {
+        return _gameMatch.GameTable.Croupier.Hand.Cards.First();
+    }
+
 }

@@ -22,10 +22,17 @@ namespace the_enigma_casino_server.WS.GameWS
         private readonly GameTableManager _tableManager;
         public string Type => "gameTable";
 
-        public GameTableWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider, GameTableManager tableManager)
+        private readonly GameMatchWS _gameMatchWS;
+
+        public GameTableWS(
+            ConnectionManagerWS connectionManager,
+            IServiceProvider serviceProvider,
+            GameTableManager tableManager,
+            GameMatchWS gameMatchWS)
             : base(connectionManager, serviceProvider)
         {
             _tableManager = tableManager;
+            _gameMatchWS = gameMatchWS;
             connectionManager.OnUserDisconnected += HandleUserDisconnection;
         }
 
@@ -186,11 +193,15 @@ namespace the_enigma_casino_server.WS.GameWS
             {
                 Console.WriteLine($"[GameTableWS] Iniciando partida en la mesa {tableId} automáticamente.");
 
+                // Notificamos a los jugadores que el match empieza
                 await BroadcastToUsersAsync(userIds, new
                 {
-                   type = GameTableMessageTypes.GameStart,
+                    type = GameTableMessageTypes.GameStart,
                     tableId = table.Id
                 });
+
+                // Iniciamos la partida real con GameMatchWS
+                await _gameMatchWS.StartMatchForTableAsync(tableId);
             }
         }
 

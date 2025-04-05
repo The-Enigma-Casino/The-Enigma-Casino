@@ -1,0 +1,39 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 65%;
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--Chat-Background);
+  border: 0.0625rem solid var(--Green-lines);
+  border-radius: 2rem;
+}
+
+.header {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 1rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

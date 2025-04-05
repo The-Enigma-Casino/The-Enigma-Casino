@@ -15,9 +15,10 @@ using the_enigma_casino_server.Services;
 using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Services.Email;
 using the_enigma_casino_server.WS;
-using the_enigma_casino_server.WS.Base;
 using the_enigma_casino_server.WS.GameWS;
 using the_enigma_casino_server.WS.GameWS.Services;
+using the_enigma_casino_server.WS.Interfaces;
+using the_enigma_casino_server.WS.Resolver;
 
 
 namespace the_enigma_casino_server;
@@ -30,64 +31,56 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        // Configuración de servicios
         ConfigureServices(builder);
 
-        // Crear la aplicación web utilizando la configuración del builder
         var app = builder.Build();
 
-        // Configuración del middleware de la aplicación
         ConfigureMiddleware(app);
 
-        // Configura stripe
         ConfigureStripe(app.Services);
 
-        // Endpoint saludo
         app.MapGet("/api/", () => "The Enigma Casino!");
 
-        // Ejecutar la aplicación web y escuchar las solicitudes entrantes
         app.Run();
     }
 
     private static void ConfigureServices(WebApplicationBuilder builder)
     {
-        // Habilitar el uso de controladores y Swagger para la documentación de API
+        // Controladores y documentación
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        // Configuración de base de datos y repositorios
+        // Base de datos y repositorios
         builder.Services.AddScoped<MyDbContext>();
         builder.Services.AddScoped<UnitOfWork>();
 
-        // Inyección de servicios
+        // Servicios de dominio
         builder.Services.AddScoped<BaseService>();
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<EmailService>();
         builder.Services.AddScoped<CoinsPackService>();
         builder.Services.AddScoped<OrderService>();
         builder.Services.AddScoped<HistoryService>();
-
         builder.Services.AddScoped<GametableService>();
 
-        // Blockhain
-        builder.Services.AddScoped<BlockchainService>();
-
-        // Inyeccion Hosted Services
-
-        // Servicios Singleton
+        // Validaciones
         builder.Services.AddSingleton<ValidationService>();
 
-        // Inyección de servicios de WebSocket
+        // Servicios de WebSocket
         builder.Services.AddTransient<WebsocketMiddleware>();
         builder.Services.AddSingleton<WebSocketService>();
         builder.Services.AddSingleton<ConnectionManagerWS>();
 
-
+        // Handlers de WebSocket
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
+        builder.Services.AddSingleton<WebSocketHandlerResolver>();
         builder.Services.AddSingleton<GameTableWS>();
+
+        // Servicios auxiliares de WebSocket
         builder.Services.AddSingleton<GameTableManager>();
 
-        //Inyección de mappers
+        // Mappers
         builder.Services.AddScoped<StripeMapper>();
         builder.Services.AddScoped<OrderMapper>();
         builder.Services.AddScoped<UserMapper>();
@@ -96,16 +89,19 @@ public class Program
         // Stripe
         builder.Services.AddTransient<StripeService>();
 
-        // Configuración de CORS
+        // Blockchain
+        builder.Services.AddScoped<BlockchainService>();
 
+
+        // Configuración de CORS
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("MyPolicy", policy =>
             {
-                policy.WithOrigins("http://localhost:5173") // Cambia esto según la URL de tu frontend
+                policy.WithOrigins("http://localhost:5173") 
                       .AllowAnyHeader()
                       .AllowAnyMethod()
-                      .AllowCredentials(); // Esto permite el uso de credenciales
+                      .AllowCredentials();
             });
         });
 

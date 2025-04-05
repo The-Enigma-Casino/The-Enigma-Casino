@@ -49,10 +49,6 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<Content Update="wwwroot\**\*">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>

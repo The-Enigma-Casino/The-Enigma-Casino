@@ -20,7 +20,7 @@ export const CardStack = ({ cards, total, hidden = false }: Props) => {
     <div className="flex items-end gap-2 relative">
       {cards.map((card, index) => {
         const imageUrl = getCardImageUrl(card);
-        const backImageUrl = getCardBackImage(index % 2 === 0 ? 1 : 2); 
+        const backImageUrl = getCardBackImage(Math.random() < 0.5 ? 1 : 2);
 
         return (
           <div

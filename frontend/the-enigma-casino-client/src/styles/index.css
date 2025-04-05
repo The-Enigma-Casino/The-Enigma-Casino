@@ -19,6 +19,9 @@
   --Grey-color: #505050;
   --Light-Grey-color: #a9a9a9;
   --Background-Nav: #1C1C1C;
+
+  /* Chat Colors */
+  --Chat-Background: #D4EDB5;
 }
 
 * {

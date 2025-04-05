@@ -7,7 +7,7 @@ import { $token } from "../../auth/store/authStore";
 import toast from "react-hot-toast";
 import Button from "../../../components/ui/button/Button";
 import { $loading, $error, $transactionEnd, setTransactionEnd, setLoading, resetWithdrawalData, resetError } from "../store/WithdrawalStore";
-import { fetchWithrawalFx, fetchConvertWithdrawalFx } from "../actions/withdrawalActions";
+import { fetchWithrawalFx, fetchConvertWithdrawalFx, fetchLastOrderWithdrawalFx } from "../actions/withdrawalActions";
 import classes from "./Withdrawal.module.css";
 
 const Withdrawal: React.FC = () => {
@@ -73,9 +73,6 @@ const Withdrawal: React.FC = () => {
     }
   };
 
-
-
-
   const redirectToCatalog = () => {
     setTimeout(() => {
       navigate("/catalog");
@@ -128,9 +125,12 @@ const Withdrawal: React.FC = () => {
       };
 
       await fetchWithrawalFx(withdrawalParams);
+      await fetchLastOrderWithdrawalFx({ token });
       toast.success("Retiro exitoso. Redirigiendo...");
       setTransactionEnd(true);
-      navigate("/withdraw-confirmation");
+      setTimeout(() => {
+        navigate("/withdraw-confirmation");
+      }, 3000);
     } catch (error: any) {
       toast.error(error.message)
     } finally {
@@ -178,7 +178,7 @@ const Withdrawal: React.FC = () => {
 
               <div className="flex justify-center items-center gap-2">
                 <p className="text-4xl font-bold text-white">
-                  {conversionResult.eth.toFixed(4)} ETH
+                  {conversionResult.eth.toFixed(6)} ETH
                 </p>
                 <img src="/svg/ethereum.svg" alt="Ethereum Icon" className="w-10 h-10" />
               </div>

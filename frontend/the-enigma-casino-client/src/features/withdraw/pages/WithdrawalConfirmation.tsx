@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import InfoWithdraw from "../components/layouts/InfoWithdraw";
+import InfoWithdrawal from "../components/layouts/InfoWithdrawal";
 import MetaMaskLogo from "@metamask/logo";
 
 const WithdrawConfirmation: React.FC = () => {
@@ -32,7 +32,7 @@ const WithdrawConfirmation: React.FC = () => {
             PAGO REALIZADO
           </h1>
           <div className="flex flex-col lg:flex-row items-center justify-center gap-8">
-            <InfoWithdraw />
+            <InfoWithdrawal />
             <div className="flex justify-center items-center my-5" ref={logoRef}></div>
           </div>
           <h1 className="text-Principal text-[2.5rem] font-bold text-center font-reddit lg:text-[6rem]">

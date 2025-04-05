@@ -1,9 +1,9 @@
 import axios from "axios";
 import { createEffect } from "effector";
-import { ETHEREUM_WITHDRAWAL, ETHEREUM_CONVERTION_WITHDRAWAL } from '../../../config';
+import { ETHEREUM_WITHDRAWAL, ETHEREUM_CONVERTION_WITHDRAWAL, LAST_ORDER_WITHDRAWAL } from '../../../config';
+
 export const fetchWithrawalFx = createEffect(async ({ token, to, coinsWithdrawal }: { token: string, to: string, coinsWithdrawal: number }) => {
   try {
-    console.log("Enviando solicitud de retiro", { token, to, coinsWithdrawal });
     const response = await axios.post(
       ETHEREUM_WITHDRAWAL,
       { to, coinsWithdrawal },
@@ -14,7 +14,6 @@ export const fetchWithrawalFx = createEffect(async ({ token, to, coinsWithdrawal
         },
       }
     )
-    console.log(response.data)
     return response.data
   } catch (error: any) {
     if (axios.isAxiosError(error)) {
@@ -51,4 +50,30 @@ export const fetchConvertWithdrawalFx = createEffect(async ({ token, Withdrawalc
     }
   }
 });
+
+export const fetchLastOrderWithdrawalFx = createEffect(async ({ token }: { token: string }) => {
+  try {
+    const response = await axios.get(
+      LAST_ORDER_WITHDRAWAL,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    if (axios.isAxiosError(error)) {
+      console.error("Error en la transacción de retiro:", {
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      throw new Error(error.response?.data?.message || "Error en la transacción de retiro");
+    } else {
+      throw new Error("Error inesperado en la transacción de retiro");
+    }
+  }
+}
+);
 

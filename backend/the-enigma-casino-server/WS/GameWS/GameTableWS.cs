@@ -9,16 +9,18 @@ using the_enigma_casino_server.WS.Base;
 using the_enigma_casino_server.WS.GameWS.Services;
 using the_enigma_casino_server.WS.GameWS.Messages;
 using the_enigma_casino_server.WS.GameWS.Services.Models;
+using the_enigma_casino_server.WS.Interfaces;
 
 
 namespace the_enigma_casino_server.WS.GameWS
 {
-    public class GameTableWS : BaseWebSocketHandler
+    public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
 
         private readonly ConcurrentDictionary<int, ActiveGameSession> _activeTables = new();
 
         private readonly GameTableManager _tableManager;
+        public string Type => "gameTable";
 
         public GameTableWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider, GameTableManager tableManager)
             : base(connectionManager, serviceProvider)
@@ -30,11 +32,10 @@ namespace the_enigma_casino_server.WS.GameWS
 
         public async Task HandleAsync(string userId, JsonElement message)
         {
-            if (message.TryGetProperty("type", out JsonElement typeProp))
+            if (message.TryGetProperty("action", out JsonElement actionProp))
             {
-                string type = typeProp.GetString();
-
-                await (type switch
+                string action = actionProp.GetString();
+                await (action switch
                 {
                     GameTableMessageTypes.JoinTable => HandleJoinTableAsync(userId, message),
                     GameTableMessageTypes.LeaveTable => HandleLeaveTableAsync(userId, message),

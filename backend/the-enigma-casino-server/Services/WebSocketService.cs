@@ -2,7 +2,8 @@
 using System.Text;
 using System.Text.Json;
 using the_enigma_casino_server.WS;
-using the_enigma_casino_server.WS.GameWS;
+using the_enigma_casino_server.WS.Interfaces;
+using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.Services
 {
@@ -28,16 +29,16 @@ namespace the_enigma_casino_server.Services
             {
                 while (webSocket.State == WebSocketState.Open)
                 {
-                    string? message = await ReadAsync(webSocket);
-
-                    if (message == null)
+                    string? rawMessage = await ReadAsync(webSocket);
+                    if (string.IsNullOrWhiteSpace(rawMessage))
                         break;
 
-                    if (!string.IsNullOrWhiteSpace(message))
+                    var messageData = JsonDocument.Parse(rawMessage).RootElement;
+
+                    var handler = ResolveHandler(messageData);
+                    if (handler != null)
                     {
-                        var messageData = JsonDocument.Parse(message).RootElement;
-                        var gameTableHandler = _serviceProvider.GetRequiredService<GameTableWS>();
-                        await gameTableHandler.HandleAsync(userId, messageData);
+                        await handler.HandleAsync(userId, messageData);
                     }
                 }
             }
@@ -45,9 +46,29 @@ namespace the_enigma_casino_server.Services
             {
                 await _connectionManager.RemoveConnectionAsync(userId);
                 await BroadcastOnlineUsersAsync();
-
             }
         }
+
+        // Método para resolver el handler correspondiente según el campo "type" del mensaje.
+        private IWebSocketMessageHandler? ResolveHandler(JsonElement messageData)
+        {
+            if (!messageData.TryGetProperty("type", out var typeProp))
+            {
+                Console.WriteLine("El mensaje recibido no contiene la propiedad 'type'");
+                return null;
+            }
+
+            var type = typeProp.GetString();
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                Console.WriteLine("La propiedad 'type' está vacía o es nula");
+                return null;
+            }
+
+            var resolver = _serviceProvider.GetRequiredService<WebSocketHandlerResolver>();
+            return resolver.Resolve(type);
+        }
+
 
         // Método para leer los mensajes del WebSocket
         protected virtual async Task<string?> ReadAsync(WebSocket webSocket, CancellationToken cancellation = default)
@@ -69,7 +90,7 @@ namespace the_enigma_casino_server.Services
                     if (result.CloseStatus.HasValue)
                     {
                         await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, cancellation);
-                        return null; 
+                        return null;
                     }
 
                     endOfMessage = result.EndOfMessage;
@@ -81,7 +102,7 @@ namespace the_enigma_casino_server.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"⚠️ WebSocket desconectado abruptamente: {ex.Message}");
-                return null; 
+                return null;
             }
         }
 

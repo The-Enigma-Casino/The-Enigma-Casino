@@ -29,3 +29,7 @@ export const USER_COINS = `${API_BASE_URL}User/coins`;
 
 /* ENDPOINTS DE GAME TABLES */
 export const GAMETABLES_ENDPOINT = `${API_BASE_URL}GameTable/tables`;
+
+/* ENDPOINT DE IMAGENES */
+export const CARD_IMAGE = `${API_BASE_URL}cards/card`;
+export const CARD_IMAGE_BACK = `${API_BASE_URL}cards/back`;

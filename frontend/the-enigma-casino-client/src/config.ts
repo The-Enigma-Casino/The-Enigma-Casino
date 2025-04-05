@@ -19,6 +19,7 @@ export const EMBBEDED_CHECKOUT = `${API_BASE_URL}Stripe/embedded-checkout`;
 export const ETHEREUM_PAYMENT_CHECK = `${API_BASE_URL}Blockchain/check`;
 export const ETHEREUM_CHECK_TRANSACTION = `${API_BASE_URL}Blockchain/transaction`;
 export const ETHEREUM_WITHDRAWAL = `${API_BASE_URL}Blockchain/withdrawal`;
+export const ETHEREUM_CONVERTION_WITHDRAWAL = `${API_BASE_URL}Blockchain/convertWithdrawal`;
 
 /* ENDPOINTS DE ORDER */
 export const LAST_ORDER = `${API_BASE_URL}Order/last-order`

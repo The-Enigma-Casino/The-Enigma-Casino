@@ -6,8 +6,8 @@ import { useUnit } from "effector-react";
 import { $token } from "../../auth/store/authStore";
 import toast from "react-hot-toast";
 import Button from "../../../components/ui/button/Button";
-import { $loading, $error, $transactionEnd, setTransactionEnd, setLoading } from "../store/WithdrawalStore";
-import { fetchWithrawalFx } from "../actions/withdrawalActions";
+import { $loading, $error, $transactionEnd, setTransactionEnd, setLoading, resetWithdrawalData, resetError } from "../store/WithdrawalStore";
+import { fetchWithrawalFx, fetchConvertWithdrawalFx } from "../actions/withdrawalActions";
 import classes from "./Withdrawal.module.css";
 
 const Withdrawal: React.FC = () => {
@@ -19,8 +19,44 @@ const Withdrawal: React.FC = () => {
   const error = useUnit($error);
   const transactionEnd = useUnit($transactionEnd);
   const [wallet, setWallet] = useState<string | null>(null);
-  const [coins, setcoins] = useState<number | string>("");
+  const [coins, setcoins] = useState<number | null>();
   const [isConverted, setIsConverted] = useState<boolean>(false);
+  const [isConverting, setIsConverting] = useState(false);
+  const [conversionResult, setConversionResult] = useState<{ euros: number; eth: number } | null>(null);
+
+
+  useEffect(() => {
+    setTransactionEnd(false);
+    resetWithdrawalData();
+    resetError();
+    setcoins(null);
+  }
+    , [transactionEnd, navigate, error]);
+
+  const handleConversion = async () => {
+    if (!coins || coins <= 0) {
+      toast.error("Ingresa una cantidad válida para la conversión.");
+      return;
+    }
+    const converWithdrawalParams = {
+      token,
+      Withdrawalcoins: Number(coins),
+    };
+    try {
+      setIsConverting(true);
+      const result = await fetchConvertWithdrawalFx(converWithdrawalParams);
+      setConversionResult({
+        euros: result.totalEuros,
+        eth: result.totalEthereum,
+      });
+      setIsConverted(true);
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setIsConverting(false);
+    }
+  };
+
 
   useEffect(() => {
     const viewer = MetaMaskLogo({
@@ -45,19 +81,10 @@ const Withdrawal: React.FC = () => {
     }, 3000);
   };
 
-  const handleConversion = async () => {
-    if (!coins || coins <= 0) {
-      toast.error("Ingresa una cantidad válida para la conversión.");
-      return;
-    }
-
-    // await fetchConversionRates();
-    setIsConverted(true);
-  };
 
   const handleWithdrawal = async () => {
     try {
-      if (coins <= 0) {
+      if (coins <= 0 || coins === null) {
         toast.error("Ingresa una cantidad válida para retirar.");
         return;
       }
@@ -96,14 +123,15 @@ const Withdrawal: React.FC = () => {
       const withdrawalParams = {
         token,
         to: connectedWallet,
-        coinsWithdrawal: coins,
+        coinsWithdrawal: coins || 0,
       };
 
       await fetchWithrawalFx(withdrawalParams);
-      toast.success("Retiro exitoso.");
+      toast.success("Retiro exitoso. Redirigiendo...");
       setTransactionEnd(true);
+      navigate("/withdraw-confirmation");
     } catch (error: any) {
-      toast.error(`Error en la transacción: ${error.message || "Desconocido"}`);
+      toast.error(error.message)
     } finally {
       setLoading(false);
     }
@@ -128,42 +156,52 @@ const Withdrawal: React.FC = () => {
             id="inp"
             value={coins}
             onChange={(e) => setcoins(e.target.value)}
+            disabled={isConverted}
             placeholder=""
-            className="peer w-full py-4 pl-3 pr-3 text-lg bg-gray-100 text-white border-2 border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-gray-50 transition-all"
+            className={`peer w-full py-4 pl-3 pr-3 text-lg border-2 rounded-md transition-all
+              ${isConverted ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-100 text-white border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-gray-50'}`}
           />
           <span className={classes.label}>Cantidad de Fichas</span>
           <span className={classes.focusbg}></span>
         </label>
 
         <div className="flex flex-col items-center gap-2 mt-4">
-          <div className="flex justify-center items-center gap-2">
-            <p className="text-4xl font-bold text-center text-white inline-flex items-center">
-              1234
-            </p>
-            <img src="/svg/euro.svg" alt="Euro Icon" className="w-10 h-10" />
-          </div>
+          {conversionResult && (
+            <>
+              <div className="flex justify-center items-center gap-2">
+                <p className="text-4xl font-bold text-white">
+                  {conversionResult.euros.toFixed(2)}
+                </p>
+                <img src="/svg/euro.svg" alt="Euro Icon" className="w-10 h-10" />
+              </div>
 
-          <div className="flex justify-center items-center gap-2">
-            <p className="text-4xl font-bold text-center text-white inline-flex items-center">
-              0.5 ETH
-            </p>
-            <img src="/svg/ethereum.svg" alt="Ethereum Icon" className="w-10 h-10" />
-          </div>
+              <div className="flex justify-center items-center gap-2">
+                <p className="text-4xl font-bold text-white">
+                  {conversionResult.eth.toFixed(4)} ETH
+                </p>
+                <img src="/svg/ethereum.svg" alt="Ethereum Icon" className="w-10 h-10" />
+              </div>
+            </>
+          )}
         </div>
 
-
-        {loading && <p className="text-3xl">Procesando retiro...</p>}
-        {transactionEnd && <p className="text-green-500 text-3xl">Retiro completado</p>}
         {error && <p className="text-red-500 text-3xl">{error}</p>}
 
         <Button
           onClick={isConverted ? handleWithdrawal : handleConversion}
-          variant="large"
+          disabled={isConverting || loading}
+          variant="big"
           color="green"
           font="bold"
           className="mt-6 px-6 py-2"
         >
-          {isConverted ? "Realizar Retirada" : "Realizar Conversión"}
+          {isConverting
+            ? "Convirtiendo..."
+            : loading
+              ? "Procesando Retiro..."
+              : isConverted
+                ? "Realizar Retirada"
+                : "Realizar Conversión"}
         </Button>
       </div>
     </div>

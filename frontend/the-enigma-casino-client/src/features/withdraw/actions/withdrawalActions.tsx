@@ -34,7 +34,7 @@ export const fetchConvertWithdrawalFx = createEffect(async ({ token, Withdrawalc
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Corregido aquí
+          Authorization: `Bearer ${token}`,
         },
       }
     );

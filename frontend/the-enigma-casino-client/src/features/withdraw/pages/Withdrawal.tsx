@@ -24,6 +24,22 @@ const Withdrawal: React.FC = () => {
   const [isConverting, setIsConverting] = useState(false);
   const [conversionResult, setConversionResult] = useState<{ euros: number; eth: number } | null>(null);
 
+  useEffect(() => {
+    const viewer = MetaMaskLogo({
+      pxNotRatio: true,
+      width: 160,
+      height: 160,
+      followMouse: true,
+      slowDrift: true,
+    });
+
+    if (logoRef.current) {
+      logoRef.current.appendChild(viewer.container);
+    }
+    return () => {
+      viewer.stopAnimation();
+    };
+  }, []);
 
   useEffect(() => {
     setTransactionEnd(false);
@@ -58,22 +74,7 @@ const Withdrawal: React.FC = () => {
   };
 
 
-  useEffect(() => {
-    const viewer = MetaMaskLogo({
-      pxNotRatio: true,
-      width: 160,
-      height: 160,
-      followMouse: true,
-      slowDrift: true,
-    });
 
-    if (logoRef.current) {
-      logoRef.current.appendChild(viewer.container);
-    }
-    return () => {
-      viewer.stopAnimation();
-    };
-  }, []);
 
   const redirectToCatalog = () => {
     setTimeout(() => {

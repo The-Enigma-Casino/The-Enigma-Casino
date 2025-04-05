@@ -53,6 +53,12 @@ public class OrderService : BaseService
         return _orderMapper.ToOrderDto(order);
     }
 
+    public async Task<OrderWithdrawalDto> GetLastOrderWithdrawalByUserIdAsync(int userId)
+    {
+        Order order = await _unitOfWork.OrderRepository.GetLastOrderAsync(userId);
+        return _orderMapper.ToOrderWithdrawalDto(order);
+    }
+
     public async Task UpdatePaid(Order order)
     {
         order.IsPaid = true;

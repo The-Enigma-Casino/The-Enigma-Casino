@@ -1,0 +1,114 @@
+﻿<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: #74c410;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333;
+            text-align: justify; 
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            text-align: right; 
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            text-align: right; 
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            text-align: right; 
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center; 
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .tfooter {
+            text-align: center;
+            align-items: center;
+            align-content: center;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>¡Gracias por tu compra, {UserName}!</h2>
+        <p>Confirmación de compra:</p>
+
+        <table>
+            <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Precio Total</th>
+                <th>Cantidad de fichas</th>
+            </tr>
+            <tr>
+                <td><img src="{OrderImage}" alt="Pack de fichas" style="width:100px; border-radius:5px;" /></td>
+                <td>{OrderPack}</td>
+                <td>{OrderPrice} €</td>
+                <td>{OrderCoins}</td>
+            </tr>
+        </table>
+
+        <p><strong>Total pagado:</strong> {OrderPrice} €</p>
+
+        <p><strong>Pagado con:</strong> {PaymentMethod}</p>
+
+        {PaymentMethodSpecificInfo}
+
+        <p>Su dirección de facturación: <strong>{BillingAddress}</strong></p>
+
+        <div class="footer">
+            <p class="tfooter">&copy; 2024 The Enigma Casino. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

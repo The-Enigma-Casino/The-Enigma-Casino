@@ -104,8 +104,6 @@ function RegisterFormSection() {
         onSelect={handleCountrySelect}
       />
 
-
-
       <div className={classes.checkboxContainer}>
         <Checkbox
           labelText="Acepto la política de privacidad"

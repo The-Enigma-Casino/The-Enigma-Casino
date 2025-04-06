@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using the_enigma_casino_server.Services;
+using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.Base;
 

@@ -1,6 +1,6 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities.Enum;
 
-namespace the_enigma_casino_server.WS.GameWS.Services.Models;
+namespace the_enigma_casino_server.WS.GameTableWS.Models;
 
 public class PlayerLeaveResult
 {

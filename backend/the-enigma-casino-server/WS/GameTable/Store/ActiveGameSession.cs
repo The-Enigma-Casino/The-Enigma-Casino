@@ -3,7 +3,7 @@ using System.Threading;
 
 public class ActiveGameSession
 {
-    public GameTable Table { get; }
+    public Table Table { get; }
 
     private readonly Action<int> _onTimerComplete;
     private readonly System.Threading.Timer _startTimer;
@@ -15,7 +15,7 @@ public class ActiveGameSession
 
     public bool IsTimerRunning => _isTimerRunning;
 
-    public ActiveGameSession(GameTable table, Action<int> onTimerComplete)
+    public ActiveGameSession(Table table, Action<int> onTimerComplete)
     {
         Table = table;
         _onTimerComplete = onTimerComplete;

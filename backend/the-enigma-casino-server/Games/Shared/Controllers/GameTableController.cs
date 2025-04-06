@@ -11,20 +11,20 @@ namespace the_enigma_casino_server.Games.Shared.Controllers
     [ApiController]
     public class GameTableController : BaseController
     {
-        private readonly GametableService _gametableService;
+        private readonly TableService _gametableService;
 
-        public GameTableController(GametableService gametableService)
+        public GameTableController(TableService gametableService)
         {
             _gametableService = gametableService;
         }
 
         [HttpGet("tables")]
         [Authorize]
-        public async Task<ActionResult<List<GameTable>>> GetTablesByGameType([FromQuery] GameType gameType)
+        public async Task<ActionResult<List<Table>>> GetTablesByGameType([FromQuery] GameType gameType)
         {
             try
             {
-                List<GameTable> tables = await _gametableService.GetTablesByGameTypeAsync(gameType);
+                List<Table> tables = await _gametableService.GetTablesByGameTypeAsync(gameType);
                 return Ok(tables);
             }
             catch (UnauthorizedAccessException ex)

@@ -20,7 +20,7 @@ public class User
     public string ConfirmationToken { get; set; }
     public Role Role { get; set; }
     public List<Order> Orders { get; set; }
-    public List<GameHistory> GameHistories { get; set; }
+    public List<History> Histories { get; set; }
 
 
     // FALTAN COSAS

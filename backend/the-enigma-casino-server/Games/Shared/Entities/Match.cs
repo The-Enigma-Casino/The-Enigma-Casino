@@ -2,13 +2,13 @@
 
 namespace the_enigma_casino_server.Games.Shared.Entities;
 
-public class GameMatch
+public class Match
 {
     public int Id { get; set; }
 
     public int GameTableId { get; set; }
 
-    public GameTable GameTable { get; set; }
+    public Table GameTable { get; set; }
 
     public List<Player> Players { get; set; } = new();
 

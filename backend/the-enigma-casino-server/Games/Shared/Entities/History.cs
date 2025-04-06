@@ -3,12 +3,12 @@ using the_enigma_casino_server.Models.Database.Entities;
 
 namespace the_enigma_casino_server.Games.Shared.Entities;
 
-public class GameHistory
+public class History
 {
     public int Id { get; set; }
 
     public int GameTableId { get; set; }
-    public GameTable GameTable { get; set; }
+    public Table GameTable { get; set; }
     public int UserId { get; set; }
     public User User { get; set; }
 

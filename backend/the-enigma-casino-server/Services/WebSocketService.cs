@@ -1,7 +1,6 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using the_enigma_casino_server.WS;
 using the_enigma_casino_server.WS.Interfaces;
 using the_enigma_casino_server.WS.Resolver;
 
@@ -10,7 +9,6 @@ namespace the_enigma_casino_server.Services
     public class WebSocketService
     {
         protected readonly ConnectionManagerWS _connectionManager;
-
         protected readonly IServiceProvider _serviceProvider;
 
         public WebSocketService(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
@@ -19,7 +17,6 @@ namespace the_enigma_casino_server.Services
             _serviceProvider = serviceProvider;
         }
 
-        // Método principal para manejar la conexión WebSocket
         public virtual async Task HandleAsync(WebSocket webSocket, string userId)
         {
             _connectionManager.AddConnection(userId, webSocket);
@@ -33,9 +30,21 @@ namespace the_enigma_casino_server.Services
                     if (string.IsNullOrWhiteSpace(rawMessage))
                         break;
 
-                    var messageData = JsonDocument.Parse(rawMessage).RootElement;
+                    JsonDocument? document = null;
 
+                    try
+                    {
+                        document = JsonDocument.Parse(rawMessage);
+                    }
+                    catch (JsonException ex)
+                    {
+                        Console.WriteLine($"❌ JSON inválido recibido: {ex.Message}");
+                        continue;
+                    }
+
+                    var messageData = document.RootElement;
                     var handler = ResolveHandler(messageData);
+
                     if (handler != null)
                     {
                         await handler.HandleAsync(userId, messageData);
@@ -49,7 +58,6 @@ namespace the_enigma_casino_server.Services
             }
         }
 
-        // Método para resolver el handler correspondiente según el campo "type" del mensaje.
         private IWebSocketMessageHandler? ResolveHandler(JsonElement messageData)
         {
             if (!messageData.TryGetProperty("type", out var typeProp))
@@ -69,8 +77,6 @@ namespace the_enigma_casino_server.Services
             return resolver.Resolve(type);
         }
 
-
-        // Método para leer los mensajes del WebSocket
         protected virtual async Task<string?> ReadAsync(WebSocket webSocket, CancellationToken cancellation = default)
         {
             byte[] buffer = new byte[4096];
@@ -106,8 +112,6 @@ namespace the_enigma_casino_server.Services
             }
         }
 
-
-        // Método para enviar mensajes a un WebSocket
         protected async Task SendAsync(WebSocket socket, object payload)
         {
             string json = JsonSerializer.Serialize(payload);

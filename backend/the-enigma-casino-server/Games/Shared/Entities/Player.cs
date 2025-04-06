@@ -10,9 +10,9 @@ public class Player
     public User User { get; set; }
     public Hand Hand { get; set; } = new();
     public int GameTableId { get; set; }
-    public GameTable GameTable { get; set; }
+    public Table GameTable { get; set; }
     public int? GameMatchId { get; set; }
-    public GameMatch? GameMatch { get; set; }
+    public Match? GameMatch { get; set; }
     public PlayerState PlayerState { get; set; } = PlayerState.Waiting;
     public int CurrentBet { get; set; } 
 

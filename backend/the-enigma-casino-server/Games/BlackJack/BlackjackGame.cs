@@ -5,10 +5,10 @@ namespace the_enigma_casino_server.Games.BlackJack;
 
 public class BlackjackGame
 {
-    private GameMatch _gameMatch { get; set; }
+    private Match _gameMatch { get; set; }
     private Deck Deck { get; set; }
 
-    public BlackjackGame(GameMatch gameMatch)
+    public BlackjackGame(Match gameMatch)
     {
         _gameMatch = gameMatch;
         Deck = new Deck(GameType.BlackJack);

@@ -5,16 +5,16 @@ namespace the_enigma_casino_server.Models.Mappers;
 
 public class GameHistoryMapper
 {
-    public GamesDto ToGamesDto(GameHistory gameHistory)
+    public GamesDto ToGamesDto(History gameHistory)
     {
         return new GamesDto(gameHistory.Id, gameHistory.JoinedAt, gameHistory.GameType, gameHistory.ChipResult);
     }
 
-    public List<GamesDto> ToListGamesDto(List<GameHistory> gameHistorys)
+    public List<GamesDto> ToListGamesDto(List<History> gameHistorys)
     {
         List<GamesDto> gamesDtos = new List<GamesDto>();
 
-        foreach (GameHistory gameHistory in gameHistorys)
+        foreach (History gameHistory in gameHistorys)
         {
             gamesDtos.Add(ToGamesDto(gameHistory));
         }

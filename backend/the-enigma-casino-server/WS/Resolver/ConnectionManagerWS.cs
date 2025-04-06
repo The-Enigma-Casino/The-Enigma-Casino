@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.WebSockets;
 
-namespace the_enigma_casino_server.WS;
+namespace the_enigma_casino_server.WS.Resolver;
 
 public class ConnectionManagerWS
 {
@@ -17,7 +17,7 @@ public class ConnectionManagerWS
             {
                 try
                 {
-                    existingSocket.Abort(); // cierre inmediato
+                    existingSocket.Abort();
                     existingSocket.Dispose();
                     Console.WriteLine($"🔁 Reemplazada conexión previa de {userId}");
                 }
@@ -60,7 +60,7 @@ public class ConnectionManagerWS
         return _connections.TryGetValue(userId, out webSocket);
     }
 
-    public WebSocket? GetConnectionById(string userId)
+    public WebSocket GetConnectionById(string userId)
     {
         return _connections.TryGetValue(userId, out var socket) ? socket : null;
     }

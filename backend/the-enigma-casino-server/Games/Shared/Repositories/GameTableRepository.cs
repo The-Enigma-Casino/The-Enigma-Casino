@@ -6,13 +6,13 @@ using the_enigma_casino_server.Models.Database.Repositories;
 
 namespace the_enigma_casino_server.Games.Shared.Repositories;
 
-public class GameTableRepository : Repository<GameTable, int>
+public class GameTableRepository : Repository<Table, int>
 {
     public GameTableRepository(MyDbContext context) : base(context)
     {
     }
 
-    public async Task<List<GameTable>> GetByGameTypeAsync(GameType gameType)
+    public async Task<List<Table>> GetByGameTypeAsync(GameType gameType)
     {
         return await GetQueryable()
             .Where(g => g.GameType == gameType)

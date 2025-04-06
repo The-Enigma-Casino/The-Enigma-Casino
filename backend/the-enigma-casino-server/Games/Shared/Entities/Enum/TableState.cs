@@ -4,6 +4,5 @@ public enum TableState
 {
     Waiting,
     InProgress,
-    Manteinance,
-    Closed
+    Manteinance
 }

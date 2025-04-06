@@ -24,7 +24,7 @@ public class HistoryService : BaseService
         if (user == null)
             throw new KeyNotFoundException($"No se encontró un usuario con el ID {id}.");
 
-        List<GameHistory> gameHistories = await _unitOfWork.GameHistoryRepository.GetByUserIdAsync(user.Id);
+        List<History> gameHistories = await _unitOfWork.GameHistoryRepository.GetByUserIdAsync(user.Id);
 
         if (gameHistories == null || gameHistories.Count == 0)
             throw new KeyNotFoundException($"El usuario con ID {user.Id} no tiene historial de partidas.");
@@ -34,7 +34,7 @@ public class HistoryService : BaseService
         if (page < 1 || page > totalPages)
             throw new ArgumentOutOfRangeException(nameof(page), $"La página {page} está fuera del rango permitido (1 - {totalPages}).");
 
-        List<GameHistory> pagedHistory = gameHistories
+        List<History> pagedHistory = gameHistories
             .Skip((page - 1) * AMOUNT) 
             .Take(AMOUNT) 
             .ToList();

@@ -70,28 +70,6 @@ function RegisterFormSection() {
         />
       </div>
 
-      <Input
-        type="text"
-        name="address"
-        id="address"
-        placeholder="Dirección"
-        value={formData.address}
-        onChange={handleChange}
-      />
-
-      <InputDebounce
-        placeholder="Nacionalidad"
-        onSelect={handleCountrySelect}
-      />
-
-      <div className={classes.checkboxContainer}>
-        <Checkbox
-          labelText="Acepto la política de privacidad"
-          checked={acceptPrivacy}
-          onChange={() => setAcceptPrivacy(!acceptPrivacy)}
-        />
-      </div>
-
       <div className={classes.passwordContainer}>
         <Input
           type="password"
@@ -109,6 +87,30 @@ function RegisterFormSection() {
           placeholder="Confirma la contraseña"
           value={formData.confirmPassword}
           onChange={handleChange}
+        />
+      </div>
+
+      <Input
+        type="text"
+        name="address"
+        id="address"
+        placeholder="Dirección"
+        value={formData.address}
+        onChange={handleChange}
+      />
+
+      <InputDebounce
+        placeholder="Nacionalidad"
+        onSelect={handleCountrySelect}
+      />
+
+
+
+      <div className={classes.checkboxContainer}>
+        <Checkbox
+          labelText="Acepto la política de privacidad"
+          checked={acceptPrivacy}
+          onChange={() => setAcceptPrivacy(!acceptPrivacy)}
         />
       </div>
 

@@ -1,3 +1,36 @@
+@property --gold-1 {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: hsl(45 100% 50%);
+}
+
+@property --gold-2 {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: hsl(48 100% 60%);
+}
+
+@keyframes gold-shimmer {
+  0% {
+    --gold-1: hsl(45 100% 50%);
+    --gold-2: hsl(48 100% 60%);
+  }
+  50% {
+    --gold-1: hsl(55 100% 75%);
+    --gold-2: hsl(40 100% 40%);
+  }
+  100% {
+    --gold-1: hsl(50 100% 85%);
+    --gold-2: hsl(35 100% 30%);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
 .container {
   position: relative;
   display: flex;
@@ -52,54 +85,21 @@
   align-items: center;
 }
 
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
+.title {
+  font-size: 5rem;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  -webkit-background-clip: text;
+  background-clip: text;
+  display: inline-block;
+  position: relative;
+  animation: gold-shimmer 1s linear infinite alternate;
+  color: transparent;
+  background: linear-gradient(to right, var(--gold-1), var(--gold-2));
+  -webkit-background-clip: text;
+  background-clip: text;
 }
-
-@keyframes blink {
-  0% {
-    box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.8);
-    border-radius: 28px;
-  }
-  50% {
-    box-shadow: 0 0 55px 15px rgba(255, 215, 0, 1);
-    border-radius: 28px;
-  }
-  100% {
-    box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.8);
-    border-radius: 28px;
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
-
-}
-
-  .title {
-    font-size: 5rem;
-    color: var(--Coins);
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    font-weight: bold;
-    -webkit-background-clip: text;
-    background-clip: text;
-    display: inline-block;
-    position: relative;
-    animation: blink 1s infinite, pulse 1.5s infinite ease-in-out;
-  }
-
-
 
 .elf {
   width: 200px;

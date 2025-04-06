@@ -16,6 +16,7 @@ using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Services.Email;
 using the_enigma_casino_server.WS.GameMatch;
 using the_enigma_casino_server.WS.GameTable;
+using the_enigma_casino_server.WS.GameWS.Services;
 using the_enigma_casino_server.WS.Interfaces;
 using the_enigma_casino_server.WS.Resolver;
 

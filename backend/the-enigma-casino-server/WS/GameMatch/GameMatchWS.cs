@@ -4,6 +4,7 @@ using the_enigma_casino_server.Games.Shared.Entities.Enum;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.WS.Base;
 using the_enigma_casino_server.WS.GameTableWS.Store;
+using the_enigma_casino_server.WS.GameWS.Services;
 using the_enigma_casino_server.WS.Interfaces;
 using the_enigma_casino_server.WS.Resolver;
 
@@ -13,17 +14,19 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
 {
     public string Type => "gameMatch";
 
-    private readonly GameMatchManager _matchManager;
-
     public GameMatchWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
         : base(connectionManager, serviceProvider)
     {
         connectionManager.OnUserDisconnected += HandleUserDisconnection;
-
-        using var scope = serviceProvider.CreateScope();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-        _matchManager = new GameMatchManager(unitOfWork);
     }
+
+    private GameMatchManager CreateScopedManager(out IServiceScope scope)
+    {
+        scope = _serviceProvider.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+        return new GameMatchManager(unitOfWork);
+    }
+
 
     public async Task HandleAsync(string userId, JsonElement message)
     {
@@ -124,7 +127,13 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
-        bool removed = await _matchManager.EndMatchForPlayerAsync(match, userId);
+        using var scope = _serviceProvider.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+        var manager = new GameMatchManager(unitOfWork);
+        var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+
+        bool removed = await manager.EndMatchForPlayerAsync(match, userId);
+
         if (!removed)
         {
             Console.WriteLine($"⚠️ [GameMatchWS] Jugador {userId} no encontrado en partida.");
@@ -146,10 +155,10 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
             type = GameMatchMessageTypes.PlayerLeftMatch,
             tableId,
             userId,
-            // Aquí `player.User` ya no está disponible, así que no mostramos nick.
         });
 
-        bool cancelled = await _matchManager.CancelMatchIfInsufficientPlayersAsync(match);
+        bool cancelled = await manager.CancelMatchIfInsufficientPlayersAsync(match, tableManager);
+
         if (cancelled)
         {
             ActiveGameMatchStore.Remove(tableId);
@@ -166,8 +175,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
     }
 
 
-
-
     private async void HandleUserDisconnection(string userId)
     {
         if (!int.TryParse(userId, out int userIdInt))
@@ -182,6 +189,4 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
         }
     }
-
-
 }

@@ -1,7 +1,8 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Models.Database;
-using the_enigma_casino_server.Games.Shared.Repositories;
 using the_enigma_casino_server.Games.Shared.Entities.Enum;
+using the_enigma_casino_server.WS.GameWS.Services;
+using the_enigma_casino_server.WS.GameTableWS.Store;
 
 namespace the_enigma_casino_server.WS.GameMatch;
 
@@ -81,24 +82,34 @@ public class GameMatchManager
         return true;
     }
 
-    public async Task<bool> CancelMatchIfInsufficientPlayersAsync(Match match)
+    public async Task<bool> CancelMatchIfInsufficientPlayersAsync(Match match, GameTableManager tableManager)
     {
         if (match.Players.Count >= match.GameTable.MinPlayer)
             return false;
 
-        foreach (var player in match.Players)
+        foreach (var player in match.Players.ToList())
         {
             if (player.User == null)
                 player.User = await _unitOfWork.UserRepository.GetByIdAsync(player.UserId);
 
             player.User.Coins += player.CurrentBet;
             player.CurrentBet = 0;
+
+            tableManager.RemovePlayerFromTable(match.GameTable, player.UserId, out _);
         }
 
         match.GameTable.TableState = TableState.Waiting;
+
+        if (ActiveGameSessionStore.TryGet(match.GameTableId, out var session))
+        {
+            session.Table.TableState = TableState.Waiting;
+        }
+
         _unitOfWork.GameTableRepository.Update(match.GameTable);
         await _unitOfWork.SaveAsync();
 
+
         return true;
     }
+
 }

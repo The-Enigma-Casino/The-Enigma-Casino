@@ -9,6 +9,7 @@ using the_enigma_casino_server.WS.Base;
 using the_enigma_casino_server.WS.GameMatch;
 using the_enigma_casino_server.WS.GameTableWS.Models;
 using the_enigma_casino_server.WS.GameTableWS.Store;
+using the_enigma_casino_server.WS.GameWS.Services;
 using the_enigma_casino_server.WS.Interfaces;
 using the_enigma_casino_server.WS.Resolver;
 

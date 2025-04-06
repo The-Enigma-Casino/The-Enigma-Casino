@@ -17,6 +17,7 @@ import Button from "../../ui/button/Button";
 import classes from "./Header.module.css";
 import { clearStorage } from "../../../utils/storageUtils";
 import Modal from "../../ui/modal/Modal";
+import { $transactionEnd } from "../../../features/withdraw/store/WithdrawalStore";
 
 function Header() {
   const navigate = useNavigate();
@@ -24,13 +25,13 @@ function Header() {
   const token = useUnit($token);
   const role = useUnit($role);
   const coins = useUnit($coins);
-
+  const transactionEnded = useUnit($transactionEnd);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   useEffect(() => {
     loadCoins();
     loadRole();
-  }, [token]);
+  }, [token, transactionEnded]);
 
   const handleLogout = () => {
     setIsLogoutModalOpen(false);
@@ -79,20 +80,20 @@ function Header() {
 
           {(role?.toLowerCase() === "user" ||
             role?.toLowerCase() === "admin") && (
-            <>
-              <button
-                className={classes.coinsButton}
-                onClick={() => navigate("/catalog")}
-              >
-                {coins} <img src="/svg/coins.svg" alt="Fichas" />
-              </button>
-              <img
-                src="/svg/exit.svg"
-                alt="Cerrar sesión"
-                onClick={() => setIsLogoutModalOpen(true)} // Abre el modal al hacer clic
-              />
-            </>
-          )}
+              <>
+                <button
+                  className={classes.coinsButton}
+                  onClick={() => navigate("/catalog")}
+                >
+                  {coins} <img src="/svg/coins.svg" alt="Fichas" />
+                </button>
+                <img
+                  src="/svg/exit.svg"
+                  alt="Cerrar sesión"
+                  onClick={() => setIsLogoutModalOpen(true)} // Abre el modal al hacer clic
+                />
+              </>
+            )}
 
           {!role && (
             <Button

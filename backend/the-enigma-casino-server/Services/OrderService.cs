@@ -3,6 +3,7 @@ using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Database.Entities.Enum;
 using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Models.Mappers;
+using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Services.Email;
 
 namespace the_enigma_casino_server.Services;
@@ -12,14 +13,16 @@ public class OrderService : BaseService
     private readonly OrderMapper _orderMapper;
     private readonly UserService _userService;
     private readonly EmailService _emailService;
+    private readonly BlockchainService _blockchainService;
 
     private readonly static int AMOUNT = 5;
 
-    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService, EmailService emailService): base(unitOfWork)
+    public OrderService(UnitOfWork unitOfWork, OrderMapper orderMapper, UserService userService, EmailService emailService, BlockchainService blockchainService): base(unitOfWork)
     {
         _orderMapper = orderMapper;
         _userService = userService;
         _emailService = emailService;
+        _blockchainService = blockchainService;
     }
 
     public async Task<Order> NewOrder(int userId, int coinsPackId, string sessionId)
@@ -50,6 +53,12 @@ public class OrderService : BaseService
         return _orderMapper.ToOrderDto(order);
     }
 
+    public async Task<OrderWithdrawalDto> GetLastOrderWithdrawalByUserIdAsync(int userId)
+    {
+        Order order = await _unitOfWork.OrderRepository.GetLastOrderAsync(userId);
+        return _orderMapper.ToOrderWithdrawalDto(order);
+    }
+
     public async Task UpdatePaid(Order order)
     {
         order.IsPaid = true;
@@ -76,7 +85,6 @@ public class OrderService : BaseService
         return order.Id;
     }
 
-    //Usado en Ethereum
     public async Task<decimal> GetCoinsPackPrice(int coinsPackId)
     {
         CoinsPack coinsPack = await _unitOfWork.CoinsPackRepository.GetByIdAsync(coinsPackId);
@@ -100,6 +108,8 @@ public class OrderService : BaseService
             throw new KeyNotFoundException($"No se encontró un paquete de monedas con el ID {coinsPackId}.");
         }
 
+        decimal ethereum = await _blockchainService.ConvertCoinsToEthereumAsync(coinsPack.Quantity);
+
         Order order = new Order(user, coinsPack)
         {
             EthereumTransactionHash = txHash,
@@ -108,6 +118,7 @@ public class OrderService : BaseService
             IsPaid = true,
             PaidDate = DateTime.Now,
             CreatedAt = DateTime.Now,
+            EthereumPrice = ethereum,
         };
 
         await _unitOfWork.OrderRepository.InsertAsync(order);
@@ -116,37 +127,56 @@ public class OrderService : BaseService
         return order;
     }
 
-    //public async Task<Order> EthereumWithdrawalOrder(int userId, int coinsWithdrawal, string txHash)
-    //{
-    //    User user = await _unitOfWork.UserRepository.GetUserById(userId);
+    public async Task EthereumWithdrawalOrder(int userId, int coinsWithdrawal, string txHash, decimal ethereum)
+    {
+        User user = await _unitOfWork.UserRepository.GetUserById(userId);
 
-    //    if(user == null)
-    //    {
-    //        throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
-    //    }
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
+        }
 
-    //    if (user.Coins < coinsWithdrawal)
-    //    {
-    //        throw new InvalidOperationException("Fichas insuficiente para realizar el retiro.");
-    //    }
+        if (user.Coins < coinsWithdrawal)
+        {
+            throw new InvalidOperationException("Fichas insuficientes para realizar el retiro.");
+        }
 
-    //    Order order = new Order
-    //    {
-    //        UserId = user.Id,  
-    //        CoinsPackId = -1,
-    //        EthereumTransactionHash = txHash, 
-    //        CreatedAt = DateTime.Now,  
-    //        OrderType = OrderType.Withdrawal,
-    //        Coins = coinsWithdrawal,
-    //        EthereumPrice = ??,
-    //        IsPaid = true
-    //    };
+        if (ethereum <= 0)
+        {
+            throw new InvalidOperationException("El valor de Ethereum debe ser mayor que 0.");
+        }
 
-    //    await _unitOfWork.OrderRepository.InsertAsync(order);
-    //    await _unitOfWork.SaveAsync();
+        string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
 
-    //    return order;
-    //}
+        // Transforma fichas retiradas a euros
+        if (string.IsNullOrEmpty(coinValueStr) || !decimal.TryParse(coinValueStr, out decimal coinValueInEuros))
+        {
+            throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
+        }
+
+        decimal eurosConvertion = coinsWithdrawal * coinValueInEuros * 100;
+
+        int eurosConvertionInt = (int)eurosConvertion;
+
+        Order order = new Order(user)
+        {
+            CoinsPackId = 7,
+            EthereumTransactionHash = txHash,
+            CreatedAt = DateTime.Now,
+            PayMode = PayMode.Ethereum,
+            OrderType = OrderType.Withdrawal,
+            Coins = coinsWithdrawal,
+            EthereumPrice = ethereum,
+            IsPaid = true,
+            PaidDate = DateTime.Now, 
+            Price = eurosConvertionInt,
+        };
+
+        await _userService.UpdateCoins(userId, (coinsWithdrawal * -1));
+
+        await _unitOfWork.OrderRepository.InsertAsync(order);
+        await _unitOfWork.SaveAsync();
+    }
 
     public async Task<OrderHistoryDto> GetOrdersByUser(int userId, int page)
     {

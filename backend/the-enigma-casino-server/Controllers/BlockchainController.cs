@@ -10,6 +10,7 @@ using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Models.Mappers;
 using Nethereum.RPC.Eth.DTOs;
 using System.Web;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace the_enigma_casino_server.Controllers;
@@ -21,15 +22,17 @@ public class BlockchainController : BaseController
     private readonly BlockchainService _blockchainService;
     private readonly OrderService _orderService;
     private readonly OrderMapper _orderMapper;
+    private readonly UserService _userService;
 
-    public BlockchainController(BlockchainService blockchainService, OrderService orderService, OrderMapper orderMapper)
+    public BlockchainController(BlockchainService blockchainService, OrderService orderService, OrderMapper orderMapper, UserService userService)
     {
         _blockchainService = blockchainService;
         _orderService = orderService;
         _orderMapper = orderMapper;
+        _userService = userService;
     }
 
-    [HttpPost("transaction")]  //Cambiar nombre
+    [HttpPost("transaction")]
     [Authorize]
     public async Task<IActionResult> CreateTransaction([FromBody] OrderTransactionRequest request)
     {
@@ -79,7 +82,7 @@ public class BlockchainController : BaseController
         }
     }
 
-    [HttpPost("check")] //Cambiar nombre
+    [HttpPost("check")]
     [Authorize]
     public async Task<IActionResult> CheckTransactionAsync([FromBody] CheckTransactionRequest data)
     {
@@ -114,10 +117,57 @@ public class BlockchainController : BaseController
 
     [HttpPost("withdrawal")]
     [Authorize]
-    public Task<TransactionDto> CreateTransactionAsync([FromBody] WithdrawalCreateTransactionRequest data)
+    public async Task<IActionResult> CreateTransactionAsync([FromBody] WithdrawalCreateTransactionRequest data)
     {
-        data.NetworkUrl = HttpUtility.UrlDecode(data.NetworkUrl);
+        try
+        {
+            data.NetworkUrl = HttpUtility.UrlDecode(data.NetworkUrl);
+            int userId = GetUserId();
 
-        return _blockchainService.CreateTransactionAsync(data);
+            int userCoins = await _userService.GetCoins(userId);
+
+            if (data.CoinsWithdrawal > userCoins)
+            {
+                return BadRequest(new { message = "No dispone de suficientes fichas." });
+            }
+
+            var (transactionDto, ethereums) = await _blockchainService.CreateTransactionAsync(data, userId);
+
+            await _orderService.EthereumWithdrawalOrder(userId, data.CoinsWithdrawal, transactionDto.Hash, ethereums);
+
+            return Ok(transactionDto);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Ocurrió un error procesando la transacción.");
+        }
+    }
+
+    [HttpPost("convertWithdrawal")]  
+    [Authorize]
+    public async Task<IActionResult> ConvertWithdrawal([FromBody] ConvertWithdrawalRequest request)
+    {
+        try
+        {
+            if (request == null || request.Withdrawalcoins <= 0) 
+            {
+                return BadRequest("El número de fichas no puede ser menor o igual a cero.");
+            }
+            int userId = GetUserId();
+            int userCoins = await _userService.GetCoins(userId);
+
+            if (request.Withdrawalcoins > userCoins)
+            {
+                return BadRequest(new { message = "No dispone de suficientes fichas." });
+            }
+
+            ConvertWithdrawalDto convertWithdrawalDto = await _blockchainService.ConvertWithdrawal(request.Withdrawalcoins);
+
+            return Ok(convertWithdrawalDto);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Ocurrió un error procesando la conversión.");
+        }
     }
 }

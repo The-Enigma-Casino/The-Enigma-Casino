@@ -11,6 +11,8 @@ public class CoinsPackRepository : Repository<CoinsPack, int>
 
     public async Task<List<CoinsPack>> GetAllCoinsPackAsync()
     {
-        return await GetQueryable().ToListAsync();
+        return await GetQueryable()
+             .Where(c => c.Id != 7) // Ignora paquete 7
+             .ToListAsync();
     }
 }

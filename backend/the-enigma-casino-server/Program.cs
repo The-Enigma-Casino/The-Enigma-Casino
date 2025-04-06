@@ -76,6 +76,8 @@ public class Program
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
         builder.Services.AddSingleton<WebSocketHandlerResolver>();
         builder.Services.AddSingleton<GameTableWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
+        builder.Services.AddSingleton<GameMatchWS>(); 
 
         // Servicios auxiliares de WebSocket
         builder.Services.AddSingleton<GameTableManager>();

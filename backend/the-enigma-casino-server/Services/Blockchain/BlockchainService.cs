@@ -4,6 +4,8 @@ using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using Stripe.Climate;
+using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Dtos.BlockchainDtos;
 
 namespace the_enigma_casino_server.Services.Blockchain;
@@ -68,8 +70,8 @@ public class BlockchainService
     }
 
     //RETIRADA
-    public async Task<TransactionDto> CreateTransactionAsync(WithdrawalCreateTransactionRequest data)
-    {   
+    public async Task<(TransactionDto transaction, decimal ethereums)> CreateTransactionAsync(WithdrawalCreateTransactionRequest data, int userId)
+    {
 
         string networkUrl = Environment.GetEnvironmentVariable("NETWORKURL");
         if (string.IsNullOrEmpty(networkUrl))
@@ -84,32 +86,33 @@ public class BlockchainService
             throw new InvalidOperationException("La variable de entorno 'METAMASK_PRIVATE_WALLET' no está configurada.");
         }
 
-        if (data.coinsWithdrawal <= 0)
+        if (data.CoinsWithdrawal <= 0)
         {
-            throw new ArgumentException("El número de fichas a retirar debe ser mayor que 0.", nameof(data.coinsWithdrawal));
+            throw new ArgumentException("El número de fichas a retirar debe ser mayor que 0.", nameof(data.CoinsWithdrawal));
         }
 
         EthereumService ethereumService = new EthereumService(networkUrl);
-        decimal ethereums = await ConvertCoinsToEthereumAsync(data.coinsWithdrawal);
+        decimal ethereums = await ConvertCoinsToEthereumAsync(data.CoinsWithdrawal);
 
         try
         {
             TransactionReceipt txReceipt = await ethereumService.CreateTransactionAsync(fromPrivateKey, data.To, ethereums);
-            return new TransactionDto
+
+            var transactionDto = new TransactionDto
             {
                 Hash = txReceipt.TransactionHash,
                 Success = txReceipt.Succeeded()
             };
+
+            return (transactionDto, ethereums);
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException("Error al procesar la transacción en la blockchain.", ex);
         }
-
     }
 
-
-    private async Task<decimal> ConvertCoinsToEthereumAsync(int coins)
+    public decimal ConvertCoinsToEuros(int coins)
     {
         string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
 
@@ -119,6 +122,20 @@ public class BlockchainService
         }
 
         decimal euros = coins * coinValueInEuros;
+        return euros;
+    }
+
+
+    public async Task<decimal> ConvertCoinsToEthereumAsync(int coins)
+    {
+        string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
+
+        if (string.IsNullOrEmpty(coinValueStr) || !decimal.TryParse(coinValueStr, out decimal coinValueInEuros))
+        {
+            throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
+        }
+
+        decimal euros = ConvertCoinsToEuros(coins);
 
         decimal ethEurPrice = await GetEthereumPriceAsync();
 
@@ -126,6 +143,19 @@ public class BlockchainService
 
         return ethereums;
     }
+
+    public async Task<ConvertWithdrawalDto> ConvertWithdrawal(int coins)
+    {
+        decimal totalEthereum = await ConvertCoinsToEthereumAsync(coins);
+        decimal totalEuros = ConvertCoinsToEuros(coins);
+
+        return new ConvertWithdrawalDto
+        {
+            TotalEthereum = totalEthereum,
+            TotalEuros = totalEuros
+        };
+    }
+
     private Task<decimal> GetEthereumPriceAsync()
     {
         CoinGeckoApi coinGeckoApi = new CoinGeckoApi();

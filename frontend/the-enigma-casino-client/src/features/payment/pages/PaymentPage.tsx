@@ -10,7 +10,6 @@ import {
 function PaymentPage() {
   const method = useUnit($paymentMethod);
   const coinCard = useUnit($selectedCard);
-  console.log("Método de pago seleccionado:", method);
 
   return (
     <>
@@ -25,7 +24,7 @@ function PaymentPage() {
               image={coinCard.image}
               offer={coinCard.offer}
               isSelected={false}
-              onSelect={() => {}}
+              onSelect={() => { }}
               size="large"
               clickable={false}
             />

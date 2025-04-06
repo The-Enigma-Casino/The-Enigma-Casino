@@ -35,7 +35,6 @@ public class EmailService
         emailContent = emailContent.Replace("{ConfirmationLink}", $"{url}/auth/email-confirmation/{user.ConfirmationToken}");
 
         await EmailHelper.SendEmailAsync(user.Email, "Confirma tu cuenta", emailContent, true);
-        Console.WriteLine("Email sent to: " + user.Email);
     }
 
     public async Task SendInvoiceAsync(Order order, User user)
@@ -68,7 +67,6 @@ public class EmailService
         }
 
         await EmailHelper.SendEmailAsync(user.Email, "Confirmación de compra", emailContent, true);
-        Console.WriteLine("Email sent to: " + user.Email);
     }
 
 }

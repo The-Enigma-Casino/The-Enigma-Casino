@@ -23,7 +23,6 @@ const Ethereum: React.FC = () => {
   const error = useUnit($error);
   const transactionEnd = useUnit($transactionEnd)
   const logoRef = useRef<HTMLDivElement | null>(null);
-  const paymentStatus = useUnit($paymentStatus);
   const paymentError = useUnit($paymentError);
   // Logo de MetaMask
   useEffect(() => {

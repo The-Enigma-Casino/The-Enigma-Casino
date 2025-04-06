@@ -33,13 +33,6 @@ export const $error = createStore<string | null>(null)
   .reset(fetchTransactionEthereumFx.done)
   .on(resetError, () => null);
 
-export const $paymentStatus = createStore<string | null>(null)
-  .on(fetchPaymentStatusFx.doneData, (_, paymentStatus) => {
-    console.log("💾 Guardando estado del pago en Effector:", paymentStatus);
-    return paymentStatus;
-  })
-  .reset(fetchPaymentStatusFx.fail);
-
 export const $paymentError = createStore<string | null>(null)
   .on(fetchPaymentStatusFx.failData, (_, error) => error.message)
   .reset(fetchPaymentStatusFx.done);

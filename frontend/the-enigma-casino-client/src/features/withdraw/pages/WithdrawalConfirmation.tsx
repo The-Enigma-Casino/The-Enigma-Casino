@@ -1,8 +1,28 @@
-import InfoWithdraw from "../components/layouts/InfoWithdraw";
+import React, { useEffect, useRef } from "react";
+import InfoWithdrawal from "../components/layouts/InfoWithdrawal";
+import MetaMaskLogo from "@metamask/logo";
 
-function WithdrawConfirmation() {
+const WithdrawConfirmation: React.FC = () => {
   const isPaid: boolean = true;
   const hasError: boolean = false;
+  const logoRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const viewer = MetaMaskLogo({
+      pxNotRatio: true,
+      width: 200,
+      height: 200,
+      followMouse: true,
+      slowDrift: true,
+    });
+
+    if (logoRef.current) {
+      logoRef.current.appendChild(viewer.container);
+    }
+    return () => {
+      viewer.stopAnimation();
+    };
+  }, []);
 
   return (
     <section className="min-h-full bg-Background-Page flex flex-col gap-[2rem] lg:gap-[9rem]">
@@ -12,12 +32,8 @@ function WithdrawConfirmation() {
             PAGO REALIZADO
           </h1>
           <div className="flex flex-col lg:flex-row items-center justify-center gap-8">
-            <InfoWithdraw />
-            <img
-              className="w-80 h-80"
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/2048px-MetaMask_Fox.svg.png"
-              alt="metamask"
-            />
+            <InfoWithdrawal />
+            <div className="flex justify-center items-center my-5" ref={logoRef}></div>
           </div>
           <h1 className="text-Principal text-[2.5rem] font-bold text-center font-reddit lg:text-[6rem]">
             TUS FICHAS YA FUERON RETIRADAS

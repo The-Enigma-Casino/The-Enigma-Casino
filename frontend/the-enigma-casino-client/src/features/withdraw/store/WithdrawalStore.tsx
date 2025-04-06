@@ -1,5 +1,5 @@
 import { createEvent, createStore, sample } from "effector"
-import { fetchWithrawalFx } from "../actions/withdrawalActions"
+import { fetchWithrawalFx, fetchConvertWithdrawalFx, fetchLastOrderWithdrawalFx } from "../actions/withdrawalActions"
 
 // EVENTS
 export const resetWithdrawalData = createEvent();
@@ -12,6 +12,11 @@ export const $withdrawalData = createStore<any>(null)
   .on(fetchWithrawalFx.doneData, (_, data) => data)
   .reset(resetWithdrawalData);
 
+// CONVERT STORE
+export const $convertWithdrawalData = createStore<any>(null)
+  .on(fetchConvertWithdrawalFx.doneData, (_, data) => data)
+  .reset(resetWithdrawalData);
+
 export const $loading = createStore<boolean>(false)
   .on(setLoading, (_, loading) => loading)
   .on(fetchWithrawalFx.pending, () => true)
@@ -19,7 +24,13 @@ export const $loading = createStore<boolean>(false)
 
 export const $error = createStore<string | null>(null)
   .on(fetchWithrawalFx.failData, (_, error) => error.message)
+  .on(fetchConvertWithdrawalFx.failData, (_, error) => error.message)
   .reset(resetError);
+
+// Order Store
+export const $lastOrderWithdrawal = createStore<any>(null)
+  .on(fetchLastOrderWithdrawalFx.doneData, (_, data) => data);
+
 
 export const $transactionEnd = createStore<boolean>(false)
   .on(setTransactionEnd, (_, end) => end);

@@ -19,13 +19,19 @@ export const EMBBEDED_CHECKOUT = `${API_BASE_URL}Stripe/embedded-checkout`;
 export const ETHEREUM_PAYMENT_CHECK = `${API_BASE_URL}Blockchain/check`;
 export const ETHEREUM_CHECK_TRANSACTION = `${API_BASE_URL}Blockchain/transaction`;
 export const ETHEREUM_WITHDRAWAL = `${API_BASE_URL}Blockchain/withdrawal`;
+export const ETHEREUM_CONVERTION_WITHDRAWAL = `${API_BASE_URL}Blockchain/convertWithdrawal`;
 
 /* ENDPOINTS DE ORDER */
-export const LAST_ORDER = `${API_BASE_URL}Order/last-order`
-export const LAST_ORDER_ID = `${API_BASE_URL}Order/last-order-id`
+export const LAST_ORDER = `${API_BASE_URL}Order/last-order`;
+export const LAST_ORDER_ID = `${API_BASE_URL}Order/last-order-id`;
+export const LAST_ORDER_WITHDRAWAL = `${API_BASE_URL}Order/last-order-withdrawal`;
 
 /* ENDPOINTS DE USER */
 export const USER_COINS = `${API_BASE_URL}User/coins`;
 
 /* ENDPOINTS DE GAME TABLES */
 export const GAMETABLES_ENDPOINT = `${API_BASE_URL}GameTable/tables`;
+
+/* ENDPOINT DE IMAGENES */
+export const CARD_IMAGE = `${API_BASE_URL}cards/card`;
+export const CARD_IMAGE_BACK = `${API_BASE_URL}cards/back`;

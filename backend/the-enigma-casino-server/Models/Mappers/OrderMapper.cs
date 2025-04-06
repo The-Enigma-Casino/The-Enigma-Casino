@@ -66,4 +66,18 @@ public class OrderMapper
         return orderHistoryDtos;
     }
 
+    public OrderWithdrawalDto ToOrderWithdrawalDto(Order order)
+    {
+        return new OrderWithdrawalDto
+        {
+            Id = order.Id,
+            PaidDate = order.PaidDate,
+            Coins = order.Coins, 
+            Price = order.Price,
+            PayMode = order.PayMode,
+            EthereumTransactionHash = order.EthereumTransactionHash,
+            EthereumPrice = order.EthereumPrice
+        };
+    }
+
 }

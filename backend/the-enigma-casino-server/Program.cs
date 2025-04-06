@@ -69,16 +69,15 @@ public class Program
 
         // Servicios de WebSocket
         builder.Services.AddTransient<WebsocketMiddleware>();
-        builder.Services.AddScoped<WebSocketService>();
+        builder.Services.AddSingleton<WebSocketService>();
         builder.Services.AddSingleton<ConnectionManagerWS>();
 
         // Handlers de WebSocket
-        builder.Services.AddScoped<IWebSocketMessageHandler, GameTableWS>();
-        builder.Services.AddScoped<WebSocketHandlerResolver>();
-        builder.Services.AddScoped<GameTableWS>();
-        builder.Services.AddScoped<IWebSocketMessageHandler, GameMatchWS>();
-        builder.Services.AddScoped<GameMatchWS>(); 
-
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
+        builder.Services.AddSingleton<WebSocketHandlerResolver>();
+        builder.Services.AddSingleton<GameTableWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
+        builder.Services.AddSingleton<GameMatchWS>(); 
 
         // Servicios auxiliares de WebSocket
         builder.Services.AddSingleton<GameTableManager>();

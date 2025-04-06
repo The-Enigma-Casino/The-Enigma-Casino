@@ -23,6 +23,14 @@ public class OrderController : BaseController
         return await _orderService.GetLastOrderByUserIdAsync(userId);
     }
 
+    [HttpGet("last-order-withdrawal")]
+    public async Task<OrderWithdrawalDto> GetLastOrderWithdrawalByUserId()
+    {
+        int userId = GetUserId();
+        return await _orderService.GetLastOrderWithdrawalByUserIdAsync(userId);
+    }
+
+
     [HttpGet("last-order-id")]
     public async Task<int> GetLastOrderIdByUserIdAsync()
     {

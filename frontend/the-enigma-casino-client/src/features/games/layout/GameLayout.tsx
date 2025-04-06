@@ -5,7 +5,7 @@ import { Chat } from "../shared/components/chat/Chat";
 export const GameLayout = () => {
   return (
     <div className="flex w-full h-full">
-      <div className="w-[15%] p-4 bg-Background-Overlay text-white">
+      <div className="w-[18%] p-4 bg-Background-Overlay text-white flex flex-col">
         <Chat />
       </div>
 

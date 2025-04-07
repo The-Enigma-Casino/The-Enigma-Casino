@@ -129,12 +129,7 @@ public class OrderService : BaseService
 
     public async Task EthereumWithdrawalOrder(int userId, int coinsWithdrawal, string txHash, decimal ethereum)
     {
-        User user = await _unitOfWork.UserRepository.GetUserById(userId);
-
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"No se encontró un usuario con el ID {userId}.");
-        }
+        User user = await GetUserById(userId);
 
         if (user.Coins < coinsWithdrawal)
         {
@@ -176,6 +171,8 @@ public class OrderService : BaseService
 
         await _unitOfWork.OrderRepository.InsertAsync(order);
         await _unitOfWork.SaveAsync();
+
+        // enviar el correo
     }
 
     public async Task<OrderHistoryDto> GetOrdersByUser(int userId, int page)

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
+using the_enigma_casino_server.Models.Database.Entities.Enum;
 using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Utilities;
 
@@ -48,16 +49,15 @@ public class EmailService
         emailContent = emailContent.Replace("{OrderPack}", $"Pack de {order.Coins} fichas");
         emailContent = emailContent.Replace("{OrderPrice}", (order.Price / 100.0).ToString("0.00"));
         emailContent = emailContent.Replace("{OrderCoins}", order.Coins.ToString());
-        emailContent = emailContent.Replace("{BillingAddress}", user.Address);
 
-        if (order.PayMode == 0)
+        if (order.PayMode == PayMode.Ethereum)
         {
             decimal ethPriceEuros = await _blockchainService.GetEthereumPriceInEurosAsync();
-            decimal equivalentEth = (decimal)(order.Price / 100.0) / ethPriceEuros;
+            decimal equivalentEth = Math.Round((decimal)(order.Price / 100.0) / ethPriceEuros, 6);
 
             emailContent = emailContent.Replace("{PaymentMethod}", "Ethereum");
             emailContent = emailContent.Replace("{EthereumPrice}", equivalentEth.ToString("0.000000"));
-            emailContent = emailContent.Replace("{PaymentMethodSpecificInfo}", $"Precio total Ethereum: {equivalentEth} ETH");
+            emailContent = emailContent.Replace("{PaymentMethodSpecificInfo}", $"Precio total Ethereum: {equivalentEth.ToString("0.000000")} ETH");
         }
         else 
         {

@@ -172,7 +172,7 @@ public class OrderService : BaseService
         await _unitOfWork.OrderRepository.InsertAsync(order);
         await _unitOfWork.SaveAsync();
 
-        // enviar el correo
+        await _emailService.SendWithdrawalAsync(order, user);
     }
 
     public async Task<OrderHistoryDto> GetOrdersByUser(int userId, int page)

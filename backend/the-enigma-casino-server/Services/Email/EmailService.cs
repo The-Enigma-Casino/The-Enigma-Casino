@@ -69,5 +69,24 @@ public class EmailService
         await EmailHelper.SendEmailAsync(user.Email, "Confirmación de compra", emailContent, true);
     }
 
+    public async Task SendWithdrawalAsync(Order order, User user)
+    {
+        string url = Environment.GetEnvironmentVariable("SERVER_URL");
+
+        string emailContent = await GetEmailTemplateAsync("withdrawal.html");
+
+        decimal ethPriceEuros = await _blockchainService.GetEthereumPriceInEurosAsync();
+        decimal equivalentEth = Math.Round((decimal)(order.Price / 100.0) / ethPriceEuros, 6);
+
+        emailContent = emailContent.Replace("{UserName}", user.NickName);
+        emailContent = emailContent.Replace("{OrderPrice}", (order.Price / 100.0).ToString("0.00"));
+        emailContent = emailContent.Replace("{OrderCoins}", order.Coins.ToString());
+        emailContent = emailContent.Replace("{PaymentMethod}", "Ethereum");
+        emailContent = emailContent.Replace("{EthereumPrice}", $"{equivalentEth.ToString("0.000000")} ETH");
+
+        await EmailHelper.SendEmailAsync(user.Email, "Confirmación de retirada", emailContent, true);
+
+    }
+
 }
 

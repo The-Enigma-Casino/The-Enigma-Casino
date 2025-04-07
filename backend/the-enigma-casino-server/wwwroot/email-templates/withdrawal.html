@@ -1,0 +1,96 @@
+﻿<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: #f0a500;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333;
+            text-align: justify;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 5px;
+        }
+
+            .info-row p {
+                margin: 0;
+            }
+
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .tfooter {
+            text-align: center;
+            align-items: center;
+            align-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>¡Confirmación de Retirada, {UserName}!</h2>
+        <p>Tu solicitud de retirada ha sido procesada con éxito. Aquí tienes los detalles de la transacción:</p>
+
+        <div class="info-row">
+            <p><strong>Precio Total:</strong></p>
+            <p>{OrderPrice} €</p>
+        </div>
+
+        <div class="info-row">
+            <p><strong>Fichas Retiradas:</strong></p>
+            <p>{OrderCoins}</p>
+        </div>
+
+        <div class="info-row">
+            <p><strong>Método de Pago:</strong></p>
+            <p>{PaymentMethod}</p>
+        </div>
+
+        <div class="info-row">
+            <p><strong>Cantidad en ETH:</strong></p>
+            <p>{EthereumPrice}</p>
+        </div>
+
+        <div class="footer">
+            <p class="tfooter">&copy; 2025 The Enigma Casino. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

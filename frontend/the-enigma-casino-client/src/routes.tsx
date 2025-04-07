@@ -6,14 +6,13 @@ import PaymentPage from "./features/payment/pages/PaymentPage";
 import PaymentConfirmation from "./features/payment/pages/PaymentConfirmation";
 
 import routeAuth from "./features/auth/routes";
+import routeGames from "./features/games/routes";
 
 import { createBrowserRouter } from "react-router-dom";
 import WithdrawalConfirmation from "./features/withdraw/pages/WithdrawalConfirmation";
 import LandingPage from "./features/landingPage/pages/LandingPage";
 import GameTable from "./features/gameTables/pages/GameTablePage";
 import Withdrawal from "./features/withdraw/pages/Withdrawal";
-import { BlackjackGamePage } from "./features/games/blackjack/pages/BlackjackGamePage";
-import { GameLayout } from "./features/games/layout/GameLayout";
 
 const router = createBrowserRouter([
   {
@@ -32,19 +31,10 @@ const router = createBrowserRouter([
       { path: "withdraw-confirmation", element: <WithdrawalConfirmation /> },
       { path: "catalog", element: <Catalog /> },
       { path: "/tables/:gameType", element: <GameTable /> },
-      {
-        path: "/game",
-        element: <GameLayout />,
-        children: [
-          {
-            path: "blackjack",
-            element: <BlackjackGamePage />,
-          },
-        ],
-      },
     ],
   },
   ...routeAuth,
+  ...routeGames,
 ]);
 
 export default router;

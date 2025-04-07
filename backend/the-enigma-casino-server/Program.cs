@@ -14,6 +14,7 @@ using the_enigma_casino_server.Models.Seeder;
 using the_enigma_casino_server.Services;
 using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Services.Email;
+using the_enigma_casino_server.WS.BlackJackWS;
 using the_enigma_casino_server.WS.GameMatch;
 using the_enigma_casino_server.WS.GameTable;
 using the_enigma_casino_server.WS.GameWS.Services;
@@ -73,11 +74,16 @@ public class Program
         builder.Services.AddSingleton<ConnectionManagerWS>();
 
         // Handlers de WebSocket
-        builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
         builder.Services.AddSingleton<WebSocketHandlerResolver>();
+
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
         builder.Services.AddSingleton<GameTableWS>();
+
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
-        builder.Services.AddSingleton<GameMatchWS>(); 
+        builder.Services.AddSingleton<GameMatchWS>();
+
+        builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
+        builder.Services.AddSingleton<BlackjackWS>();
 
         // Servicios auxiliares de WebSocket
         builder.Services.AddSingleton<GameTableManager>();

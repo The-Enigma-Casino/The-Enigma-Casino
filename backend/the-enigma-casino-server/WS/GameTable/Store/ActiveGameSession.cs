@@ -27,7 +27,7 @@ public class ActiveGameSession
         lock (_lock)
         {
             _countdownCancelled = false;
-            _startTimer.Change(30_000, Timeout.Infinite);
+            _startTimer.Change(10_000, Timeout.Infinite);
             _isTimerRunning = true;
         }
     }

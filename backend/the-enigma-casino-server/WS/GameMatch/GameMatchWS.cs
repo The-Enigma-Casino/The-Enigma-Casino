@@ -3,6 +3,8 @@ using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Entities.Enum;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.WS.Base;
+using the_enigma_casino_server.WS.BlackJackWS;
+using the_enigma_casino_server.WS.BlackJackWS.Store;
 using the_enigma_casino_server.WS.GameTableWS.Store;
 using the_enigma_casino_server.WS.GameWS.Services;
 using the_enigma_casino_server.WS.Interfaces;
@@ -14,11 +16,15 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
 {
     public string Type => "gameMatch";
 
-    public GameMatchWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
+    private readonly BlackjackWS _blackjackWS;
+
+    public GameMatchWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider, BlackjackWS blackjackWS)
         : base(connectionManager, serviceProvider)
     {
+        _blackjackWS = blackjackWS;
         connectionManager.OnUserDisconnected += HandleUserDisconnection;
     }
+
 
     private GameMatchManager CreateScopedManager(out IServiceScope scope)
     {
@@ -132,15 +138,47 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
         var manager = new GameMatchManager(unitOfWork);
         var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
 
-        bool removed = await manager.EndMatchForPlayerAsync(match, userId);
-
-        if (!removed)
+        // 🧠 Buscar al jugador antes de quitarlo
+        var player = match.Players.FirstOrDefault(p => p.UserId == userId);
+        if (player == null)
         {
             Console.WriteLine($"⚠️ [GameMatchWS] Jugador {userId} no encontrado en partida.");
             return;
         }
 
+        // 🏳️ Si abandona con estado "Playing", se considera derrota
+        if (player.PlayerState == PlayerState.Playing)
+        {
+            player.PlayerState = PlayerState.Lose;
+            Console.WriteLine($"🏳️ [GameMatchWS] Jugador {userId} abandonó la partida → DERROTA");
+        }
+
+        await _blackjackWS.ForceAdvanceTurnAsync(tableId, userId);
+
+        bool removed = await manager.EndMatchForPlayerAsync(match, userId);
+        if (!removed)
+        {
+            Console.WriteLine($"⚠️ [GameMatchWS] No se pudo eliminar al jugador {userId} de la partida.");
+            return;
+        }
+
         Console.WriteLine($"👤 [GameMatchWS] Jugador {userId} ha terminado su partida en mesa {tableId}");
+
+        // 🧠 Re-evaluar si los jugadores restantes ya han apostado
+        if (match.GameTable.GameType == GameType.BlackJack)
+        {
+            var expectedPlayerIds = match.Players.Select(p => p.UserId).ToList();
+            Console.WriteLine($"🧪 Re-evaluando apuestas tras la salida de {userId}");
+            Console.WriteLine($"🎯 Nuevos jugadores esperados: {string.Join(", ", expectedPlayerIds)}");
+            Console.WriteLine($"🎯 Jugadores que han apostado: {string.Join(", ", BlackjackBetTracker.GetAllForTable(tableId))}");
+
+            if (BlackjackBetTracker.HaveAllPlayersBet(tableId, expectedPlayerIds))
+            {
+                BlackjackBetTracker.Clear(tableId);
+                Console.WriteLine($"♠️ Todos los jugadores restantes han apostado en la mesa {tableId}. Iniciando reparto...");
+                await _blackjackWS.HandleDealInitialCardsAsync(tableId);
+            }
+        }
 
         await SendToUserAsync(userId.ToString(), new
         {
@@ -171,6 +209,61 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
             });
 
             Console.WriteLine($"🧹 [GameMatchWS] Match eliminado por jugadores insuficientes en mesa {tableId}");
+        }
+    }
+
+
+    public async Task EndMatchForAllPlayersAsync(int tableId)
+    {
+        if (!ActiveGameMatchStore.TryGet(tableId, out var match))
+        {
+            Console.WriteLine($"❌ [GameMatchWS] No hay partida activa en la mesa {tableId}");
+            return;
+        }
+
+        using var scope = _serviceProvider.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+        var manager = new GameMatchManager(unitOfWork);
+
+        await manager.EndMatchAsync(match);
+        ActiveGameMatchStore.Remove(tableId);
+
+        Console.WriteLine($"🧾 [GameMatchWS] Match finalizado y guardado en la mesa {tableId}");
+
+        var userIds = match.GameTable.Players.Select(p => p.UserId.ToString()).ToList();
+
+        await BroadcastToUsersAsync(userIds, new
+        {
+            type = GameMatchMessageTypes.MatchEnded,
+            tableId,
+            endedAt = DateTime.UtcNow
+        });
+
+        if (ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            Table table = session.Table;
+
+            if (table.Players.Count >= table.MinPlayer)
+            {
+                Console.WriteLine($"🕹 [GameMatchWS] Hay suficientes jugadores, iniciando nueva partida en mesa {table.Id}");
+                await StartMatchForTableAsync(table.Id);
+            }
+            else
+            {
+                if (table.GameType == GameType.Poker && table.Players.Count < table.MinPlayer)
+                {
+                    Console.WriteLine($"🚫 [GameMatchWS] Jugadores insuficientes para Poker. Expulsando a todos de la mesa {table.Id}.");
+
+                    foreach (var player in table.Players.ToList())
+                    {
+                        await EndMatchForPlayerAsync(table.Id, player.UserId);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"🕹 [GameMatchWS] No se inicia nueva partida, pero el juego permite continuar con {table.Players.Count} jugador(es).");
+                }
+            }
         }
     }
 

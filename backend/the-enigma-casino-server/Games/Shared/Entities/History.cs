@@ -22,5 +22,5 @@ public class History
 
     public DateTime JoinedAt { get; set; } =  DateTime.UtcNow;
 
-    public DateTime LeftAt { get; set; }
+    public DateTime? LeftAt { get; set; }
 }

@@ -22,9 +22,9 @@ public class GameHistoryRepository : Repository<History, int>
     public async Task<History?> FindActiveSessionAsync(int userId, int tableId)
     {
         return await Context.Set<History>()
-            .FirstOrDefaultAsync(h =>
-                h.UserId == userId &&
-                h.GameTableId == tableId &&
-                h.LeftAt == default);
+            .Where(h => h.UserId == userId &&
+                        h.GameTableId == tableId &&
+                        h.LeftAt == null)
+            .FirstOrDefaultAsync();
     }
 }

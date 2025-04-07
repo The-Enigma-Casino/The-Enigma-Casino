@@ -31,6 +31,7 @@ public class GameTableManager
         removedPlayer = table.Players.FirstOrDefault(p => p.UserId == userId);
         if (removedPlayer != null)
         {
+            removedPlayer.JoinedAt = null;
             table.Players.Remove(removedPlayer);
             return true;
         }
@@ -96,7 +97,13 @@ public class GameTableManager
             return (false, msg);
         }
 
-        table.Players.Add(new Player(user));
+        var player = new Player(user)
+        {
+            JoinedAt = DateTime.UtcNow 
+        };
+
+        table.AddPlayer(player);
+
         Console.WriteLine($"✅ {user.NickName} se unió a la mesa {table.Id}.");
         return (true, null);
     }

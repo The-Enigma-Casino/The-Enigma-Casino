@@ -50,6 +50,16 @@ public abstract class BaseWebSocketHandler : WebSocketService
         }
     }
 
+    public async Task SendErrorAsync(string userId, string errorMessage)
+    {
+        var error = new
+        {
+            type = "error",
+            message = errorMessage
+        };
+
+        await SendToUserAsync(userId, error);
+    }
 
     protected async Task BroadcastToUsersAsync(IEnumerable<string> userIds, object payload)
     {

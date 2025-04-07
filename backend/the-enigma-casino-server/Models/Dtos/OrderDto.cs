@@ -5,7 +5,6 @@ namespace the_enigma_casino_server.Models.Dtos;
 
 public class OrderDto
 {
-    private CoinsPackDto coinsPackDto;
 
     public int Id { get; set; }
 
@@ -19,21 +18,12 @@ public class OrderDto
 
     public PayMode PayMode { get; set; }
 
-    public string EthereumTransactionHash { get; set; }
+    public decimal? Ehtereum { get; set; }
 
     public OrderDto(int id, CoinsPack coinsPack, bool isPaid, DateTime paidDate , PayMode payMode) {
 
         Id = id;
         CoinsPack = coinsPack;
-        IsPaid = isPaid;
-        PaidDate = paidDate;
-        PayMode = payMode;
-    }
-
-    public OrderDto(int id, CoinsPackDto coinsPackDto, bool isPaid, DateTime paidDate, PayMode payMode)
-    {
-        Id = id;
-        this.coinsPackDto = coinsPackDto;
         IsPaid = isPaid;
         PaidDate = paidDate;
         PayMode = payMode;

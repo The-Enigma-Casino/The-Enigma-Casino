@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  font-family: 'Reddit Sans', sans-serif;
+  font-family: "Reddit Sans", sans-serif;
   font-size: 1.2rem;
   color: white;
 }
@@ -41,6 +41,14 @@
   font-size: 2rem;
 }
 
+.ethereumIcon {
+  width: 2.4rem;
+  height: 2.4rem;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+  object-fit: contain;
+}
 
 @media (max-width: 768px) {
   .infoOrderContainer {
@@ -50,7 +58,7 @@
 
   .infoOrderDetails {
     align-items: center;
-    gap: 2rem
+    gap: 2rem;
   }
 
   .coinsInfo {
@@ -65,4 +73,3 @@
     font-size: 1.5rem;
   }
 }
-

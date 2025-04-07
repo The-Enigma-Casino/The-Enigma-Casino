@@ -14,9 +14,12 @@ const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
 
   const orderPaidmode = order.payMode;
   let paidWith = "Pagado con: ";
-  
+
+  let priceEthereum = 0;
+
   if (orderPaidmode === PayMode.Ethereum) {
     paidWith += "Ethereum";
+    priceEthereum = order.ehtereum ?? 0;
   } else if (orderPaidmode === PayMode.CreditCard) {
     paidWith += "Tarjeta de Crédito";
   } else {
@@ -46,6 +49,16 @@ const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
         <p className={classes.text}>{date}</p>
         <p className={classes.text}>{paidWith}</p>
         <p className={classes.text}>{totalPaid}</p>
+        {priceEthereum !== 0 && (
+          <p className={classes.text}>
+            Pagado en Ethereum: {priceEthereum.toFixed(6)}{" "}
+            <img
+              src="/svg/ethereum.svg"
+              alt="Ethereum"
+              className={classes.ethereumIcon}
+            />
+          </p>
+        )}
       </div>
     </div>
   );

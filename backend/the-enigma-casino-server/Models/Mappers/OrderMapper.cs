@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using Stripe;
-using the_enigma_casino_server.Models.Database.Entities;
+﻿using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.Models.Database.Entities.Enum;
 using the_enigma_casino_server.Models.Dtos;
 using the_enigma_casino_server.Utilities;
-using static System.Net.Mime.MediaTypeNames;
+
 
 namespace the_enigma_casino_server.Models.Mappers;
 
@@ -15,29 +13,11 @@ public class OrderMapper
         OrderDto orderDto = new OrderDto(order.Id, order.CoinsPack, order.IsPaid, order.PaidDate, order.PayMode );
         orderDto.Coins = Coinsify.CoinsifyByCent(order.Price);
 
-        return orderDto;
-    }
-
-    public OrderDto ToOrderDtoWithCoinsPackDto(Order order)
-    {
-        
-        CoinsPackDto coinsPackDto = new CoinsPackDto
+        if(order.PayMode == PayMode.Ethereum)
         {
-            Id = order.CoinsPack.Id,       
-            Price = order.CoinsPack.Price
-        };
+            orderDto.Ehtereum = order.EthereumPrice;
+        }
 
-        
-        OrderDto orderDto = new OrderDto(
-            order.Id,                         
-            coinsPackDto,                     
-            order.IsPaid,                     
-            order.PaidDate,                   
-            order.PayMode                     
-        );
-
-        
-        orderDto.Coins = Coinsify.CoinsifyByCent(order.Price);
         return orderDto;
     }
 

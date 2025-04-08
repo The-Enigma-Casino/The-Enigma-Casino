@@ -16,6 +16,9 @@ public class Player
     public PlayerState PlayerState { get; set; } = PlayerState.Waiting;
     public int CurrentBet { get; set; }
     public DateTime? JoinedAt { get; set; }
+    public int LastBetAmount { get; set; }
+
+
 
     public Player(User user)
     {
@@ -28,8 +31,10 @@ public class Player
     public void PlaceBet(int amount)
     {
         if (amount > User.Coins) throw new InvalidOperationException("No tienes suficientes fichas.");
+        if (amount <= 0) throw new InvalidOperationException("La apuesta debe ser mayor que cero.");
         CurrentBet = amount;
         User.Coins -= amount;
+        LastBetAmount = amount;
         PlayerState = PlayerState.Playing;
     }
 
@@ -61,5 +66,11 @@ public class Player
         CurrentBet = 0;
     }
 
+    public void ResetForNewRound()
+    {
+        CurrentBet = 0;
+        PlayerState = PlayerState.Waiting;
+        Hand = new Hand();
+    }
 
 }

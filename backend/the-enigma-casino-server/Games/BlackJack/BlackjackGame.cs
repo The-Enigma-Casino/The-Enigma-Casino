@@ -137,6 +137,7 @@ public class BlackjackGame
 
         player.User.Coins -= player.CurrentBet;
         player.CurrentBet = doubleBet;
+        player.LastBetAmount = doubleBet;
 
         Console.WriteLine($"{player.User.NickName} ha doblado su apuesta a {player.CurrentBet} monedas.");
         PlayerHit(player);

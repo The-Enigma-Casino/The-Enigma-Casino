@@ -75,7 +75,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             if (!_tableManager.CanJoinTable(user.Id))
             {
-                await SendToUserAsync(userId, new { type = "error", message = "Debes esperar antes de volver a unirte." });
+                await ((IWebSocketSender)this).SendToUserAsync(userId, new { type = "error", message = "Debes esperar antes de volver a unirte." });
                 return;
             }
 
@@ -98,7 +98,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             if (!addResult.success)
             {
-                await SendToUserAsync(userId, new
+                await ((IWebSocketSender)this).SendToUserAsync(userId, new
                 {
                     type = "error",
                     message = addResult.errorMessage
@@ -107,7 +107,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
 
 
-            await BroadcastToUsersAsync(
+            await ((IWebSocketSender)this).BroadcastToUsersAsync(
                 session.GetConnectedUserIds(),
                 new
                 {
@@ -123,7 +123,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 session.StartOrRestartCountdown();
             }
 
-            await BroadcastToUsersAsync(
+            await ((IWebSocketSender)this).BroadcastToUsersAsync(
                 session.GetConnectedUserIds(),
                 new
                 {
@@ -193,7 +193,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             Console.WriteLine($"[GameTableWS] Iniciando partida en la mesa {tableId} automáticamente.");
 
             // Notificamos a los jugadores que el match empieza
-            await BroadcastToUsersAsync(userIds, new
+            await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
                 type = GameTableMessageTypes.GameStart,
                 tableId = table.Id
@@ -265,7 +265,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private Task BroadcastTableUpdateAsync(Table table, IEnumerable<string> userIds, string[] playerNames)
     {
-        return BroadcastToUsersAsync(userIds, new
+        return ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
         {
             type = GameTableMessageTypes.TableUpdate,
             tableId = table.Id,
@@ -276,7 +276,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private Task BroadcastCountdownStoppedAsync(int tableId, IEnumerable<string> userIds)
     {
-        return BroadcastToUsersAsync(userIds, new
+        return ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
         {
             type = GameTableMessageTypes.CountdownStopped,
             tableId

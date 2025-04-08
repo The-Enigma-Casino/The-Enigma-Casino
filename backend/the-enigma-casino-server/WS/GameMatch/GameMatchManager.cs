@@ -1,6 +1,7 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Entities.Enum;
 using the_enigma_casino_server.Models.Database;
+using the_enigma_casino_server.WS.BlackJackWS;
 using the_enigma_casino_server.WS.BlackJackWS.Store;
 using the_enigma_casino_server.WS.GameTableWS.Store;
 using the_enigma_casino_server.WS.GameWS.Services;
@@ -43,6 +44,11 @@ public class GameMatchManager
 
         foreach (var player in match.Players)
         {
+            player.ResetForNewRound();
+        }
+
+        foreach (var player in match.Players)
+        {
             player.GameMatch = match;
             player.GameMatchId = 0; // Si aún no guardamos en DB
         }
@@ -55,7 +61,8 @@ public class GameMatchManager
         var player = match.Players.FirstOrDefault(p => p.UserId == userId);
         if (player == null) return false;
 
-        await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true);
+        bool matchPlayed = player.Hand?.Cards.Any() == true;
+        await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed);
 
         match.Players.Remove(player);
         BlackjackBetTracker.RemovePlayer(match.GameTableId, player.UserId);
@@ -108,32 +115,52 @@ public class GameMatchManager
 
         foreach (var player in match.Players)
         {
-            await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: false);
+            if (player.PlayerState == PlayerState.Left)
+            {
+                Console.WriteLine($"ℹ️ [History] Jugador {player.UserId} ya procesado. Se omite.");
+                continue;
+            }
+
+            await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: false, matchPlayed: true);
         }
 
+        Console.WriteLine($"🧹 Limpiando stores de la mesa {match.GameTableId}");
         ActiveGameMatchStore.Remove(match.GameTableId);
         ActiveBlackjackGameStore.Remove(match.GameTableId);
+
+        Console.WriteLine($"🧼 ActiveGameMatchStore contiene: {ActiveGameMatchStore.GetAll().Count} items");
+        Console.WriteLine($"🧼 ActiveBlackjackGameStore contiene: {ActiveBlackjackGameStore.GetAll().Count()} items");
 
         Console.WriteLine($"✅ [GameMatchManager] Match {match.GameTableId} finalizado y resultados guardados.");
     }
 
-    private async Task UpdateOrInsertHistoryAsync(Player player, Match match, bool playerLeftTable)
+    private async Task UpdateOrInsertHistoryAsync(Player player, Match match, bool playerLeftTable, bool matchPlayed)
     {
         if (player.User == null)
             player.User = await _unitOfWork.UserRepository.GetByIdAsync(player.UserId);
 
+        if (player.PlayerState == PlayerState.Left)
+        {
+            Console.WriteLine($"ℹ️ [History] Jugador {player.UserId} ya procesado (estado Left). Se omite.");
+            return;
+        }
+
         var history = await _unitOfWork.GameHistoryRepository.FindActiveSessionAsync(
             player.UserId, match.GameTableId);
 
-        int matchCount = GetMatchCountForGameType(match.GameTable.GameType);
-        int chips = GetChipResult(player);
-        bool hasBet = player.CurrentBet > 0;
+        int matchCount = matchPlayed ? GetMatchCountForGameType(match.GameTable.GameType) : 0;
+        int chips = matchPlayed ? GetChipResult(player) : 0;
+        int totalBet = matchPlayed ? player.LastBetAmount : 0;
+
+        bool hasBet = matchPlayed && player.LastBetAmount > 0;
+        bool hasPlayed = matchPlayed && (player.Hand.Cards.Count > 0 || player.PlayerState != PlayerState.Waiting);
+
 
         if (history == null)
         {
-            if (!hasBet)
+            if (!hasPlayed)
             {
-                Console.WriteLine($"ℹ️ [History] Jugador {player.UserId} no apostó ni tiene historial previo. No se guarda nada.");
+                Console.WriteLine($"ℹ️ [History] Jugador {player.UserId} no apostó ni jugó. No se guarda historial.");
                 return;
             }
 
@@ -144,29 +171,34 @@ public class GameMatchManager
                 GameType = match.GameTable.GameType,
                 JoinedAt = player.JoinedAt ?? DateTime.UtcNow,
                 TotalMatchesPlayed = matchCount,
-                TotalBetAmount = player.CurrentBet,
+                TotalBetAmount = totalBet,
                 ChipResult = chips,
-                LeftAt = null // ⬅️ Se mantiene abierto hasta que se vaya de la mesa
+                LeftAt = playerLeftTable ? DateTime.UtcNow : null
             };
 
             await _unitOfWork.GameHistoryRepository.InsertAsync(history);
+            await _unitOfWork.SaveAsync();
+            return;
         }
-        else
+
+        // 🛠 Ya existe historial → acumular datos si jugó
+        if (matchPlayed && hasBet)
         {
             history.TotalMatchesPlayed += matchCount;
-            history.TotalBetAmount += player.CurrentBet;
+            history.TotalBetAmount += totalBet;
             history.ChipResult += chips;
-
-
-            if (playerLeftTable)
-            {
-                history.LeftAt = DateTime.UtcNow;
-            }
-
-            _unitOfWork.GameHistoryRepository.Update(history);
         }
 
+        // 🕒 Si se va de la mesa → cerrar historial
+        if (playerLeftTable)
+        {
+            history.LeftAt = DateTime.UtcNow;
+        }
+
+        _unitOfWork.GameHistoryRepository.Update(history);
         await _unitOfWork.SaveAsync();
+
+        player.PlayerState = PlayerState.Left;
     }
 
     private static int GetMatchCountForGameType(GameType gameType)
@@ -175,22 +207,20 @@ public class GameMatchManager
         {
             GameType.BlackJack => 1,
             GameType.Roulette => 1,
-            GameType.Poker => 0,
+            GameType.Poker => 0, 
             _ => 1
         };
     }
 
-    private static int GetChipResult(Player player)
-    {
-        return player.PlayerState switch
+
+    private static int GetChipResult(Player player) =>
+        player.PlayerState switch
         {
             PlayerState.Win => player.CurrentBet * 2,
             PlayerState.Draw => player.CurrentBet,
-            PlayerState.Lose => 0,
-            PlayerState.Bust => 0,
             _ => 0
         };
-    }
+
 
     public async Task RefundBetIfNotPlayedAsync(Player player, Match match)
     {
@@ -206,6 +236,50 @@ public class GameMatchManager
             _unitOfWork.UserRepository.Update(player.User);
             await _unitOfWork.SaveAsync();
         }
+    }
+
+    public async Task<bool> HandlePlayerExitAsync(Player player, Match match, int tableId, BlackjackWS blackjackWS)
+    {
+        bool gameStarted = match.Players.Any(p => p.Hand != null && p.Hand.Cards.Count > 0);
+
+        if (!gameStarted && player.CurrentBet > 0)
+        {
+            // ✅ Jugador se va antes de que empiece la ronda: se le devuelve la apuesta
+            Console.WriteLine($"💸 [GameMatchManager] Jugador {player.UserId} salió antes del inicio → devolviendo {player.CurrentBet} monedas.");
+
+            player.User.Coins += player.CurrentBet;
+            player.CurrentBet = 0;
+
+            _unitOfWork.UserRepository.Update(player.User);
+            await _unitOfWork.SaveAsync();
+        }
+        else
+        {
+            // ✅ Jugador se va con la ronda ya empezada → derrota y se guarda historial
+            if (player.PlayerState == PlayerState.Playing)
+            {
+                player.PlayerState = PlayerState.Lose;
+                Console.WriteLine($"🏳️ [GameMatchManager] Jugador {player.UserId} abandonó la partida → DERROTA");
+            }
+
+            await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed: true);
+        }
+
+        player.PlayerState = PlayerState.Left;
+
+        // Avanzar turno si era su turno
+        await blackjackWS.ForceAdvanceTurnAsync(tableId, player.UserId);
+
+        // Eliminarlo de la lista de jugadores activos
+        bool removed = await EndMatchForPlayerAsync(match, player.UserId);
+        if (!removed)
+        {
+            Console.WriteLine($"⚠️ [GameMatchManager] No se pudo eliminar al jugador {player.UserId} de la partida.");
+            return false;
+        }
+
+        Console.WriteLine($"👤 [GameMatchManager] Jugador {player.UserId} ha terminado su partida en mesa {tableId}");
+        return true;
     }
 
 

@@ -6,12 +6,11 @@ using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.Base;
 
-public abstract class BaseWebSocketHandler : WebSocketService
+public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
 {
     protected BaseWebSocketHandler(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
         : base(connectionManager, serviceProvider)
     {
-
     }
 
     protected T GetScopedService<T>(out IServiceScope scope)
@@ -20,11 +19,11 @@ public abstract class BaseWebSocketHandler : WebSocketService
         return scope.ServiceProvider.GetRequiredService<T>();
     }
 
-    protected async Task SendToUserAsync(string userId, object payload)
+    async Task IWebSocketSender.SendToUserAsync(string userId, object payload)
     {
-        WebSocket socket = _connectionManager.GetConnectionById(userId);
+        WebSocket? socket = _connectionManager.GetConnectionById(userId);
 
-        if (socket is not { State: WebSocketState.Open })
+        if (socket == null || socket.State != WebSocketState.Open)
         {
             Console.WriteLine($"[WS] 🔌 WebSocket de {userId} no está abierto (estado: {socket?.State}), eliminando conexión...");
             await _connectionManager.RemoveConnectionAsync(userId);
@@ -39,8 +38,8 @@ public abstract class BaseWebSocketHandler : WebSocketService
             await socket.SendAsync(
                 new ArraySegment<byte>(buffer),
                 WebSocketMessageType.Text,
-                true,
-                CancellationToken.None
+                endOfMessage: true,
+                cancellationToken: CancellationToken.None
             );
         }
         catch (Exception ex)
@@ -58,14 +57,14 @@ public abstract class BaseWebSocketHandler : WebSocketService
             message = errorMessage
         };
 
-        await SendToUserAsync(userId, error);
+        await ((IWebSocketSender)this).SendToUserAsync(userId, error);
     }
 
-    protected async Task BroadcastToUsersAsync(IEnumerable<string> userIds, object payload)
+    async Task IWebSocketSender.BroadcastToUsersAsync(IEnumerable<string> userIds, object payload)
     {
         foreach (string userId in userIds)
         {
-            await SendToUserAsync(userId, payload);
+            await ((IWebSocketSender)this).SendToUserAsync(userId, payload);
         }
     }
 }

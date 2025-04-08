@@ -59,6 +59,13 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!TryGetMatch(tableId, userId, out var match)) return;
         if (!TryGetPlayer(match, userId, out var player)) return;
 
+        if (player.CurrentBet > 0)
+        {
+            Console.WriteLine($"El jugador ya ha apostado. No se permite apostar varias veces.");
+            await SendErrorAsync(userId, "Ya has apostado en esta ronda.");
+            return;
+        }
+
         int amount = message.GetProperty("amount").GetInt32();
         Console.WriteLine($"🪙 [place_bet] Usuario {userId} intenta apostar {amount} monedas en la mesa {tableId}");
 

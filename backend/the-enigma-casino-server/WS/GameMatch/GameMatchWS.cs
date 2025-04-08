@@ -129,7 +129,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!ActiveGameMatchStore.TryGet(tableId, out var match))
         {
-            Console.WriteLine($"❌ [GameMatchWS] No hay partida activa en la mesa {tableId}");
+            LogMatchNotFound(tableId);
             return;
         }
 
@@ -138,79 +138,21 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
         var manager = new GameMatchManager(unitOfWork);
         var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
 
-        // 🧠 Buscar al jugador antes de quitarlo
-        var player = match.Players.FirstOrDefault(p => p.UserId == userId);
-        if (player == null)
-        {
-            Console.WriteLine($"⚠️ [GameMatchWS] Jugador {userId} no encontrado en partida.");
-            return;
-        }
+        var player = FindPlayer(match, userId);
+        if (player == null) return;
 
-        // 🏳️ Si abandona con estado "Playing", se considera derrota
-        if (player.PlayerState == PlayerState.Playing)
-        {
-            player.PlayerState = PlayerState.Lose;
-            Console.WriteLine($"🏳️ [GameMatchWS] Jugador {userId} abandonó la partida → DERROTA");
-        }
+        await HandlePlayerLeavingMatchAsync(player, match, tableId, manager);
 
-        await _blackjackWS.ForceAdvanceTurnAsync(tableId, userId);
+        await NotifyPlayerMatchEndedAsync(userId, tableId);
+        await NotifyOthersPlayerLeftAsync(match, userId, tableId);
 
-        bool removed = await manager.EndMatchForPlayerAsync(match, userId);
-        if (!removed)
-        {
-            Console.WriteLine($"⚠️ [GameMatchWS] No se pudo eliminar al jugador {userId} de la partida.");
-            return;
-        }
-
-        Console.WriteLine($"👤 [GameMatchWS] Jugador {userId} ha terminado su partida en mesa {tableId}");
-
-        // 🧠 Re-evaluar si los jugadores restantes ya han apostado
-        if (match.GameTable.GameType == GameType.BlackJack)
-        {
-            var expectedPlayerIds = match.Players.Select(p => p.UserId).ToList();
-            Console.WriteLine($"🧪 Re-evaluando apuestas tras la salida de {userId}");
-            Console.WriteLine($"🎯 Nuevos jugadores esperados: {string.Join(", ", expectedPlayerIds)}");
-            Console.WriteLine($"🎯 Jugadores que han apostado: {string.Join(", ", BlackjackBetTracker.GetAllForTable(tableId))}");
-
-            if (BlackjackBetTracker.HaveAllPlayersBet(tableId, expectedPlayerIds))
-            {
-                BlackjackBetTracker.Clear(tableId);
-                Console.WriteLine($"♠️ Todos los jugadores restantes han apostado en la mesa {tableId}. Iniciando reparto...");
-                await _blackjackWS.HandleDealInitialCardsAsync(tableId);
-            }
-        }
-
-        await SendToUserAsync(userId.ToString(), new
-        {
-            type = GameMatchMessageTypes.MatchEnded,
-            tableId,
-            endedAt = DateTime.UtcNow
-        });
-
-        var otherUserIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
-        await BroadcastToUsersAsync(otherUserIds, new
-        {
-            type = GameMatchMessageTypes.PlayerLeftMatch,
-            tableId,
-            userId,
-        });
-
-        bool cancelled = await manager.CancelMatchIfInsufficientPlayersAsync(match, tableManager);
-
+        bool cancelled = await TryCancelMatchAsync(match, manager, tableManager, tableId);
         if (cancelled)
         {
-            ActiveGameMatchStore.Remove(tableId);
-
-            await BroadcastToUsersAsync(otherUserIds, new
-            {
-                type = GameMatchMessageTypes.MatchCancelled,
-                tableId,
-                reason = "not_enough_players"
-            });
-
-            Console.WriteLine($"🧹 [GameMatchWS] Match eliminado por jugadores insuficientes en mesa {tableId}");
+            await NotifyMatchCancelledAsync(match, tableId);
         }
     }
+
 
 
     public async Task EndMatchForAllPlayersAsync(int tableId)
@@ -267,7 +209,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
     }
 
-
     private async void HandleUserDisconnection(string userId)
     {
         if (!int.TryParse(userId, out int userIdInt))
@@ -281,5 +222,102 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 break;
             }
         }
+    }
+
+    private void LogMatchNotFound(int tableId)
+    {
+        Console.WriteLine($"❌ [GameMatchWS] No hay partida activa en la mesa {tableId}");
+    }
+
+    private Player? FindPlayer(Match match, int userId)
+    {
+        var player = match.Players.FirstOrDefault(p => p.UserId == userId);
+        if (player == null)
+        {
+            Console.WriteLine($"⚠️ [GameMatchWS] Jugador {userId} no encontrado en partida.");
+        }
+        return player;
+    }
+
+    private async Task HandlePlayerLeavingMatchAsync(Player player, Match match, int tableId, GameMatchManager manager)
+    {
+        if (player.PlayerState == PlayerState.Playing)
+        {
+            player.PlayerState = PlayerState.Lose;
+            Console.WriteLine($"🏳️ [GameMatchWS] Jugador {player.UserId} abandonó la partida → DERROTA");
+        }
+
+        await _blackjackWS.ForceAdvanceTurnAsync(tableId, player.UserId);
+
+        bool removed = await manager.EndMatchForPlayerAsync(match, player.UserId);
+        if (!removed)
+        {
+            Console.WriteLine($"⚠️ [GameMatchWS] No se pudo eliminar al jugador {player.UserId} de la partida.");
+        }
+        else
+        {
+            Console.WriteLine($"👤 [GameMatchWS] Jugador {player.UserId} ha terminado su partida en mesa {tableId}");
+
+            // Re-evaluación para iniciar el match si ya todos han apostado
+            if (match.GameTable.GameType == GameType.BlackJack)
+            {
+                var expectedPlayerIds = match.Players.Select(p => p.UserId).ToList();
+                Console.WriteLine($"🧪 Re-evaluando apuestas tras la salida de {player.UserId}");
+                Console.WriteLine($"🎯 Nuevos jugadores esperados: {string.Join(", ", expectedPlayerIds)}");
+                Console.WriteLine($"🎯 Jugadores que han apostado: {string.Join(", ", BlackjackBetTracker.GetAllForTable(tableId))}");
+
+                if (BlackjackBetTracker.HaveAllPlayersBet(tableId, expectedPlayerIds))
+                {
+                    BlackjackBetTracker.Clear(tableId);
+                    Console.WriteLine($"♠️ Todos los jugadores restantes han apostado en la mesa {tableId}. Iniciando reparto...");
+                    await _blackjackWS.HandleDealInitialCardsAsync(tableId);
+                }
+            }
+        }
+    }
+
+    private async Task NotifyPlayerMatchEndedAsync(int userId, int tableId)
+    {
+        await SendToUserAsync(userId.ToString(), new
+        {
+            type = GameMatchMessageTypes.MatchEnded,
+            tableId,
+            endedAt = DateTime.UtcNow
+        });
+    }
+
+    private async Task NotifyOthersPlayerLeftAsync(Match match, int userId, int tableId)
+    {
+        var otherUserIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
+        await BroadcastToUsersAsync(otherUserIds, new
+        {
+            type = GameMatchMessageTypes.PlayerLeftMatch,
+            tableId,
+            userId,
+        });
+    }
+
+    private async Task<bool> TryCancelMatchAsync(Match match, GameMatchManager manager, GameTableManager tableManager, int tableId)
+    {
+        bool cancelled = await manager.CancelMatchIfInsufficientPlayersAsync(match, tableManager);
+        if (cancelled)
+        {
+            ActiveGameMatchStore.Remove(tableId);
+        }
+        return cancelled;
+    }
+
+    private async Task NotifyMatchCancelledAsync(Match match, int tableId)
+    {
+        var remainingUserIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
+
+        await BroadcastToUsersAsync(remainingUserIds, new
+        {
+            type = GameMatchMessageTypes.MatchCancelled,
+            tableId,
+            reason = "not_enough_players"
+        });
+
+        Console.WriteLine($"🧹 [GameMatchWS] Match eliminado por jugadores insuficientes en mesa {tableId}");
     }
 }

@@ -78,11 +78,11 @@ public class GameMatchManager
             {
                 player.User ??= await _unitOfWork.UserRepository.GetByIdAsync(player.UserId);
 
-                player.User.Coins += player.CurrentBet;
-                player.CurrentBet = 0;
+                await RefundBetIfNotPlayedAsync(player, match);
 
                 tableManager.RemovePlayerFromTable(match.GameTable, player.UserId, out _);
             }
+
 
             match.GameTable.TableState = TableState.Waiting;
 
@@ -157,8 +157,8 @@ public class GameMatchManager
             history.TotalBetAmount += player.CurrentBet;
             history.ChipResult += chips;
 
-    
-            if (playerLeftTable) 
+
+            if (playerLeftTable)
             {
                 history.LeftAt = DateTime.UtcNow;
             }
@@ -168,11 +168,6 @@ public class GameMatchManager
 
         await _unitOfWork.SaveAsync();
     }
-
-
-
-
-
 
     private static int GetMatchCountForGameType(GameType gameType)
     {
@@ -196,4 +191,22 @@ public class GameMatchManager
             _ => 0
         };
     }
+
+    public async Task RefundBetIfNotPlayedAsync(Player player, Match match)
+    {
+        bool gameStarted = match.Players.Any(p => p.Hand != null && p.Hand.Cards.Count > 0);
+
+        if (!gameStarted && player.CurrentBet > 0)
+        {
+            Console.WriteLine($"💸 [Refund] Devolviendo {player.CurrentBet} monedas a {player.User.NickName} (no se jugó la ronda)");
+
+            player.User.Coins += player.CurrentBet;
+            player.CurrentBet = 0;
+
+            _unitOfWork.UserRepository.Update(player.User);
+            await _unitOfWork.SaveAsync();
+        }
+    }
+
+
 }

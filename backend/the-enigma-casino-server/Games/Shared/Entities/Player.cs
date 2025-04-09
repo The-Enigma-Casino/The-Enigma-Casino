@@ -32,9 +32,10 @@ public class Player
     {
         if (amount > User.Coins) throw new InvalidOperationException("No tienes suficientes fichas.");
         if (amount <= 0) throw new InvalidOperationException("La apuesta debe ser mayor que cero.");
-        CurrentBet = amount;
-        User.Coins -= amount;
         LastBetAmount = amount;
+        User.Coins -= amount;
+        CurrentBet = amount;
+
         PlayerState = PlayerState.Playing;
     }
 
@@ -71,6 +72,6 @@ public class Player
         CurrentBet = 0;
         PlayerState = PlayerState.Waiting;
         Hand = new Hand();
+        LastBetAmount = 0;
     }
-
 }

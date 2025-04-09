@@ -62,6 +62,13 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
         int amount = message.GetProperty("amount").GetInt32();
         Console.WriteLine($"🪙 [place_bet] Usuario {userId} intenta apostar {amount} monedas en la mesa {tableId}");
 
+        if (amount > 5000 || amount < 50)
+        {
+            Console.WriteLine($"❌ Apuesta inválida. Debe ser mayor a 0 y menor o igual a 5000. 🪙");
+            await SendErrorAsync(userId, "La apuesta debe ser mayor a 0 y menor o igual a 5000.");
+            return;
+        }
+
         try
         {
             player.PlaceBet(amount);

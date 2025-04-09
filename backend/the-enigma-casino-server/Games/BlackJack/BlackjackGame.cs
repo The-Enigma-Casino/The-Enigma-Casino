@@ -57,6 +57,18 @@ public class BlackjackGame
             return;
         }
 
+        if(player.PlayerState == PlayerState.Bust)
+        {
+            Console.WriteLine($"{player.User.NickName} ya ha perdido y no puede tomar más cartas.");
+            return;
+        }
+
+        if (player.Hand.GetTotal() >= 21)
+        {
+            Console.WriteLine($"{player.User.NickName} ya ha alcanzado 21 o más y no puede tomar más cartas.");
+            return;
+        }
+
         player.Hand.AddCard(Deck.Draw());
 
         if (player.Hand.IsBusted())
@@ -89,7 +101,7 @@ public class BlackjackGame
         int croupierTotal = _gameMatch.GameTable.Croupier.Hand.GetTotal();
         bool dealerBust = _gameMatch.GameTable.Croupier.Hand.IsBusted();
 
-        foreach (var player in _gameMatch.GameTable.Players)
+        foreach (Player player in _gameMatch.GameTable.Players)
         {
             int playerTotal = player.Hand.GetTotal();
             bool playerBust = player.Hand.IsBusted();
@@ -140,6 +152,8 @@ public class BlackjackGame
 
         Console.WriteLine($"{player.User.NickName} ha doblado su apuesta a {player.CurrentBet} monedas.");
         PlayerHit(player);
+
+        player.PlayerState = PlayerState.Stand;
 
     }
 

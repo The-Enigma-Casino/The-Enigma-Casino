@@ -10,11 +10,12 @@ public class Player
     public User User { get; set; }
     public Hand Hand { get; set; } = new();
     public int GameTableId { get; set; }
-    public GameTable GameTable { get; set; }
+    public Table GameTable { get; set; }
     public int? GameMatchId { get; set; }
-    public GameMatch? GameMatch { get; set; }
+    public Match? GameMatch { get; set; }
     public PlayerState PlayerState { get; set; } = PlayerState.Waiting;
-    public int CurrentBet { get; set; } 
+    public int CurrentBet { get; set; }
+    public DateTime? JoinedAt { get; set; }
 
     public Player(User user)
     {
@@ -26,7 +27,7 @@ public class Player
 
     public void PlaceBet(int amount)
     {
-        if (amount > User.Coins) throw new InvalidOperationException("Not enough balance.");
+        if (amount > User.Coins) throw new InvalidOperationException("No tienes suficientes fichas.");
         CurrentBet = amount;
         User.Coins -= amount;
         PlayerState = PlayerState.Playing;
@@ -43,4 +44,22 @@ public class Player
     {
         PlayerState = PlayerState.Stand;
     }
+    public void Bust()
+    {
+        PlayerState = PlayerState.Bust;
+    }
+
+    public void Lose()
+    {
+        PlayerState = PlayerState.Lose;
+        CurrentBet = 0;
+    }
+
+    public void Draw()
+    {
+        PlayerState = PlayerState.Draw;
+        CurrentBet = 0;
+    }
+
+
 }

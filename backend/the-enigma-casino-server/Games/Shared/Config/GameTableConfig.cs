@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using the_enigma_casino_server.Games.Shared.Entities;
 
-public class GameTableConfig : IEntityTypeConfiguration<GameTable>
+public class GameTableConfig : IEntityTypeConfiguration<Table>
 {
-    public void Configure(EntityTypeBuilder<GameTable> entity)
+    public void Configure(EntityTypeBuilder<Table> entity)
     {
         entity.ToTable("game_tables");
 

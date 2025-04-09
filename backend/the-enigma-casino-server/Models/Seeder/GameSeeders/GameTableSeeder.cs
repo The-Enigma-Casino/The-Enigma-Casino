@@ -17,12 +17,12 @@ public class GameTableSeeder
     {
         if (_context.GameTables.Any()) return;
 
-        var tables = new List<GameTable>();
+        var tables = new List<Table>();
 
         // BlackJack
         for (int i = 1; i <= 5; i++)
         {
-            tables.Add(new GameTable
+            tables.Add(new Table
             {
                 Name = $"BlackJack Mesa {i}",
                 GameType = GameType.BlackJack,
@@ -35,7 +35,7 @@ public class GameTableSeeder
         // Poker
         for (int i = 1; i <= 5; i++)
         {
-            tables.Add(new GameTable
+            tables.Add(new Table
             {
                 Name = $"Poker Mesa {i}",
                 GameType = GameType.Poker,
@@ -48,7 +48,7 @@ public class GameTableSeeder
         // Roulette
         for (int i = 1; i <= 5; i++)
         {
-            tables.Add(new GameTable
+            tables.Add(new Table
             {
                 Name = $"Ruleta Mesa {i}",
                 GameType = GameType.Roulette,

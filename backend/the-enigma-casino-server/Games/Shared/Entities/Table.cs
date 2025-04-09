@@ -3,7 +3,7 @@ using the_enigma_casino_server.Games.Shared.Entities.Enum;
 
 namespace the_enigma_casino_server.Games.Shared.Entities;
 
-public class GameTable
+public class Table
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -19,12 +19,12 @@ public class GameTable
     [NotMapped]
     public Croupier Croupier { get; set; } = new();
 
-    public GameTable()
+    public Table()
     {
 
     }
 
-    public GameTable(GameType gameType)
+    public Table(GameType gameType)
     {
         GameType = gameType;
     }

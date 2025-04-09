@@ -5,10 +5,13 @@ namespace the_enigma_casino_server.Games.BlackJack;
 
 public class BlackjackGame
 {
-    private GameMatch _gameMatch { get; set; }
+    private Match _gameMatch { get; set; }
     private Deck Deck { get; set; }
+    public int CurrentPlayerTurnId { get; private set; }
 
-    public BlackjackGame(GameMatch gameMatch)
+
+
+    public BlackjackGame(Match gameMatch)
     {
         _gameMatch = gameMatch;
         Deck = new Deck(GameType.BlackJack);
@@ -19,7 +22,7 @@ public class BlackjackGame
     {
         ResetHands();
 
-        foreach (var player in _gameMatch.GameTable.Players)
+        foreach (var player in _gameMatch.Players)
         {
             player.Hand.AddCard(Deck.Draw());
             player.Hand.AddCard(Deck.Draw());
@@ -27,7 +30,24 @@ public class BlackjackGame
 
         _gameMatch.GameTable.Croupier.Hand.AddCard(Deck.Draw());
         _gameMatch.GameTable.Croupier.Hand.AddCard(Deck.Draw());
+
+        var playingPlayers = _gameMatch.Players
+            .Where(p => p.PlayerState == PlayerState.Playing)
+            .ToList();
+
+        if (playingPlayers.Count > 0)
+        {
+            var random = new Random();
+            var randomPlayer = playingPlayers[random.Next(playingPlayers.Count)];
+            SetCurrentPlayer(randomPlayer.UserId);
+            Console.WriteLine($"🎲 Turno inicial aleatorio: {randomPlayer.User.NickName} (UserId: {randomPlayer.UserId})");
+        }
+        else
+        {
+            Console.WriteLine("❌ No hay jugadores activos para iniciar turno.");
+        }
     }
+
 
     public void PlayerHit(Player player)
     {
@@ -139,6 +159,11 @@ public class BlackjackGame
     public Card GetCroupierVisibleCard()
     {
         return _gameMatch.GameTable.Croupier.Hand.Cards.First();
+    }
+
+    public void SetCurrentPlayer(int userId)
+    {
+        CurrentPlayerTurnId = userId;
     }
 
 }

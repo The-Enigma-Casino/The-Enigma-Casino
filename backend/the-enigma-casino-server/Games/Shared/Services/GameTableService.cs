@@ -4,21 +4,21 @@ using the_enigma_casino_server.Models.Database;
 
 namespace the_enigma_casino_server.Games.Shared.Services;
 
-public class GametableService
+public class TableService
 {
     private readonly UnitOfWork _unitOfWork;
 
-    public GametableService(UnitOfWork unitOfWork)
+    public TableService(UnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<List<GameTable>> GetTablesByGameTypeAsync(GameType gameType)
+    public async Task<List<Table>> GetTablesByGameTypeAsync(GameType gameType)
     {
         return await _unitOfWork.GameTableRepository.GetByGameTypeAsync(gameType);
     }
 
-    public async Task<GameTable> GetTableByIdAsync(int id)
+    public async Task<Table> GetTableByIdAsync(int id)
     {
         return await _unitOfWork.GameTableRepository.GetByIdAsync(id);
     }

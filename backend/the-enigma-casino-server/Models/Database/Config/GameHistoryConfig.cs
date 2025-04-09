@@ -4,9 +4,9 @@ using the_enigma_casino_server.Games.Shared.Entities;
 
 namespace the_enigma_casino_server.Models.Database.Config;
 
-public class GameHistoryConfig : IEntityTypeConfiguration<GameHistory>
+public class GameHistoryConfig : IEntityTypeConfiguration<History>
 {
-    public void Configure(EntityTypeBuilder<GameHistory> entity)
+    public void Configure(EntityTypeBuilder<History> entity)
     {
         entity.ToTable("game_histories");
 
@@ -54,7 +54,7 @@ public class GameHistoryConfig : IEntityTypeConfiguration<GameHistory>
             .OnDelete(DeleteBehavior.Restrict);
 
         entity.HasOne(e => e.User)
-            .WithMany(u => u.GameHistories)
+            .WithMany(u => u.Histories)
             .HasForeignKey(e => e.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }

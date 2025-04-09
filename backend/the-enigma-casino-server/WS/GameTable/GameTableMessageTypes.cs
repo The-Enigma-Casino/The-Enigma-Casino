@@ -1,4 +1,4 @@
-﻿namespace the_enigma_casino_server.WS.GameWS.Messages;
+﻿namespace the_enigma_casino_server.WS.GameTable;
 
 public static class GameTableMessageTypes
 {

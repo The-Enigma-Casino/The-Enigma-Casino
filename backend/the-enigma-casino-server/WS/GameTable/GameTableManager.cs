@@ -2,7 +2,7 @@
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Entities.Enum;
 using the_enigma_casino_server.Models.Database.Entities;
-using the_enigma_casino_server.WS.GameWS.Services.Models;
+using the_enigma_casino_server.WS.GameTableWS.Models;
 
 namespace the_enigma_casino_server.WS.GameWS.Services;
 
@@ -26,11 +26,12 @@ public class GameTableManager
         return true;
     }
 
-    public bool RemovePlayerFromTable(GameTable table, int userId, out Player? removedPlayer)
+    public bool RemovePlayerFromTable(Table table, int userId, out Player? removedPlayer)
     {
         removedPlayer = table.Players.FirstOrDefault(p => p.UserId == userId);
         if (removedPlayer != null)
         {
+            removedPlayer.JoinedAt = null;
             table.Players.Remove(removedPlayer);
             return true;
         }
@@ -38,7 +39,7 @@ public class GameTableManager
         return false;
     }
 
-    public PlayerLeaveResult ProcessPlayerLeaving(GameTable table, ActiveGameSession session, int userId)
+    public PlayerLeaveResult ProcessPlayerLeaving(Table table, ActiveGameSession session, int userId)
     {
         bool stopCountdown = false;
 
@@ -73,7 +74,7 @@ public class GameTableManager
         };
     }
 
-    public (bool Success, string? ErrorMessage) TryAddPlayer(GameTable table, User user)
+    public (bool Success, string? ErrorMessage) TryAddPlayer(Table table, User user)
     {
         if (table.TableState != TableState.Waiting)
         {
@@ -96,7 +97,13 @@ public class GameTableManager
             return (false, msg);
         }
 
-        table.Players.Add(new Player(user));
+        var player = new Player(user)
+        {
+            JoinedAt = DateTime.UtcNow 
+        };
+
+        table.AddPlayer(player);
+
         Console.WriteLine($"✅ {user.NickName} se unió a la mesa {table.Id}.");
         return (true, null);
     }

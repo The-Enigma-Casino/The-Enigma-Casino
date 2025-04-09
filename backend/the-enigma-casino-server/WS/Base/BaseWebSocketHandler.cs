@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using the_enigma_casino_server.Services;
+using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.Base;
 
@@ -49,6 +50,16 @@ public abstract class BaseWebSocketHandler : WebSocketService
         }
     }
 
+    public async Task SendErrorAsync(string userId, string errorMessage)
+    {
+        var error = new
+        {
+            type = "error",
+            message = errorMessage
+        };
+
+        await SendToUserAsync(userId, error);
+    }
 
     protected async Task BroadcastToUsersAsync(IEnumerable<string> userIds, object payload)
     {

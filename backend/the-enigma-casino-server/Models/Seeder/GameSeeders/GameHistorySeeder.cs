@@ -22,7 +22,7 @@ namespace the_enigma_casino_server.Models.Seeder.GameSeeders
                 return;
             }
 
-            List<GameHistory> gameHistories = new List<GameHistory>();
+            List<History> gameHistories = new List<History>();
 
  
             gameHistories.AddRange(GenerateGameHistories(1, 22));
@@ -32,9 +32,9 @@ namespace the_enigma_casino_server.Models.Seeder.GameSeeders
             _context.SaveChanges();
         }
 
-        private List<GameHistory> GenerateGameHistories(int userId, int numGames)
+        private List<History> GenerateGameHistories(int userId, int numGames)
         {
-            List<GameHistory> userGameHistories = new List<GameHistory>();
+            List<History> userGameHistories = new List<History>();
 
             for (int i = 0; i < numGames; i++)
             {
@@ -42,10 +42,10 @@ namespace the_enigma_casino_server.Models.Seeder.GameSeeders
                 int totalMatchesPlayed = _random.Next(5, 20);
                 int totalBetAmount = _random.Next(1000, 10000);
                 int chipResult = _random.Next(-2000, 5000);
-                DateTime joinedAt = DateTime.UtcNow.AddMinutes(-_random.Next(30, 180));
-                DateTime leftAt = joinedAt.AddMinutes(_random.Next(5, 60));
+                DateTime joinedAt = DateTime.UtcNow.AddDays(-1).AddMinutes(-_random.Next(30, 180));
+                DateTime leftAt = joinedAt.AddDays(-1).AddMinutes(_random.Next(5, 60));
 
-                GameHistory gameHistory = new GameHistory
+                History gameHistory = new History
                 {
                     GameTableId = _random.Next(1, 10),
                     UserId = userId,

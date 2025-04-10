@@ -57,6 +57,7 @@ public class Player
 
     public void Draw()
     {
+        User.Coins += CurrentBet;
         PlayerState = PlayerState.Draw;
         CurrentBet = 0;
     }

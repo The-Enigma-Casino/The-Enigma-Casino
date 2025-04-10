@@ -57,7 +57,7 @@ public class BlackjackGame
             return;
         }
 
-        if(player.PlayerState == PlayerState.Bust)
+        if (player.PlayerState == PlayerState.Bust)
         {
             Console.WriteLine($"{player.User.NickName} ya ha perdido y no puede tomar más cartas.");
             return;
@@ -108,12 +108,12 @@ public class BlackjackGame
 
             if (playerBust)
             {
-                player.PlayerState = PlayerState.Bust;
+                player.Bust();
                 Console.WriteLine($"{player.User.NickName} ha perdido por pasarse.");
             }
             else if (playerTotal < croupierTotal && !dealerBust)
             {
-                player.PlayerState = PlayerState.Lose;
+                player.Lose();
                 Console.WriteLine($"{player.User.NickName} ha perdido.");
             }
             else if (dealerBust || playerTotal > croupierTotal)
@@ -123,11 +123,27 @@ public class BlackjackGame
             }
             else if (playerTotal == croupierTotal)
             {
-                player.Win(player.CurrentBet);
-                player.PlayerState = PlayerState.Draw;
+                player.Draw();
                 Console.WriteLine($"{player.User.NickName} ha empatado.");
             }
+            else if (playerTotal == 21 && player.Hand.Cards.Count == 2 && croupierTotal == 21 && _gameMatch.GameTable.Croupier.Hand.Cards.Count == 2)
+            {
+                player.Draw();
+                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack empata ganando {player.CurrentBet } monedas.");
+            }
+            else if (player.Hand.GetTotal() == 21 && player.Hand.Cards.Count == 2)
+            {
+                WinBlackjack(player);
+                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack y gana {player.CurrentBet * 2.5} monedas.");
+            }
         }
+    }
+
+    private void WinBlackjack(Player player)
+    {
+        double amount = player.CurrentBet * 2.5;
+        int roundedAmount = (int)Math.Floor(amount);
+        player.Win(roundedAmount);
     }
 
     public void DoubleDown(Player player)

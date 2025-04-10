@@ -64,6 +64,7 @@ public class Program
         builder.Services.AddScoped<OrderService>();
         builder.Services.AddScoped<HistoryService>();
         builder.Services.AddScoped<TableService>();
+        builder.Services.AddScoped<GachaponService>();
 
         // Validaciones
         builder.Services.AddSingleton<ValidationService>();

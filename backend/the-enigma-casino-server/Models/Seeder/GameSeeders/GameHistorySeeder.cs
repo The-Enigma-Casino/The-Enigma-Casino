@@ -42,7 +42,7 @@ namespace the_enigma_casino_server.Models.Seeder.GameSeeders
                 int totalMatchesPlayed = _random.Next(5, 20);
                 int totalBetAmount = _random.Next(1000, 10000);
                 int chipResult = _random.Next(-2000, 5000);
-                DateTime joinedAt = DateTime.UtcNow.AddDays(-1).AddMinutes(-_random.Next(30, 180));
+                DateTime joinedAt = DateTime.Now.AddDays(-1).AddMinutes(-_random.Next(30, 180));
                 DateTime leftAt = joinedAt.AddDays(-1).AddMinutes(_random.Next(5, 60));
 
                 History gameHistory = new History

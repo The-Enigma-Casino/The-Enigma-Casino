@@ -78,7 +78,7 @@ public class UserService : BaseService
             },
 
             //Cambiar tiempo a 3 minutos al acabar proyecto --> 3000 segundos
-            Expires = DateTime.UtcNow.AddDays(1),
+            Expires = DateTime.Now.AddDays(1),
             SigningCredentials = new SigningCredentials(_tokenParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha256Signature)
         };
 

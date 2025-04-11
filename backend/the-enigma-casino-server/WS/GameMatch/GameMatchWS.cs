@@ -174,7 +174,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             {
                 type = GameMatchMessageTypes.MatchEnded,
                 tableId,
-                endedAt = DateTime.UtcNow
+                endedAt = DateTime.Now
             });
 
             if (ActiveGameSessionStore.TryGet(tableId, out var session))

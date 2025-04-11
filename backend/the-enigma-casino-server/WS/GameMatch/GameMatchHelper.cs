@@ -29,7 +29,7 @@ public static class GameMatchHelper
         {
             type = GameMatchMessageTypes.MatchEnded,
             tableId,
-            endedAt = DateTime.UtcNow
+            endedAt = DateTime.Now
         });
     }
 

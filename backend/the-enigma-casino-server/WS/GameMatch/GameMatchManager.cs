@@ -38,7 +38,7 @@ public class GameMatchManager
             GameTableId = table.Id,
             GameTable = table,
             Players = table.Players,
-            StartedAt = DateTime.UtcNow,
+            StartedAt = DateTime.Now,
             MatchState = MatchState.InProgress
         };
 
@@ -115,7 +115,7 @@ public class GameMatchManager
 
     public async Task EndMatchAsync(Match match)
     {
-        match.EndedAt = DateTime.UtcNow;
+        match.EndedAt = DateTime.Now;
         match.MatchState = MatchState.Finished;
 
         foreach (var player in match.Players)
@@ -183,11 +183,11 @@ public class GameMatchManager
                 UserId = player.UserId,
                 GameTableId = match.GameTableId,
                 GameType = match.GameTable.GameType,
-                JoinedAt = player.JoinedAt ?? DateTime.UtcNow,
+                JoinedAt = player.JoinedAt ?? DateTime.Now,
                 TotalMatchesPlayed = matchCount,
                 TotalBetAmount = totalBet,
                 ChipResult = chips,
-                LeftAt = playerLeftTable ? DateTime.UtcNow : null
+                LeftAt = playerLeftTable ? DateTime.Now : null
             };
 
             await _unitOfWork.GameHistoryRepository.InsertAsync(history);
@@ -209,8 +209,8 @@ public class GameMatchManager
         // 🕒 Si se va de la mesa → cerrar historial
         if (playerLeftTable)
         {
-            Console.WriteLine($"📦 [Historial] Marcando salida para jugador {player.UserId} → LeftAt: {DateTime.UtcNow}");
-            history.LeftAt = DateTime.UtcNow;
+            Console.WriteLine($"📦 [Historial] Marcando salida para jugador {player.UserId} → LeftAt: {DateTime.Now}");
+            history.LeftAt = DateTime.Now;
             player.PlayerState = PlayerState.Left;
         }
 

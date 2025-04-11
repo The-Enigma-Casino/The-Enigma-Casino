@@ -20,7 +20,7 @@ public class History
 
     public int ChipResult { get; set; } 
 
-    public DateTime JoinedAt { get; set; } =  DateTime.UtcNow;
+    public DateTime JoinedAt { get; set; } =  DateTime.Now;
 
     public DateTime? LeftAt { get; set; }
 }

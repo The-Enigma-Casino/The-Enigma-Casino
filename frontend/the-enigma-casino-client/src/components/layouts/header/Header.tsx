@@ -11,13 +11,14 @@ import {
   $coins,
   loadCoins,
   resetCoins,
-} from "../../../features/coins/store/coinsStore"; // Importamos el store y la acción
+} from "../../../features/coins/store/coinsStore";
 
 import Button from "../../ui/button/Button";
 import classes from "./Header.module.css";
 import { clearStorage } from "../../../utils/storageUtils";
 import Modal from "../../ui/modal/Modal";
 import { $transactionEnd } from "../../../features/withdraw/store/WithdrawalStore";
+import ModalGachaComponent from "../../../features/gachapon/components/ModalGachaComponent";
 
 function Header() {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ function Header() {
   const coins = useUnit($coins);
   const transactionEnded = useUnit($transactionEnd);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isGachaponModalOpen, setIsGachaponModalOpen] = useState(false);
 
   useEffect(() => {
     loadCoins();
@@ -41,9 +43,24 @@ function Header() {
     navigate("/");
   };
 
+  // Función para abrir el modal del Gachapón
+  const openGachaponModal = () => {
+    setIsGachaponModalOpen(true); // Cambia el estado para abrir el modal del Gachapón
+  };
+
+  // Función para cerrar el modal del Gachapón
+  const closeGachaponModal = () => {
+    setIsGachaponModalOpen(false); // Cierra el modal del Gachapón
+  };
+
   return (
     <>
       <header className={classes.header}>
+        {/* Fondo oscuro semi-transparente que cubre toda la pantalla solo cuando el modal está abierto */}
+        {isGachaponModalOpen && (
+          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-20" />
+        )}
+
         <div className={classes.leftHeader}>
           <img
             className={classes.imgLogo}
@@ -55,7 +72,7 @@ function Header() {
             <img
               src="/svg/gachapon.svg"
               alt="Gacha"
-              onClick={() => navigate("/")}
+              onClick={openGachaponModal} // Abre el modal al hacer clic en el ícono
             />
             <p className={classes.text}>Gachapón</p>
             <p className={classes.text}>de la suerte</p>
@@ -90,7 +107,7 @@ function Header() {
                 <img
                   src="/svg/exit.svg"
                   alt="Cerrar sesión"
-                  onClick={() => setIsLogoutModalOpen(true)} // Abre el modal al hacer clic
+                  onClick={() => setIsLogoutModalOpen(true)} // Abre el modal de logout
                 />
               </>
             )}
@@ -107,6 +124,16 @@ function Header() {
           )}
         </div>
       </header>
+
+      {/* El Modal Gachapón es el foco de atención y no se ve afectado por la transparencia */}
+      {isGachaponModalOpen && (
+        <div className="fixed inset-0 z-30 flex justify-center items-center">
+          <ModalGachaComponent
+            isOpen={isGachaponModalOpen}
+            closeModal={closeGachaponModal} // Cierra el modal cuando se hace clic en la X
+          />
+        </div>
+      )}
 
       <Modal
         isOpen={isLogoutModalOpen}

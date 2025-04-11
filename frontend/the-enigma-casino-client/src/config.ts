@@ -35,3 +35,7 @@ export const GAMETABLES_ENDPOINT = `${API_BASE_URL}GameTable/tables`;
 /* ENDPOINT DE IMAGENES */
 export const CARD_IMAGE = `${API_BASE_URL}cards/card`;
 export const CARD_IMAGE_BACK = `${API_BASE_URL}cards/back`;
+
+/* ENDPOINT DE GACHAPON */
+export const GACHAPON_PLAY = `${API_BASE_URL}Gachapon/play`;
+export const GACHAPON_PRICE = `${API_BASE_URL}Gachapon/price`;

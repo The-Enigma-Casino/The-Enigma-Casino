@@ -41,6 +41,10 @@ public class GachaponController : BaseController
         {
             return BadRequest(ex.Message);
         }
+        catch (UnauthorizedAccessException uae)
+        {
+            return BadRequest(uae.Message);
+        }
         catch (Exception ex)
         {
             return StatusCode(500, "Un error ha ocurrido al enviar su petición.");

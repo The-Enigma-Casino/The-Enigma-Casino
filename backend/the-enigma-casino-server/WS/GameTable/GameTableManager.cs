@@ -15,14 +15,14 @@ public class GameTableManager
     {
         if (_lastJoinTimestamps.TryGetValue(userId, out var lastTime))
         {
-            if ((DateTime.UtcNow - lastTime).TotalSeconds < JoinCooldownSeconds)
+            if ((DateTime.Now - lastTime).TotalSeconds < JoinCooldownSeconds)
             {
                 Console.WriteLine($"⏳ Usuario {userId} no puede volver a entrar todavía.");
                 return false;
             }
         }
 
-        _lastJoinTimestamps[userId] = DateTime.UtcNow;
+        _lastJoinTimestamps[userId] = DateTime.Now;
         return true;
     }
 
@@ -99,7 +99,7 @@ public class GameTableManager
 
         var player = new Player(user)
         {
-            JoinedAt = DateTime.UtcNow 
+            JoinedAt = DateTime.Now 
         };
 
         table.AddPlayer(player);

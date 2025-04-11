@@ -8,5 +8,6 @@ public enum PlayerState
     Bust,
     Win,
     Lose,
-    Draw
+    Draw,
+    Left
 }

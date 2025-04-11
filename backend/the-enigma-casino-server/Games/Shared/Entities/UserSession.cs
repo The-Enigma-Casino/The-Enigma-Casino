@@ -13,7 +13,7 @@ public class UserSession
 
     public int ChipResult => EndingChips - StartingChips;
 
-    public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
+    public DateTime JoinedAt { get; set; } = DateTime.Now;
     public DateTime LeftAt { get; set; }
 
     public UserSession(int gameTableId, User user)

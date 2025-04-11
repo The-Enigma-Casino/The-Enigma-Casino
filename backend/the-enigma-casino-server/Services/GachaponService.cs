@@ -25,7 +25,7 @@ public class GachaponService : BaseService
 
     public int GetGachaponPrice()
     {
-        return 10;  
+        return 10;
     }
 
     public async Task<int> Gachapon(int userId)
@@ -44,7 +44,7 @@ public class GachaponService : BaseService
         double cumulativeProbability = 0.0;
         bool prizeFound = false;
 
-        foreach (var (prize, probability) in awards) 
+        foreach (var (prize, probability) in awards)
         {
             cumulativeProbability += probability;
 
@@ -62,12 +62,21 @@ public class GachaponService : BaseService
         return benefit;
     }
 
-    public int EasterEgg(string nickName, int benefit)
+    private int EasterEgg(string nickName, int benefit)
     {
-        if(nickName == "josago97" || nickName == "rlopdav392")
+        HashSet<string> allowedNickNames = new HashSet<string>
+        {
+            "josago97",
+            "rlopdav392",
+            "davidhormigoramirez",
+            "jsangar251"
+        };
+
+        if (allowedNickNames.Contains(nickName.ToLower()))
             return awards[6].prize;
 
         return benefit;
     }
+
 }
 

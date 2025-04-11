@@ -12,4 +12,6 @@ public static class ActiveBlackjackGameStore
     public static bool TryGet(int tableId, out BlackjackGame game) => _games.TryGetValue(tableId, out game);
 
     public static void Remove(int tableId) => _games.TryRemove(tableId, out _);
+
+    public static IReadOnlyDictionary<int, BlackjackGame> GetAll() => _games;
 }

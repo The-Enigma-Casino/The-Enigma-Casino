@@ -4,7 +4,6 @@ using the_enigma_casino_server.Games.Shared.Entities.Enum;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.WS.Base;
 using the_enigma_casino_server.WS.BlackJackWS;
-using the_enigma_casino_server.WS.BlackJackWS.Store;
 using the_enigma_casino_server.WS.GameTableWS.Store;
 using the_enigma_casino_server.WS.GameWS.Services;
 using the_enigma_casino_server.WS.Interfaces;
@@ -12,7 +11,7 @@ using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.GameMatch;
 
-public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
+public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebSocketSender
 {
     public string Type => "gameMatch";
 
@@ -34,27 +33,21 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
     }
 
 
+
     public async Task HandleAsync(string userId, JsonElement message)
     {
-        if (!message.TryGetProperty("action", out var actionProp))
-            return;
-
-        string action = actionProp.GetString();
-
-        if (string.IsNullOrEmpty(action))
-            return;
-
-        switch (action)
+        if (message.TryGetProperty("action", out JsonElement actionProp))
         {
-            case GameMatchMessageTypes.StartMatch:
-                await HandleStartMatchAsync(userId, message);
-                break;
-
-            case GameMatchMessageTypes.LeaveMatch:
-                await HandleLeaveMatchAsync(userId, message);
-                break;
+            string action = actionProp.GetString();
+            await (action switch
+            {
+                GameMatchMessageTypes.StartMatch => HandleStartMatchAsync(userId, message),
+                GameMatchMessageTypes.LeaveMatch => HandleLeaveMatchAsync(userId, message),
+                _ => Task.CompletedTask
+            });
         }
     }
+
 
     private async Task HandleStartMatchAsync(string userId, JsonElement message)
     {
@@ -112,7 +105,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             var userIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
 
-            await BroadcastToUsersAsync(userIds, new
+            await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
                 type = GameMatchMessageTypes.MatchStarted,
                 tableId = table.Id,
@@ -120,6 +113,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 players = table.Players.Select(p => p.User.NickName).ToArray(),
                 startedAt = match.StartedAt
             });
+
         }
     }
 
@@ -129,139 +123,84 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!ActiveGameMatchStore.TryGet(tableId, out var match))
         {
-            Console.WriteLine($"❌ [GameMatchWS] No hay partida activa en la mesa {tableId}");
+            GameMatchHelper.LogMatchNotFound(tableId);
             return;
         }
 
-        using var scope = _serviceProvider.CreateScope();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-        var manager = new GameMatchManager(unitOfWork);
-        var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
-
-        // 🧠 Buscar al jugador antes de quitarlo
-        var player = match.Players.FirstOrDefault(p => p.UserId == userId);
-        if (player == null)
+        var unitOfWork = GetScopedService<UnitOfWork>(out var scope);
+        using (scope)
         {
-            Console.WriteLine($"⚠️ [GameMatchWS] Jugador {userId} no encontrado en partida.");
-            return;
-        }
+            var manager = new GameMatchManager(unitOfWork);
+            var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
 
-        // 🏳️ Si abandona con estado "Playing", se considera derrota
-        if (player.PlayerState == PlayerState.Playing)
-        {
-            player.PlayerState = PlayerState.Lose;
-            Console.WriteLine($"🏳️ [GameMatchWS] Jugador {userId} abandonó la partida → DERROTA");
-        }
+            var player = GameMatchHelper.FindPlayer(match, userId);
+            if (player == null) return;
 
-        await _blackjackWS.ForceAdvanceTurnAsync(tableId, userId);
+            await manager.HandlePlayerExitAsync(player, match, tableId, _blackjackWS);
 
-        bool removed = await manager.EndMatchForPlayerAsync(match, userId);
-        if (!removed)
-        {
-            Console.WriteLine($"⚠️ [GameMatchWS] No se pudo eliminar al jugador {userId} de la partida.");
-            return;
-        }
+            await GameMatchHelper.NotifyPlayerMatchEndedAsync(this, userId, tableId);
+            await GameMatchHelper.NotifyOthersPlayerLeftAsync(this, match, userId, tableId);
 
-        Console.WriteLine($"👤 [GameMatchWS] Jugador {userId} ha terminado su partida en mesa {tableId}");
-
-        // 🧠 Re-evaluar si los jugadores restantes ya han apostado
-        if (match.GameTable.GameType == GameType.BlackJack)
-        {
-            var expectedPlayerIds = match.Players.Select(p => p.UserId).ToList();
-            Console.WriteLine($"🧪 Re-evaluando apuestas tras la salida de {userId}");
-            Console.WriteLine($"🎯 Nuevos jugadores esperados: {string.Join(", ", expectedPlayerIds)}");
-            Console.WriteLine($"🎯 Jugadores que han apostado: {string.Join(", ", BlackjackBetTracker.GetAllForTable(tableId))}");
-
-            if (BlackjackBetTracker.HaveAllPlayersBet(tableId, expectedPlayerIds))
-            {
-                BlackjackBetTracker.Clear(tableId);
-                Console.WriteLine($"♠️ Todos los jugadores restantes han apostado en la mesa {tableId}. Iniciando reparto...");
-                await _blackjackWS.HandleDealInitialCardsAsync(tableId);
-            }
-        }
-
-        await SendToUserAsync(userId.ToString(), new
-        {
-            type = GameMatchMessageTypes.MatchEnded,
-            tableId,
-            endedAt = DateTime.UtcNow
-        });
-
-        var otherUserIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
-        await BroadcastToUsersAsync(otherUserIds, new
-        {
-            type = GameMatchMessageTypes.PlayerLeftMatch,
-            tableId,
-            userId,
-        });
-
-        bool cancelled = await manager.CancelMatchIfInsufficientPlayersAsync(match, tableManager);
-
-        if (cancelled)
-        {
-            ActiveGameMatchStore.Remove(tableId);
-
-            await BroadcastToUsersAsync(otherUserIds, new
-            {
-                type = GameMatchMessageTypes.MatchCancelled,
-                tableId,
-                reason = "not_enough_players"
-            });
-
-            Console.WriteLine($"🧹 [GameMatchWS] Match eliminado por jugadores insuficientes en mesa {tableId}");
+            await GameMatchHelper.TryCancelMatchAsync(this, match, manager, tableManager, tableId);
         }
     }
 
 
+
+
     public async Task EndMatchForAllPlayersAsync(int tableId)
     {
+        Console.WriteLine("🧪 [BlackjackWS] No hay más jugadores activos. Evaluando y finalizando partida.");
+
         if (!ActiveGameMatchStore.TryGet(tableId, out var match))
         {
             Console.WriteLine($"❌ [GameMatchWS] No hay partida activa en la mesa {tableId}");
             return;
         }
 
-        using var scope = _serviceProvider.CreateScope();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-        var manager = new GameMatchManager(unitOfWork);
-
-        await manager.EndMatchAsync(match);
-        ActiveGameMatchStore.Remove(tableId);
-
-        Console.WriteLine($"🧾 [GameMatchWS] Match finalizado y guardado en la mesa {tableId}");
-
-        var userIds = match.GameTable.Players.Select(p => p.UserId.ToString()).ToList();
-
-        await BroadcastToUsersAsync(userIds, new
+        var unitOfWork = GetScopedService<UnitOfWork>(out var scope);
+        using (scope)
         {
-            type = GameMatchMessageTypes.MatchEnded,
-            tableId,
-            endedAt = DateTime.UtcNow
-        });
+            var manager = new GameMatchManager(unitOfWork);
 
-        if (ActiveGameSessionStore.TryGet(tableId, out var session))
-        {
-            Table table = session.Table;
+            await manager.EndMatchAsync(match);
+            ActiveGameMatchStore.Remove(tableId);
 
-            if (table.Players.Count >= table.MinPlayer)
+            Console.WriteLine($"🧾 [GameMatchWS] Match finalizado y guardado en la mesa {tableId}");
+
+            var userIds = match.GameTable.Players.Select(p => p.UserId.ToString()).ToList();
+
+            await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
-                Console.WriteLine($"🕹 [GameMatchWS] Hay suficientes jugadores, iniciando nueva partida en mesa {table.Id}");
-                await StartMatchForTableAsync(table.Id);
-            }
-            else
+                type = GameMatchMessageTypes.MatchEnded,
+                tableId,
+                endedAt = DateTime.UtcNow
+            });
+
+            if (ActiveGameSessionStore.TryGet(tableId, out var session))
             {
-                if (table.GameType == GameType.Poker && table.Players.Count < table.MinPlayer)
+                Table table = session.Table;
+
+                if (table.Players.Count >= table.MinPlayer)
                 {
-                    Console.WriteLine($"🚫 [GameMatchWS] Jugadores insuficientes para Poker. Expulsando a todos de la mesa {table.Id}.");
-
-                    foreach (var player in table.Players.ToList())
-                    {
-                        await EndMatchForPlayerAsync(table.Id, player.UserId);
-                    }
+                    Console.WriteLine($"🕹 [GameMatchWS] Hay suficientes jugadores, iniciando nueva partida en mesa {table.Id}");
+                    await StartMatchForTableAsync(table.Id);
                 }
                 else
                 {
-                    Console.WriteLine($"🕹 [GameMatchWS] No se inicia nueva partida, pero el juego permite continuar con {table.Players.Count} jugador(es).");
+                    if (table.GameType == GameType.Poker && table.Players.Count < table.MinPlayer)
+                    {
+                        Console.WriteLine($"🚫 [GameMatchWS] Jugadores insuficientes para Poker. Expulsando a todos de la mesa {table.Id}.");
+
+                        foreach (var player in table.Players.ToList())
+                        {
+                            await EndMatchForPlayerAsync(table.Id, player.UserId);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"🕹 [GameMatchWS] No se inicia nueva partida, pero el juego permite continuar con {table.Players.Count} jugador(es).");
+                    }
                 }
             }
         }

@@ -2,6 +2,7 @@
 using the_enigma_casino_server.Games.BlackJack;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Entities.Enum;
+using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.WS.Base;
 using the_enigma_casino_server.WS.BlackJackWS.Store;
 using the_enigma_casino_server.WS.GameMatch;
@@ -59,6 +60,13 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!TryGetMatch(tableId, userId, out var match)) return;
         if (!TryGetPlayer(match, userId, out var player)) return;
 
+        if (player.CurrentBet > 0)
+        {
+            Console.WriteLine($"El jugador ya ha apostado. No se permite apostar varias veces.");
+            await SendErrorAsync(userId, "Ya has apostado en esta ronda.");
+            return;
+        }
+
         int amount = message.GetProperty("amount").GetInt32();
         Console.WriteLine($"🪙 [place_bet] Usuario {userId} intenta apostar {amount} monedas en la mesa {tableId}");
 
@@ -72,6 +80,12 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
         try
         {
             player.PlaceBet(amount);
+            var unitOfWork = GetScopedService<UnitOfWork>(out var scope);
+            using (scope)
+            {
+                unitOfWork.UserRepository.Update(player.User);
+                await unitOfWork.SaveAsync();
+            }
             Console.WriteLine($"✅ {player.User.NickName} ha apostado {amount} monedas. Le quedan {player.User.Coins}.");
         }
         catch (Exception ex)
@@ -90,7 +104,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
             bet = player.CurrentBet
         };
 
-        await SendToUserAsync(userId, response);
+        await ((IWebSocketSender)this).SendToUserAsync(userId, response);
         BlackjackBetTracker.RegisterBet(tableId, player.UserId);
 
         var expectedPlayerIds = match.Players.Select(p => p.UserId).ToList();
@@ -168,7 +182,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         foreach (var p in match.Players)
         {
-            await SendToUserAsync(p.UserId.ToString(), response);
+            await ((IWebSocketSender)this).SendToUserAsync(p.UserId.ToString(), response);
         }
 
         Console.WriteLine("✅ Estado inicial de la partida enviado a todos los jugadores.");
@@ -236,6 +250,13 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         blackjackGame.DoubleDown(player);
 
+        var unitOfWork = GetScopedService<UnitOfWork>(out var scope);
+        using (scope)
+        {
+            unitOfWork.UserRepository.Update(player.User);
+            await unitOfWork.SaveAsync();
+        }
+
         Console.WriteLine($"💰 {player.User.NickName} ha hecho Double Down y su apuesta es ahora de {player.CurrentBet}.");
 
         if (player.PlayerState != PlayerState.Playing)
@@ -282,11 +303,22 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
             blackjackGame.CroupierTurn();
             blackjackGame.Evaluate();
 
+            var unitOfWork = GetScopedService<UnitOfWork>(out var coinsScope);
+            using (coinsScope)
+            {
+                foreach (var p in match.Players)
+                {
+                    unitOfWork.UserRepository.Update(p.User);
+                }
+                await unitOfWork.SaveAsync();
+            }
+
             await BroadcastGameStateAsync(match, blackjackGame);
 
-            using (var scope = _serviceProvider.CreateScope())
+            var gameMatchWS = GetScopedService<GameMatchWS>(out var scope);
+            using (scope)
             {
-                var gameMatchWS = new GameMatchWS(_connectionManager, _serviceProvider, this);
+                Console.WriteLine($"🧾 [GameMatchWS] EndMatchForAllPlayersAsync llamado para mesa {tableId}");
                 await gameMatchWS.EndMatchForAllPlayersAsync(tableId);
             }
 
@@ -340,7 +372,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         foreach (var p in match.Players)
         {
-            await SendToUserAsync(p.UserId.ToString(), response);
+            await ((IWebSocketSender)this).SendToUserAsync(p.UserId.ToString(), response);
         }
     }
 

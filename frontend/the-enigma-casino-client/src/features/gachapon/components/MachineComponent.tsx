@@ -1,5 +1,8 @@
 import { useState } from "react";
 import styles from "./MachineComponent.module.css";
+import { gachaponPlayResult$, playGachaponClicked } from "../stores/gachaponStore";
+import { useUnit } from "effector-react";
+import { loadCoins } from "../../coins/store/coinsStore";
 
 const GachaponMachine = () => {
   const [isMaskActive, setIsMaskActive] = useState(false);
@@ -8,10 +11,15 @@ const GachaponMachine = () => {
   const [winner, setWinner] = useState("");
   const [lotteryList, setLotteryList] = useState<string[]>([]);
 
+  const gachaponPlayResult = useUnit(gachaponPlayResult$);
+
   const colors = ["#E5A0B9", "#F3D478", "#9DCFE0", "#B9AED4"];
   const [currentColor, setCurrentColor] = useState(colors[0]);
 
   const handleSwitchClick = () => {
+    console.log("Switch clicked!");
+    playGachaponClicked();
+    loadCoins();
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
     setCurrentColor(randomColor);
     setIsSwitchActive(true);
@@ -24,7 +32,8 @@ const GachaponMachine = () => {
 
   const handleEggClick = () => {
     if (!lotteryList.length) {
-      setWinner("Ganaste 😎");
+      setWinner("Ganaste " + gachaponPlayResult + " Fichas 🪙");
+      loadCoins();
       setIsMaskActive(true);
       return;
     }
@@ -38,6 +47,7 @@ const GachaponMachine = () => {
 
   const handleMaskClick = () => {
     setIsMaskActive(false);
+    loadCoins();
   };
 
   return (

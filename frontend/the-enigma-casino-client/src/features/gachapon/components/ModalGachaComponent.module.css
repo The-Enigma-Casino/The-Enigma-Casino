@@ -23,7 +23,7 @@
   align-items: center;
   padding: 30px;
   position: relative;
-  gap: 30px;
+  gap: 60px;
 }
 
 .headerText {
@@ -50,6 +50,7 @@
   color: var(--Principal);
   font-size: 2rem;
   text-align: center;
+  paddig-top: 60px;
 }
 
 .closeIcon {

@@ -20,24 +20,27 @@ export const errorReceived = createEvent<string>();
 
 // Enrutamiento por tipo
 socketMessageReceived.watch((data) => {
-  console.log("📨 [tableHandlers] mensaje recibido:", data);
-  switch (data.type) {
+  const message = data.i ?? data;
+  console.log("📨 [tableHandlers] mensaje recibido:", message);
+
+  switch (message.type) {
     case "table_update":
-      tableUpdated(data);
+      tableUpdated(message);
       break;
     case "countdown_started":
-      countdownStarted(data);
+      countdownStarted(message);
       break;
     case "countdown_stopped":
-      countdownStopped(data);
+      countdownStopped(message);
       break;
     case "game_start":
-      gameStarted(data);
+      gameStarted(message);
       break;
     case "error":
-      errorReceived(data.message);
+      errorReceived(message.message);
       break;
     default:
-      console.warn("[WS] Tipo de mensaje desconocido:", data);
+      console.warn("[WS] Tipo de mensaje desconocido:", message);
   }
 });
+

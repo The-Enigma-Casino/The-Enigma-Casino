@@ -5,10 +5,10 @@ import { GameLayout } from "./layout/GameLayout";
 
 const routeGames: RouteObject[] = [
   {
-    path: "game",
+    path: "game/:gameType/:tableId",
     element: <GameLayout />,
     errorElement: <Error />,
-    children: [{ path: "blackjack", element: <BlackjackGamePage /> }],
+    children: [{ path: "blackjack/:tableId", element: <BlackjackGamePage /> }],
   },
 ];
 

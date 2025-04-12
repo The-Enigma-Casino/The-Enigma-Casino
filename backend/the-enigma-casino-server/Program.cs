@@ -20,6 +20,7 @@ using the_enigma_casino_server.WS.GameMatch;
 using the_enigma_casino_server.WS.GameTable;
 using the_enigma_casino_server.WS.GameWS.Services;
 using the_enigma_casino_server.WS.Interfaces;
+using the_enigma_casino_server.WS.PokerWS;
 using the_enigma_casino_server.WS.Resolver;
 
 
@@ -76,6 +77,7 @@ public class Program
         builder.Services.AddSingleton<GameTableWS>();
         builder.Services.AddSingleton<GameMatchWS>();
         builder.Services.AddSingleton<BlackjackWS>();
+        builder.Services.AddSingleton<PokerWS>(); 
 
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();

@@ -1,7 +1,9 @@
 ﻿using the_enigma_casino_server.WS.BlackJackWS;
+using the_enigma_casino_server.WS.PokerWS;
 using the_enigma_casino_server.WS.GameMatch;
 using the_enigma_casino_server.WS.GameTable;
 using the_enigma_casino_server.WS.Interfaces;
+
 
 namespace the_enigma_casino_server.WS.Resolver;
 public class WebSocketHandlerResolver
@@ -23,6 +25,7 @@ public class WebSocketHandlerResolver
             "game_table" => provider.GetRequiredService<GameTableWS>(),
             "game_match" => provider.GetRequiredService<GameMatchWS>(),
             "blackjack" => provider.GetRequiredService<BlackjackWS>(),
+            "poker" => provider.GetRequiredService<PokerWS>(),
             _ => null
         };
     }

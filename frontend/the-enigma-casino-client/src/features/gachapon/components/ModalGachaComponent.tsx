@@ -1,6 +1,11 @@
 import "./ModalGachaComponent.module.css";
 
-function ModalGachaComponent({ isOpen, closeModal }) {
+interface ModalGachaComponentProps {
+  isOpen: boolean;
+  closeModal: () => void;
+}
+
+const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({ isOpen, closeModal }) => {
   if (!isOpen) return null;
 
   return (
@@ -11,16 +16,16 @@ function ModalGachaComponent({ isOpen, closeModal }) {
         </p>
 
         <div className="absolute w-[571px] h-[85px] top-3 left-[60px]">
-          <div className="absolute w-[560px] h-[85px] top-0 left-0 font-reddit font-bold text-Principal text-[40px] text-center tracking-[0] leading-10">
-            GACHAPÓN <br />
-            DE LA SUERTE
+          <div className="flex absolute w-[560px] h-[85px] top-0 left-0 font-reddit font-bold text-Principal text-[40px] text-center tracking-[0] leading-10">
+            <p>GACHAPÓN </p>
+            <p>DE LA SUERTE</p>
           </div>
 
           <img
             className="absolute w-[30px] h-[30px] top-[5px] left-[541px] cursor-pointer"
             alt="Cerrar"
             src={"/svg/close.svg"}
-            onClick={closeModal} // Llama a la función para cerrar el modal
+            onClick={closeModal}
           />
         </div>
 
@@ -34,6 +39,6 @@ function ModalGachaComponent({ isOpen, closeModal }) {
       </div>
     </div>
   );
-}
+};
 
 export default ModalGachaComponent;

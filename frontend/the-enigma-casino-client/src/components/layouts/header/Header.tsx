@@ -43,20 +43,17 @@ function Header() {
     navigate("/");
   };
 
-  // Función para abrir el modal del Gachapón
   const openGachaponModal = () => {
-    setIsGachaponModalOpen(true); // Cambia el estado para abrir el modal del Gachapón
+    setIsGachaponModalOpen(true);
   };
 
-  // Función para cerrar el modal del Gachapón
   const closeGachaponModal = () => {
-    setIsGachaponModalOpen(false); // Cierra el modal del Gachapón
+    setIsGachaponModalOpen(false);
   };
 
   return (
     <>
       <header className={classes.header}>
-        {/* Fondo oscuro semi-transparente que cubre toda la pantalla solo cuando el modal está abierto */}
         {isGachaponModalOpen && (
           <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-20" />
         )}
@@ -72,7 +69,7 @@ function Header() {
             <img
               src="/svg/gachapon.svg"
               alt="Gacha"
-              onClick={openGachaponModal} // Abre el modal al hacer clic en el ícono
+              onClick={openGachaponModal}
             />
             <p className={classes.text}>Gachapón</p>
             <p className={classes.text}>de la suerte</p>
@@ -107,7 +104,7 @@ function Header() {
                 <img
                   src="/svg/exit.svg"
                   alt="Cerrar sesión"
-                  onClick={() => setIsLogoutModalOpen(true)} // Abre el modal de logout
+                  onClick={() => setIsLogoutModalOpen(true)}
                 />
               </>
             )}
@@ -125,12 +122,11 @@ function Header() {
         </div>
       </header>
 
-      {/* El Modal Gachapón es el foco de atención y no se ve afectado por la transparencia */}
       {isGachaponModalOpen && (
         <div className="fixed inset-0 z-30 flex justify-center items-center">
           <ModalGachaComponent
             isOpen={isGachaponModalOpen}
-            closeModal={closeGachaponModal} // Cierra el modal cuando se hace clic en la X
+            closeModal={closeGachaponModal}
           />
         </div>
       )}

@@ -11,12 +11,12 @@ using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.BlackJackWS;
 
-public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameTurnService
+public class BlackjackWebSocket : BaseWebSocketHandler, IWebSocketMessageHandler, IGameTurnService
 {
 
     public string Type => "blackjack";
 
-    public BlackjackWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
+    public BlackjackWebSocket(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
         : base(connectionManager, serviceProvider)
     {
     }

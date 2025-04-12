@@ -5,9 +5,9 @@ namespace the_enigma_casino_server.WS.BlackJack;
 
 public class BlackjackTurnService : IGameTurnService
 {
-    private readonly BlackjackWS _blackjackWS;
+    private readonly BlackjackWebSocket _blackjackWS;
 
-    public BlackjackTurnService(BlackjackWS blackjackWS)
+    public BlackjackTurnService(BlackjackWebSocket blackjackWS)
     {
         _blackjackWS = blackjackWS;
     }

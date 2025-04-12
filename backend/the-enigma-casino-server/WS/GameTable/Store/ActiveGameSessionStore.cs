@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace the_enigma_casino_server.WS.GameTableWS.Store;
+namespace the_enigma_casino_server.WS.GameTable.Store;
 
 public static class ActiveGameSessionStore
 {

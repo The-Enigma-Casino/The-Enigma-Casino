@@ -5,10 +5,12 @@ namespace the_enigma_casino_server.Games.BlackJack;
 
 public class BlackjackGame
 {
+
+    private Dictionary<int, int> _lastBetAmounts = new();
+
     private Match _gameMatch { get; set; }
     private Deck Deck { get; set; }
     public int CurrentPlayerTurnId { get; private set; }
-
 
 
     public BlackjackGame(Match gameMatch)
@@ -22,8 +24,9 @@ public class BlackjackGame
     {
         ResetHands();
 
-        foreach (var player in _gameMatch.Players)
+        foreach (Player player in _gameMatch.Players)
         {
+            _lastBetAmounts[player.UserId] = player.CurrentBet;
             player.Hand.AddCard(Deck.Draw());
             player.Hand.AddCard(Deck.Draw());
         }
@@ -129,7 +132,7 @@ public class BlackjackGame
             else if (playerTotal == 21 && player.Hand.Cards.Count == 2 && croupierTotal == 21 && _gameMatch.GameTable.Croupier.Hand.Cards.Count == 2)
             {
                 player.Draw();
-                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack empata ganando {player.CurrentBet } monedas.");
+                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack empata ganando {player.CurrentBet} monedas.");
             }
             else if (player.Hand.GetTotal() == 21 && player.Hand.Cards.Count == 2)
             {
@@ -165,7 +168,7 @@ public class BlackjackGame
 
         player.User.Coins -= player.CurrentBet;
         player.CurrentBet = doubleBet;
-        player.LastBetAmount = doubleBet;
+        _lastBetAmounts[player.UserId] = doubleBet;
 
         Console.WriteLine($"{player.User.NickName} ha doblado su apuesta a {player.CurrentBet} monedas.");
         PlayerHit(player);
@@ -177,7 +180,7 @@ public class BlackjackGame
 
     public void ResetHands()
     {
-        foreach (var player in _gameMatch.Players)
+        foreach (Player player in _gameMatch.Players)
         {
             player.PlayerState = PlayerState.Playing;
             player.Hand = new Hand();
@@ -187,14 +190,27 @@ public class BlackjackGame
         Deck.Shuffle();
     }
 
+
     public Card GetCroupierVisibleCard()
     {
         return _gameMatch.GameTable.Croupier.Hand.Cards.First();
     }
 
+
     public void SetCurrentPlayer(int userId)
     {
         CurrentPlayerTurnId = userId;
+
+        Player player = _gameMatch.Players.FirstOrDefault(p => p.UserId == userId);
+        if (player != null)
+        {
+            player.PlayerState = PlayerState.Playing;
+        }
+    }
+
+    public int GetLastBetAmount(int userId)
+    {
+        return _lastBetAmounts.TryGetValue(userId, out int amount) ? amount : 0;
     }
 
 }

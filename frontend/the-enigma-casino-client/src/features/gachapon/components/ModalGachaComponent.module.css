@@ -1,0 +1,63 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modalContainer {
+  background-color: var(--Background-Overlay);
+  border: 2px solid var(--Principal);
+  border-radius: 8px;
+  width: 650px;
+  height: 705px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px;
+  position: relative;
+  gap: 30px;
+}
+
+.headerText {
+  font-family: 'Reddit Sans', sans-serif;
+  font-weight: bold;
+  color: var(--Principal);
+  font-size: 3.2rem;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.imageFrame {
+  width: 466px;
+  height: 452px;
+  border-radius: 20px;
+  background-image: url("/frame-8.png");
+  background-size: cover;
+  background-position: 50% 50%;
+}
+
+.priceText {
+  font-family: 'Reddit Sans', sans-serif;
+  font-weight: bold;
+  color: var(--Principal);
+  font-size: 2rem;
+  text-align: center;
+}
+
+.closeIcon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  z-index: 1000;
+}

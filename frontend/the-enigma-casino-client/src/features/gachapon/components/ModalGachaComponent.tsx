@@ -1,9 +1,9 @@
 import styles from "./ModalGachaComponent.module.css";
 // import Button from "../../../components/ui/button/Button";
-import MachineComponent from "./MachineComponent";
 import { gachaponPrice$, loadGachaponPrice } from "../stores/gachaponStore";
 import { useUnit } from "effector-react";
 import { useEffect } from "react";
+import GachaponMachine from "./MachineComponent";
 
 interface ModalGachaComponentProps {
   isOpen: boolean;
@@ -42,8 +42,8 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({
           <p>DE LA SUERTE</p>
         </div>
 
-        <div className={styles.imageFrame}>
-          <MachineComponent />
+        <div className={styles.machineWrapper}>
+          <GachaponMachine />
         </div>
 
         <p className={styles.priceText}>1 Tirada = {gachaponPrice} Fichas</p>

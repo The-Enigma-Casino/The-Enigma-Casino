@@ -66,20 +66,21 @@
 
 .egg {
   position: absolute;
-  top: 40%;
+  bottom: 120px;
   left: 50%;
-  transform: translate(-50%, -60%);
+  transform: translateX(-50%) translateY(0);
   opacity: 0;
   pointer-events: none;
-  transition: transform 0.4s ease 1.5s, opacity 0.4s ease 1.5s;
+  transition: transform 0.5s ease 0.5s, opacity 0.5s ease 0.5s;
   z-index: 2;
 }
 
 .egg.active {
-  transform: translate(-50%, 35%);
+  transform: translateX(-50%) translateY(135px); /* baja hasta la bandeja */
   opacity: 1;
   pointer-events: auto;
 }
+
 
 .eggColor {
   transition: fill 0.3s ease;

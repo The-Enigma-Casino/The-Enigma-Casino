@@ -4,8 +4,13 @@ import { ChatInput } from "./InputChat";
 import { useUnit } from "effector-react";
 import { $coins } from "../../../../coins/store/coinsStore";
 import { ChatMessage } from "./ChatMessage";
+import { GameInfoModal } from "../modals/GameInfoModal";
 
-export const Chat = () => {
+interface ChatProps {
+  gameType: "poker" | "blackjack" | "roulette";
+}
+
+export const Chat =  ({ gameType }: ChatProps) => {
   const coins = useUnit($coins);
 
   const messages = [
@@ -24,7 +29,8 @@ export const Chat = () => {
       isOwn: false,
       username: "Jugador 2",
       avatarUrl: "/images/profile/user_default.png",
-      message: "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
+      message:
+        "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
     },
     {
       isOwn: true,
@@ -35,7 +41,8 @@ export const Chat = () => {
       isOwn: false,
       username: "Jugador 2",
       avatarUrl: "/images/profile/user_default.png",
-      message: "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
+      message:
+        "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
     },
     {
       isOwn: true,
@@ -46,7 +53,8 @@ export const Chat = () => {
       isOwn: false,
       username: "Jugador 2",
       avatarUrl: "/images/profile/user_default.png",
-      message: "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
+      message:
+        "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
     },
     {
       isOwn: true,
@@ -57,7 +65,8 @@ export const Chat = () => {
       isOwn: false,
       username: "Jugador 2",
       avatarUrl: "/images/profile/user_default.png",
-      message: "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
+      message:
+        "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
     },
     {
       isOwn: true,
@@ -118,6 +127,13 @@ export const Chat = () => {
           </button>
         </footer>
       </div>
+
+      {showInfo && (
+        <GameInfoModal
+          gameType={gameType}
+          onClose={() => setShowInfo(false)}
+        />
+      )}
     </div>
   );
 };

@@ -20,7 +20,7 @@ public class GameTableSeeder
         var tables = new List<Table>();
 
         // BlackJack
-        for (int i = 1; i <= 5; i++)
+        for (int i = 1; i <= 6; i++)
         {
             tables.Add(new Table
             {
@@ -33,7 +33,7 @@ public class GameTableSeeder
         }
 
         // Poker
-        for (int i = 1; i <= 5; i++)
+        for (int i = 1; i <= 6; i++)
         {
             tables.Add(new Table
             {
@@ -46,7 +46,7 @@ public class GameTableSeeder
         }
 
         // Roulette
-        for (int i = 1; i <= 5; i++)
+        for (int i = 1; i <= 6; i++)
         {
             tables.Add(new Table
             {

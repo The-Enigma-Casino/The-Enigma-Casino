@@ -1,5 +1,6 @@
 import styles from "./ModalGachaComponent.module.css";
 import Button from "../../../components/ui/button/Button";
+import MachineComponent from "./MachineComponent";
 
 interface ModalGachaComponentProps {
   isOpen: boolean;
@@ -25,6 +26,11 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({ isOpen, close
     </div>
 
     <div className={styles.imageFrame} />
+
+    <div className={styles.imageFrame}>
+      <MachineComponent />
+    </div>
+
 
     <p className={styles.priceText}>1 Tirada = 10 Fichas</p>
 

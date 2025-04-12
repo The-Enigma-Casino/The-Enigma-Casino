@@ -52,7 +52,7 @@ public class Program
         builder.Services.AddScoped<MyDbContext>();
         builder.Services.AddScoped<UnitOfWork>();
 
-        // --- Servicios del dominio ---
+        // --- Servicios ---
         builder.Services.AddScoped<BaseService>();
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<EmailService>();
@@ -106,7 +106,7 @@ public class Program
         builder.Services.AddScoped<UserMapper>();
         builder.Services.AddScoped<GameHistoryMapper>();
 
-        // --- Otros ---
+        // --- Stripe ---
         builder.Services.AddTransient<StripeService>();
 
         // --- Swagger y controladores ---

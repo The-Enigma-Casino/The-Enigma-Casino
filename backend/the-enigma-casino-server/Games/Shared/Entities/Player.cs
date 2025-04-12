@@ -35,8 +35,6 @@ public class Player
         LastBetAmount = amount;
         User.Coins -= amount;
         CurrentBet = amount;
-
-        PlayerState = PlayerState.Playing;
     }
 
     public void Win(int amount)

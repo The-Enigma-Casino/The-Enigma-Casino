@@ -11,7 +11,7 @@ using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.BlackJackWS;
 
-public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
+public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameTurnService
 {
 
     public string Type => "blackjack";
@@ -58,7 +58,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (!TryGetTableId(message, out var tableId)) return;
         if (!TryGetMatch(tableId, userId, out var match)) return;
-        if (!TryGetPlayer(match, userId, out var player)) return;
+        if (!TryGetPlayer(match, userId, out Player player)) return;
 
         if (player.CurrentBet > 0)
         {
@@ -127,14 +127,14 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!TryGetMatch(tableId, "SYSTEM", out var match)) return;
 
-        var blackjackGame = new BlackjackGame(match);
+        BlackjackGame blackjackGame = new BlackjackGame(match);
         blackjackGame.StartRound();
 
         ActiveBlackjackGameStore.Set(tableId, blackjackGame);
 
         Console.WriteLine($"🔄 Repartiendo cartas iniciales para la mesa {tableId}...");
 
-        foreach (var player in match.Players)
+        foreach (Player player in match.Players)
         {
             Console.WriteLine($"👤 Jugador: {player.User.NickName} (ID: {player.UserId})");
             foreach (var card in player.Hand.Cards)
@@ -194,8 +194,8 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!TryGetTableId(message, out var tableId)) return;
         if (!TryGetMatch(tableId, userId, out var match)) return;
-        if (!TryGetPlayer(match, userId, out var player)) return;
-        if (!TryGetBlackjackGame(tableId, userId, out var blackjackGame)) return;
+        if (!TryGetPlayer(match, userId, out Player player)) return;
+        if (!TryGetBlackjackGame(tableId, userId, out BlackjackGame blackjackGame)) return;
 
         if (!await IsPlayerTurnAsync(blackjackGame, player, userId)) return;
 
@@ -226,8 +226,8 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!TryGetTableId(message, out var tableId)) return;
         if (!TryGetMatch(tableId, userId, out var match)) return;
-        if (!TryGetPlayer(match, userId, out var player)) return;
-        if (!TryGetBlackjackGame(tableId, userId, out var blackjackGame)) return;
+        if (!TryGetPlayer(match, userId, out Player player)) return;
+        if (!TryGetBlackjackGame(tableId, userId, out BlackjackGame blackjackGame)) return;
 
         if (!await IsPlayerTurnAsync(blackjackGame, player, userId)) return;
 
@@ -243,8 +243,8 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!TryGetTableId(message, out var tableId)) return;
         if (!TryGetMatch(tableId, userId, out var match)) return;
-        if (!TryGetPlayer(match, userId, out var player)) return;
-        if (!TryGetBlackjackGame(tableId, userId, out var blackjackGame)) return;
+        if (!TryGetPlayer(match, userId, out Player player)) return;
+        if (!TryGetBlackjackGame(tableId, userId, out BlackjackGame blackjackGame)) return;
 
         if (!await IsPlayerTurnAsync(blackjackGame, player, userId)) return;
 
@@ -269,7 +269,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private async Task AdvanceTurnAsync(BlackjackGame blackjackGame, Match match, int tableId)
     {
-        var players = match.Players;
+        List<Player> players = match.Players;
         var currentIndex = players.FindIndex(p => p.UserId == blackjackGame.CurrentPlayerTurnId);
 
         Player? nextPlayer = null;
@@ -438,7 +438,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler
     public async Task ForceAdvanceTurnAsync(int tableId, int userId)
     {
         if (!ActiveGameMatchStore.TryGet(tableId, out var match)) return;
-        if (!ActiveBlackjackGameStore.TryGet(tableId, out var blackjackGame)) return;
+        if (!ActiveBlackjackGameStore.TryGet(tableId, out BlackjackGame blackjackGame)) return;
 
         if (blackjackGame.CurrentPlayerTurnId != userId) return;
 

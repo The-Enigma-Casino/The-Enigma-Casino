@@ -15,7 +15,7 @@ public static class GameMatchHelper
 
     public static Player? FindPlayer(Match match, int userId)
     {
-        var player = match.Players.FirstOrDefault(p => p.UserId == userId);
+        Player player = match.Players.FirstOrDefault(p => p.UserId == userId);
         if (player == null)
         {
             Console.WriteLine($"⚠️ [GameMatchWS] Jugador {userId} no encontrado en partida.");
@@ -74,14 +74,11 @@ public static class GameMatchHelper
             return;
 
         var expectedPlayerIds = match.Players.Select(p => p.UserId).ToList();
-        Console.WriteLine($"🧪 Re-evaluando apuestas tras una salida en mesa {tableId}");
-        Console.WriteLine($"🎯 Nuevos jugadores esperados: {string.Join(", ", expectedPlayerIds)}");
-        Console.WriteLine($"🎯 Jugadores que han apostado: {string.Join(", ", BlackjackBetTracker.GetAllForTable(tableId))}");
+
 
         if (BlackjackBetTracker.HaveAllPlayersBet(tableId, expectedPlayerIds))
         {
             BlackjackBetTracker.Clear(tableId);
-            Console.WriteLine($"♠️ Todos los jugadores restantes han apostado en la mesa {tableId}. Iniciando reparto...");
             await blackjackWS.HandleDealInitialCardsAsync(tableId);
         }
     }

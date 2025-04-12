@@ -1,18 +1,29 @@
-﻿using the_enigma_casino_server.WS.Interfaces;
+﻿using the_enigma_casino_server.WS.BlackJackWS;
+using the_enigma_casino_server.WS.GameMatch;
+using the_enigma_casino_server.WS.GameTable;
+using the_enigma_casino_server.WS.Interfaces;
 
 namespace the_enigma_casino_server.WS.Resolver;
-
 public class WebSocketHandlerResolver
 {
-    private readonly Dictionary<string, IWebSocketMessageHandler> _handlers;
+    private readonly IServiceProvider _serviceProvider;
 
-    public WebSocketHandlerResolver(IEnumerable<IWebSocketMessageHandler> handlers)
+    public WebSocketHandlerResolver(IServiceProvider serviceProvider)
     {
-        _handlers = handlers.ToDictionary(h => h.Type, h => h);
+        _serviceProvider = serviceProvider;
     }
 
     public IWebSocketMessageHandler? Resolve(string type)
     {
-        return _handlers.TryGetValue(type, out var handler) ? handler : null;
+        using var scope = _serviceProvider.CreateScope();
+        var provider = scope.ServiceProvider;
+
+        return type switch
+        {
+            "game_table" => provider.GetRequiredService<GameTableWS>(),
+            "game_match" => provider.GetRequiredService<GameMatchWS>(),
+            "blackjack" => provider.GetRequiredService<BlackjackWS>(),
+            _ => null
+        };
     }
 }

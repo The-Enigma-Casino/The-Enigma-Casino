@@ -2,7 +2,7 @@
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Entities.Enum;
 using the_enigma_casino_server.Models.Database.Entities;
-using the_enigma_casino_server.WS.GameTableWS.Models;
+using the_enigma_casino_server.WS.GameTable.Models;
 
 namespace the_enigma_casino_server.WS.GameWS.Services;
 
@@ -13,13 +13,9 @@ public class GameTableManager
 
     public bool CanJoinTable(int userId)
     {
-        if (_lastJoinTimestamps.TryGetValue(userId, out var lastTime))
+        if (_lastJoinTimestamps.TryGetValue(userId, out DateTime lastTime))
         {
-            if ((DateTime.Now - lastTime).TotalSeconds < JoinCooldownSeconds)
-            {
-                Console.WriteLine($"⏳ Usuario {userId} no puede volver a entrar todavía.");
-                return false;
-            }
+            if ((DateTime.Now - lastTime).TotalSeconds < JoinCooldownSeconds) return false;
         }
 
         _lastJoinTimestamps[userId] = DateTime.Now;
@@ -43,7 +39,7 @@ public class GameTableManager
     {
         bool stopCountdown = false;
 
-        if (!RemovePlayerFromTable(table, userId, out var player))
+        if (!RemovePlayerFromTable(table, userId, out Player player))
         {
             return new PlayerLeaveResult
             {
@@ -55,12 +51,9 @@ public class GameTableManager
             };
         }
 
-        Console.WriteLine($"[GameTableWS] Usuario {userId} salió de la mesa {table.Id}.");
-
         if (table.Players.Count < table.MinPlayer)
         {
             session.CancelCountdown();
-            Console.WriteLine($"[GameTableWS] Temporizador detenido por jugadores insuficientes.");
             stopCountdown = true;
         }
 
@@ -79,32 +72,27 @@ public class GameTableManager
         if (table.TableState != TableState.Waiting)
         {
             string msg = $"La mesa {table.Id} no está esperando jugadores. Estado actual: {table.TableState}.";
-            Console.WriteLine($"❌ {msg}");
             return (false, msg);
         }
 
         if (table.Players.Any(p => p.UserId == user.Id))
         {
             string msg = $"El usuario {user.Id} ya está en la mesa {table.Id}.";
-            Console.WriteLine($"⚠️ {msg}");
             return (false, msg);
         }
 
         if (table.Players.Count >= table.MaxPlayer)
         {
             string msg = $"La mesa {table.Id} está llena ({table.Players.Count}/{table.MaxPlayer}).";
-            Console.WriteLine($"❌ {msg}");
             return (false, msg);
         }
 
-        var player = new Player(user)
+        Player player = new Player(user)
         {
-            JoinedAt = DateTime.Now 
+            JoinedAt = DateTime.Now
         };
 
         table.AddPlayer(player);
-
-        Console.WriteLine($"✅ {user.NickName} se unió a la mesa {table.Id}.");
         return (true, null);
     }
 }

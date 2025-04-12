@@ -1,4 +1,5 @@
-import "./ModalGachaComponent.module.css";
+import styles from "./ModalGachaComponent.module.css";
+import Button from "../../../components/ui/button/Button";
 
 interface ModalGachaComponentProps {
   isOpen: boolean;
@@ -9,35 +10,37 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({ isOpen, close
   if (!isOpen) return null;
 
   return (
-    <div className="bg-Background-Overlay flex flex-row justify-center w-full">
-      <div className="bg-Background-Overlay border border-solid border-Principal w-[650px] h-[705px] relative">
-        <p className="absolute w-[297px] h-[22px] top-[577px] left-44 font-reddit font-bold text-Principal text-2xl text-center tracking-[0] leading-4">
-          1 Tirada = 10 Fichas
-        </p>
+<div className={styles.modalOverlay}>
+  <div className={styles.modalContainer}>
+    <img
+      className={styles.closeIcon}
+      alt="Cerrar"
+      src={"/svg/close.svg"}
+      onClick={closeModal}
+    />
 
-        <div className="absolute w-[571px] h-[85px] top-3 left-[60px]">
-          <div className="flex absolute w-[560px] h-[85px] top-0 left-0 font-reddit font-bold text-Principal text-[40px] text-center tracking-[0] leading-10">
-            <p>GACHAPÓN </p>
-            <p>DE LA SUERTE</p>
-          </div>
-
-          <img
-            className="absolute w-[30px] h-[30px] top-[5px] left-[541px] cursor-pointer"
-            alt="Cerrar"
-            src={"/svg/close.svg"}
-            onClick={closeModal}
-          />
-        </div>
-
-        <div className="absolute w-[466px] h-[452px] top-[100px] left-[97px] rounded-[20px] bg-[url(/frame-8.png)] bg-cover bg-[50%_50%]" />
-
-        <div className="absolute w-[250px] h-[50px] top-[626px] left-[200px] bg-Principal rounded-[20px] shadow-custom-gray">
-          <div className="absolute w-[250px] h-[26px] top-2.5 left-0 font-reddit font-bold text-Background-Page text-2xl text-center tracking-[0] leading-4">
-            ¡COMPRAR TIRADA!
-          </div>
-        </div>
-      </div>
+    <div className={styles.headerText}>
+      <p>GACHAPÓN</p>
+      <p>DE LA SUERTE</p>
     </div>
+
+    <div className={styles.imageFrame} />
+
+    <p className={styles.priceText}>1 Tirada = 10 Fichas</p>
+
+    <Button
+      variant="big"
+      color="yellow"
+      font="bold"
+      onClick={() => {
+        console.log("¡Juega ahora!");
+        closeModal();
+      }}
+    >
+      ¡JUEGA AHORA!
+    </Button>
+  </div>
+</div>
   );
 };
 

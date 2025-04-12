@@ -1,12 +1,6 @@
-﻿using BlackJackGame.Entities;
-using BlackJackGame.Enum;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using the_enigma_casino_server.Games.Shared.Entities.Enum;
 
-namespace PokerGame.Entities
+namespace the_enigma_casino_server.Games.Shared.Entities
 {
     public class EvaluatedHand
     {

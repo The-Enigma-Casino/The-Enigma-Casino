@@ -9,5 +9,7 @@ public enum PlayerState
     Win,
     Lose,
     Draw,
-    Left
+    Left,
+    Fold, // Retirarse poker
+    AllIn // AllIn poker
 }

@@ -1,11 +1,7 @@
-﻿using BlackJackGame.Entities;
-using BlackJackGame.Enum;
-using PokerGame.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Games.Shared.Entities.Enum;
 
-namespace PokerGame.Services
+namespace the_enigma_casino_server.Games.RevisarPoker
 {
     public class PokerHandEvaluator
     {
@@ -182,7 +178,7 @@ namespace PokerGame.Services
                 .ToList();
 
             // Excepcion! Si la escalera tiene AS lo comprueba (valor 14)
-            if (ordered.Contains(14) && ordered.Contains(2) && ordered.Contains(3) && ordered.Contains(4) && ordered.Contains(5)) 
+            if (ordered.Contains(14) && ordered.Contains(2) && ordered.Contains(3) && ordered.Contains(4) && ordered.Contains(5))
             {
                 return CardRank.Five;
             }

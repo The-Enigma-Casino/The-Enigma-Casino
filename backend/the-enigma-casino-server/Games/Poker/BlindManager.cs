@@ -1,19 +1,18 @@
-﻿using BlackJackGame.Entities;
-using BlackJackGame.Enum;
-using BlackJackGame.Services.GameLogic;
+﻿using the_enigma_casino_server.Games.RevisarPoker;
+using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Games.Shared.Entities.Enum;
 
 public class BlindManager
 {
-    private readonly GameMatch _gameMatch;
+    private readonly Match _gameMatch;
     private readonly PokerGameService _pokerGameService;
     private int _dealerIndex;
-    private GameMatch gameMatch;
 
     // Constantes de valor de ciegas, se pueden reducir en un futuro
     private const int SmallBlindAmount = 10;
     private const int BigBlindAmount = 20;
 
-    public BlindManager(GameMatch gameMatch, PokerGameService pokerGameService)
+    public BlindManager(Match gameMatch, PokerGameService pokerGameService)
     {
         _gameMatch = gameMatch;
         _pokerGameService = pokerGameService;
@@ -46,7 +45,7 @@ public class BlindManager
 
         if (smallBlindAmount > 0)
         {
-            smallBlind.PlaceBet(smallBlindAmount, allowAllIn: true);
+            _pokerGameService.HandlePokerBet(smallBlind, smallBlindAmount);
             _pokerGameService.AddToPot(smallBlindAmount);
             Console.WriteLine($"{smallBlind.User.NickName} paga {smallBlindAmount} (Small Blind)");
         }
@@ -58,7 +57,7 @@ public class BlindManager
 
         if (bigBlindAmount > 0)
         {
-            bigBlind.PlaceBet(bigBlindAmount, allowAllIn: true);
+            _pokerGameService.HandlePokerBet(bigBlind, bigBlindAmount);
             _pokerGameService.AddToPot(bigBlindAmount);
             Console.WriteLine($"{bigBlind.User.NickName} paga {bigBlindAmount} (Big Blind)");
         }

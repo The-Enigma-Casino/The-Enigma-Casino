@@ -1,17 +1,12 @@
-﻿using BlackJackGame.Entities;
-using BlackJackGame.Enum;
-using PokerGame.Entities;
-using PokerGame.Helper;
-using PokerGame.Services;
-using static PokerGame.Services.PokerHandEvaluator;
-using PokerHandComparer = PokerGame.Services.PokerHandComparer;
+﻿using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Games.Shared.Entities.Enum;
+using the_enigma_casino_server.Games.Shared.Helper;
 
-
-namespace BlackJackGame.Services.GameLogic;
+namespace the_enigma_casino_server.Games.RevisarPoker;
 
 public class PokerGameService
 {
-    private GameMatch _gameMatch;
+    private Match _gameMatch;
     private Deck _deck;
     private List<Card> _communityCards = new();
     private int _pot = 0;
@@ -22,7 +17,7 @@ public class PokerGameService
     private readonly PokerHandComparer _handComparer = new();
 
 
-    public PokerGameService(GameMatch gameMatch)
+    public PokerGameService(Match gameMatch)
     {
         _gameMatch = gameMatch;
         _deck = new Deck(GameType.Poker);
@@ -284,8 +279,21 @@ public class PokerGameService
                         if (player.CurrentBet < highestBet)
                         {
                             Console.WriteLine("No puedes hacer check. Hay una apuesta más alta.");
-                            continue;
+
+                            // Volver a pedir acción sin avanzar al siguiente jugador
+                            string newAction;
+                            List<string> validOptions = new() { "call", "raise", "all-in", "fold" }; // sin check
+                            do
+                            {
+                                Console.Write($"Acción [{string.Join(", ", validOptions)}]: ");
+                                newAction = Console.ReadLine()?.Trim().ToLower();
+                            }
+                            while (!validOptions.Contains(newAction));
+
+                            action = newAction; // Cambiar la acción para que se reevalúe
+                            goto case "call";   // O salta al case correspondiente (podrías usar un bucle si prefieres)
                         }
+
                         Console.WriteLine($"{player.User.NickName} pasa (check).");
                         alreadyActed[player.User.Id] = true;
                         break;
@@ -304,7 +312,7 @@ public class PokerGameService
                                 int allIn = player.User.Coins;
                                 int prevBet = player.CurrentBet;
 
-                                player.PlaceBet(allIn, allowAllIn: true);
+                                HandlePokerBet(player, allIn);
                                 _pot += player.CurrentBet - prevBet;
                                 alreadyActed[player.User.Id] = true;
 
@@ -321,7 +329,8 @@ public class PokerGameService
 
                         // Si puede igualar normalmente
                         int prevBetCall = player.CurrentBet;
-                        player.PlaceBet(toCall, allowAllIn: true);
+                        //player.PlaceBet(toCall, allowAllIn: true);
+                        HandlePokerBet(player, toCall);
                         _pot += player.CurrentBet - prevBetCall;
 
                         alreadyActed[player.User.Id] = true;
@@ -354,7 +363,8 @@ public class PokerGameService
                             }
 
                             int prevBetRaise = player.CurrentBet;
-                            player.PlaceBet(totalBet, allowAllIn: true);
+                            //player.PlaceBet(totalBet, allowAllIn: true);
+                            HandlePokerBet(player, totalBet);
                             int amountAdded = player.CurrentBet - prevBetRaise;
 
                             highestBet = player.CurrentBet;
@@ -375,7 +385,7 @@ public class PokerGameService
                         int allInAmount = player.User.Coins;
                         int prevAllInBet = player.CurrentBet;
 
-                        player.PlaceBet(allInAmount, allowAllIn: true);
+                        HandlePokerBet(player, allInAmount);
                         _pot += player.CurrentBet - prevAllInBet;
 
                         Console.WriteLine($"{player.User.NickName} va All-In con {allInAmount} fichas.");
@@ -447,6 +457,18 @@ public class PokerGameService
         }
     }
 
+    public void HandlePokerBet(Player player, int amount)
+    {
+        if (amount == player.User.Coins)
+        {
+            player.PlayerState = PlayerState.AllIn;
+        }
+
+        player.TotalContribution += amount;
+
+        player.PlaceBet(amount);
+    }
+
     // Juego completo
     public void PlayRound()
     {
@@ -494,7 +516,5 @@ public class PokerGameService
         // 9. Rotar dealer para siguiente ronda
         _blindManager.NextDealer();
     }
-
-
 }
 

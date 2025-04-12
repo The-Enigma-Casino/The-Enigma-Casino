@@ -1,11 +1,6 @@
-﻿using BlackJackGame.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using the_enigma_casino_server.Games.Shared.Entities;
 
-namespace PokerGame.Helper;
+namespace the_enigma_casino_server.Games.Shared.Helper;
 
 public class PokerHelper
 {

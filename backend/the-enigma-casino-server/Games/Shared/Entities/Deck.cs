@@ -33,4 +33,11 @@ public class Deck
         _cards.RemoveAt(0);
         return card;
     }
+
+    public void BurnCard()
+    {
+        if (_cards.Count == 0) throw new InvalidOperationException("Deck is empty.");
+
+        _cards.RemoveAt(0);
+    }
 }

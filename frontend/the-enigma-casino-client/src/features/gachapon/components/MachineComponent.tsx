@@ -15,8 +15,11 @@ const GachaponMachine = () => {
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
     setCurrentColor(randomColor);
     setIsSwitchActive(true);
-    setTimeout(() => setIsSwitchActive(false), 700);
-    setIsEggActive(true);
+
+    setTimeout(() => {
+      setIsSwitchActive(false);
+      setIsEggActive(true);
+    }, 700);
   };
 
   const handleEggClick = () => {
@@ -128,28 +131,30 @@ const GachaponMachine = () => {
           </svg>
         </svg>
 
-        <g
+        <div
           className={`${styles.egg} ${isEggActive ? styles.active : ""}`}
           onClick={handleEggClick}
         >
-          <circle
-            className={styles.eggColor}
-            cx="313.5"
-            cy="885.5"
-            r="40.5"
-            fill={currentColor}
-            stroke="#57172F"
-            strokeWidth="10"
-          />
-          <path
-            d="M323.599 925.513C291.223 932.027 279.261 908.229 274.125 897.882C326.587 906.466 345.102 886.898 352.345 874.125C357.085 887.153 357.344 918.724 323.599 925.513Z"
-            fill="white"
-            stroke="#531028"
-            strokeWidth="10"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </g>
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <circle
+              className={styles.eggColor}
+              cx="50"
+              cy="50"
+              r="40"
+              fill={currentColor}
+              stroke="#57172F"
+              strokeWidth="10"
+            />
+            <path
+              d="M60 85 C30 90, 20 60, 18 50 C45 55, 70 40, 76 30 C80 45, 82 78, 60 85 Z"
+              fill="white"
+              stroke="#531028"
+              strokeWidth="10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
       </div>
     </div>
   );

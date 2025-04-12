@@ -25,12 +25,9 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({ isOpen, close
       <p>DE LA SUERTE</p>
     </div>
 
-    <div className={styles.imageFrame} />
-
     <div className={styles.imageFrame}>
       <MachineComponent />
     </div>
-
 
     <p className={styles.priceText}>1 Tirada = 10 Fichas</p>
 

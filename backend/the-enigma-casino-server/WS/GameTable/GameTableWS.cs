@@ -7,8 +7,8 @@ using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.Models.Database.Entities;
 using the_enigma_casino_server.WS.Base;
 using the_enigma_casino_server.WS.GameMatch;
-using the_enigma_casino_server.WS.GameTableWS.Models;
-using the_enigma_casino_server.WS.GameTableWS.Store;
+using the_enigma_casino_server.WS.GameTable.Models;
+using the_enigma_casino_server.WS.GameTable.Store;
 using the_enigma_casino_server.WS.GameWS.Services;
 using the_enigma_casino_server.WS.Interfaces;
 using the_enigma_casino_server.WS.Resolver;
@@ -17,23 +17,25 @@ namespace the_enigma_casino_server.WS.GameTable;
 
 public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 {
-    private readonly GameTableManager _tableManager;
-    public string Type => "gameTable";
+    public string Type => "game_table";
 
     private readonly GameMatchWS _gameMatchWS;
 
     public GameTableWS(
         ConnectionManagerWS connectionManager,
         IServiceProvider serviceProvider,
-        GameTableManager tableManager,
         GameMatchWS gameMatchWS)
         : base(connectionManager, serviceProvider)
     {
-        _tableManager = tableManager;
         _gameMatchWS = gameMatchWS;
         connectionManager.OnUserDisconnected += HandleUserDisconnection;
     }
 
+
+    private GameTableManager GetScopedTableManager(IServiceScope scope)
+    {
+        return scope.ServiceProvider.GetRequiredService<GameTableManager>();
+    }
 
     public async Task HandleAsync(string userId, JsonElement message)
     {
@@ -73,7 +75,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 return;
             }
 
-            if (!_tableManager.CanJoinTable(user.Id))
+            GameTableManager tableManager = GetScopedTableManager(scope);
+            if (!tableManager.CanJoinTable(user.Id))
             {
                 await ((IWebSocketSender)this).SendToUserAsync(userId, new { type = "error", message = "Debes esperar antes de volver a unirte." });
                 return;
@@ -93,7 +96,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             lock (table)
             {
-                addResult = _tableManager.TryAddPlayer(table, user);
+                addResult = tableManager.TryAddPlayer(table, user);
             }
 
             if (!addResult.success)
@@ -216,40 +219,15 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
 
         Table table = session.Table;
-
         PlayerLeaveResult result;
 
-        lock (table)
+        IServiceScope scope;
+        GameTableManager tableManager = GetScopedService<GameTableManager>(out scope);
+        using (scope)
         {
-            result = _tableManager.ProcessPlayerLeaving(table, session, userIdInt);
-            if (!result.PlayerRemoved)
-                return;
-        }
-
-        if (result.StopCountdown)
-        {
-            await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
-        }
-
-        await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
-
-    }
-
-
-    private async void HandleUserDisconnection(string userId)
-    {
-        if (!int.TryParse(userId, out int userIdInt))
-            return;
-
-        foreach (var session in ActiveGameSessionStore.GetAll().Values)
-        {
-            Table table = session.Table;
-
-            PlayerLeaveResult result;
-
             lock (table)
             {
-                result = _tableManager.ProcessPlayerLeaving(table, session, userIdInt);
+                result = tableManager.ProcessPlayerLeaving(table, session, userIdInt);
                 if (!result.PlayerRemoved)
                     return;
             }
@@ -262,6 +240,39 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
         }
     }
+
+
+    private async void HandleUserDisconnection(string userId)
+    {
+        if (!int.TryParse(userId, out int userIdInt))
+            return;
+
+        foreach (var session in ActiveGameSessionStore.GetAll().Values)
+        {
+            Table table = session.Table;
+            PlayerLeaveResult result;
+
+            IServiceScope scope;
+            GameTableManager tableManager = GetScopedService<GameTableManager>(out scope);
+            using (scope)
+            {
+                lock (table)
+                {
+                    result = tableManager.ProcessPlayerLeaving(table, session, userIdInt);
+                    if (!result.PlayerRemoved)
+                        return;
+                }
+
+                if (result.StopCountdown)
+                {
+                    await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
+                }
+
+                await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
+            }
+        }
+    }
+
 
     private Task BroadcastTableUpdateAsync(Table table, IEnumerable<string> userIds, string[] playerNames)
     {

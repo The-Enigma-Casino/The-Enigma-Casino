@@ -3,29 +3,37 @@ using the_enigma_casino_server.Games.Shared.Entities.Enum;
 using the_enigma_casino_server.Models.Database;
 using the_enigma_casino_server.WS.BlackJackWS;
 using the_enigma_casino_server.WS.BlackJackWS.Store;
-using the_enigma_casino_server.WS.GameTableWS.Store;
+using the_enigma_casino_server.WS.GameTable.Store;
 using the_enigma_casino_server.WS.GameWS.Services;
+using the_enigma_casino_server.WS.Interfaces;
+using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.GameMatch;
 
 public class GameMatchManager
 {
     private readonly UnitOfWork _unitOfWork;
+    private readonly GameBetInfoProviderResolver _betInfoResolver;
+    private readonly GameTurnServiceResolver _turnResolver;
+    private readonly GameSessionCleanerResolver _sessionCleanerResolver;
 
-    public GameMatchManager(UnitOfWork unitOfWork)
+    public GameMatchManager(UnitOfWork unitOfWork,
+                            GameBetInfoProviderResolver betInfoResolver,
+                            GameTurnServiceResolver turnResolver,
+                            GameSessionCleanerResolver sessionCleanerResolver)
     {
         _unitOfWork = unitOfWork;
+        _betInfoResolver = betInfoResolver;
+        _turnResolver = turnResolver;
+        _sessionCleanerResolver = sessionCleanerResolver;
     }
+
 
     public async Task<Match?> StartMatchAsync(Table table)
     {
-        if (table.Players.Count < table.MinPlayer)
-        {
-            Console.WriteLine($"❌ [GameMatchManager] Jugadores insuficientes para iniciar la partida en mesa {table.Id}.");
-            return null;
-        }
+        if (table.Players.Count < table.MinPlayer) return null;
 
-        foreach (var player in table.Players)
+        foreach (Player player in table.Players)
         {
             if (player.User == null)
             {
@@ -42,7 +50,7 @@ public class GameMatchManager
             MatchState = MatchState.InProgress
         };
 
-        foreach (var player in match.Players)
+        foreach (Player player in match.Players)
         {
             player.ResetForNewRound();
             _unitOfWork.UserRepository.Update(player.User);
@@ -52,10 +60,10 @@ public class GameMatchManager
 
 
 
-        foreach (var player in match.Players)
+        foreach (Player player in match.Players)
         {
             player.GameMatch = match;
-            player.GameMatchId = 0; // Si aún no guardamos en DB
+            player.GameMatchId = 0;
         }
 
         return match;
@@ -63,14 +71,13 @@ public class GameMatchManager
 
     public async Task<bool> EndMatchForPlayerAsync(Match match, int userId)
     {
-        var player = match.Players.FirstOrDefault(p => p.UserId == userId);
+        Player player = match.Players.FirstOrDefault(p => p.UserId == userId);
         if (player == null) return false;
 
         bool matchPlayed = player.Hand?.Cards.Any() == true;
         await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed);
 
         match.Players.Remove(player);
-        BlackjackBetTracker.RemovePlayer(match.GameTableId, player.UserId);
         return true;
     }
 
@@ -84,9 +91,7 @@ public class GameMatchManager
 
         if (!gameStarted)
         {
-            Console.WriteLine("⛔ [GameMatchManager] Match cancelado antes de comenzar. Devolviendo fichas...");
-
-            foreach (var player in match.Players.ToList())
+            foreach (Player player in match.Players.ToList())
             {
                 player.User ??= await _unitOfWork.UserRepository.GetByIdAsync(player.UserId);
 
@@ -107,76 +112,115 @@ public class GameMatchManager
             return true;
         }
 
-        Console.WriteLine("🟡 [GameMatchManager] El match ya había empezado. No se cancela automáticamente.");
         return false;
     }
-
-
 
     public async Task EndMatchAsync(Match match)
     {
         match.EndedAt = DateTime.Now;
         match.MatchState = MatchState.Finished;
 
-        foreach (var player in match.Players)
+        foreach (Player player in match.Players)
         {
             if (player.PlayerState == PlayerState.Left)
             {
-                Console.WriteLine($"ℹ️ [History] Jugador {player.UserId} ya procesado. Se omite.");
                 continue;
             }
 
             await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: false, matchPlayed: true);
         }
 
-        Console.WriteLine($"🧹 Limpiando stores de la mesa {match.GameTableId}");
         ActiveGameMatchStore.Remove(match.GameTableId);
-        ActiveBlackjackGameStore.Remove(match.GameTableId);
 
-        Console.WriteLine($"🧼 ActiveGameMatchStore contiene: {ActiveGameMatchStore.GetAll().Count} items");
-        Console.WriteLine($"🧼 ActiveBlackjackGameStore contiene: {ActiveBlackjackGameStore.GetAll().Count()} items");
+        IGameSessionCleaner? cleaner = _sessionCleanerResolver.Resolve(match.GameTable.GameType);
+        if (cleaner != null)
+        {
+            cleaner.Clean(match.GameTableId);
+        }
+    }
 
-        Console.WriteLine($"✅ [GameMatchManager] Match {match.GameTableId} finalizado y resultados guardados.");
+
+    public async Task RefundBetIfNotPlayedAsync(Player player, Match match)
+    {
+        bool gameStarted = match.Players.Any(p => p.Hand != null && p.Hand.Cards.Count > 0);
+
+        if (!gameStarted && player.CurrentBet > 0)
+        {
+            player.User.Coins += player.CurrentBet;
+            player.CurrentBet = 0;
+
+            _unitOfWork.UserRepository.Update(player.User);
+            await _unitOfWork.SaveAsync();
+        }
+    }
+
+    public async Task<bool> HandlePlayerExitAsync(Player player, Match match, int tableId, IGameTurnService? turnService)
+    {
+        bool gameStarted = match.Players.Any(p => p.Hand != null && p.Hand.Cards.Count > 0);
+
+        if (!gameStarted && player.CurrentBet > 0)
+        {
+            // Jugador se va antes de que empiece la ronda: se le devuelve la apuesta
+            int betAmount = player.CurrentBet;
+
+            player.User.Coins += player.CurrentBet;
+            player.CurrentBet = 0;
+
+            _unitOfWork.UserRepository.Update(player.User);
+            await _unitOfWork.SaveAsync();
+        }
+        else
+        {
+            // Jugador se va con la ronda ya empezada → derrota y se guarda historial
+            if (player.PlayerState == PlayerState.Playing)
+            {
+                player.PlayerState = PlayerState.Lose;
+            }
+
+            await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed: true);
+        }
+
+        player.PlayerState = PlayerState.Left;
+
+        if (turnService != null)
+        {
+            await turnService.ForceAdvanceTurnAsync(tableId, player.UserId);
+        }
+
+
+        bool removed = await EndMatchForPlayerAsync(match, player.UserId);
+
+        if (!removed) return false;
+
+        return true;
     }
 
     private async Task UpdateOrInsertHistoryAsync(Player player, Match match, bool playerLeftTable, bool matchPlayed)
     {
-        Console.WriteLine($"📘 [Historial] Procesando historial para jugador {player.UserId}");
-        Console.WriteLine($"🔍 Estado: {player.PlayerState}, Apuesta actual: {player.CurrentBet}, Última apuesta: {player.LastBetAmount}");
-
         if (player.User == null)
         {
-            Console.WriteLine($"ℹ️ [Historial] Cargando usuario {player.UserId} desde la base de datos...");
             player.User = await _unitOfWork.UserRepository.GetByIdAsync(player.UserId);
         }
 
-        if (player.PlayerState == PlayerState.Left)
-        {
-            Console.WriteLine($"ℹ️ [Historial] Jugador {player.UserId} ya está marcado como 'Left'. Se omite.");
-            return;
-        }
+        if (player.PlayerState == PlayerState.Left) return;
 
-        var history = await _unitOfWork.GameHistoryRepository.FindActiveSessionAsync(player.UserId, match.GameTableId);
+        IGameBetInfoProvider provider = _betInfoResolver.Resolve(match.GameTable.GameType);
 
-        int matchCount = matchPlayed ? GetMatchCountForGameType(match.GameTable.GameType) : 0;
-        int chips = matchPlayed ? GetChipResult(player) : 0;
-        int totalBet = matchPlayed ? player.LastBetAmount : 0;
+        // Obtener los datos específicos del juego
+        int chips = matchPlayed ? provider.GetChipResult(player) : 0;
+        int totalBet = matchPlayed ? provider.GetLastBetAmount(match.GameTableId, player.UserId) : 0;
 
-        bool hasBet = matchPlayed && player.LastBetAmount > 0;
         bool hasPlayed = matchPlayed && player.Hand != null && player.Hand.Cards.Count > 0;
+        bool hasBet = matchPlayed && totalBet > 0;
 
-        Console.WriteLine($"📊 Datos para historial: matchPlayed={matchPlayed}, hasBet={hasBet}, hasPlayed={hasPlayed}");
-        Console.WriteLine($"🎯 matchCount={matchCount}, totalBet={totalBet}, chipResult={chips}");
+        History history = await _unitOfWork.GameHistoryRepository.FindActiveSessionAsync(player.UserId, match.GameTableId);
+
+        int matchCount = matchPlayed ? provider.GetMatchCountForHistory(player) : 0;
+
 
         if (history == null)
         {
-            if (!hasPlayed)
-            {
-                Console.WriteLine($"❌ [Historial] Jugador {player.UserId} no jugó ni apostó. No se guarda historial.");
-                return;
-            }
-
-            Console.WriteLine($"🆕 [Historial] Creando nuevo historial para jugador {player.UserId}");
+            if (!hasPlayed) return;
 
             history = new History
             {
@@ -192,137 +236,25 @@ public class GameMatchManager
 
             await _unitOfWork.GameHistoryRepository.InsertAsync(history);
             await _unitOfWork.SaveAsync();
-
-            Console.WriteLine("✅ [Historial] Nuevo historial guardado correctamente.");
             return;
         }
 
-        // 🛠 Ya existe historial → acumular datos si jugó
+        // Ya existe historial → acumular datos si jugó
         if (matchPlayed && hasBet)
         {
-            Console.WriteLine("🧮 [Historial] Acumulando datos en historial existente...");
             history.TotalMatchesPlayed += matchCount;
             history.TotalBetAmount += totalBet;
             history.ChipResult += chips;
         }
 
-        // 🕒 Si se va de la mesa → cerrar historial
+        // Si se va de la mesa → cerrar historial
         if (playerLeftTable)
         {
-            Console.WriteLine($"📦 [Historial] Marcando salida para jugador {player.UserId} → LeftAt: {DateTime.Now}");
             history.LeftAt = DateTime.Now;
             player.PlayerState = PlayerState.Left;
         }
 
         _unitOfWork.GameHistoryRepository.Update(history);
         await _unitOfWork.SaveAsync();
-
-        Console.WriteLine("✅ [Historial] Historial actualizado correctamente.");
     }
-
-
-    private static int GetMatchCountForGameType(GameType gameType)
-    {
-        return gameType switch
-        {
-            GameType.BlackJack => 1,
-            GameType.Roulette => 1,
-            GameType.Poker => 0,
-            _ => 1
-        };
-    }
-
-
-    private static int GetChipResult(Player player) =>
-        player.PlayerState switch
-        {
-            PlayerState.Win => player.LastBetAmount * 2,
-            PlayerState.Draw => player.LastBetAmount,
-            _ => 0
-        };
-
-
-    public async Task RefundBetIfNotPlayedAsync(Player player, Match match)
-    {
-        bool gameStarted = match.Players.Any(p => p.Hand != null && p.Hand.Cards.Count > 0);
-
-        if (!gameStarted && player.CurrentBet > 0)
-        {
-            Console.WriteLine($"💸 [Refund] Devolviendo {player.CurrentBet} monedas a {player.User.NickName} (no se jugó la ronda)");
-
-            player.User.Coins += player.CurrentBet;
-            player.CurrentBet = 0;
-
-            _unitOfWork.UserRepository.Update(player.User);
-            await _unitOfWork.SaveAsync();
-        }
-    }
-
-    public async Task<bool> HandlePlayerExitAsync(Player player, Match match, int tableId, BlackjackWS blackjackWS)
-    {
-        Console.WriteLine("🚪 [HandlePlayerExitAsync] INICIANDO salida del jugador...");
-        Console.WriteLine($"🔍 Jugador: {player.UserId}, Apuesta actual: {player.CurrentBet}, Estado: {player.PlayerState}");
-        Console.WriteLine($"🃏 Tiene mano?: {(player.Hand != null ? "Sí" : "No")}, Nº cartas: {(player.Hand?.Cards.Count ?? 0)}");
-
-        bool gameStarted = match.Players.Any(p => p.Hand != null && p.Hand.Cards.Count > 0);
-        Console.WriteLine($"⏳ ¿Partida iniciada?: {gameStarted}");
-
-        if (!gameStarted && player.CurrentBet > 0)
-        {
-            // ✅ Jugador se va antes de que empiece la ronda: se le devuelve la apuesta
-            Console.WriteLine($"💸 [Antes de empezar] Jugador {player.UserId} se va → devolviendo {player.CurrentBet} monedas");
-
-            int betAmount = player.CurrentBet;
-
-            player.User.Coins += player.CurrentBet;
-            player.CurrentBet = 0;
-
-            Console.WriteLine($"💰 Nuevo saldo: {player.User.Coins} (se sumaron {betAmount})");
-            Console.WriteLine("💾 Guardando cambios en UserRepository...");
-
-            _unitOfWork.UserRepository.Update(player.User);
-            await _unitOfWork.SaveAsync();
-
-            Console.WriteLine("✅ Guardado completado");
-        }
-        else
-        {
-            // ✅ Jugador se va con la ronda ya empezada → derrota y se guarda historial
-            if (player.PlayerState == PlayerState.Playing)
-            {
-                Console.WriteLine($"🏳️ [Después de empezar] Jugador {player.UserId} estaba jugando → se marca como DERROTA");
-                player.PlayerState = PlayerState.Lose;
-            }
-            else
-            {
-                Console.WriteLine($"📌 Jugador no estaba en estado 'Playing' ({player.PlayerState}), no se marca derrota.");
-            }
-
-            Console.WriteLine("📝 Actualizando o insertando historial...");
-            await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed: true);
-            Console.WriteLine("✅ Historial actualizado");
-        }
-
-        player.PlayerState = PlayerState.Left;
-        Console.WriteLine($"🚶 Estado del jugador cambiado a: {player.PlayerState}");
-
-        Console.WriteLine("🔄 Forzando avance de turno (por si era su turno actual)...");
-        await blackjackWS.ForceAdvanceTurnAsync(tableId, player.UserId);
-        Console.WriteLine("✅ Turno avanzado (si aplicaba)");
-
-        Console.WriteLine("🧼 Eliminando jugador del Match...");
-        bool removed = await EndMatchForPlayerAsync(match, player.UserId);
-
-        if (!removed)
-        {
-            Console.WriteLine($"⚠️ [Error] No se pudo eliminar al jugador {player.UserId} del Match.");
-            return false;
-        }
-
-        Console.WriteLine($"✅ [Finalizado] Jugador {player.UserId} ha salido correctamente de la partida (mesa {tableId})");
-        return true;
-    }
-
-
-
 }

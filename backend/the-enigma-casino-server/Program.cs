@@ -14,6 +14,7 @@ using the_enigma_casino_server.Models.Seeder;
 using the_enigma_casino_server.Services;
 using the_enigma_casino_server.Services.Blockchain;
 using the_enigma_casino_server.Services.Email;
+using the_enigma_casino_server.WS.BlackJack;
 using the_enigma_casino_server.WS.BlackJackWS;
 using the_enigma_casino_server.WS.GameMatch;
 using the_enigma_casino_server.WS.GameTable;
@@ -47,16 +48,11 @@ public class Program
 
     private static void ConfigureServices(WebApplicationBuilder builder)
     {
-        // Controladores y documentación
-        builder.Services.AddControllers();
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-
-        // Base de datos y repositorios
+        // --- Infraestructura y persistencia ---
         builder.Services.AddScoped<MyDbContext>();
         builder.Services.AddScoped<UnitOfWork>();
 
-        // Servicios de dominio
+        // --- Servicios del dominio ---
         builder.Services.AddScoped<BaseService>();
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<EmailService>();
@@ -65,42 +61,58 @@ public class Program
         builder.Services.AddScoped<HistoryService>();
         builder.Services.AddScoped<TableService>();
         builder.Services.AddScoped<GachaponService>();
+        builder.Services.AddScoped<BlockchainService>();
 
-        // Validaciones
+        // --- Validaciones ---
         builder.Services.AddSingleton<ValidationService>();
 
-        // Servicios de WebSocket
+        // --- WebSocket: infraestructura base ---
         builder.Services.AddTransient<WebsocketMiddleware>();
         builder.Services.AddSingleton<WebSocketService>();
         builder.Services.AddSingleton<ConnectionManagerWS>();
-
-        // Handlers de WebSocket
         builder.Services.AddSingleton<WebSocketHandlerResolver>();
 
-        builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
+        // --- WebSocket: handlers (SIEMPRE singleton) ---
         builder.Services.AddSingleton<GameTableWS>();
-
-        builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
         builder.Services.AddSingleton<GameMatchWS>();
-
-        builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
         builder.Services.AddSingleton<BlackjackWS>();
 
-        // Servicios auxiliares de WebSocket
-        builder.Services.AddSingleton<GameTableManager>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
+
+        // --- WebSocket: servicios específicos del juego ---
+        builder.Services.AddScoped<GameTableManager>();
         builder.Services.AddScoped<GameMatchManager>();
 
-        // Mappers
+        // --- Resolver de servicios por tipo de juego ---
+        builder.Services.AddScoped<GameBetInfoProviderResolver>(); 
+        builder.Services.AddScoped<GameTurnServiceResolver>();
+        builder.Services.AddScoped<GameSessionCleanerResolver>();
+
+        // --- Servicios concretos de Blackjack ---
+        builder.Services.AddScoped<BlackjackBetInfoProvider>();
+        builder.Services.AddScoped<BlackjackSessionCleaner>();
+        builder.Services.AddScoped<BlackjackTurnService>();
+
+        builder.Services.AddScoped<IGameBetInfoProvider, BlackjackBetInfoProvider>();
+        builder.Services.AddScoped<IGameTurnService, BlackjackTurnService>();
+        builder.Services.AddScoped<IGameSessionCleaner, BlackjackSessionCleaner>();
+
+
+        // --- Mappers ---
         builder.Services.AddScoped<StripeMapper>();
         builder.Services.AddScoped<OrderMapper>();
         builder.Services.AddScoped<UserMapper>();
         builder.Services.AddScoped<GameHistoryMapper>();
 
-        // Stripe
+        // --- Otros ---
         builder.Services.AddTransient<StripeService>();
 
-        // Blockchain
-        builder.Services.AddScoped<BlockchainService>();
+        // --- Swagger y controladores ---
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
 
         // Configuración de CORS

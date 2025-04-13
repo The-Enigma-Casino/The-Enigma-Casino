@@ -1,8 +1,7 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
-using the_enigma_casino_server.Games.Shared.Entities.Enum;
-using the_enigma_casino_server.Games.Shared.Helper;
+using the_enigma_casino_server.Games.Shared.Enum;
 
-namespace the_enigma_casino_server.Games.RevisarPoker;
+namespace the_enigma_casino_server.Games.Poker;
 
 public class PokerGameService
 {
@@ -53,7 +52,7 @@ public class PokerGameService
                 player.TotalContribution = 0; // Total apostado en la ronda (para pots)
                 player.CurrentBet = 0;
                 player.PlayerState = PlayerState.Playing;
-                _initialCoinsByUserId[player.UserId] = player.User.Coins;   
+                _initialCoinsByUserId[player.UserId] = player.User.Coins;
             }
 
         }

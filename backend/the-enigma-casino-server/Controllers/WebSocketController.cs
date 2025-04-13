@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
-using the_enigma_casino_server.Models.Database;
-using the_enigma_casino_server.Models.Database.Entities;
-using the_enigma_casino_server.Services;
+using the_enigma_casino_server.Infrastructure.Database;
+
+using the_enigma_casino_server.WebSockets.Base;
 
 namespace the_enigma_casino_server.Controllers;
 

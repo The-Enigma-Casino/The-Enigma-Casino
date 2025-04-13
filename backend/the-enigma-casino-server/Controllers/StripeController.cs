@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stripe.Checkout;
-using the_enigma_casino_server.Models.Database;
-using the_enigma_casino_server.Models.Database.Entities;
-using the_enigma_casino_server.Services;
+using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Core.Entities;
+using the_enigma_casino_server.Infrastructure.Database;
 
 namespace the_enigma_casino_server.Controllers;
 

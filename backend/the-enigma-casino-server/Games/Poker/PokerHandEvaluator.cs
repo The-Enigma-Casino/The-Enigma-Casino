@@ -1,7 +1,8 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
-using the_enigma_casino_server.Games.Shared.Entities.Enum;
+using the_enigma_casino_server.Games.Shared.Enum;
+using the_enigma_casino_server.Games.Shared.Enum;
 
-namespace the_enigma_casino_server.Games.RevisarPoker
+namespace the_enigma_casino_server.Games.Poker
 {
     public class PokerHandEvaluator
     {

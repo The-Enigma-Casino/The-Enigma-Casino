@@ -1,4 +1,4 @@
-﻿using the_enigma_casino_server.Games.Shared.Entities.Enum;
+﻿using the_enigma_casino_server.Games.Shared.Enum;
 
 namespace the_enigma_casino_server.Games.Shared.Entities;
 public class Card

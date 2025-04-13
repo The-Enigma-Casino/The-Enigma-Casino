@@ -315,7 +315,7 @@ public class BlackjackWebSocket : BaseWebSocketHandler, IWebSocketMessageHandler
 
             await BroadcastGameStateAsync(match, blackjackGame);
 
-            var gameMatchWS = GetScopedService<GameMatchWS>(out var scope);
+            var gameMatchWS = GetScopedService<GameMatchWebSocket>(out var scope);
             using (scope)
             {
                 Console.WriteLine($"🧾 [GameMatchWS] EndMatchForAllPlayersAsync llamado para mesa {tableId}");

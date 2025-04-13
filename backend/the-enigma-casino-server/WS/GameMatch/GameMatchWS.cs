@@ -12,11 +12,11 @@ using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.GameMatch;
 
-public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebSocketSender
+public class GameMatchWebSocket : BaseWebSocketHandler, IWebSocketMessageHandler, IWebSocketSender
 {
     public string Type => "game_match";
 
-    public GameMatchWS(
+    public GameMatchWebSocket(
     ConnectionManagerWS connectionManager,
     IServiceProvider serviceProvider)
     : base(connectionManager, serviceProvider)

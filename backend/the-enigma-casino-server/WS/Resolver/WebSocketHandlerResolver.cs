@@ -22,8 +22,8 @@ public class WebSocketHandlerResolver
 
         return type switch
         {
-            "game_table" => provider.GetRequiredService<GameTableWS>(),
-            "game_match" => provider.GetRequiredService<GameMatchWS>(),
+            "game_table" => provider.GetRequiredService<GameTableWebSocket>(),
+            "game_match" => provider.GetRequiredService<GameMatchWebSocket>(),
             "blackjack" => provider.GetRequiredService<BlackjackWebSocket>(),
             "poker" => provider.GetRequiredService<PokerWebSocket>(),
 

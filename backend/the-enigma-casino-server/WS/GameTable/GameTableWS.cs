@@ -15,16 +15,16 @@ using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.GameTable;
 
-public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
+public class GameTableWebSocket : BaseWebSocketHandler, IWebSocketMessageHandler
 {
     public string Type => "game_table";
 
-    private readonly GameMatchWS _gameMatchWS;
+    private readonly GameMatchWebSocket _gameMatchWS;
 
-    public GameTableWS(
+    public GameTableWebSocket(
         ConnectionManagerWS connectionManager,
         IServiceProvider serviceProvider,
-        GameMatchWS gameMatchWS)
+        GameMatchWebSocket gameMatchWS)
         : base(connectionManager, serviceProvider)
     {
         _gameMatchWS = gameMatchWS;

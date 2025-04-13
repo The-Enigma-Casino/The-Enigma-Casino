@@ -530,5 +530,17 @@ public class PokerGameService
         return player != null ? player.User.Coins - player.TotalContribution : 0;
     }
 
+    public List<Card> GetCommunityCards()
+    {
+        return _communityCards;
+    }
+
+    public List<Player> GetActivePlayers()
+    {
+        return _gameMatch.Players
+            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
+            .ToList();
+    }
+
 }
 

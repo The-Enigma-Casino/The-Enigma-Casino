@@ -39,4 +39,15 @@ public static class PokerActionTracker
             set.Remove(userId);
         }
     }
+
+    public static List<int> GetAllForTable(int tableId, string phase)
+    {
+        if (_actions.TryGetValue((tableId, phase), out var players))
+        {
+            return players.ToList();
+        }
+
+        return new List<int>();
+    }
+
 }

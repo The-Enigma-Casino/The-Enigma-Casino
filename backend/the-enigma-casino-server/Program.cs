@@ -76,12 +76,13 @@ public class Program
         // --- WebSocket: handlers (SIEMPRE singleton) ---
         builder.Services.AddSingleton<GameTableWS>();
         builder.Services.AddSingleton<GameMatchWS>();
-        builder.Services.AddSingleton<BlackjackWS>();
-        builder.Services.AddSingleton<PokerWS>(); 
+        builder.Services.AddSingleton<BlackjackWebSocket>();
+        builder.Services.AddSingleton<PokerWebSocket>(); 
 
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
-        builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWebSocket>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, PokerWebSocket>();
 
         // --- WebSocket: servicios específicos del juego ---
         builder.Services.AddScoped<GameTableManager>();
@@ -100,6 +101,16 @@ public class Program
         builder.Services.AddScoped<IGameBetInfoProvider, BlackjackBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, BlackjackTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, BlackjackSessionCleaner>();
+
+
+        // --- Servicios concretos de Poker ---
+        builder.Services.AddScoped<PokerBetInfoProvider>();
+        builder.Services.AddScoped<PokerSessionCleaner>();
+        builder.Services.AddScoped<PokerTurnService>();
+
+        builder.Services.AddScoped<IGameBetInfoProvider, PokerBetInfoProvider>();
+        builder.Services.AddScoped<IGameTurnService, PokerTurnService>();
+        builder.Services.AddScoped<IGameSessionCleaner, PokerSessionCleaner>();
 
 
         // --- Mappers ---

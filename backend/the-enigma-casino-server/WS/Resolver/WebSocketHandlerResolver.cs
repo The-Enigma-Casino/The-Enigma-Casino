@@ -24,8 +24,9 @@ public class WebSocketHandlerResolver
         {
             "game_table" => provider.GetRequiredService<GameTableWS>(),
             "game_match" => provider.GetRequiredService<GameMatchWS>(),
-            "blackjack" => provider.GetRequiredService<BlackjackWS>(),
-            "poker" => provider.GetRequiredService<PokerWS>(),
+            "blackjack" => provider.GetRequiredService<BlackjackWebSocket>(),
+            "poker" => provider.GetRequiredService<PokerWebSocket>(),
+
             _ => null
         };
     }

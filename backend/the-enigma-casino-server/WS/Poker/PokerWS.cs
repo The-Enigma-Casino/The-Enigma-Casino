@@ -5,11 +5,11 @@ using the_enigma_casino_server.WS.Resolver;
 
 namespace the_enigma_casino_server.WS.PokerWS;
 
-public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
+public class PokerWebSocket : BaseWebSocketHandler, IWebSocketMessageHandler
 {
     public string Type => "poker";
 
-    public PokerWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
+    public PokerWebSocket(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
         : base(connectionManager, serviceProvider)
     {
 

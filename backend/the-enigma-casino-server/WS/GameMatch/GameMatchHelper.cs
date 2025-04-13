@@ -68,7 +68,7 @@ public static class GameMatchHelper
         return cancelled;
     }
 
-    public static async Task TryAutoDealIfAllPlayersBetAsync(int tableId, Match match, BlackjackWS blackjackWS)
+    public static async Task TryAutoDealIfAllPlayersBetAsync(int tableId, Match match, BlackjackWebSocket blackjackWS)
     {
         if (match.GameTable.GameType != GameType.BlackJack)
             return;

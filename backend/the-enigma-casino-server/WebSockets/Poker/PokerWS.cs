@@ -48,8 +48,27 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         int tableId = match.GameTableId;
 
         PokerGameService pokerGame = new PokerGameService(match);
-        pokerGame.StartRound();
+        pokerGame.StartRound(); 
+        pokerGame.AssignBlinds();
+
         ActivePokerGameStore.Set(tableId, pokerGame);
+
+        Player smallBlind = pokerGame.GetSmallBlind();
+        Player bigBlind = pokerGame.GetBigBlind();
+        Player dealer = pokerGame.GetDealer();
+
+        var blindInfo = new
+        {
+            type = Type,
+            action = "blinds_assigned",
+            dealer = new { userId = dealer.UserId },
+            smallBlind = new { userId = smallBlind.UserId, amount = smallBlind.CurrentBet },
+            bigBlind = new { userId = bigBlind.UserId, amount = bigBlind.CurrentBet }
+        };
+
+        var playerIds = match.Players.Select(p => p.UserId.ToString()).ToList();
+        await ((IWebSocketSender)this).BroadcastToUsersAsync(playerIds, blindInfo);
+
 
         Console.WriteLine($"🃏 [PokerWS] Cartas iniciales repartidas en mesa {tableId}.");
 

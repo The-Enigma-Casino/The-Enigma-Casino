@@ -71,6 +71,18 @@ public class PokerGameService
         }
     }
 
+    // Asigna ciegas a los jugadores activos
+    public void AssignBlinds()
+    {
+        Console.WriteLine("\n--- Asigna ciegas a los jugadores activos ---\n");
+        _blindManager.AssignBlinds();
+    }
+
+    public Player GetDealer() => _blindManager.Dealer;
+    public Player GetSmallBlind() => _blindManager.SmallBlind;
+    public Player GetBigBlind() => _blindManager.BigBlind;
+
+
     // Reparte 3 cartas comunitarias
     public void DealFlop()
     {

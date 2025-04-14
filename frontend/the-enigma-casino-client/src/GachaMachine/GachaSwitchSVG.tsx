@@ -1,24 +1,25 @@
-import { FC } from "react";
-import styles from "../MachineComponent.module.css";
+import React from 'react';
+import clsx from 'clsx';
 
-interface GachaSwitchSVGProps {
+interface Props {
   isActive?: boolean;
   onClick?: () => void;
-  className?: string;
 }
 
-const GachaSwitchSVG: FC<GachaSwitchSVGProps> = ({
-  isActive = false,
-  onClick,
-  className = "",
-}) => {
+const GachaSwitchSVG: React.FC<Props> = ({ isActive, onClick }) => {
   return (
     <svg
-      className={`${styles.switch} ${isActive ? styles.active : ""} ${className}`}
       viewBox="0 0 154 155"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       onClick={onClick}
+      className={clsx('transition-transform duration-300 cursor-pointer', {
+        'rotate-[-90deg]': isActive,
+      })}
+      style={{
+        width: '70px',
+        transformOrigin: 'center center',
+      }}
     >
       <circle
         cx="76.5828"

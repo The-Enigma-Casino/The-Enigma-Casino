@@ -1,10 +1,9 @@
 import { useState } from "react";
-import styles from "./MachineComponent.module.css";
-import GachaSwitchSVG from "./GachaSwitchSVG";
-import RewardSVG from "./RewardSVG";
-import GachaMachineSVG from "./GachaMachineSVG";
+import styles from "./GachaponMachine.module.css";
+import MaskReward from "./MaskReward";
+import SwitchSVG from "./GachaSwitchSVG";
 import EggSVG from "./EggSVG";
-
+import MachineSVG from "./MachineSVG";
 
 const colors = ["#E5A0B9", "#F3D478", "#9DCFE0", "#B9AED4"];
 
@@ -46,29 +45,32 @@ const GachaponMachine = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <div
-        className={`${styles.mask} ${isMaskActive ? styles.active : ""}`}
-        onClick={handleMaskClick}
-      >
-        <div className={styles.winner}>{winner}</div>
-        <RewardSVG color={currentColor} />
-      </div>
-
-      <div className={styles.gachapon}>
-        <GachaSwitchSVG
-          isActive={isSwitchActive}
-          onClick={handleSwitchClick}
+    <>
+      <div className={styles.container}>
+        <MaskReward
+          isVisible={isMaskActive}
+          onClick={handleMaskClick}
+          color={currentColor}
+          winner={winner}
         />
-        <GachaMachineSVG />
-        <div
-          className={`${isEggActive ? styles.active : ""}`}
-          onClick={handleEggClick}
-        >
-          <EggSVG color={currentColor} className={styles.egg} />
+        <div className={styles.gachapon}>
+          <div
+            className={`${styles.switch} ${
+              isSwitchActive ? styles.active : ""
+            }`}
+            onClick={handleSwitchClick}
+          >
+            <SwitchSVG />
+          </div>
+          <MachineSVG />
+          <EggSVG
+            isActive={isEggActive}
+            onClick={handleEggClick}
+            color={currentColor}
+          />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

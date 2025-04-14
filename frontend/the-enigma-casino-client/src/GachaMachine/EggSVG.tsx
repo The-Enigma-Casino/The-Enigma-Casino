@@ -15,14 +15,17 @@ const EggSVG: React.FC<Props> = ({ isActive, onClick, color }) => {
       style={{
         width: "100%",
         height: "100%",
-        cursor: isActive ? "pointer" : "default",
+        transform: "translate(-50%, 0)",
         opacity: isActive ? 1 : 0,
         pointerEvents: isActive ? "auto" : "none",
-        transition: "opacity 0.4s ease, transform 0.4s ease",
-        transform: isActive ? "translateY(0)" : "translateY(-80px)", 
+        transition: "opacity 0.4s ease 0.5s, transform 0.4s ease 0.5s, filter 0.8s ease-in-out",
         position: "absolute",
-        top: 15,
-        left: 0,
+        top: 17,
+        left: "50%",
+        cursor: isActive ? "pointer" : "default",
+        filter: color === "#FFD700"
+        ? "drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 15px #ffeb3b)"
+        : "none",
       }}
     >
       <g>
@@ -33,6 +36,9 @@ const EggSVG: React.FC<Props> = ({ isActive, onClick, color }) => {
           fill={color}
           stroke="#57172F"
           strokeWidth="10"
+          style={{
+            transition: "fill 0.8s ease-in-out",
+          }}
         />
         <path
           d="M323.599 925.513C291.223 932.027 279.261 908.229 274.125 897.882C326.587 906.466 345.102 886.898 352.345 874.125C357.085 887.153 357.344 918.724 323.599 925.513Z"

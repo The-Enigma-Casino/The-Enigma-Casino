@@ -15,6 +15,6 @@
   display: block;
   opacity: 1;
   transform: translate(0, 35px);
-  transition: transform 0.4s ease 0.5s, opacity 0.2s ease 0.5s;
+  transition: transform 0.4s ease 0.5s, opacity 0.2s ease 0.5s, filter 0.8s ease-in-out;
 }
   

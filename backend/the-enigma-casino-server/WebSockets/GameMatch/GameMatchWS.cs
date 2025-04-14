@@ -35,7 +35,8 @@ public class GameMatchWebSocket : BaseWebSocketHandler, IWebSocketMessageHandler
         GameTurnServiceResolver turnResolver = provider.GetRequiredService<GameTurnServiceResolver>();
         GameSessionCleanerResolver sessionCleaner = provider.GetRequiredService<GameSessionCleanerResolver>();
 
-        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner);
+        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, provider);
+
     }
 
     public async Task HandleAsync(string userId, JsonElement message)

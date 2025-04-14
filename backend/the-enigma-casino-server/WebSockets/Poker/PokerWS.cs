@@ -43,43 +43,24 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
     }
 
-    private async Task HandleMatchStartedAsync(JsonElement message)
+    public async Task StartInitialDealAsync(Match match)
     {
-        if (!TryGetTableId(message, out var tableId))
-            return;
+        int tableId = match.GameTableId;
 
-        if (!ActiveGameMatchStore.TryGet(tableId, out var match))
-        {
-            Console.WriteLine($"❌ [PokerWS] No se encontró Match activo para mesa {tableId}.");
-            return;
-        }
-
-        if (match.GameTable.GameType != GameType.Poker)
-        {
-            Console.WriteLine($"ℹ️ [PokerWS] Mesa {tableId} no es de Poker, se ignora.");
-            return;
-        }
-
-        if (ActivePokerGameStore.TryGet(tableId, out _))
-        {
-            Console.WriteLine($"♻️ [PokerWS] Juego ya iniciado en mesa {tableId}, no se repite.");
-            return;
-        }
-
-        var pokerGame = new PokerGameService(match);
+        PokerGameService pokerGame = new PokerGameService(match);
         pokerGame.StartRound();
         ActivePokerGameStore.Set(tableId, pokerGame);
 
-        Console.WriteLine($"🃏 [PokerWS] PokerGame iniciado automáticamente en mesa {tableId} tras match_started.");
+        Console.WriteLine($"🃏 [PokerWS] Cartas iniciales repartidas en mesa {tableId}.");
 
-        foreach (var player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))
+        foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))
         {
             var personalHand = player.Hand.Cards.Select(c => new
             {
                 rank = c.Rank.ToString(),
                 suit = c.Suit.ToString(),
                 value = c.Value
-            });
+            }).ToList();
 
             var response = new
             {
@@ -92,9 +73,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), response);
         }
 
-        Console.WriteLine("✅ [PokerWS] Cartas enviadas automáticamente tras match_started.");
+        Console.WriteLine("✅ [PokerWS] Cartas iniciales enviadas a todos los jugadores.");
     }
-
 
     private async Task HandlePlaceBetAsync(string userId, JsonElement message)
     {

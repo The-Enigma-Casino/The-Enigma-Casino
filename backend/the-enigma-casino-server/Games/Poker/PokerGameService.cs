@@ -16,6 +16,10 @@ public class PokerGameService
     private readonly PokerHandComparer _handComparer = new();
     private readonly Dictionary<int, int> _initialCoinsByUserId = new();
 
+    private int _currentTurnUserId;
+    public int CurrentTurnUserId => _currentTurnUserId;
+
+
 
     public PokerGameService(Match gameMatch)
     {
@@ -427,6 +431,39 @@ public class PokerGameService
             Console.WriteLine($"\nBOTE acumulado: {_pot} fichas.");
         }
     }
+
+    public void AdvanceTurn()
+    {
+        var activePlayers = _gameMatch.Players
+            .Where(p => p.PlayerState == PlayerState.Playing)
+            .ToList();
+
+        if (activePlayers.Count == 0)
+        {
+            Console.WriteLine("❌ No hay jugadores activos para avanzar turno.");
+            return;
+        }
+
+        int currentIndex = _gameMatch.Players.FindIndex(p => p.UserId == _currentTurnUserId);
+
+        int totalPlayers = _gameMatch.Players.Count;
+
+        for (int i = 1; i < totalPlayers; i++)
+        {
+            int nextIndex = (currentIndex + i) % totalPlayers;
+            var nextPlayer = _gameMatch.Players[nextIndex];
+
+            if (nextPlayer.PlayerState == PlayerState.Playing && nextPlayer.User.Coins > 0)
+            {
+                _currentTurnUserId = nextPlayer.UserId;
+                Console.WriteLine($"➡️ Turno avanzado a {nextPlayer.User.NickName} (userId: {_currentTurnUserId})");
+                return;
+            }
+        }
+
+        Console.WriteLine("⚠️ No se pudo encontrar el siguiente jugador activo para el turno.");
+    }
+
 
     // Reinicia apuesta de todos los jugadores
     private void ResetCurrentBets()

@@ -258,6 +258,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!TryGetPokerGame(tableId, null, out var pokerGame)) return;
 
         pokerGame.DealTurn();
+        pokerGame.StartTurn(match);
+
         var communityCards = pokerGame.GetCommunityCards();
 
         Console.WriteLine("\n--- TURN D ---");
@@ -280,8 +282,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, response);
 
         Console.WriteLine($"🃏 [PokerWS] Turn repartido en mesa {tableId}, esperando apuestas.");
-
-        //pokerGame.TurnService.StartTurn(match); 
     }
 
 
@@ -389,6 +389,15 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         Console.WriteLine($"🎮 [PokerWS] {player.User.NickName} realiza acción '{move}' en mesa {tableId}");
 
+        string phase = pokerGame.GetCommunityCards().Count switch
+        {
+            0 => "preflop",
+            3 => "flop",
+            4 => "turn",
+            5 => "river",
+            _ => "unknown"
+        };
+
         switch (move)
         {
             case "check":
@@ -422,12 +431,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     return;
                 }
 
-                if (match.Players.Max(p => p.CurrentBet) == 0)
-                {
-                    await SendErrorAsync(userId, "No puedes hacer raise si nadie ha apostado todavía.");
-                    return;
-                }
-
                 int currentMax = match.Players.Max(p => p.CurrentBet);
                 int totalBet = (currentMax - player.CurrentBet) + amount;
 
@@ -438,6 +441,14 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 }
 
                 pokerGame.HandlePokerBet(player, totalBet);
+
+                var activePlayerIds = match.Players
+                    .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
+                    .Select(p => p.UserId)
+                    .ToList();
+
+
+                PokerActionTracker.ResetActionsForRaise(tableId, activePlayerIds, player.UserId, phase);
                 break;
 
             case "all-in":
@@ -470,15 +481,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             pokerGame.AdvanceTurn();
         }
-
-        string phase = pokerGame.GetCommunityCards().Count switch
-        {
-            0 => "preflop",
-            3 => "flop",
-            4 => "turn",
-            5 => "river",
-            _ => "unknown"
-        };
 
         PokerActionTracker.RegisterAction(tableId, player.UserId, phase);
 

@@ -464,6 +464,24 @@ public class PokerGameService
         Console.WriteLine("⚠️ No se pudo encontrar el siguiente jugador activo para el turno.");
     }
 
+    public void StartTurn(Match match)
+    {
+        List<Player> activePlayers = match.Players
+            .Where(p => p.PlayerState == PlayerState.Playing && p.User.Coins > 0)
+            .ToList();
+
+        if (!activePlayers.Any())
+        {
+            Console.WriteLine("⚠️ No hay jugadores activos para iniciar el turno.");
+            return;
+        }
+
+        var firstToAct = activePlayers.First();
+        _currentTurnUserId = firstToAct.UserId;
+        Console.WriteLine($"🎯 Primer jugador en actuar: {firstToAct.User.NickName} (userId: {_currentTurnUserId})");
+    }
+
+
 
     // Reinicia apuesta de todos los jugadores
     private void ResetCurrentBets()

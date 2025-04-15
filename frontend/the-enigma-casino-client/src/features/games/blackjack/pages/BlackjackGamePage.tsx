@@ -10,6 +10,7 @@ import {
   resetPlayers,
   resetCroupier,
   resetGameState,
+  resetCroupierTotal,
   playerHit,
   playerStand,
   doubleDown,
@@ -24,79 +25,37 @@ import { calculateHandTotal } from "../../shared/utils/gameHand.utils";
 import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand } from "../store/bjEvents";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { CardRank, GameType, Suit } from "../../shared/types/gameCard.type";
-import { GameCard } from "../../shared/interfaces/gameCard.interface";
+import { ChipStack } from "../../shared/components/ChipStack";
+import { loadCoins } from "../../../coins/store/coinsStore";
+
 export const BlackjackGamePage = () => {
-  const [
-    players,
-    croupier,
-    gameState,
-    currentTurnUserId,
-    croupierTotal,
-    resetPlayersFn,
-    resetCroupierFn,
-    resetGameStateFn,
-    playerHitFn,
-    playerStandFn,
-    doubleDownFn,
-    roundResults,
-    croupierRoundHand,
-  ] = useUnit([
-    $players,
-    $croupier,
-    $gameState,
-    $currentTurnUserId,
-    $currentTableId,
-    resetPlayers,
-    resetCroupier,
-    resetGameState,
-    playerHit,
-    playerStand,
-    doubleDown,
-    $roundResults,
-    $croupierRoundHand,
-    $croupierTotal,
-  ]);
 
-  function getCroupierCardsToShow({
-    gameState,
-    croupier,
-    roundResults,
-    croupierRoundHand,
-  }: {
-    gameState: string;
-    croupier: { hand: GameCard[] };
-    roundResults: any[];
-    croupierRoundHand: { rank: string; suit: string; value: number }[];
-  }): GameCard[] {
-    const asGameCard = (card: any): GameCard => ({
-      ...card,
-      gameType: "BlackJack",
-    });
 
-    // Si ya terminó la ronda, mostramos la mano final del crupier
-    if (roundResults.length > 0) {
-      return croupierRoundHand.map(asGameCard);
-    }
+  const players = useUnit($players);
+  const croupier = useUnit($croupier);
+  const gameState = useUnit($gameState);
+  const currentTurnUserId = useUnit($currentTurnUserId);
+  const currentTableId = useUnit($currentTableId);
 
-    // Si hay una sola carta, agregamos una oculta
-    if (gameState === "InProgress" && croupier.hand.length === 1) {
-      return [
-        asGameCard(croupier.hand[0]),
-        {
-          rank: "Hidden" as CardRank,
-          suit: "Spades", // suit dummy válido
-          value: 0,
-          gameType: "BlackJack",
-        },
-      ];
-    }
+  const roundResults = useUnit($roundResults);
+  const croupierRoundHand = useUnit($croupierRoundHand);
+  const croupierTotal = useUnit($croupierTotal);
 
-    // Si tiene más de una carta visible
-    return croupier.hand.map(asGameCard);
-  }
+  const resetPlayersFn = useUnit(resetPlayers);
+  const resetCroupierFn = useUnit(resetCroupier);
+  const resetGameStateFn = useUnit(resetGameState);
+  const resetCroupierTotalFn = useUnit(resetCroupierTotal);
+
+  const playerHitFn = useUnit(playerHit);
+  const playerStandFn = useUnit(playerStand);
+  const doubleDownFn = useUnit(doubleDown);
+
   const userId = useUnit($userId);
 
   const [betAmount, setBetAmount] = useState(200);
+  const handleHit = () => playerHitFn();
+  const handleStand = () => playerStandFn();
+  const handleDouble = () => doubleDownFn();
 
   useEffect(() => {
     getGameStateRequested();
@@ -113,6 +72,7 @@ export const BlackjackGamePage = () => {
       resetPlayers();
       resetCroupier();
       resetGameState();
+      resetCroupierTotalFn();
     }
   }, [
     players,
@@ -121,6 +81,7 @@ export const BlackjackGamePage = () => {
     resetPlayersFn,
     resetCroupierFn,
     resetGameStateFn,
+    loadCoins(),
   ]);
 
   useEffect(() => {
@@ -130,11 +91,10 @@ export const BlackjackGamePage = () => {
       resetPlayersFn();
       resetCroupierFn();
       resetGameStateFn();
+      resetCroupierTotal();
+      loadCoins();
     }
   }, [gameState]);
-
-  console.log("Croupier para mostrar:", croupier.hand);
-
 
   useEffect(() => {
     const localPlayer = players.find(p => p.id === Number(userId));
@@ -149,35 +109,36 @@ export const BlackjackGamePage = () => {
     });
   }, [players, currentTurnUserId, userId, gameState]);
 
-  const handleHit = () => playerHitFn();
-  const handleStand = () => playerStandFn();
-  const handleDouble = () => doubleDownFn();
-  console.log("GAME STATE", gameState)
+
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Blackjack</h1>
+    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">
+      <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">♠️ Blackjack</h1>
 
-      <p className="mb-4">
-        Estado del juego: <strong>{gameState}</strong>
+      <p className="text-center mb-4 text-3xl">
+        Estado del juego: <span className="font-bold text-yellow-300">{gameState}</span>
       </p>
 
+      {/*Resultados de ronda */}
       {roundResults.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <h2 className="text-xl font-semibold mb-2 text-center">🎉 Resultados de la ronda</h2>
-          <ul className="space-y-2">
+        <div className="bg-black/70 text-white rounded-lg shadow p-4 mb-8 mx-auto max-w-md">
+          <h2 className="text-2xl font-bold mb-4 text-center">Resultados de la ronda</h2>
+          <ul className="space-y-3">
             {roundResults.map((res) => (
-              <li key={res.userId} className="flex justify-between items-center border-b pb-1">
-                <span className="font-medium">{res.nickname}</span>
+              <li
+                key={res.userId}
+                className="flex justify-between items-center border-b border-white/10 pb-2"
+              >
+                <span className="font-semibold">{res.nickname}</span>
                 <span>
                   {res.result === "win" && "🟢 Ganó"}
                   {res.result === "lose" && "🔴 Perdió"}
                   {res.result === "draw" && "🟡 Empate"}
                   {res.result === "blackjack" && "🃏 Blackjack!"}
                 </span>
-                <span className="text-sm text-gray-500">Total: {res.finalTotal}</span>
-                <span className="font-semibold">
-                  {res.coinsChange > 0 ? `+${res.coinsChange} ` : `${res.coinsChange}`}
+                <span className="text-3xl text-gray-300">Total: {res.finalTotal}</span>
+                <span className="font-bold text-green-400">
+                  {res.coinsChange > 0 ? `+${res.coinsChange} ` : `${res.coinsChange} fichas`}
                 </span>
               </li>
             ))}
@@ -185,147 +146,175 @@ export const BlackjackGamePage = () => {
         </div>
       )}
 
+      {/*Apuesta */}
       {gameState === "Waiting" && (
-        <div className="flex flex-col items-center gap-4 mb-6">
-          <p className="text-gray-500">Introduce una apuesta para comenzar la partida.</p>
-          <div className="flex gap-2 items-center">
-            <input
-              type="number"
-              min={50}
-              max={5000}
-              value={betAmount}
-              onChange={(e) => setBetAmount(Number(e.target.value))}
-              className="px-2 py-1 border rounded w-24"
-            />
-            <button
-              onClick={() => playerPlaceBet(betAmount)}
-              disabled={betAmount < 50 || betAmount > 5000}
-              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 transition"
-            >
-              Apostar
+        <div className="flex flex-col items-center gap-4 mb-10">
+          <p className="text-gray-200 text-center">Introduce una apuesta para comenzar la partida.</p>
+
+          <div className="flex gap-3 justify-center">
+            {[5, 10, 25, 50, 100].map((chip) => (
+              <button
+                key={chip}
+                onClick={() => setBetAmount(betAmount + chip)}
+                className="transform hover:scale-110 transition"
+              >
+                <div className={`w-12 h-12 rounded-full border-4 border-black flex items-center justify-center text-sm font-bold text-white ${{
+                  5: "bg-white text-black",
+                  10: "bg-lime-400 text-black",
+                  25: "bg-orange-500",
+                  50: "bg-red-500",
+                  100: "bg-purple-500",
+                }[chip]
+                  }`}>
+                  {chip}
+                </div>
+              </button>
+            ))}
+            <button onClick={() => setBetAmount(0)} className="text-sm text-red-300 hover:underline ml-2">
+              Reset
             </button>
           </div>
-          {betAmount > 0 && (betAmount < 50 || betAmount > 5000) && (
-            <span className="text-sm text-red-500">
-              La apuesta debe ser entre 50 y 5000
-            </span>
-          )}
+
+          <p className="text-lg">
+            Apuesta actual: <span className="font-extrabold text-green-300">${betAmount}</span>
+          </p>
+
+          <button
+            onClick={() => playerPlaceBet(betAmount)}
+            disabled={betAmount < 50 || betAmount > 5000}
+            className="px-6 py-2 rounded bg-indigo-600 hover:bg-indigo-700 font-bold text-white disabled:opacity-50"
+          >
+            Apostar
+          </button>
         </div>
       )}
 
-      <h2 className="text-xl font-semibold mb-2">Croupier</h2>
+      {/* Croupier */}
+      <h2 className="text-2xl font-bold text-center mt-6 mb-2">Croupier</h2>
 
-      {/* Mostrar cartas del crupier al final de la ronda */}
-      {roundResults.length > 0 && (
-        <CardStack
-          cards={croupierRoundHand.map((card) => ({
-            rank: card.rank as CardRank,
-            suit: card.suit as Suit,
-            value: card.value,
-            gameType: "BlackJack",
-          }))}
-          total={croupierTotal ?? undefined}
-          hidden={false}
-        />
-      )}
-
-      {gameState === "InProgress" && croupier.hand.length === 1 && (
-        <CardStack
-          cards={[
-            {
-              rank: "Ace",
-              suit: "Spades",
-              value: 0,
+      <div className="flex justify-center items-center flex-col gap-2">
+        {/* Mostrar cartas del crupier al final de la ronda */}
+        {roundResults.length > 0 && (
+          <CardStack
+            cards={croupierRoundHand.map((card) => ({
+              rank: card.rank as CardRank,
+              suit: card.suit as Suit,
+              value: card.value,
               gameType: "BlackJack",
-            },
-            {
-              ...croupier.hand[0],
-              gameType: "BlackJack",
-            },
-          ]}
-          total={croupierTotal ?? undefined}
-          hidden={true}
-        />
-      )}
+            }))}
+            hidden={false}
 
-      <h2 className="text-xl font-semibold mb-2">Jugadores</h2>
-      <div className="flex gap-8 flex-wrap justify-center mt-4">
+          />
+        )}
+
+        {gameState === "InProgress" && croupier.hand.length === 1 && (
+          <CardStack
+            cards={[
+              {
+                rank: "Ace",
+                suit: "Spades",
+                value: 0,
+                gameType: "BlackJack",
+              },
+              {
+                ...croupier.hand[0],
+                gameType: "BlackJack",
+              },
+            ]}
+            hidden={true}
+          />
+        )}
+
+        {roundResults.length > 0 && croupierTotal > 0 ? (
+          <p className="text-xl font-bold text-white mt-2">
+            Total: <span className="text-yellow-300">{croupierTotal}</span>
+          </p>
+        ) : croupier.hand.length === 1 ? (
+          <p className="text-xl font-semibold text-white mt-2">
+            Total:{" "}
+            <span className="text-yellow-300">
+              {croupier.hand[0]?.value ?? "-"}
+            </span>
+          </p>
+        ) : null}
+      </div>
+
+      {/* Jugadores */}
+      <h2 className="text-2xl font-bold text-center mt-10 mb-6">
+        Jugadores apostando: <span className="text-yellow-300">{players.length}</span>
+      </h2>
+
+      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
         {players.map((player) => {
           const isTurn = player.id === currentTurnUserId;
           const isLocalPlayer = player.id === Number(userId);
-          console.log("PLAYER", player)
-          console.log("ISTURN", isTurn);
-          console.log("islocalplaye5r", isLocalPlayer);
+          const totalHand = calculateHandTotal(player.hand);
+
           return (
-            <div key={player.id} className="flex flex-col items-center">
-              <PlayerHUD
-                name={player.name}
-                coins={player.bet}
-                avatarUrl={`https://i.pravatar.cc/300?u=${player.id}`}
-                isCurrent={isTurn}
-              />
+            <div
+              key={player.id}
+              className="flex flex-col items-center gap-3 p-4 bg-black/20 rounded-xl shadow-md w-[260px]"
+            >
+              <CardStack cards={player.hand} />
 
-              <CardStack
-                cards={player.hand}
-                total={calculateHandTotal(player.hand)}
-              />
+              <p className="text-sm text-white font-bold -mt-2">
+                Total: <span className="text-yellow-300">{totalHand}</span>
+              </p>
 
-              {isLocalPlayer && player.state === "Waiting" && player.bet === 0 && (
-                <div className="flex flex-col items-center gap-2 mt-4">
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="number"
-                      min={50}
-                      max={5000}
-                      value={betAmount}
-                      onChange={(e) => setBetAmount(Number(e.target.value))}
-                      className="px-2 py-1 border rounded w-24"
-                    />
-                    <button
-                      onClick={() => playerPlaceBet(betAmount)}
-                      disabled={betAmount < 50 || betAmount > 5000}
-                      className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 transition"
-                    >
-                      Apostar
-                    </button>
+              <div className="flex items-end gap-3">
+                <PlayerHUD
+                  name={player.name}
+                  coins={player.bet}
+                  avatarUrl={`https://i.pravatar.cc/300?u=${player.id}`}
+                  isCurrent={isTurn}
+                />
+
+                {player.bet > 0 && (
+                  <div className="flex flex-col items-center">
+                    <ChipStack coins={player.bet} />
+                    <span className="text-xs font-bold text-white mt-1">${player.bet}</span>
                   </div>
-                  {betAmount > 0 && (betAmount < 50 || betAmount > 5000) && (
-                    <span className="text-sm text-red-500">
-                      La apuesta debe ser entre 50 y 5000
-                    </span>
-                  )}
+                )}
+              </div>
+
+              {/* Botones de acción */}
+              {isLocalPlayer && gameState === "InProgress" && isTurn && player.state === "Playing" && (
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={handleHit}
+                    className="px-4 py-2 bg-green-500 border-2 border-black text-black font-bold rounded hover:bg-green-600 shadow"
+                  >
+                    HIT
+                  </button>
+                  <button
+                    onClick={handleStand}
+                    className="px-4 py-2 bg-yellow-300 border-2 border-black text-black font-bold rounded hover:bg-yellow-400 shadow"
+                  >
+                    STAND
+                  </button>
+                  <button
+                    onClick={handleDouble}
+                    className="px-4 py-2 bg-purple-600 border-2 border-black text-white font-bold rounded hover:bg-purple-700 shadow"
+                  >
+                    DOUBLE
+                  </button>
                 </div>
               )}
 
-
-              {gameState === "InProgress" && isLocalPlayer && isTurn && player.state === "Playing" && (
-                <div className="flex gap-4 mt-4">
-                  <button onClick={handleHit} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    Hit
-                  </button>
-                  <button onClick={handleStand} className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-                    Stand
-                  </button>
-                  <button onClick={handleDouble} className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
-                    Double
-                  </button>
-                </div>
-              )}
-
+              {/* Estado del jugador */}
               {isLocalPlayer && gameState === "InProgress" && player.state !== "Playing" && (
-                <p className="mt-2 italic text-gray-500">
-                  {player.state === "Bust" && "¡Te pasaste de 21!"}
-                  {player.state === "Stand" && "Te has plantado. Esperando siguiente jugador..."}
-                  {player.state === "Lose" && "Has perdido esta ronda. Esperando resultado final..."}
-                  {player.state === "Win" && "¡Has ganado esta ronda!"}
+                <p className="text-sm italic text-white/70 mt-2">
+                  {player.state === "Bust" && "💥 Te pasaste de 21!"}
+                  {player.state === "Stand" && "🧍 Te plantaste. Esperando..."}
+                  {player.state === "Lose" && "❌ Has perdido esta ronda."}
+                  {player.state === "Win" && "🏆 ¡Victoria!"}
                 </p>
               )}
-
-
             </div>
           );
         })}
       </div>
+
     </div>
   );
 };

@@ -44,6 +44,7 @@ export const setCroupierRoundHand = createEvent<{
   suit: string;
   value: number;
 }[]>();
+export const resetCroupierTotal = createEvent();
 
 // Acciones enviadas al backend
 export const playerHit = createEvent();

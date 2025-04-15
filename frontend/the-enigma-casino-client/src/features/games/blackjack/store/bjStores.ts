@@ -11,7 +11,8 @@ import {
   roundResultReceived,
   resetCroupierRoundHand,
   resetRoundResults,
-  setCroupierRoundHand
+  setCroupierRoundHand,
+  resetCroupierTotal
 } from "../store/bjEvents";
 import { Player, Croupier, GameState } from "../../shared/types";
 
@@ -53,6 +54,7 @@ export const $croupierRoundHand = createStore<{
   .on(setCroupierRoundHand, (_, cards) => cards)
   .on(resetCroupierRoundHand, () => []);
 
-export const $croupierTotal = createStore<number | null>(null)
+export const $croupierTotal = createStore<number>(0)
   .on(roundResultReceived, (_, payload) => payload.croupierTotal)
-  .on(resetRoundResults, () => null);
+  .on(resetRoundResults, () => 0)
+  .on(resetCroupierTotal, () => 0);

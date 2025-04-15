@@ -368,7 +368,6 @@ public class PokerGameService
 
         var playersWithBets = _gameMatch.Players
             .Where(p => p.TotalContribution > 0)
-            .OrderBy(p => p.TotalContribution)
             .ToList();
 
         Console.WriteLine("\n♻️ [GeneratePots] Generando pots...");
@@ -376,6 +375,31 @@ public class PokerGameService
         {
             Console.WriteLine($"   - {p.User.NickName} contribuyó: {p.TotalContribution} fichas");
         }
+
+        bool hasAllIn = _gameMatch.Players.Any(p =>
+            (p.PlayerState == PlayerState.AllIn || p.PlayerState == PlayerState.Fold) &&
+            p.TotalContribution > 0);
+
+        if (!hasAllIn)
+        {
+            var mainPot = new Pot
+            {
+                Amount = playersWithBets.Sum(p => p.TotalContribution),
+                EligiblePlayers = playersWithBets.ToList()
+            };
+
+            foreach (var p in playersWithBets)
+            {
+                p.TotalContribution = 0;
+            }
+
+            _pots.Add(mainPot);
+            Console.WriteLine($"💰 Pot único creado con {mainPot.Amount} fichas. Participantes: {string.Join(", ", mainPot.EligiblePlayers.Select(p => p.User.NickName))}");
+            Console.WriteLine("✅ Solo se ha generado un Main Pot (todo normal)");
+            return;
+        }
+
+        playersWithBets = playersWithBets.OrderBy(p => p.TotalContribution).ToList();
 
         while (playersWithBets.Any())
         {
@@ -404,15 +428,9 @@ public class PokerGameService
                 .ToList();
         }
 
-        if (_pots.Count == 1)
-        {
-            Console.WriteLine("✅ Solo se ha generado un Main Pot (todo normal)");
-        }
-        else
-        {
-            Console.WriteLine($"⚠️ Se han generado {_pots.Count} pots. Verifica si hubo diferencias en las contribuciones.");
-        }
+        Console.WriteLine($"⚠️ Se han generado {_pots.Count} pots. Verifica si hubo diferencias en las contribuciones y jugadores All-In.");
     }
+
 
 
     public void HandlePokerBet(Player player, int amount)

@@ -1,6 +1,6 @@
 // src/pages/GachaponPage.tsx
 import React from 'react';
-import GachaMachineSVG from './GachaMachineSVG';
+import GachaMachineSVG from './GachaponMachine';
 
 const GachaponPage: React.FC = () => {
   return (

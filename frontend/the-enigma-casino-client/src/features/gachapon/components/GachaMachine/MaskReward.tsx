@@ -6,6 +6,7 @@ interface MaskRewardProps {
   onClick: () => void;
   color: string;
   winner: string;
+  benefit?: number | null;
 }
 
 const MaskReward: FC<MaskRewardProps> = ({
@@ -13,12 +14,20 @@ const MaskReward: FC<MaskRewardProps> = ({
   onClick,
   color,
   winner,
+  benefit,
 }) => {
   if (!isVisible) return null;
+  const isSpecial = benefit === 10000;
 
   return (
     <div className={styles.mask} onClick={onClick}>
-      <div className={styles.winner}>{winner}</div>
+      <div
+        className={`${styles.winner} ${
+          isSpecial ? styles["winner--special"] : styles["winner--normal"]
+        }`}
+      >
+        {winner}
+      </div>
       <svg
         viewBox="0 0 439 215"
         xmlns="http://www.w3.org/2000/svg"

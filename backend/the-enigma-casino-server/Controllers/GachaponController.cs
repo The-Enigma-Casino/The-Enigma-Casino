@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
+using the_enigma_casino_server.NUEVOS;
 using the_enigma_casino_server.Services;
 
 namespace the_enigma_casino_server.Controllers;
@@ -29,12 +30,12 @@ public class GachaponController : BaseController
     }
 
     [HttpPost("play")]
-    public async Task<ActionResult<int>> Gachapon()
+    public async Task<ActionResult<GachaponResultDto>> Gachapon()
     {
         try
         {
             int userId = GetUserId();
-            int result = await _gachaponService.Gachapon(userId);
+            GachaponResultDto result = await _gachaponService.Gachapon(userId);
             return Ok(result);
         }
         catch (InvalidOperationException ex)

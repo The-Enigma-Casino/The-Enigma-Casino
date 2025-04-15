@@ -2,10 +2,7 @@ import styles from "./ModalGachaComponent.module.css";
 import { $gachaponPrice, loadGachaponPrice } from "../stores/gachaponStore";
 import { useUnit } from "effector-react";
 import { useEffect } from "react";
-import GachaponMachine from "../../../GachaMachine/GachaMachineSVG";
-
-
-
+import GachaponMachine from "./GachaMachine/GachaponMachine";
 
 
 interface ModalGachaComponentProps {
@@ -44,10 +41,8 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({
           <p>DE LA SUERTE</p>
         </div>
   
-        <div className={styles.machineWrapper}>
-          <GachaponMachine />
-        </div>
-  
+        <GachaponMachine />
+
         <p className={styles.priceText}>1 Tirada = {gachaponPrice} Fichas</p>
       </div>
     </div>

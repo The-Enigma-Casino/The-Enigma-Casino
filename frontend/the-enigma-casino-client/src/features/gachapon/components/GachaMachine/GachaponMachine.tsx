@@ -6,10 +6,13 @@ import EggSVG from "./EggSVG";
 import MachineSVG from "./MachineSVG";
 import { useUnit } from "effector-react";
 import {
-  gachaponPlayResult$,
+  $gachaponPlayResult,
   playGachaponClicked,
-} from "../features/gachapon/stores/gachaponStore";
-import { loadCoins } from "../features/coins/store/coinsStore";
+  resetGachapon,
+} from "../../stores/gachaponStore";
+import { $coins, loadCoins } from "../../../coins/store/coinsStore";
+import { $token } from "../../../auth/store/authStore";
+import toast from "react-hot-toast";
 
 const colors = ["#74c410", "#ce2e2e", "#2457c5", "#7b3fa1", "#d65a1f"];
 
@@ -17,11 +20,45 @@ const GachaponMachine = () => {
   const [isMaskActive, setIsMaskActive] = useState(false);
   const [isSwitchActive, setIsSwitchActive] = useState(false);
   const [isEggActive, setIsEggActive] = useState(false);
+  const [hasEggBeenClicked, setHasEggBeenClicked] = useState(false);
   const [currentColor, setCurrentColor] = useState(colors[0]);
 
-  const winner = useUnit(gachaponPlayResult$);
+  const token = useUnit($token);
+  const coins = useUnit($coins);
+
+  const result = useUnit($gachaponPlayResult);
+  const winner = result?.benefit;
+  const specialMessage = result?.specialMessage;
+
+  useEffect(() => {
+    resetGachapon();
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    setCurrentColor(randomColor);
+    setIsEggActive(false);
+    setIsSwitchActive(false);
+    setIsMaskActive(false);
+    setHasEggBeenClicked(false);
+  }, [token]);
 
   const handleSwitchClick = () => {
+    if (!token) {
+      toast.error("¡Necesitas iniciar sesión para jugar!", {
+        className: "text-xl font-bold p-4",
+      });
+      return;
+    }
+
+    loadCoins();
+
+    if (coins < 10) {
+      toast.error("¡No tienes suficientes monedas!", {
+        className: "text-xl font-bold p-4",
+      });
+      return;
+    }
+
+    if (isSwitchActive || isEggActive || hasEggBeenClicked) return;
+
     const newColor = colors[Math.floor(Math.random() * colors.length)];
     setCurrentColor(newColor);
     setIsSwitchActive(true);
@@ -33,7 +70,8 @@ const GachaponMachine = () => {
   };
 
   const handleEggClick = () => {
-    playGachaponClicked(); 
+    setHasEggBeenClicked(true);
+    playGachaponClicked();
   };
 
   const handleMaskClick = () => {
@@ -42,22 +80,29 @@ const GachaponMachine = () => {
   };
 
   useEffect(() => {
-    if (isEggActive && winner !== null) {
-      if (winner === 1) {
-        setCurrentColor("#FFD700");
-        setTimeout(() => {
-          setIsEggActive(false);
-          setIsMaskActive(true);
-        }, 800);
-      } else {
-        setIsEggActive(false);
-        setIsMaskActive(true);
-      }
-    }
-  }, [winner]);
+    if (!hasEggBeenClicked || result === null) return;
   
-
-  console.log("Color recibido en premio:", currentColor);
+    const { benefit } = result;
+  
+    const isGold = benefit === 10000;
+  
+    if (isGold) {
+      setTimeout(() => {
+        setCurrentColor("#FFD700");
+      }, 200); 
+    }
+  
+    const delay = isGold ? 800 : 0;
+  
+    const timeout = setTimeout(() => {
+      setIsEggActive(false);
+      setIsMaskActive(true);
+      setHasEggBeenClicked(false);
+    }, delay);
+  
+    return () => clearTimeout(timeout);
+  }, [result, hasEggBeenClicked]);
+  
 
   return (
     <>
@@ -66,8 +111,11 @@ const GachaponMachine = () => {
           isVisible={isMaskActive}
           onClick={handleMaskClick}
           color={currentColor}
+          benefit={winner}
           winner={
-            winner !== null
+            specialMessage
+              ? specialMessage
+              : winner !== null
               ? `¡Ganaste ${winner} Ficha${winner === 1 ? "" : "s"}!`
               : "¡Jugando...!"
           }

@@ -130,6 +130,14 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         BlackjackGame blackjackGame = new BlackjackGame(match);
         blackjackGame.StartRound();
 
+        // Asignar el turno inicial al primer jugador en estado Playing FIX
+        var firstTurnPlayer = match.Players.FirstOrDefault(p => p.PlayerState == PlayerState.Playing);
+        if (firstTurnPlayer != null)
+        {
+            blackjackGame.SetCurrentPlayer(firstTurnPlayer.UserId);
+            Console.WriteLine($"🎯 Turno inicial asignado a {firstTurnPlayer.User.NickName} (UserId: {firstTurnPlayer.UserId})");
+        }
+
         ActiveBlackjackGameStore.Set(tableId, blackjackGame);
 
         Console.WriteLine($"🔄 Repartiendo cartas iniciales para la mesa {tableId}...");
@@ -157,6 +165,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         {
             type = Type,
             action = BlackjackMessageType.GameState,
+            currentTurnUserId = blackjackGame.CurrentPlayerTurnId,
             players = match.Players.Select(p => new
             {
                 userId = p.UserId,
@@ -291,7 +300,6 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
             }
         }
 
-
         if (nextPlayer != null)
         {
             blackjackGame.SetCurrentPlayer(nextPlayer.UserId);
@@ -301,7 +309,9 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         {
             Console.WriteLine("🧑‍⚖️ Todos los jugadores han terminado. Turno del crupier...");
             blackjackGame.CroupierTurn();
-            blackjackGame.Evaluate();
+
+            // 🔥 Evaluación de ronda con resultados incluidos
+            var results = blackjackGame.Evaluate();
 
             var unitOfWork = GetScopedService<UnitOfWork>(out var coinsScope);
             using (coinsScope)
@@ -313,8 +323,34 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
                 await unitOfWork.SaveAsync();
             }
 
+            // 🟢 Enviar estado final de la partida
             await BroadcastGameStateAsync(match, blackjackGame);
 
+            // 📨 Enviar mensaje round_result
+            var roundResultPayload = new
+            {
+                type = "blackjack",
+                action = "round_result",
+                results = results,
+                croupierTotal = match.GameTable.Croupier.Hand.GetTotal(),
+                croupierHand = match.GameTable.Croupier.Hand.Cards.Select(c => new
+                {
+                    rank = c.Rank.ToString(),
+                    suit = c.Suit.ToString(),
+                    value = c.Value
+                })
+            };
+
+            foreach (var p in match.Players)
+            {
+                await ((IWebSocketSender)this).SendToUserAsync(p.UserId.ToString(), roundResultPayload);
+            }
+
+            // ⏱️ Esperar 20 segundos antes de cerrar el match
+            Console.WriteLine("⌛ Esperando 20 segundos antes de terminar la ronda...");
+            await Task.Delay(TimeSpan.FromSeconds(20));
+
+            // ⚙️ Cerrar partida
             var gameMatchWS = GetScopedService<GameMatchWS>(out var scope);
             using (scope)
             {
@@ -322,9 +358,10 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
                 await gameMatchWS.EndMatchForAllPlayersAsync(tableId);
             }
 
-            Console.WriteLine(" Ronda evaluada. Resultados enviados y partida finalizada.");
+            Console.WriteLine("✅ Ronda evaluada. Resultados enviados y partida finalizada.");
         }
     }
+
 
     private async Task BroadcastGameStateAsync(Match match, BlackjackGame blackjackGame)
     {
@@ -339,15 +376,9 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
                 suit = visible.Suit.ToString(),
                 value = visible.Value
             },
-            fullHand = isRoundFinished ? match.GameTable.Croupier.Hand.Cards.Select(c => new
-            {
-                rank = c.Rank.ToString(),
-                suit = c.Suit.ToString(),
-                value = c.Value
-            }) : null,
-            total = isRoundFinished ? match.GameTable.Croupier.Hand.GetTotal() : (int?)null
+            fullHand = (object?)null,
+            total = (int?)null
         };
-
 
         var response = new
         {

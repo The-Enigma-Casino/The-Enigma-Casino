@@ -1,5 +1,6 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
+using the_enigma_casino_server.WebSockets.Poker;
 
 namespace the_enigma_casino_server.Games.Poker;
 
@@ -73,6 +74,26 @@ public class PokerGameService
             var hand = string.Join(", ", player.Hand.Cards.Select(c => c.ToString()));
             Console.WriteLine($"{player.User.NickName}: {hand}");
         }
+
+        var activePlayers = _gameMatch.Players
+            .Where(p => p.PlayerState == PlayerState.Playing && p.User.Coins > 0)
+            .ToList();
+
+        int bigBlindIndex = _gameMatch.Players.FindIndex(p => p.UserId == GetBigBlind().UserId);
+
+        for (int i = 1; i <= _gameMatch.Players.Count; i++)
+        {
+            int nextIndex = (bigBlindIndex + i) % _gameMatch.Players.Count;
+            var nextPlayer = _gameMatch.Players[nextIndex];
+
+            if (nextPlayer.PlayerState == PlayerState.Playing && nextPlayer.User.Coins > 0)
+            {
+                _currentTurnUserId = nextPlayer.UserId;
+                Console.WriteLine($"🟢 Primer turno asignado a {nextPlayer.User.NickName} (userId: {_currentTurnUserId})");
+                break;
+            }
+        }
+
     }
 
     // Asigna ciegas a los jugadores activos
@@ -435,7 +456,7 @@ public class PokerGameService
     public void AdvanceTurn()
     {
         var activePlayers = _gameMatch.Players
-            .Where(p => p.PlayerState == PlayerState.Playing)
+            .Where(p => p.PlayerState == PlayerState.Playing && p.User.Coins > 0)
             .ToList();
 
         if (activePlayers.Count == 0)
@@ -445,24 +466,41 @@ public class PokerGameService
         }
 
         int currentIndex = _gameMatch.Players.FindIndex(p => p.UserId == _currentTurnUserId);
-
         int totalPlayers = _gameMatch.Players.Count;
+
+        string phase = GetCurrentPhase(); 
 
         for (int i = 1; i < totalPlayers; i++)
         {
             int nextIndex = (currentIndex + i) % totalPlayers;
             var nextPlayer = _gameMatch.Players[nextIndex];
 
-            if (nextPlayer.PlayerState == PlayerState.Playing && nextPlayer.User.Coins > 0)
-            {
-                _currentTurnUserId = nextPlayer.UserId;
-                Console.WriteLine($"➡️ Turno avanzado a {nextPlayer.User.NickName} (userId: {_currentTurnUserId})");
-                return;
-            }
+            if (nextPlayer.PlayerState != PlayerState.Playing || nextPlayer.User.Coins <= 0)
+                continue;
+
+            if (PokerActionTracker.HasPlayerActed(_gameMatch.GameTableId, nextPlayer.UserId, phase))
+                continue;
+
+            _currentTurnUserId = nextPlayer.UserId;
+            Console.WriteLine($"➡️ Turno avanzado a {nextPlayer.User.NickName} (userId: {_currentTurnUserId})");
+            return;
         }
 
-        Console.WriteLine("⚠️ No se pudo encontrar el siguiente jugador activo para el turno.");
+        Console.WriteLine("⚠️ No hay más jugadores que necesiten actuar en esta fase.");
     }
+
+    public string GetCurrentPhase()
+    {
+        return _communityCards.Count switch
+        {
+            0 => "preflop",
+            3 => "flop",
+            4 => "turn",
+            5 => "river",
+            _ => "unknown"
+        };
+    }
+
 
     public void StartTurn(Match match)
     {
@@ -585,6 +623,7 @@ public class PokerGameService
         _blindManager.NextDealer();
     }
 
+
     public int GetLastBetAmount(int userId)
     {
         var player = _gameMatch.Players.FirstOrDefault(p => p.User.Id == userId);
@@ -607,6 +646,56 @@ public class PokerGameService
         return _gameMatch.Players
             .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
             .ToList();
+    }
+
+    public List<object> GetShowdownSummary()
+    {
+        var summary = new List<object>();
+
+        foreach (var pot in _pots)
+        {
+            var eligibleHands = _gameMatch.Players
+                .Where(p => pot.EligiblePlayers.Contains(p))
+                .Select(p =>
+                {
+                    var allCards = p.Hand.Cards.Concat(_communityCards).ToList();
+                    var eval = PokerHandEvaluator.Evaluate(p, allCards);
+                    return eval;
+                })
+                .ToList();
+
+            if (!eligibleHands.Any()) continue;
+
+            var bestHand = eligibleHands
+                .OrderByDescending(e => e, _handComparer)
+                .First();
+
+            var winners = eligibleHands
+                .Where(e => _handComparer.Compare(e, bestHand) == 0)
+                .ToList();
+
+            int winnings = pot.Amount / winners.Count;
+
+            foreach (var winner in winners)
+            {
+                summary.Add(new
+                {
+                    userId = winner.Player.UserId,
+                    nickname = winner.Player.User.NickName,
+                    amount = winnings,
+                    description = winner.Description,
+                    hand = winner.Player.Hand.Cards.Select(c => new
+                    {
+                        suit = c.Suit.ToString(),
+                        rank = c.Rank.ToString(),
+                        value = c.Value
+                    }),
+                    potType = _pots.Count == 1 ? "Main Pot" : pot == _pots[0] ? "Main Pot" : "Side Pot"
+                });
+            }
+        }
+
+        return summary;
     }
 
 }

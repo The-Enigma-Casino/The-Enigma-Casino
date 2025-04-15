@@ -65,6 +65,11 @@ public static class PokerActionTracker
         }
     }
 
+    public static bool HasPlayerActed(int tableId, int userId, string phase)
+    {
+        var key = (tableId, phase);
+        return _actions.TryGetValue(key, out var set) && set.Contains(userId);
+    }
 
 
 }

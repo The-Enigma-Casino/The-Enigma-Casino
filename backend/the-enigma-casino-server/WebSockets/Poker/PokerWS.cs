@@ -105,6 +105,14 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         Console.WriteLine("♠️ [PokerWS] Fase de apuestas pre-flop iniciada.");
 
+        int firstTurnUserId = pokerGame.CurrentTurnUserId;
+
+        Player? firstPlayer = match.Players.FirstOrDefault(p => p.UserId == firstTurnUserId);
+        if (firstPlayer != null)
+        {
+            await NotifyPlayerTurnAsync(match, firstPlayer);
+        }
+
 
     }
 
@@ -227,8 +235,10 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!TryGetTableId(message, out int tableId)) return;
         if (!TryGetPokerGame(tableId, "system", out var pokerGame)) return;
+        if (!TryGetMatch(tableId, "system", out var match)) return;
 
         pokerGame.DealFlop();
+        pokerGame.StartTurn(match);
 
         var communityCards = pokerGame.GetCommunityCards();
 
@@ -239,11 +249,11 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             cards = communityCards.Select(c => new { c.Suit, c.Rank }).ToList()
         };
 
-        var playerIds = pokerGame.GetActivePlayers()
+        var allPlayerIds = match.Players
             .Select(p => p.UserId.ToString())
             .ToList();
 
-        await ((IWebSocketSender)this).BroadcastToUsersAsync(playerIds, response);
+        await ((IWebSocketSender)this).BroadcastToUsersAsync(allPlayerIds, response);
 
         PokerActionTracker.Clear(tableId, "flop");
 
@@ -251,21 +261,20 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
     }
 
 
+
     private async Task HandleDealTurnAsync(JsonElement message)
     {
         if (!TryGetTableId(message, out var tableId)) return;
-        if (!TryGetMatch(tableId, null, out var match)) return;
-        if (!TryGetPokerGame(tableId, null, out var pokerGame)) return;
+        if (!TryGetPokerGame(tableId, "system", out var pokerGame)) return;
+        if (!TryGetMatch(tableId, "system", out var match)) return;
 
         pokerGame.DealTurn();
         pokerGame.StartTurn(match);
 
         var communityCards = pokerGame.GetCommunityCards();
 
-        Console.WriteLine("\n--- TURN D ---");
-        Console.WriteLine("Cartas comunitarias:");
-        foreach (var card in communityCards)
-            Console.WriteLine(card);
+        Console.WriteLine("\n--- TURN ---");
+        PokerHelper.ShowCommunityCards(communityCards);
 
         var response = new
         {
@@ -278,21 +287,23 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }).ToList()
         };
 
-        var userIds = match.Players.Select(p => p.UserId.ToString());
-        await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, response);
+        var allUserIds = match.Players.Select(p => p.UserId.ToString());
+        await ((IWebSocketSender)this).BroadcastToUsersAsync(allUserIds, response);
+
+        PokerActionTracker.Clear(tableId, "turn");
 
         Console.WriteLine($"🃏 [PokerWS] Turn repartido en mesa {tableId}, esperando apuestas.");
     }
 
 
-
     private async Task HandleDealRiverAsync(JsonElement message)
     {
         if (!TryGetTableId(message, out int tableId)) return;
-
         if (!TryGetPokerGame(tableId, "system", out var pokerGame)) return;
+        if (!TryGetMatch(tableId, "system", out var match)) return;
 
         pokerGame.DealRiver();
+        pokerGame.StartTurn(match);
 
         List<Card> communityCards = pokerGame.GetCommunityCards();
 
@@ -303,12 +314,14 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             cards = communityCards.Select(c => new { c.Suit, c.Rank }).ToList()
         };
 
-        List<string> playerIds = pokerGame.GetActivePlayers()
-            .Select(p => p.UserId.ToString())
-            .ToList();
-
+        var playerIds = match.Players.Select(p => p.UserId.ToString()).ToList();
         await ((IWebSocketSender)this).BroadcastToUsersAsync(playerIds, response);
+
+        PokerActionTracker.Clear(tableId, "river");
+
+        Console.WriteLine($"🃏 [PokerWS] River repartido en mesa {tableId}, esperando apuestas.");
     }
+
 
 
     private async Task HandleShowdownAsync(JsonElement message)
@@ -322,13 +335,17 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             .Select(p => p.UserId.ToString())
             .ToList();
 
+        var showdownSummary = pokerGame.GetShowdownSummary();
+
         var response = new
         {
             type = Type,
-            action = "showdown_done"
+            action = "showdown_result",
+            winners = showdownSummary
         };
 
         await ((IWebSocketSender)this).BroadcastToUsersAsync(playerIds, response);
+
 
         if (TryGetMatch(tableId, "system", out var match))
         {
@@ -398,72 +415,76 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             _ => "unknown"
         };
 
-        switch (move)
+        try
         {
-            case "check":
-                if (player.CurrentBet < match.Players.Max(p => p.CurrentBet))
-                {
-                    await SendErrorAsync(userId, "No puedes hacer check, hay una apuesta activa.");
+            switch (move)
+            {
+                case "check":
+                    if (player.CurrentBet < match.Players.Max(p => p.CurrentBet))
+                    {
+                        await SendErrorAsync(userId, "No puedes hacer check, hay una apuesta activa.");
+                        return;
+                    }
+                    Console.WriteLine($"{player.User.NickName} hace check.");
+                    break;
+                case "call":
+                    int toCall = match.Players.Max(p => p.CurrentBet) - player.CurrentBet;
+
+                    if (toCall <= 0)
+                    {
+                        await SendErrorAsync(userId, "No tienes nada que igualar.");
+                        return;
+                    }
+
+                    if (toCall > player.User.Coins)
+                    {
+                        toCall = player.User.Coins;
+                    }
+
+                    pokerGame.HandlePokerBet(player, toCall);
+                    break;
+                case "raise":
+                    if (amount <= 0 || amount > player.User.Coins)
+                    {
+                        await SendErrorAsync(userId, "Cantidad de raise no válida.");
+                        return;
+                    }
+
+                    int currentMax = match.Players.Max(p => p.CurrentBet);
+                    int totalBet = (currentMax - player.CurrentBet) + amount;
+
+                    if (totalBet > player.User.Coins)
+                    {
+                        await SendErrorAsync(userId, "No tienes suficientes fichas para hacer raise.");
+                        return;
+                    }
+
+                    pokerGame.HandlePokerBet(player, totalBet);
+                    PokerActionTracker.ResetActionsForRaise(tableId, match.Players
+                        .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
+                        .Select(p => p.UserId).ToList(), player.UserId, phase);
+                    break;
+                case "all-in":
+                    pokerGame.HandlePokerBet(player, player.User.Coins);
+                    break;
+
+                case "fold":
+                    player.PlayerState = PlayerState.Fold;
+                    Console.WriteLine($"{player.User.NickName} se retira.");
+                    break;
+
+                default:
+                    await SendErrorAsync(userId, "Acción no reconocida.");
                     return;
-                }
-                Console.WriteLine($"{player.User.NickName} hace check.");
-                break;
-            case "call":
-                int toCall = match.Players.Max(p => p.CurrentBet) - player.CurrentBet;
-
-                if (toCall <= 0)
-                {
-                    await SendErrorAsync(userId, "No tienes nada que igualar.");
-                    return;
-                }
-
-                if (toCall > player.User.Coins)
-                {
-                    toCall = player.User.Coins;
-                }
-
-                pokerGame.HandlePokerBet(player, toCall);
-                break;
-            case "raise":
-                if (amount <= 0 || amount > player.User.Coins)
-                {
-                    await SendErrorAsync(userId, "Cantidad de raise no válida.");
-                    return;
-                }
-
-                int currentMax = match.Players.Max(p => p.CurrentBet);
-                int totalBet = (currentMax - player.CurrentBet) + amount;
-
-                if (totalBet > player.User.Coins)
-                {
-                    await SendErrorAsync(userId, "No tienes suficientes fichas para hacer raise.");
-                    return;
-                }
-
-                pokerGame.HandlePokerBet(player, totalBet);
-
-                var activePlayerIds = match.Players
-                    .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
-                    .Select(p => p.UserId)
-                    .ToList();
-
-
-                PokerActionTracker.ResetActionsForRaise(tableId, activePlayerIds, player.UserId, phase);
-                break;
-
-            case "all-in":
-                pokerGame.HandlePokerBet(player, player.User.Coins);
-                break;
-
-            case "fold":
-                player.PlayerState = PlayerState.Fold;
-                Console.WriteLine($"{player.User.NickName} se retira.");
-                break;
-
-            default:
-                await SendErrorAsync(userId, "Acción no reconocida.");
-                return;
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al procesar acción de {player.User.NickName}: {ex.Message}");
+            await SendErrorAsync(userId, ex.Message);
+            return;
+        }
+
 
         var broadcast = new
         {
@@ -481,6 +502,15 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             pokerGame.AdvanceTurn();
         }
+
+        int nextTurnUserId = pokerGame.CurrentTurnUserId;
+
+        var nextPlayer = match.Players.FirstOrDefault(p => p.UserId == nextTurnUserId);
+        if (nextPlayer != null)
+        {
+            await NotifyPlayerTurnAsync(match, nextPlayer);
+        }
+
 
         PokerActionTracker.RegisterAction(tableId, player.UserId, phase);
 
@@ -511,6 +541,43 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
         }
     }
+
+    private async Task NotifyPlayerTurnAsync(Match match, Player player)
+    {
+        int currentMaxBet = match.Players.Max(p => p.CurrentBet);
+        int toCall = currentMaxBet - player.CurrentBet;
+
+        var validMoves = new List<string>();
+
+        if (toCall <= 0)
+            validMoves.Add("check");
+        else if (toCall <= player.User.Coins)
+            validMoves.Add("call");
+
+        if (player.User.Coins > toCall)
+            validMoves.Add("raise");
+
+        if (player.User.Coins > 0)
+            validMoves.Add("all-in");
+
+        validMoves.Add("fold");
+
+        var response = new
+        {
+            type = Type,
+            action = "your_turn",
+            validMoves = validMoves,
+            callAmount = toCall,
+            canRaise = player.User.Coins > toCall,
+            canAllIn = player.User.Coins > 0,
+            maxRaise = player.User.Coins - toCall
+        };
+
+        await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), response);
+
+        Console.WriteLine($"🌀 Notificado turno a {player.User.NickName}. Puede: {string.Join(", ", validMoves)}");
+    }
+
 
 
     private bool TryGetTableId(JsonElement message, out int tableId)

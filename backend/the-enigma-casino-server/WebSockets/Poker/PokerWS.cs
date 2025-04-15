@@ -329,13 +329,17 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!TryGetTableId(message, out int tableId)) return;
         if (!TryGetPokerGame(tableId, "system", out var pokerGame)) return;
 
+        pokerGame.GeneratePots();
         pokerGame.Showdown();
 
-        List<string> playerIds = pokerGame.GetActivePlayers()
+        List<string> playerIds = pokerGame.GameMatch.Players
             .Select(p => p.UserId.ToString())
             .ToList();
 
         var showdownSummary = pokerGame.GetShowdownSummary();
+
+        Console.WriteLine($"[PokerWS] Resumen generado: {JsonSerializer.Serialize(showdownSummary)}");
+
 
         var response = new
         {

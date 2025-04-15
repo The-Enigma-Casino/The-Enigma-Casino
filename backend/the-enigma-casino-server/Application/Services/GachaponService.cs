@@ -1,8 +1,6 @@
-﻿using the_enigma_casino_server.Models.Database;
-using the_enigma_casino_server.Models.Database.Entities;
-using the_enigma_casino_server.NUEVOS;
 ﻿using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Infrastructure.Database;
+using the_enigma_casino_server.Application.Dtos;
 
 namespace the_enigma_casino_server.Application.Services;
 
@@ -18,7 +16,7 @@ public class GachaponService : BaseService
             (20, 0.15),     // 15% de probabilidad para ganar 20 fichas
             (50, 0.04),     // 4% de probabilidad para ganar 50 fichas
             (100, 0.01),    // 1% de probabilidad para ganar 100 fichas
-            (10000, 0.001) // 0.001% de probabilidad para ganar 10,000 fichas
+            (10000, 0.001)  // 0.001% de probabilidad para ganar 10,000 fichas
     };
 
     private const int GrandPrize = 10000;

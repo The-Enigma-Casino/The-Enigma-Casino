@@ -1,6 +1,5 @@
 import styles from "./ModalGachaComponent.module.css";
-// import Button from "../../../components/ui/button/Button";
-import { gachaponPrice$, loadGachaponPrice } from "../stores/gachaponStore";
+import { $gachaponPrice, loadGachaponPrice } from "../stores/gachaponStore";
 import { useUnit } from "effector-react";
 import { useEffect } from "react";
 import GachaponMachine from "../../../GachaMachine/GachaMachineSVG";
@@ -18,8 +17,7 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({
   isOpen,
   closeModal,
 }) => {
-
-  const gachaponPrice = useUnit(gachaponPrice$);
+  const gachaponPrice = useUnit($gachaponPrice);
 
   useEffect(() => {
     if (isOpen) {

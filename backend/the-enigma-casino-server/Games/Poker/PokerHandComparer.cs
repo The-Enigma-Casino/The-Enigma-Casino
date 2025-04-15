@@ -1,6 +1,6 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
 
-namespace the_enigma_casino_server.Games.RevisarPoker;
+namespace the_enigma_casino_server.Games.Poker;
 public class PokerHandComparer : IComparer<EvaluatedHand>
 {
     // Evalua dos manos de poker y las compara

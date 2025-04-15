@@ -8,22 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Games\BlackJack\**" />
-    <Compile Remove="Games\Shared\Repository\**" />
-    <Content Remove="Games\BlackJack\**" />
-    <Content Remove="Games\Shared\Repository\**" />
-    <EmbeddedResource Remove="Games\BlackJack\**" />
-    <EmbeddedResource Remove="Games\Shared\Repository\**" />
-    <None Remove="Games\BlackJack\**" />
-    <None Remove="Games\Shared\Repository\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="Utilities\es_words.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Games\BlackJack\BlackjackGame.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,6 +38,10 @@
 		<Content Update="wwwroot\**\*">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Websockets\" />
 	</ItemGroup>
 
 </Project>

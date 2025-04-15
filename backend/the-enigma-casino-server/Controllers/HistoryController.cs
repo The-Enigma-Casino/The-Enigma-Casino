@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using the_enigma_casino_server.Models.Dtos;
-using the_enigma_casino_server.Services;
+using the_enigma_casino_server.Application.Dtos;
+using the_enigma_casino_server.Application.Services;
 
 namespace the_enigma_casino_server.Controllers;
 

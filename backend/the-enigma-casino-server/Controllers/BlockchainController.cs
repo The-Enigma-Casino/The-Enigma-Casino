@@ -1,16 +1,13 @@
-﻿using Examples.WebApi.Models.Dtos;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using the_enigma_casino_server.Models.Database.Entities;
-using the_enigma_casino_server.Models.Database;
-using the_enigma_casino_server.Models.Dtos.BlockchainDtos;
-using the_enigma_casino_server.Services;
-using the_enigma_casino_server.Services.Blockchain;
-using the_enigma_casino_server.Models.Dtos;
-using the_enigma_casino_server.Models.Mappers;
-using Nethereum.RPC.Eth.DTOs;
+
 using System.Web;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using the_enigma_casino_server.Core.Entities;
+using the_enigma_casino_server.Application.Dtos;
+using the_enigma_casino_server.Application.Mappers;
+using the_enigma_casino_server.Application.Dtos.BlockchainDtos;
+using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Application.Services.Blockchain;
 
 
 namespace the_enigma_casino_server.Controllers;

@@ -6,21 +6,21 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Stripe;
 using System.Text;
-using the_enigma_casino_server.Games.Shared.Services;
+using the_enigma_casino_server.Application.Mappers;
+using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Application.Services.Blockchain;
+using the_enigma_casino_server.Application.Services.Email;
+using the_enigma_casino_server.Infrastructure.Database;
+using the_enigma_casino_server.Infrastructure.Database.Seeder;
 using the_enigma_casino_server.Middleware;
-using the_enigma_casino_server.Models.Database;
-using the_enigma_casino_server.Models.Mappers;
-using the_enigma_casino_server.Models.Seeder;
-using the_enigma_casino_server.Services;
-using the_enigma_casino_server.Services.Blockchain;
-using the_enigma_casino_server.Services.Email;
-using the_enigma_casino_server.WS.BlackJack;
-using the_enigma_casino_server.WS.BlackJackWS;
-using the_enigma_casino_server.WS.GameMatch;
-using the_enigma_casino_server.WS.GameTable;
-using the_enigma_casino_server.WS.GameWS.Services;
-using the_enigma_casino_server.WS.Interfaces;
-using the_enigma_casino_server.WS.Resolver;
+using the_enigma_casino_server.Utilities;
+using the_enigma_casino_server.WebSockets.Base;
+using the_enigma_casino_server.WebSockets.BlackJack;
+using the_enigma_casino_server.WebSockets.GameMatch;
+using the_enigma_casino_server.WebSockets.GameTable;
+using the_enigma_casino_server.WebSockets.Interfaces;
+using the_enigma_casino_server.WebSockets.Poker;
+using the_enigma_casino_server.WebSockets.Resolvers;
 
 
 namespace the_enigma_casino_server;
@@ -74,12 +74,14 @@ public class Program
 
         // --- WebSocket: handlers (SIEMPRE singleton) ---
         builder.Services.AddSingleton<GameTableWS>();
-        builder.Services.AddSingleton<GameMatchWS>();
+        builder.Services.AddSingleton<GameMatchWebSocket>();
         builder.Services.AddSingleton<BlackjackWS>();
+        builder.Services.AddSingleton<PokerWS>(); 
 
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
-        builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWebSocket>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, PokerWS>();
 
         // --- WebSocket: servicios específicos del juego ---
         builder.Services.AddScoped<GameTableManager>();
@@ -98,6 +100,16 @@ public class Program
         builder.Services.AddScoped<IGameBetInfoProvider, BlackjackBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, BlackjackTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, BlackjackSessionCleaner>();
+
+
+        // --- Servicios concretos de Poker ---
+        builder.Services.AddScoped<PokerBetInfoProvider>();
+        builder.Services.AddScoped<PokerSessionCleaner>();
+        builder.Services.AddScoped<PokerTurnService>();
+
+        builder.Services.AddScoped<IGameBetInfoProvider, PokerBetInfoProvider>();
+        builder.Services.AddScoped<IGameTurnService, PokerTurnService>();
+        builder.Services.AddScoped<IGameSessionCleaner, PokerSessionCleaner>();
 
 
         // --- Mappers ---

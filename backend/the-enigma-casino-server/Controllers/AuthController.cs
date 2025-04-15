@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Mvc;
-using the_enigma_casino_server.Models.Database;
-using the_enigma_casino_server.Models.Database.Entities;
-using the_enigma_casino_server.Models.Dtos.Request;
-using the_enigma_casino_server.Services;
-using the_enigma_casino_server.Utilities;
+﻿using Microsoft.AspNetCore.Mvc;
+using the_enigma_casino_server.Application.Dtos.Request;
+using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Core.Entities;
 
 namespace the_enigma_casino_server.Controllers;
 

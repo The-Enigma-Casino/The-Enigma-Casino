@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using SixLabors.ImageSharp.Formats.Webp;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using the_enigma_casino_server.Application.Dtos;
@@ -237,5 +238,43 @@ public class UserService : BaseService
         {
             throw new Exception("Hubo un error al traer al usuario", ex);
         }
+    }
+
+    public async Task UpdateUserImageAsync(int userId, IFormFile imageFile)
+    {
+        if (imageFile == null || imageFile.Length == 0)
+            throw new ArgumentException("La imagen es inválida");
+
+        string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "profile");
+
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        string fileName = $"user_{userId}.webp";
+        string filePath = Path.Combine(folderPath, fileName);
+
+        using (Stream stream = imageFile.OpenReadStream())
+        using (Image image = await Image.LoadAsync(stream))
+        {
+            image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Size = new Size(170, 170),
+                Mode = ResizeMode.Crop,
+                Position = AnchorPositionMode.Center
+            }));
+
+            WebpEncoder encoder = new WebpEncoder
+            {
+                Quality = 75 
+            };
+
+            await image.SaveAsync(filePath, encoder);
+        }
+
+        User user = await GetUserById(userId);
+        user.Image = fileName;
+
+        _unitOfWork.UserRepository.Update(user);
+        await _unitOfWork.SaveAsync();
     }
 }

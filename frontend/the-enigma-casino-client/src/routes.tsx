@@ -13,6 +13,7 @@ import WithdrawalConfirmation from "./features/withdraw/pages/WithdrawalConfirma
 import LandingPage from "./features/landingPage/pages/LandingPage";
 import GameTable from "./features/gameTables/pages/GameTablePage";
 import Withdrawal from "./features/withdraw/pages/Withdrawal";
+import routeProfile from "./features/profile/routes";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
   },
   ...routeAuth,
   ...routeGames,
+  ...routeProfile
 ]);
 
 export default router;

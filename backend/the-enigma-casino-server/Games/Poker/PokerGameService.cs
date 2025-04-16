@@ -108,7 +108,7 @@ public class PokerGameService
 
         _lastShowdownSummary.Clear();
 
-        var activePlayers = _gameMatch.Players
+        List<Player> activePlayers = _gameMatch.Players
             .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
             .ToList();
 
@@ -123,7 +123,7 @@ public class PokerGameService
 
         if (activePlayers.Count == 1)
         {
-            var winner = activePlayers.First();
+            Player winner = activePlayers.First();
             int amountWon = _pots.Sum(p => p.Amount);
             winner.Win(amountWon);
 
@@ -150,14 +150,14 @@ public class PokerGameService
 
         // Evaluar manos de los jugadores activos
         Console.WriteLine("\nCartas de los jugadores:");
-        var evaluatedHands = new List<EvaluatedHand>();
+        List<EvaluatedHand> evaluatedHands = new List<EvaluatedHand>();
 
-        foreach (var player in activePlayers)
+        foreach (Player player in activePlayers)
         {
-            var allCards = player.Hand.Cards.Concat(_communityCards).ToList();
+            List<Card> allCards = player.Hand.Cards.Concat(_communityCards).ToList();
             Console.WriteLine($"\n {player.User.NickName}: {string.Join(", ", player.Hand.Cards)}");
 
-            var eval = PokerHandEvaluator.Evaluate(player, allCards);
+            EvaluatedHand eval = PokerHandEvaluator.Evaluate(player, allCards);
             evaluatedHands.Add(eval);
 
             Console.WriteLine($"Evaluación: {eval.Description}");
@@ -167,16 +167,16 @@ public class PokerGameService
 
         for (int i = 0; i < _pots.Count; i++)
         {
-            var pot = _pots[i];
+            Pot pot = _pots[i];
             string label = _pots.Count == 1 ? "Main Pot" : i == 0 ? "Main Pot" : $"Side Pot {i}";
-            var participantNicks = string.Join(", ", pot.EligiblePlayers.Select(p => p.User.NickName));
+            string participantNicks = string.Join(", ", pot.EligiblePlayers.Select(p => p.User.NickName));
             string explanation = label.StartsWith("Side Pot")
                 ? $" (sólo {participantNicks} apuesta más que los demás)"
                 : $" (Participan: {participantNicks})";
 
             Console.WriteLine($"\n🪙 {label}: {pot.Amount} fichas{explanation}");
 
-            var eligibleHands = evaluatedHands
+            List<EvaluatedHand> eligibleHands = evaluatedHands
                 .Where(eh => pot.EligiblePlayers.Contains(eh.Player))
                 .ToList();
 
@@ -186,11 +186,11 @@ public class PokerGameService
                 Console.WriteLine($"✋ {hand.Player.User.NickName}: {hand.Description}");
             }
 
-            var bestHand = eligibleHands
+            EvaluatedHand bestHand = eligibleHands
                 .OrderByDescending(e => e, _handComparer)
                 .First();
 
-            var winners = eligibleHands
+            List<EvaluatedHand> winners = eligibleHands
                 .Where(e => _handComparer.Compare(e, bestHand) == 0)
                 .ToList();
 
@@ -236,7 +236,7 @@ public class PokerGameService
 
         _pots.Clear();
 
-        foreach (var player in _gameMatch.Players)
+        foreach (Player player in _gameMatch.Players)
         {
             if (player.User.Coins <= 0)
             {
@@ -297,7 +297,7 @@ public class PokerGameService
 
     public void AdvanceTurn()
     {
-        var activePlayers = _gameMatch.Players
+        List<Player> activePlayers = _gameMatch.Players
             .Where(p => p.PlayerState == PlayerState.Playing && p.User.Coins > 0)
             .ToList();
 
@@ -315,7 +315,7 @@ public class PokerGameService
         for (int i = 1; i < totalPlayers; i++)
         {
             int nextIndex = (currentIndex + i) % totalPlayers;
-            var nextPlayer = _gameMatch.Players[nextIndex];
+            Player nextPlayer = _gameMatch.Players[nextIndex];
 
             if (nextPlayer.PlayerState != PlayerState.Playing || nextPlayer.User.Coins <= 0)
                 continue;
@@ -356,7 +356,7 @@ public class PokerGameService
             return;
         }
 
-        var firstToAct = activePlayers.First();
+        Player firstToAct = activePlayers.First();
         _currentTurnUserId = firstToAct.UserId;
         Console.WriteLine($"🎯 Primer jugador en actuar: {firstToAct.User.NickName} (userId: {_currentTurnUserId})");
     }
@@ -366,7 +366,7 @@ public class PokerGameService
     // Reinicia apuesta de todos los jugadores
     private void ResetCurrentBets()
     {
-        foreach (var player in _gameMatch.Players)
+        foreach (Player player in _gameMatch.Players)
         {
             player.CurrentBet = 0;
         }
@@ -377,12 +377,12 @@ public class PokerGameService
     {
         _pots.Clear();
 
-        var playersWithBets = _gameMatch.Players
+        List<Player> playersWithBets = _gameMatch.Players
             .Where(p => p.TotalContribution > 0)
             .ToList();
 
         Console.WriteLine("\n♻️ [GeneratePots] Generando pots...");
-        foreach (var p in playersWithBets)
+        foreach (Player p in playersWithBets)
         {
             Console.WriteLine($"   - {p.User.NickName} contribuyó: {p.TotalContribution} fichas");
         }
@@ -393,13 +393,13 @@ public class PokerGameService
 
         if (!hasAllIn)
         {
-            var mainPot = new Pot
+            Pot mainPot = new Pot
             {
                 Amount = playersWithBets.Sum(p => p.TotalContribution),
                 EligiblePlayers = playersWithBets.ToList()
             };
 
-            foreach (var p in playersWithBets)
+            foreach (Player p in playersWithBets)
             {
                 p.TotalContribution = 0;
             }
@@ -415,11 +415,11 @@ public class PokerGameService
         while (playersWithBets.Any())
         {
             int minContribution = playersWithBets.First().TotalContribution;
-            var pot = new Pot();
+            Pot pot = new Pot();
 
             Console.WriteLine($"\n➕ Nuevo pot con contribución mínima: {minContribution}");
 
-            foreach (var player in playersWithBets)
+            foreach (Player player in playersWithBets)
             {
                 int contribution = Math.Min(minContribution, player.TotalContribution);
                 pot.AddChips(contribution);
@@ -468,13 +468,13 @@ public class PokerGameService
 
     public int GetLastBetAmount(int userId)
     {
-        var player = _gameMatch.Players.FirstOrDefault(p => p.User.Id == userId);
+        Player player = _gameMatch.Players.FirstOrDefault(p => p.User.Id == userId);
         return player?.TotalContribution ?? 0;
     }
 
     public int GetChipResult(int userId)
     {
-        var player = _gameMatch.Players.FirstOrDefault(p => p.User.Id == userId);
+        Player player = _gameMatch.Players.FirstOrDefault(p => p.User.Id == userId);
         return player != null ? player.User.Coins - player.TotalContribution : 0;
     }
 

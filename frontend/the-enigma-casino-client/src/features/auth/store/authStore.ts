@@ -27,6 +27,10 @@ export const $name = createStore<string>("");
 export const setName = createEvent<string>();
 export const loadName = createEvent();
 
+export const $image = createStore<string>("user_default.png");
+export const setImage = createEvent<string>();
+export const loadImage = createEvent();
+
 export const $userId = createStore<string>("");
 export const loadUserId = createEvent();
 
@@ -48,6 +52,9 @@ $token
 setToken.watch(({ token, rememberMe }) => {
   if (token) {
     loadUserId();
+    loadRole();
+    loadName();
+    loadImage();
     if (rememberMe) {
       updateLocalStorage("token", token);
     } else {
@@ -100,4 +107,18 @@ sample({
     }
   },
   target: $userId,
+});
+
+sample({
+  clock: loadImage,
+  source: $token,
+  fn: (token) => {
+    try {
+      const decoded: DecodedToken = jwtDecode(token);
+      return decoded?.image || "user_default.png";
+    } catch {
+      return "user_default.png";
+    }
+  },
+  target: $image,
 });

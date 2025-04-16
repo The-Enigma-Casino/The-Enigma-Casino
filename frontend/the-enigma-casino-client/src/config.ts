@@ -39,3 +39,6 @@ export const CARD_IMAGE_BACK = `${API_BASE_URL}cards/back`;
 /* ENDPOINT DE GACHAPON */
 export const GACHAPON_PLAY = `${API_BASE_URL}Gachapon/play`;
 export const GACHAPON_PRICE = `${API_BASE_URL}Gachapon/price`;
+
+/* ENDPOINT PARA LAS IMAGENES */
+export const USER_IMAGES = `${BASE_URL}images/profile`;

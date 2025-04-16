@@ -3,31 +3,17 @@ import "../store/bjIndex";
 import "../store/bjGameStateMapper";
 import { useUnit } from "effector-react";
 import {
-  $players,
-  $croupier,
-  $gameState,
-  $currentTurnUserId,
-  resetPlayers,
-  resetCroupier,
-  resetGameState,
-  resetCroupierTotal,
-  playerHit,
-  playerStand,
-  doubleDown,
-  $roundResults,
-  $croupierRoundHand,
-  $croupierTotal,
+  $players, $croupier, $gameState, $currentTurnUserId, resetPlayers, resetCroupier, resetGameState, resetCroupierTotal, playerHit, playerStand, doubleDown,
+  $roundResults, $croupierRoundHand, $croupierTotal
 } from "../store/bjIndex";
 import { $userId } from "../../../auth/store/authStore";
 import { PlayerHUD } from "../../shared/components/PlayerHUD";
 import { CardStack } from "../../shared/components/GameCardStack";
 import { calculateHandTotal } from "../../shared/utils/gameHand.utils";
-import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand } from "../store/bjEvents";
-import { $currentTableId } from "../../../gameTables/store/tablesStores";
-import { CardRank, GameType, Suit } from "../../shared/types/gameCard.type";
+import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand, resetRoundResults } from "../store/bjEvents";
+import { CardRank, Suit } from "../../shared/types/gameCard.type";
 import { ChipStack } from "../../shared/components/ChipStack";
 import { loadCoins } from "../../../coins/store/coinsStore";
-
 export const BlackjackGamePage = () => {
 
 
@@ -35,7 +21,7 @@ export const BlackjackGamePage = () => {
   const croupier = useUnit($croupier);
   const gameState = useUnit($gameState);
   const currentTurnUserId = useUnit($currentTurnUserId);
-  const currentTableId = useUnit($currentTableId);
+  // const currentTableId = useUnit($currentTableId);
 
   const roundResults = useUnit($roundResults);
   const croupierRoundHand = useUnit($croupierRoundHand);
@@ -45,6 +31,7 @@ export const BlackjackGamePage = () => {
   const resetCroupierFn = useUnit(resetCroupier);
   const resetGameStateFn = useUnit(resetGameState);
   const resetCroupierTotalFn = useUnit(resetCroupierTotal);
+  // const resetRoundResultsFn = useUnit(resetRoundResults); // Reinicia marcador
 
   const playerHitFn = useUnit(playerHit);
   const playerStandFn = useUnit(playerStand);
@@ -59,6 +46,7 @@ export const BlackjackGamePage = () => {
 
   useEffect(() => {
     getGameStateRequested();
+    loadCoins();
   }, []);
 
   useEffect(() => {
@@ -67,49 +55,15 @@ export const BlackjackGamePage = () => {
     );
 
     if (allWaiting && gameState === "InProgress" && roundResults.length > 0) {
-      console.log("Reiniciando estado del frontend para nueva ronda...");
-      resetPlayersFn();
-      resetPlayers();
-      resetCroupier();
-      resetGameState();
-      resetCroupierTotalFn();
-    }
-  }, [
-    players,
-    gameState,
-    roundResults.length,
-    resetPlayersFn,
-    resetCroupierFn,
-    resetGameStateFn,
-    loadCoins(),
-  ]);
-
-  useEffect(() => {
-    if (gameState === "Waiting") {
-      console.log("Limpiando estado para nueva ronda...");
       resetCroupierRoundHand();
       resetPlayersFn();
       resetCroupierFn();
       resetGameStateFn();
+      resetCroupierTotalFn();
       resetCroupierTotal();
-      loadCoins();
     }
-  }, [gameState]);
-
-  useEffect(() => {
-    const localPlayer = players.find(p => p.id === Number(userId));
-    const isTurn = currentTurnUserId === Number(userId);
-    console.log("Debug Turno →", {
-      userId,
-      currentTurnUserId,
-      isTurn,
-      localPlayer,
-      estado: localPlayer?.state,
-      gameState,
-    });
-  }, [players, currentTurnUserId, userId, gameState]);
-
-
+    loadCoins();
+  }, [players, gameState, roundResults]);
 
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">
@@ -119,9 +73,9 @@ export const BlackjackGamePage = () => {
         Estado del juego: <span className="font-bold text-yellow-300">{gameState}</span>
       </p>
 
-      {/*Resultados de ronda */}
+      {/* Marcador jugadas */}
       {roundResults.length > 0 && (
-        <div className="bg-black/70 text-white rounded-lg shadow p-4 mb-8 mx-auto max-w-md">
+        <div className="bg-black/70 text-white rounded-lg shadow p-4 mb-8 mx-auto max-w-md ">
           <h2 className="text-2xl font-bold mb-4 text-center">Resultados de la ronda</h2>
           <ul className="space-y-3">
             {roundResults.map((res) => (
@@ -138,54 +92,11 @@ export const BlackjackGamePage = () => {
                 </span>
                 <span className="text-3xl text-gray-300">Total: {res.finalTotal}</span>
                 <span className="font-bold text-green-400">
-                  {res.coinsChange > 0 ? `+${res.coinsChange} ` : `${res.coinsChange} fichas`}
+                  {res.coinsChange > 0 ? `+${res.coinsChange} ` : `${res.coinsChange} fichas`} {/* coinsChangue falla del back */}
                 </span>
               </li>
             ))}
           </ul>
-        </div>
-      )}
-
-      {/*Apuesta */}
-      {gameState === "Waiting" && (
-        <div className="flex flex-col items-center gap-4 mb-10">
-          <p className="text-gray-200 text-center">Introduce una apuesta para comenzar la partida.</p>
-
-          <div className="flex gap-3 justify-center">
-            {[5, 10, 25, 50, 100].map((chip) => (
-              <button
-                key={chip}
-                onClick={() => setBetAmount(betAmount + chip)}
-                className="transform hover:scale-110 transition"
-              >
-                <div className={`w-12 h-12 rounded-full border-4 border-black flex items-center justify-center text-sm font-bold text-white ${{
-                  5: "bg-white text-black",
-                  10: "bg-lime-400 text-black",
-                  25: "bg-orange-500",
-                  50: "bg-red-500",
-                  100: "bg-purple-500",
-                }[chip]
-                  }`}>
-                  {chip}
-                </div>
-              </button>
-            ))}
-            <button onClick={() => setBetAmount(0)} className="text-sm text-red-300 hover:underline ml-2">
-              Reset
-            </button>
-          </div>
-
-          <p className="text-lg">
-            Apuesta actual: <span className="font-extrabold text-green-300">${betAmount}</span>
-          </p>
-
-          <button
-            onClick={() => playerPlaceBet(betAmount)}
-            disabled={betAmount < 50 || betAmount > 5000}
-            className="px-6 py-2 rounded bg-indigo-600 hover:bg-indigo-700 font-bold text-white disabled:opacity-50"
-          >
-            Apostar
-          </button>
         </div>
       )}
 
@@ -244,6 +155,58 @@ export const BlackjackGamePage = () => {
         Jugadores apostando: <span className="text-yellow-300">{players.length}</span>
       </h2>
 
+      {gameState === "Waiting" &&
+        (
+          players.find((p) => p.id === Number(userId))?.bet === 0 ||
+          !players.some((p) => p.id === Number(userId))
+        ) && (
+
+          <div className="flex flex-col items-center gap-4 mb-10">
+            <p className="text-gray-200 text-center text-xl">Introduce una apuesta para comenzar la partida.</p>
+
+            <div className="flex gap-3 justify-center">
+              {[5, 10, 25, 50, 100].map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => setBetAmount(betAmount + chip)}
+                  className="transform hover:scale-110 transition"
+                >
+                  <div
+                    className={`w-14 h-14 rounded-full border-4 border-black flex items-center justify-center text-sm font-bold text-white ${{
+                      5: "bg-white text-black",
+                      10: "bg-lime-400 text-black",
+                      25: "bg-orange-500",
+                      50: "bg-red-500",
+                      100: "bg-purple-500",
+                    }[chip]}`}
+                  >
+                    {chip}
+                  </div>
+                </button>
+              ))}
+              <button
+                onClick={() => setBetAmount(0)}
+                className="text-sm text-red-300 hover:underline ml-2"
+              >
+                Reset
+              </button>
+            </div>
+
+            <p className="text-lg">
+              Apuesta actual:{" "}
+              <span className="font-extrabold text-green-300">${betAmount}</span>
+            </p>
+
+            <button
+              onClick={() => playerPlaceBet(betAmount)}
+              disabled={betAmount < 50 || betAmount > 5000}
+              className="px-6 py-2 rounded bg-indigo-600 hover:bg-indigo-700 font-bold text-white disabled:opacity-50"
+            >
+              Apostar
+            </button>
+          </div>
+        )}
+
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
         {players.map((player) => {
           const isTurn = player.id === currentTurnUserId;
@@ -257,21 +220,24 @@ export const BlackjackGamePage = () => {
             >
               <CardStack cards={player.hand} />
 
-              <p className="text-sm text-white font-bold -mt-2">
+              <p className="text-xl text-white font-bold -mt-2">
                 Total: <span className="text-yellow-300">{totalHand}</span>
               </p>
+              {(isTurn && croupier.hand.length === 1 &&
+                <span className="text-xl">{`Es el turno de: ${player.name}`}</span>
+              )}
 
               <div className="flex items-end gap-3">
                 <PlayerHUD
                   name={player.name}
-                  coins={player.bet}
+                  coins={betAmount}
                   avatarUrl={`https://i.pravatar.cc/300?u=${player.id}`}
                   isCurrent={isTurn}
                 />
 
                 {player.bet > 0 && (
                   <div className="flex flex-col items-center">
-                    <ChipStack coins={player.bet} />
+                    <ChipStack coins={betAmount} />
                     <span className="text-xs font-bold text-white mt-1">${player.bet}</span>
                   </div>
                 )}
@@ -314,7 +280,6 @@ export const BlackjackGamePage = () => {
           );
         })}
       </div>
-
     </div>
   );
 };

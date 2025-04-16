@@ -16,7 +16,6 @@ public class PokerGameService
     private const int BigBlindAmount = 20;
     private readonly PokerHandComparer _handComparer = new();
     private readonly Dictionary<int, int> _initialCoinsByUserId = new();
-
     private int _currentTurnUserId;
     public int CurrentTurnUserId => _currentTurnUserId;
     private List<object> _lastShowdownSummary = new();
@@ -36,13 +35,12 @@ public class PokerGameService
         _pot += amount;
     }
 
-    // Reparte 2 cartas por jugador activo
     public void StartRound()
     {
         _deck = new Deck(GameType.Poker);
-        _deck.Shuffle(); //Baraja
+        _deck.Shuffle(); 
 
-        _communityCards.Clear(); //Cartas comunitarias de todos los jugadores
+        _communityCards.Clear(); 
 
 
         foreach (Player player in _gameMatch.Players)
@@ -55,7 +53,7 @@ public class PokerGameService
             else
             {
                 player.Hand = new Hand();
-                player.TotalContribution = 0; // Total apostado en la ronda (para pots)
+                player.TotalContribution = 0; 
                 player.CurrentBet = 0;
                 player.PlayerState = PlayerState.Playing;
                 _initialCoinsByUserId[player.UserId] = player.User.Coins;
@@ -150,7 +148,6 @@ public class PokerGameService
             return;
         }
 
-        // Evaluar manos de los jugadores activos
         Console.WriteLine("\nCartas de los jugadores:");
         List<EvaluatedHand> evaluatedHands = new List<EvaluatedHand>();
 
@@ -249,8 +246,6 @@ public class PokerGameService
     }
 
 
-
-    // Asigna ciegas a los jugadores activos
     public void AssignBlinds()
     {
         Console.WriteLine("\n--- Asigna ciegas a los jugadores activos ---\n");
@@ -262,7 +257,6 @@ public class PokerGameService
     public Player GetBigBlind() => _blindManager.BigBlind;
 
 
-    // Reparte 3 cartas comunitarias
     public void DealFlop()
     {
         _deck.BurnCard();
@@ -275,7 +269,6 @@ public class PokerGameService
         PokerHelper.ShowCommunityCards(_communityCards);
     }
 
-    // Reparte 1 carta comunitaria
     public void DealTurn()
     {
         _deck.BurnCard();
@@ -286,7 +279,6 @@ public class PokerGameService
         PokerHelper.ShowCommunityCards(_communityCards);
     }
 
-    // Reparte 1 carta comunitaria
     public void DealRiver()
     {
         _deck.BurnCard();
@@ -363,9 +355,6 @@ public class PokerGameService
         Console.WriteLine($"🎯 Primer jugador en actuar: {firstToAct.User.NickName} (userId: {_currentTurnUserId})");
     }
 
-
-
-    // Reinicia apuesta de todos los jugadores
     private void ResetCurrentBets()
     {
         foreach (Player player in _gameMatch.Players)
@@ -375,7 +364,6 @@ public class PokerGameService
         }
     }
 
-    // Genera pots (main y side) al final de apuestas
     public void GeneratePots()
     {
         _pots.Clear();
@@ -485,14 +473,6 @@ public class PokerGameService
     {
         return _communityCards;
     }
-
-    public List<Player> GetActivePlayers()
-    {
-        return _gameMatch.Players
-            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
-            .ToList();
-    }
-
 
     public List<object> GetShowdownSummary()
     {

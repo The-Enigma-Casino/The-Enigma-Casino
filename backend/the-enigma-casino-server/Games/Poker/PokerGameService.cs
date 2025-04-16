@@ -145,6 +145,8 @@ public class PokerGameService
             });
 
             _pots.Clear();
+            ResetCurrentBets();
+
             return;
         }
 
@@ -369,6 +371,7 @@ public class PokerGameService
         foreach (Player player in _gameMatch.Players)
         {
             player.CurrentBet = 0;
+            player.TotalContribution = 0;
         }
     }
 

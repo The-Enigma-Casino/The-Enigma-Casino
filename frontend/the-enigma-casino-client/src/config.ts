@@ -32,13 +32,17 @@ export const USER_COINS = `${API_BASE_URL}User/coins`;
 /* ENDPOINTS DE GAME TABLES */
 export const GAMETABLES_ENDPOINT = `${API_BASE_URL}GameTable/tables`;
 
-/* ENDPOINT DE IMAGENES */
+/* ENDPOINTS DE IMAGENES */
 export const CARD_IMAGE = `${API_BASE_URL}cards/card`;
 export const CARD_IMAGE_BACK = `${API_BASE_URL}cards/back`;
 
-/* ENDPOINT DE GACHAPON */
+/* ENDPOINTS DE GACHAPON */
 export const GACHAPON_PLAY = `${API_BASE_URL}Gachapon/play`;
 export const GACHAPON_PRICE = `${API_BASE_URL}Gachapon/price`;
 
-/* ENDPOINT PARA LAS IMAGENES */
+/* ENDPOINTS DE PROFILE */
+export const USER_PROFILE = `${API_BASE_URL}User/profile`;
+export const OTHER_USER_PROFILE = `${API_BASE_URL}User/profile/`;
+
+/* ENDPOINTS PARA LAS IMAGENES */
 export const USER_IMAGES = `${BASE_URL}images/profile`;

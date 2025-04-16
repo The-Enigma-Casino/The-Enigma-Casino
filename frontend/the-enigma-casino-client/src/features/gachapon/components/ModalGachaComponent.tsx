@@ -1,9 +1,9 @@
 import styles from "./ModalGachaComponent.module.css";
-// import Button from "../../../components/ui/button/Button";
-import MachineComponent from "./MachineComponent";
-import { gachaponPrice$, loadGachaponPrice } from "../stores/gachaponStore";
+import { $gachaponPrice, loadGachaponPrice } from "../stores/gachaponStore";
 import { useUnit } from "effector-react";
 import { useEffect } from "react";
+import GachaponMachine from "./GachaMachine/GachaponMachine";
+
 
 interface ModalGachaComponentProps {
   isOpen: boolean;
@@ -14,8 +14,7 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({
   isOpen,
   closeModal,
 }) => {
-
-  const gachaponPrice = useUnit(gachaponPrice$);
+  const gachaponPrice = useUnit($gachaponPrice);
 
   useEffect(() => {
     if (isOpen) {
@@ -36,29 +35,15 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({
           src={"/svg/close.svg"}
           onClick={closeModal}
         />
-
+  
         <div className={styles.headerText}>
           <p>GACHAPÓN</p>
           <p>DE LA SUERTE</p>
         </div>
-
-        <div className={styles.imageFrame}>
-          <MachineComponent />
-        </div>
+  
+        <GachaponMachine />
 
         <p className={styles.priceText}>1 Tirada = {gachaponPrice} Fichas</p>
-
-        {/* <Button
-          variant="big"
-          color="yellow"
-          font="bold"
-          onClick={() => {
-            console.log("¡Juega ahora!");
-            closeModal();
-          }}
-        >
-          ¡JUEGA AHORA!
-        </Button> */}
       </div>
     </div>
   );

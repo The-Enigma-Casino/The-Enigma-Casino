@@ -2,7 +2,7 @@ import axios from "axios";
 
 import { createEffect } from "effector";
 import { PAYMENT_STATUS, EMBBEDED_CHECKOUT } from "../../../config";
-import { getAuthHeaders } from "../../auth/utils/autHeaders";
+import { getAuthHeaders } from "../../auth/utils/authHeaders";
 
 export const fetchClientSecretFx = createEffect(async (coinsPackId: number) => {
   console.log("🔄 Llamando a la API con ID:", coinsPackId);

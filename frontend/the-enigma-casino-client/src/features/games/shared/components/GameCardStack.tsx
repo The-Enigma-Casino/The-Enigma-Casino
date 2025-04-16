@@ -25,7 +25,7 @@ export const CardStack = ({ cards, total, hidden = false }: Props) => {
         return (
           <div
             key={index}
-            className="w-12 h-16 bg-white border border-gray-600 rounded-md flex items-center justify-center text-lg font-bold shadow"
+            className="w-20 h-26 bg-white border border-gray-600 rounded-md flex items-center justify-center text-lg font-bold shadow"
             style={{
               transform: `translateX(${index * 10}px)`,
               backgroundColor: hidden && index === 0 ? "#991b1b" : "white",
@@ -41,7 +41,7 @@ export const CardStack = ({ cards, total, hidden = false }: Props) => {
               />
             ) : (
               <img
-                src={imageUrl} 
+                src={imageUrl}
                 alt={`${card.rank} of ${card.suit}`}
                 className="w-full h-full"
               />

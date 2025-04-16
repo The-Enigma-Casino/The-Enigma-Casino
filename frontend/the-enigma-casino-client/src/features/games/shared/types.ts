@@ -7,7 +7,8 @@ export type PlayerState =
   | 'Bust'
   | 'Win'
   | 'Lose'
-  | 'Draw';
+  | 'Draw'
+  | 'Blackjack'; // Comprobar si funciona
 
 export type MatchState = 'Waiting' | 'InProgress' | 'Finished';
 

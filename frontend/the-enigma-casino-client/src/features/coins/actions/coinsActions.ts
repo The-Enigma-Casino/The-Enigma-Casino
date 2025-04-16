@@ -1,7 +1,7 @@
 import { createEffect } from "effector";
 import { USER_COINS } from "../../../config";
 import axios from "axios";
-import { getAuthHeaders } from "../../auth/utils/autHeaders";
+import { getAuthHeaders } from "../../auth/utils/authHeaders";
 
 // GET COINS
 export const getCoinsByUserFx = createEffect(async () => {

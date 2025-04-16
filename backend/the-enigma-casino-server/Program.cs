@@ -74,12 +74,12 @@ public class Program
 
         // --- WebSocket: handlers (SIEMPRE singleton) ---
         builder.Services.AddSingleton<GameTableWS>();
-        builder.Services.AddSingleton<GameMatchWebSocket>();
+        builder.Services.AddSingleton<GameMatchWS>();
         builder.Services.AddSingleton<BlackjackWS>();
         builder.Services.AddSingleton<PokerWS>(); 
 
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
-        builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWebSocket>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, PokerWS>();
 

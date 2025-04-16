@@ -1,0 +1,103 @@
+.gachapon {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+.switch {
+  width: 70px;
+  position: absolute;
+  bottom: 75px;
+  left: 120px;
+  transition: transform 0.3s linear;
+  cursor: pointer;
+  transform: rotate(0deg);
+}
+
+.switch.active {
+  transform: rotate(-90deg);
+}
+
+.mask {
+  position: absolute;
+  z-index: 3;
+  background-color: rgba(138, 139, 140, 0.8);
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.winner {
+  width: 600px;
+  min-height: 150px;
+  padding: 20px;
+  margin-bottom: 50px;
+  font-size: 26px;
+  text-align: center;
+  line-height: 1.4;
+  font-family: 'Reddit Sans', sans-serif;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  white-space: normal;
+  word-break: break-word;
+  text-wrap: balance;
+  transition: all 0.3s ease;
+}
+
+.winner--normal {
+  background-color: #ffffff;
+  color: var(--Black-color);
+  border: 3px solid #74c410;
+  box-shadow: 0 4px 10px rgba(116, 196, 16, 0.25);
+}
+
+.winner--special {
+  background-color: #ffffff;
+  color: var(--Black-color);
+  border: 3px solid var(--Coins);
+  font-weight: bold;
+  box-shadow:
+    0 0 6px var(--Coins),
+    0 0 12px var(--Coins),
+    0 0 20px #fff273;
+  animation: glow-soft 1.8s ease-in-out infinite alternate;
+}
+
+.goldenEgg {
+  filter: drop-shadow(0 0 12px #FFD700) drop-shadow(0 0 20px #f6e58d);
+  transition: filter 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes glow-soft {
+  from {
+    box-shadow:
+      0 0 6px var(--Coins),
+      0 0 12px var(--Coins),
+      0 0 20px #fff273;
+  }
+  to {
+    box-shadow:
+      0 0 10px #fff273,
+      0 0 16px var(--Coins),
+      0 0 25px #fff9c0;
+  }
+}

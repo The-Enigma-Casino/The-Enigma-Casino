@@ -366,8 +366,12 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             var table = session.Table;
             var remainingPlayers = table.Players
-                .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
+                .Where(p =>
+                    (p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn || p.PlayerState == PlayerState.Fold) &&
+                    p.User.Coins >= 10
+                )
                 .ToList();
+
 
             if (remainingPlayers.Count >= table.MinPlayer)
             {

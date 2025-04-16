@@ -237,8 +237,5 @@ public class UserService : BaseService
         {
             throw new Exception("Hubo un error al traer al usuario", ex);
         }
-
     }
-
-
 }

@@ -194,7 +194,18 @@ public class PokerGameService
                 .Where(e => _handComparer.Compare(e, bestHand) == 0)
                 .ToList();
 
-            int winnings = pot.Amount / winners.Count;
+            int rake = CalculateRake(pot.Amount);
+            int distributableAmount = pot.Amount - rake;
+            int winnings = distributableAmount / winners.Count;
+            int leftover = distributableAmount % winners.Count;
+
+            Console.WriteLine($"\n🏦 Rake aplicado: {rake} fichas de un total de {pot.Amount} fichas ({(rake * 100.0 / pot.Amount):0.##}%).");
+            Console.WriteLine($"📊 Se reparten {distributableAmount} fichas entre {winners.Count} ganador(es).");
+            Console.WriteLine($"💰 Cada uno recibe: {winnings} fichas");
+            if (leftover > 0)
+            {
+                Console.WriteLine($"💼 El casino se queda con {leftover} ficha(s) sobrante(s) por división impar.");
+            }
 
             foreach (var winner in winners)
             {
@@ -431,6 +442,15 @@ public class PokerGameService
         Console.WriteLine($"⚠️ Se han generado {_pots.Count} pots. Verifica si hubo diferencias en las contribuciones y jugadores All-In.");
     }
 
+    private int CalculateRake(int potAmount)
+    {
+        int rake = (int)Math.Floor(potAmount * 0.05);
+
+        if (potAmount < 100) return Math.Min(rake, 2);   // máx 0.20 €
+        if (potAmount < 300) return Math.Min(rake, 5);   // máx 0.50 €
+        if (potAmount < 600) return Math.Min(rake, 10);  // máx 1.00 €
+        return Math.Min(rake, 20);                       // máx 2.00 €
+    }
 
 
     public void HandlePokerBet(Player player, int amount)

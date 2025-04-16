@@ -1,22 +1,9 @@
 import { createStore } from "effector";
 import {
-  setPlayers,
-  setCroupier,
-  setGameState,
-  resetPlayers,
-  resetCroupier,
-  resetGameState,
-  setCurrentTurnUserId,
-  matchStarted,
-  roundResultReceived,
-  resetCroupierRoundHand,
-  resetRoundResults,
-  setCroupierRoundHand,
-  resetCroupierTotal
+  setPlayers, setCroupier, setGameState, resetPlayers, resetCroupier, resetGameState, setCurrentTurnUserId, matchStarted, roundResultReceived, resetCroupierRoundHand,
+  resetRoundResults, setCroupierRoundHand, resetCroupierTotal
 } from "../store/bjEvents";
 import { Player, Croupier, GameState } from "../../shared/types";
-
-
 
 export const $players = createStore<Player[]>([])
   .on(setPlayers, (_, players) => players)

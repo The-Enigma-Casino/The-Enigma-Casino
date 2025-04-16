@@ -1,16 +1,7 @@
-import {
-  gameStateReceived,
-  setPlayers,
-  setCroupier,
-  setGameState,
-  setCurrentTurnUserId,
-  resetCroupierRoundHand,
-  resetRoundResults
-} from "../store/bjEvents";
+import { gameStateReceived, setPlayers, setCroupier, setGameState, setCurrentTurnUserId, resetCroupierRoundHand, resetRoundResults } from "../store/bjEvents";
 import { Player, Croupier } from "../../shared/types";
 
 gameStateReceived.watch((game) => {
-  console.log("[Mapper] game_state recibido:", game);
 
   const mappedPlayers: Player[] = game.players?.map((p: any) => ({
     id: p.userId,
@@ -29,7 +20,6 @@ gameStateReceived.watch((game) => {
           : [],
   };
 
-
   setPlayers(mappedPlayers);
   setCroupier(mappedCroupier);
 
@@ -38,7 +28,6 @@ gameStateReceived.watch((game) => {
   }
 
   const state = game.state ?? "InProgress";
-  console.log("Estado del juego:", state);
 
   if (state === "Waiting") {
     resetCroupierRoundHand(); // Limpia la ronda anterior
@@ -49,8 +38,5 @@ gameStateReceived.watch((game) => {
   if (state === "InProgress" && game.croupier?.visibleCard) {
     resetCroupierRoundHand();
   }
-
   setGameState(state);
-
-
 });

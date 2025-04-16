@@ -53,7 +53,6 @@ sample({
   target: messageSent,
 });
 
-
 messageSent.watch((msg) => {
   console.log("Mensaje enviado al WS:", msg);
 });

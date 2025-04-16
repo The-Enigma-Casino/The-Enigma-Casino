@@ -28,7 +28,7 @@ export const setPlayers = createEvent<Player[]>();
 export const setCroupier = createEvent<Croupier>();
 export const setGameState = createEvent<GameState>();
 export const setCurrentTurnUserId = createEvent<number>();
-export const matchStarted = createEvent<MatchStartedPayload>();// borrar?
+export const matchStarted = createEvent<MatchStartedPayload>();
 export const getGameStateRequested = createEvent();
 
 

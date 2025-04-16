@@ -99,8 +99,9 @@ public class BlackjackGame
         }
     }
 
-    public void Evaluate()
+    public List<object> Evaluate()
     {
+        var results = new List<object>();
         int croupierTotal = _gameMatch.GameTable.Croupier.Hand.GetTotal();
         bool dealerBust = _gameMatch.GameTable.Croupier.Hand.IsBusted();
 
@@ -108,38 +109,63 @@ public class BlackjackGame
         {
             int playerTotal = player.Hand.GetTotal();
             bool playerBust = player.Hand.IsBusted();
+            string result = "";
+            int coinsChange = 0;
 
             if (playerBust)
             {
                 player.Bust();
+                result = "lose";
+                coinsChange = -player.CurrentBet;
                 Console.WriteLine($"{player.User.NickName} ha perdido por pasarse.");
             }
             else if (playerTotal < croupierTotal && !dealerBust)
             {
                 player.Lose();
+                result = "lose";
+                coinsChange = -player.CurrentBet;
                 Console.WriteLine($"{player.User.NickName} ha perdido.");
             }
             else if (dealerBust || playerTotal > croupierTotal)
             {
                 player.Win(player.CurrentBet * 2);
+                result = "win";
+                coinsChange = player.CurrentBet;
                 Console.WriteLine($"{player.User.NickName} ha ganado.");
             }
             else if (playerTotal == croupierTotal)
             {
                 player.Draw();
+                result = "draw";
+                coinsChange = 0;
                 Console.WriteLine($"{player.User.NickName} ha empatado.");
             }
             else if (playerTotal == 21 && player.Hand.Cards.Count == 2 && croupierTotal == 21 && _gameMatch.GameTable.Croupier.Hand.Cards.Count == 2)
             {
                 player.Draw();
-                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack empata ganando {player.CurrentBet} monedas.");
+                result = "draw";
+                coinsChange = 0;
+                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack empatado.");
             }
-            else if (player.Hand.GetTotal() == 21 && player.Hand.Cards.Count == 2)
+            else if (playerTotal == 21 && player.Hand.Cards.Count == 2)
             {
                 WinBlackjack(player);
-                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack y gana {player.CurrentBet * 2.5} monedas.");
+                result = "blackjack";
+                coinsChange = (int)(player.CurrentBet * 1.5);
+                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack y gana {coinsChange} monedas.");
             }
+
+            results.Add(new
+            {
+                userId = player.UserId,
+                nickname = player.User.NickName,
+                result,
+                coinsChange,
+                finalTotal = playerTotal
+            });
         }
+
+        return results;
     }
 
     private void WinBlackjack(Player player)

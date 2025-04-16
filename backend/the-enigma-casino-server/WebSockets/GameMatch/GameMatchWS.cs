@@ -13,11 +13,11 @@ using the_enigma_casino_server.WebSockets.Resolvers;
 
 namespace the_enigma_casino_server.WebSockets.GameMatch;
 
-public class GameMatchWebSocket : BaseWebSocketHandler, IWebSocketMessageHandler, IWebSocketSender
+public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebSocketSender
 {
     public string Type => "game_match";
 
-    public GameMatchWebSocket(
+    public GameMatchWS(
     ConnectionManagerWS connectionManager,
     IServiceProvider serviceProvider)
     : base(connectionManager, serviceProvider)
@@ -35,7 +35,8 @@ public class GameMatchWebSocket : BaseWebSocketHandler, IWebSocketMessageHandler
         GameTurnServiceResolver turnResolver = provider.GetRequiredService<GameTurnServiceResolver>();
         GameSessionCleanerResolver sessionCleaner = provider.GetRequiredService<GameSessionCleanerResolver>();
 
-        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner);
+        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, provider);
+
     }
 
     public async Task HandleAsync(string userId, JsonElement message)

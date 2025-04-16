@@ -11,8 +11,8 @@ export const GameLayout = () => {
     numericId >= 1 && numericId <= 6
       ? "blackjack"
       : numericId >= 7 && numericId <= 12
-      ? "poker"
-      : "roulette";
+        ? "poker"
+        : "roulette";
 
   return (
     <>
@@ -21,7 +21,7 @@ export const GameLayout = () => {
           <Chat gameType={gameType} />
         </div>
 
-        <div className="flex-grow h-full p-4 overflow-auto">
+        <div className="flex-grow h-full overflow-auto">
           <BlackjackGamePage />
         </div>
       </div>

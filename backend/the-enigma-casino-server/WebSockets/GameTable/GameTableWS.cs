@@ -17,12 +17,12 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 {
     public string Type => "game_table";
 
-    private readonly GameMatchWebSocket _gameMatchWS;
+    private readonly GameMatchWS _gameMatchWS;
 
     public GameTableWS(
         ConnectionManagerWS connectionManager,
         IServiceProvider serviceProvider,
-        GameMatchWebSocket gameMatchWS)
+        GameMatchWS gameMatchWS)
         : base(connectionManager, serviceProvider)
     {
         _gameMatchWS = gameMatchWS;

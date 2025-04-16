@@ -39,4 +39,37 @@ public static class PokerActionTracker
             set.Remove(userId);
         }
     }
+
+    public static List<int> GetAllForTable(int tableId, string phase)
+    {
+        if (_actions.TryGetValue((tableId, phase), out var players))
+        {
+            return players.ToList();
+        }
+
+        return new List<int>();
+    }
+
+    public static void ResetActionsForRaise(int tableId, List<int> userIds, int raiserUserId, string phase)
+    {
+        var key = (tableId, phase);
+
+        if (!_actions.TryGetValue(key, out var set)) return;
+
+        foreach (var userId in userIds)
+        {
+            if (userId != raiserUserId)
+            {
+                set.Remove(userId);
+            }
+        }
+    }
+
+    public static bool HasPlayerActed(int tableId, int userId, string phase)
+    {
+        var key = (tableId, phase);
+        return _actions.TryGetValue(key, out var set) && set.Contains(userId);
+    }
+
+
 }

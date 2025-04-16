@@ -1,0 +1,42 @@
+﻿using System.Collections.Concurrent;
+
+namespace the_enigma_casino_server.WebSockets.Poker;
+
+public static class PokerActionTracker
+{
+    private static readonly ConcurrentDictionary<(int tableId, string phase), HashSet<int>> _actions = new();
+
+    public static void RegisterAction(int tableId, int userId, string phase)
+    {
+        var key = (tableId, phase);
+
+        if (!_actions.ContainsKey(key))
+            _actions[key] = new HashSet<int>();
+
+        _actions[key].Add(userId);
+    }
+
+    public static bool HaveAllPlayersActed(int tableId, List<int> expectedPlayerIds, string phase)
+    {
+        var key = (tableId, phase);
+
+        if (!_actions.TryGetValue(key, out var actualSet)) return false;
+
+        return expectedPlayerIds.All(id => actualSet.Contains(id));
+    }
+
+    public static void Clear(int tableId, string phase)
+    {
+        var key = (tableId, phase);
+        _actions.TryRemove(key, out _);
+    }
+
+    public static void RemovePlayer(int tableId, int userId, string phase)
+    {
+        var key = (tableId, phase);
+        if (_actions.TryGetValue(key, out var set))
+        {
+            set.Remove(userId);
+        }
+    }
+}

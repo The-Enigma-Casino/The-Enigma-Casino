@@ -1,5 +1,5 @@
-﻿using the_enigma_casino_server.Games.Shared.Entities.Enum;
-using the_enigma_casino_server.Models.Database.Entities;
+﻿using the_enigma_casino_server.Core.Entities;
+using the_enigma_casino_server.Games.Shared.Enum;
 
 namespace the_enigma_casino_server.Games.Shared.Entities;
 

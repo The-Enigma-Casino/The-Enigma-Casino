@@ -1,0 +1,20 @@
+.egg {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  display: none;
+  opacity: 0;
+  transform: translate(0, -50px);
+  transition: transform 0.4s ease 0.5s, opacity 0.2s ease 0.5s;
+  pointer-events: none;
+  z-index: 2;
+}
+
+  
+.egg.active {
+  display: block;
+  opacity: 1;
+  transform: translate(0, 35px);
+  transition: transform 0.4s ease 0.5s, opacity 0.2s ease 0.5s, filter 0.8s ease-in-out;
+}
+  

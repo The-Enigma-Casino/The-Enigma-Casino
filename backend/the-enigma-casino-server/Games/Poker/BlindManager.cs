@@ -1,6 +1,6 @@
-﻿using the_enigma_casino_server.Games.RevisarPoker;
+﻿using the_enigma_casino_server.Games.Poker;
 using the_enigma_casino_server.Games.Shared.Entities;
-using the_enigma_casino_server.Games.Shared.Entities.Enum;
+using the_enigma_casino_server.Games.Shared.Enum;
 
 public class BlindManager
 {

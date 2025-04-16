@@ -22,22 +22,18 @@
   justify-content: space-between;
   align-items: center;
   position: relative;
+
 }
 
 .headerText {
   font-family: 'Reddit Sans', sans-serif;
   font-weight: bold;
   color: var(--Principal);
-  font-size: 3.2rem;
+  font-size: 4rem;
   text-align: center;
   line-height: 1.2;
-}
-
-.machineWrapper {
-  width: 100%;
-  height: 100%;
-  transform: scale(0.90);
-  transform-origin: top center;
+  padding-top: 1rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 1);
 }
 
 .priceText {
@@ -46,15 +42,15 @@
   color: var(--Principal);
   font-size: 2rem;
   text-align: center;
-  paddig-top: 60px;
+  padding-bottom: 1rem;
 }
 
 .closeIcon {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 30px;
-  height: 30px;
+  top: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
   cursor: pointer;
   z-index: 1000;
 }

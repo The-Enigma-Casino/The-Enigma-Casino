@@ -1,8 +1,7 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
-using the_enigma_casino_server.Games.Shared.Entities.Enum;
-using the_enigma_casino_server.Games.Shared.Helper;
+using the_enigma_casino_server.Games.Shared.Enum;
 
-namespace the_enigma_casino_server.Games.RevisarPoker;
+namespace the_enigma_casino_server.Games.Poker;
 
 public class PokerGameService
 {
@@ -15,6 +14,7 @@ public class PokerGameService
     private const int SmallBlindAmount = 10;
     private const int BigBlindAmount = 20;
     private readonly PokerHandComparer _handComparer = new();
+    private readonly Dictionary<int, int> _initialCoinsByUserId = new();
 
 
     public PokerGameService(Match gameMatch)
@@ -39,7 +39,7 @@ public class PokerGameService
         _communityCards.Clear(); //Cartas comunitarias de todos los jugadores
 
 
-        foreach (var player in _gameMatch.Players)
+        foreach (Player player in _gameMatch.Players)
         {
             if (player.User.Coins <= 0)
             {
@@ -52,6 +52,7 @@ public class PokerGameService
                 player.TotalContribution = 0; // Total apostado en la ronda (para pots)
                 player.CurrentBet = 0;
                 player.PlayerState = PlayerState.Playing;
+                _initialCoinsByUserId[player.UserId] = player.User.Coins;
             }
 
         }
@@ -516,5 +517,18 @@ public class PokerGameService
         // 9. Rotar dealer para siguiente ronda
         _blindManager.NextDealer();
     }
+
+    public int GetLastBetAmount(int userId)
+    {
+        var player = _gameMatch.Players.FirstOrDefault(p => p.User.Id == userId);
+        return player?.TotalContribution ?? 0;
+    }
+
+    public int GetChipResult(int userId)
+    {
+        var player = _gameMatch.Players.FirstOrDefault(p => p.User.Id == userId);
+        return player != null ? player.User.Coins - player.TotalContribution : 0;
+    }
+
 }
 

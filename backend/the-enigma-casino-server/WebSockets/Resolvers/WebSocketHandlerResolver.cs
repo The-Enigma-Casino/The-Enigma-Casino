@@ -1,4 +1,5 @@
 ﻿
+using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameTable;
@@ -27,6 +28,7 @@ public class WebSocketHandlerResolver
             "game_match" => provider.GetRequiredService<GameMatchWS>(),
             "blackjack" => provider.GetRequiredService<BlackjackWS>(),
             "poker" => provider.GetRequiredService<PokerWS>(),
+            "roulette" => provider.GetRequiredService<RouletteWS>(),
 
             _ => null
         };

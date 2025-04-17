@@ -3,6 +3,5 @@
 public static class ChatMessageType
 {
     public const string NewMessage = "new_message";
-    public const string GetRecent = "get_recent";
 
 }

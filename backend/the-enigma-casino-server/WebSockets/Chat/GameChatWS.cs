@@ -34,7 +34,6 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
         _ = action switch
         {
             ChatMessageType.NewMessage => HandleNewMessageAsync(userId, message),
-            ChatMessageType.GetRecent => HandleGetRecentMessagesAsync(userId, message),
             _ => Task.CompletedTask
         };
     }
@@ -105,48 +104,6 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
         };
 
         await ((IWebSocketSender)this).BroadcastToUsersAsync(session.GetConnectedUserIds(), response);
-    }
-
-
-    private async Task HandleGetRecentMessagesAsync(string userId, JsonElement message)
-    {
-        if (!message.TryGetProperty("tableId", out var tableIdProp) ||
-            !int.TryParse(tableIdProp.GetString(), out int tableId))
-        {
-            await SendErrorAsync(userId, "Invalid tableId in get_recent.");
-            return;
-        }
-
-        if (!ActiveGameSessionStore.TryGet(tableId, out var session))
-        {
-            await SendErrorAsync(userId, "No active session for this table.");
-            return;
-        }
-
-        Player player = session.Table.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
-        if (player == null)
-        {
-            await SendErrorAsync(userId, "You are not part of the table.");
-            return;
-        }
-
-        var recentMessages = session.ChatMessages.Take(20).Select(m => new
-        {
-            type = Type,
-            action = ChatMessageType.NewMessage,
-            tableId,
-            userId = m.UserId,
-            nickname = m.Nickname,
-            avatarUrl = m.AvatarUrl,
-            text = m.Text,
-            timestamp = m.Timestamp
-        });
-
-        foreach (var msg in recentMessages)
-        {
-            await ((IWebSocketSender)this).SendToUserAsync(userId, msg);
-        }
-
     }
 
 

@@ -14,6 +14,7 @@ using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Infrastructure.Database.Seeder;
 using the_enigma_casino_server.Middleware;
 using the_enigma_casino_server.Utilities;
+using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.GameMatch;
@@ -76,12 +77,14 @@ public class Program
         builder.Services.AddSingleton<GameTableWS>();
         builder.Services.AddSingleton<GameMatchWS>();
         builder.Services.AddSingleton<BlackjackWS>();
-        builder.Services.AddSingleton<PokerWS>(); 
+        builder.Services.AddSingleton<PokerWS>();
+        builder.Services.AddSingleton<RouletteWS>();
 
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, PokerWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, RouletteWS>();
 
         // --- WebSocket: servicios específicos del juego ---
         builder.Services.AddScoped<GameTableManager>();
@@ -101,7 +104,6 @@ public class Program
         builder.Services.AddScoped<IGameTurnService, BlackjackTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, BlackjackSessionCleaner>();
 
-
         // --- Servicios concretos de Poker ---
         builder.Services.AddScoped<PokerBetInfoProvider>();
         builder.Services.AddScoped<PokerSessionCleaner>();
@@ -110,6 +112,15 @@ public class Program
         builder.Services.AddScoped<IGameBetInfoProvider, PokerBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, PokerTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, PokerSessionCleaner>();
+
+        // --- Servicios concretos de Ruleta ---
+        builder.Services.AddScoped<RouletteBetInfoProvider>();
+        builder.Services.AddScoped<RouletteSessionCleaner>();
+
+        builder.Services.AddScoped<IGameBetInfoProvider, RouletteBetInfoProvider>();
+        builder.Services.AddScoped<IGameSessionCleaner, RouletteSessionCleaner>();
+
+
 
 
         // --- Mappers ---

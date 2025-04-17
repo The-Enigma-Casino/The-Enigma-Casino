@@ -12,9 +12,19 @@ public class RouletteGame
     public int LastNumber { get; private set; }
     public string LastColor { get; private set; }
 
+    private bool _canAcceptBets = true;
+
+    public bool CanAcceptBets => _canAcceptBets;
+
+    public void PauseBetting() => _canAcceptBets = false;
+    public void ResumeBetting() => _canAcceptBets = true;
+
 
     public void RegisterBet(Player player, RouletteBet bet)
     {
+        if (!_canAcceptBets)
+            throw new InvalidOperationException("Las apuestas están cerradas en este momento.");
+
         if (bet.Amount > player.User.Coins)
             throw new InvalidOperationException("No tienes suficientes fichas.");
 

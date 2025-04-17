@@ -13,15 +13,14 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private readonly ValidationService _validationService;
 
-    private readonly IWebSocketSender _sender;
 
     public GameChatWS(
         ConnectionManagerWS connectionManager,
         IServiceProvider serviceProvider,
-        IWebSocketSender sender
+        ValidationService validationService 
     ) : base(connectionManager, serviceProvider)
     {
-        _sender = sender;
+        _validationService = validationService; 
     }
 
 
@@ -102,7 +101,7 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
             timestamp = chatMessage.Timestamp
         };
 
-        await _sender.BroadcastToUsersAsync(session.GetConnectedUserIds(), response);
+        await ((IWebSocketSender)this).BroadcastToUsersAsync(session.GetConnectedUserIds(), response);
 
 
     }

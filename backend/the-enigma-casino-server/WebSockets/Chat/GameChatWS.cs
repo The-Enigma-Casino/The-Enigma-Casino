@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Utilities;
 using the_enigma_casino_server.Websockets.Chat;
 using the_enigma_casino_server.WebSockets.Base;
@@ -17,10 +18,10 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
     public GameChatWS(
         ConnectionManagerWS connectionManager,
         IServiceProvider serviceProvider,
-        ValidationService validationService 
+        ValidationService validationService
     ) : base(connectionManager, serviceProvider)
     {
-        _validationService = validationService; 
+        _validationService = validationService;
     }
 
 
@@ -28,14 +29,16 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!message.TryGetProperty("action", out var actionProp)) return;
 
-        string action = actionProp.GetString()!;
-        switch (action)
+        var action = actionProp.GetString();
+
+        _ = action switch
         {
-            case ChatMessageType.NewMessage:
-                await HandleNewMessageAsync(userId, message);
-                break;
-        }
+            ChatMessageType.NewMessage => HandleNewMessageAsync(userId, message),
+            ChatMessageType.GetRecent => HandleGetRecentMessagesAsync(userId, message),
+            _ => Task.CompletedTask
+        };
     }
+
 
     private async Task HandleNewMessageAsync(string userId, JsonElement message)
     {
@@ -66,7 +69,7 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
-        var player = session.Table.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
+        Player player = session.Table.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
         if (player == null)
         {
             Console.WriteLine($"❌ [Chat] Usuario {userId} no forma parte de la mesa {tableId}");
@@ -105,4 +108,45 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
 
     }
+
+    private async Task HandleGetRecentMessagesAsync(string userId, JsonElement message)
+    {
+        if (!message.TryGetProperty("tableId", out var tableIdProp) ||
+            !int.TryParse(tableIdProp.GetString(), out int tableId))
+        {
+            Console.WriteLine("❌ [Chat] tableId inválido en get_recent.");
+            return;
+        }
+
+        if (!ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            Console.WriteLine($"❌ [Chat] No hay sesión activa para la mesa {tableId}");
+            return;
+        }
+
+        Player player = session.Table.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
+        if (player == null)
+        {
+            Console.WriteLine($"❌ [Chat] Usuario {userId} no forma parte de la mesa {tableId}");
+            return;
+        }
+
+        var recentMessages = session.ChatMessages.Take(20).Select(m => new
+        {
+            type = Type,
+            action = ChatMessageType.NewMessage,
+            tableId,
+            userId = m.UserId,
+            nickname = m.Nickname,
+            avatarUrl = m.AvatarUrl,
+            text = m.Text,
+            timestamp = m.Timestamp
+        });
+
+        foreach (var msg in recentMessages)
+        {
+            await ((IWebSocketSender)this).SendToUserAsync(userId, msg);
+        }
+    }
+
 }

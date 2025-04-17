@@ -1,82 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./Chat.module.css";
 import { ChatInput } from "./InputChat";
 import { useUnit } from "effector-react";
 import { $coins } from "../../../coins/store/coinsStore";
 import { ChatMessage } from "./ChatMessage";
 import { GameInfoModal } from "../../shared/components/modals/GameInfoModal";
+import { $chatMessages } from "../stores/chatStore";
+import { $userId } from "../../../auth/store/authStore";
+import { messageSent } from "../stores/chatStore";
+import { $currentTableId } from "../../../gameTables/store/tablesStores";
+
 
 interface ChatProps {
   gameType: "poker" | "blackjack" | "roulette";
 }
 
-export const Chat =  ({ gameType }: ChatProps) => {
+export const Chat = ({ gameType }: ChatProps) => {
   const coins = useUnit($coins);
+  const userId = useUnit($userId);
+  const tableId = useUnit($currentTableId);
 
-  const messages = [
-    {
-      isOwn: false,
-      username: "Jugador 2",
-      avatarUrl: "/images/profile/user_default.png",
-      message: "Hola 😁",
-    },
-    {
-      isOwn: true,
-      avatarUrl: "/images/profile/user_default.png",
-      message: "¡Ey! ¿Jugamos?",
-    },
-    {
-      isOwn: false,
-      username: "Jugador 2",
-      avatarUrl: "/images/profile/user_default.png",
-      message:
-        "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
-    },
-    {
-      isOwn: true,
-      avatarUrl: "/images/profile/user_default.png",
-      message: "Claro que sí, amigo",
-    },
-    {
-      isOwn: false,
-      username: "Jugador 2",
-      avatarUrl: "/images/profile/user_default.png",
-      message:
-        "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
-    },
-    {
-      isOwn: true,
-      avatarUrl: "/images/profile/user_default.png",
-      message: "Claro que sí, amigo",
-    },
-    {
-      isOwn: false,
-      username: "Jugador 2",
-      avatarUrl: "/images/profile/user_default.png",
-      message:
-        "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
-    },
-    {
-      isOwn: true,
-      avatarUrl: "/images/profile/user_default.png",
-      message: "Claro que sí, amigo",
-    },
-    {
-      isOwn: false,
-      username: "Jugador 2",
-      avatarUrl: "/images/profile/user_default.png",
-      message:
-        "AJSODHASJKb ASIJhdjkashdjas dba sduyha shdio aiuwdsiuduahsudb agshuidauisdu s bduiabisoudbuiabs  aushdoiuashduasuigdgauis hduasduiashdu hsuahduashdiuhasdhiuashdiuahsduiashduihsa",
-    },
-    {
-      isOwn: true,
-      avatarUrl: "/images/profile/user_default.png",
-      message: "Claro que sí, amigo",
-    },
-  ];
+  const chatMessages = useUnit($chatMessages);
+
+  useEffect(() => {
+    console.log("[Chat] Mensajes recibidos:", chatMessages);
+  }, [chatMessages]);
 
   const [showInfo, setShowInfo] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleSend = (text: string) => {
+    console.log("[Chat] Mensaje enviado:", text);
+    messageSent({ tableId, text });
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -87,19 +43,19 @@ export const Chat =  ({ gameType }: ChatProps) => {
       <div className={styles.mainArea}>
         <div className={styles.container}>
           <div className={styles.messages}>
-            {messages.map((msg, index) => (
+            {chatMessages.map((msg, index) => (
               <ChatMessage
                 key={index}
-                isOwn={msg.isOwn}
-                username={msg.username}
+                isOwn={msg.userId.toString() === userId}
+                username={msg.nickname}
                 avatarUrl={msg.avatarUrl}
-                message={msg.message}
+                message={msg.text}
               />
             ))}
           </div>
 
           <div className={styles.inputWrapper}>
-            <ChatInput />
+          <ChatInput onSend={handleSend} />
           </div>
         </div>
 
@@ -129,10 +85,7 @@ export const Chat =  ({ gameType }: ChatProps) => {
       </div>
 
       {showInfo && (
-        <GameInfoModal
-          gameType={gameType}
-          onClose={() => setShowInfo(false)}
-        />
+        <GameInfoModal gameType={gameType} onClose={() => setShowInfo(false)} />
       )}
     </div>
   );

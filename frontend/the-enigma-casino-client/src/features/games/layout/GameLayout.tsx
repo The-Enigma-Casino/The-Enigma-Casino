@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Chat } from "../shared/components/chat/Chat";
+import { Chat } from "../chat/components/Chat";
 import { BlackjackGamePage } from "../blackjack/pages/BlackjackGamePage";
 
 export const GameLayout = () => {

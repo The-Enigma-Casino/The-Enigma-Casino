@@ -2,9 +2,9 @@ import { useState } from "react";
 import styles from "./Chat.module.css";
 import { ChatInput } from "./InputChat";
 import { useUnit } from "effector-react";
-import { $coins } from "../../../../coins/store/coinsStore";
+import { $coins } from "../../../coins/store/coinsStore";
 import { ChatMessage } from "./ChatMessage";
-import { GameInfoModal } from "../modals/GameInfoModal";
+import { GameInfoModal } from "../../shared/components/modals/GameInfoModal";
 
 interface ChatProps {
   gameType: "poker" | "blackjack" | "roulette";

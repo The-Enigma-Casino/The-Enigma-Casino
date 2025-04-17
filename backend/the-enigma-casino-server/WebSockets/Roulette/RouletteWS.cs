@@ -5,6 +5,7 @@ using the_enigma_casino_server.Games.BlackJack;
 using the_enigma_casino_server.Games.Roulette;
 using the_enigma_casino_server.Games.Roulette.Enums;
 using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.BlackJack;
@@ -29,6 +30,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
             {
                 RouletteMessageType.PlaceBet => HandlePlaceBetAsync(userId, message),
                 RouletteMessageType.Spin => HandleSpinAsync(userId, message),
+                RouletteMessageType.RequestGameState => HandleRequestGameStateAsync(userId, message),
                 _ => Task.CompletedTask
             });
 
@@ -42,10 +44,16 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
 
         if (!TryGetTableId(message, out int tableId)) return;
 
+        // Crea partida de ruleta si aun no existe
+        if (!ActiveRouletteGameStore.TryGet(tableId, out var existingGame))
+        {
+            var newGame = new RouletteGame();
+            ActiveRouletteGameStore.Set(tableId, newGame);
+            Console.WriteLine($"Nueva partida de ruleta creada en mesa {tableId}");
+        }
+
         if (!TryGetMatch(tableId, userId, out var match)) return;
-
         if (!TryGetPlayer(match, userId, out var player)) return;
-
         if (!TryGetRouletteGame(tableId, userId, out var rouletteGame)) return;
 
         try
@@ -82,6 +90,27 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
         {
             _betLock.Release();
         }
+
+        // Iniciar el ciclo automático si no está activo
+        if (!RouletteTimerStore.IsTimerRunning(tableId))
+        {
+            Console.WriteLine($"Iniciando ciclo automático en mesa {tableId}");
+
+            RouletteTimerStore.StartRecurringTimer(tableId, async () =>
+            {
+                Console.WriteLine($"Ronda automática: lanzando ruleta en mesa {tableId}");
+                await HandleSpinAsync("SYSTEM", BuildSpinMessage(tableId));
+
+                if (TryGetMatch(tableId, "SYSTEM", out var match))
+                {
+                    return match.Players.Any(p => p.PlayerState == PlayerState.Playing);
+                }
+
+                return false;
+            }, 30);
+        }
+
+        await BroadcastGameStateAsync(tableId);
     }
 
     private async Task HandleSpinAsync(string userId, JsonElement message)
@@ -131,8 +160,19 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
             };
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), payload);
         }
+        // Apuestas cerradas
+        rouletteGame.PauseBetting();
+        await BroadcastBetsClosedAsync(tableId);
+        Console.WriteLine("Apuestas cerradas");
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
         rouletteGame.Reset();
 
+        // Apuestas abiertas
+        rouletteGame.ResumeBetting();
+        await BroadcastBetsOpenedAsync(tableId);
+
+        await BroadcastGameStateAsync(tableId);
         Console.WriteLine("Ronda finalizada y resultados enviados.");
     }
 
@@ -173,11 +213,15 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
         if (!TryGetMatch(tableId, "SYSTEM", out var match)) return;
         if (!TryGetRouletteGame(tableId, "SYSTEM", out var rouletteGame)) return;
 
+        var secondsRemaining = RouletteTimerStore.GetSecondsRemaining(tableId, 30); // 30s
+
         var statePayload = new
         {
             type = Type,
             action = RouletteMessageType.GameState,
             tableId,
+            secondsRemaining,
+            canPlaceBets = rouletteGame.CanAcceptBets, // Controlar en front si se permiten apuestas tras los 5 segundos de reparto
             players = match.Players.Select(p => new
             {
                 userId = p.UserId,
@@ -199,6 +243,36 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
 
     }
 
+
+    private async Task HandleRequestGameStateAsync(string userId, JsonElement message)
+    {
+        if (!TryGetTableId(message, out int tableId)) return;
+        if (!TryGetMatch(tableId, userId, out var match)) return;
+        if (!TryGetRouletteGame(tableId, userId, out var rouletteGame)) return;
+
+        var player = match.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
+        if (player == null) return;
+
+        var statePayload = new
+        {
+            type = Type,
+            action = RouletteMessageType.GameState,
+            tableId,
+            players = match.Players.Select(p => new
+            {
+                userId = p.UserId,
+                nickname = p.User.NickName,
+                remainingCoins = p.User.Coins,
+                bets = rouletteGame.GetBetsForPlayer(p.UserId).Select(b => new
+                {
+                    bet = b.ToString(),
+                    amount = b.Amount
+                }).ToList()
+            })
+        };
+
+        await ((IWebSocketSender)this).SendToUserAsync(userId, statePayload);
+    }
 
 
     public Task ForceAdvanceTurnAsync(int tableId, int userId)
@@ -254,6 +328,48 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
         return true;
     }
 
+    // Json Element
+    private JsonElement BuildSpinMessage(int tableId)
+    {
+        var json = $"{{\"tableId\":\"{tableId}\"}}";
+        return JsonDocument.Parse(json).RootElement;
+    }
+
+    // Apuestas abiertas/cerrada
+
+    private async Task BroadcastBetsClosedAsync(int tableId)
+    {
+        if (!TryGetMatch(tableId, "SYSTEM", out var match)) return;
+
+        var payload = new
+        {
+            type = Type,
+            action = "bets_closed",
+            tableId
+        };
+
+        foreach (var player in match.Players)
+        {
+            await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), payload);
+        }
+    }
+
+    private async Task BroadcastBetsOpenedAsync(int tableId)
+    {
+        if (!TryGetMatch(tableId, "SYSTEM", out var match)) return;
+
+        var payload = new
+        {
+            type = Type,
+            action = "bets_opened",
+            tableId
+        };
+
+        foreach (var player in match.Players)
+        {
+            await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), payload);
+        }
+    }
 
 
 }

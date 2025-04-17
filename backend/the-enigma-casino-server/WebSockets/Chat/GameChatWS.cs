@@ -45,13 +45,13 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!message.TryGetProperty("tableId", out var tableIdProp) ||
             !int.TryParse(tableIdProp.GetString(), out int tableId))
         {
-            Console.WriteLine("❌ [Chat] tableId inválido.");
+            await SendErrorAsync(userId, "Invalid tableId.");
             return;
         }
 
         if (!message.TryGetProperty("text", out var textProp))
         {
-            Console.WriteLine("❌ [Chat] Falta el texto del mensaje.");
+            await SendErrorAsync(userId, "Missing message text.");
             return;
         }
 
@@ -59,20 +59,20 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (string.IsNullOrWhiteSpace(rawText))
         {
-            Console.WriteLine("❌ [Chat] Mensaje vacío.");
+            await SendErrorAsync(userId, "Message is empty.");
             return;
         }
 
         if (!ActiveGameSessionStore.TryGet(tableId, out var session))
         {
-            Console.WriteLine($"❌ [Chat] No hay sesión activa para la mesa {tableId}");
+            await SendErrorAsync(userId, "No active session for this table.");
             return;
         }
 
         Player player = session.Table.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
         if (player == null)
         {
-            Console.WriteLine($"❌ [Chat] Usuario {userId} no forma parte de la mesa {tableId}");
+            await SendErrorAsync(userId, "You are not part of the table.");
             return;
         }
 
@@ -105,29 +105,28 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
         };
 
         await ((IWebSocketSender)this).BroadcastToUsersAsync(session.GetConnectedUserIds(), response);
-
-
     }
+
 
     private async Task HandleGetRecentMessagesAsync(string userId, JsonElement message)
     {
         if (!message.TryGetProperty("tableId", out var tableIdProp) ||
             !int.TryParse(tableIdProp.GetString(), out int tableId))
         {
-            Console.WriteLine("❌ [Chat] tableId inválido en get_recent.");
+            await SendErrorAsync(userId, "Invalid tableId in get_recent.");
             return;
         }
 
         if (!ActiveGameSessionStore.TryGet(tableId, out var session))
         {
-            Console.WriteLine($"❌ [Chat] No hay sesión activa para la mesa {tableId}");
+            await SendErrorAsync(userId, "No active session for this table.");
             return;
         }
 
         Player player = session.Table.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
         if (player == null)
         {
-            Console.WriteLine($"❌ [Chat] Usuario {userId} no forma parte de la mesa {tableId}");
+            await SendErrorAsync(userId, "You are not part of the table.");
             return;
         }
 
@@ -147,6 +146,8 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             await ((IWebSocketSender)this).SendToUserAsync(userId, msg);
         }
+
     }
+
 
 }

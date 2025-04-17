@@ -32,6 +32,6 @@ public class User
         EmailConfirm = false;
         ConfirmationToken = null;
         Role = Role.User;
-        Image = "AAAAA";
+        Image = "user_default.png";
     }
 }

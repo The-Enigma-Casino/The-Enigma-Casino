@@ -234,12 +234,13 @@ public class Program
 
     private static void SeedDatabase(IServiceProvider serviceProvider)
     {
-        using var scope = serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetService<MyDbContext>();
+        using IServiceScope scope = serviceProvider.CreateScope();
+        MyDbContext dbContext = scope.ServiceProvider.GetService<MyDbContext>();
+        UserService userService = scope.ServiceProvider.GetService<UserService>();
 
         if (dbContext.Database.EnsureCreated())
         {
-            var seeder = new SeedManager(dbContext);
+            SeedManager seeder = new SeedManager(dbContext, userService);
             seeder.SeedAll();
         }
     }

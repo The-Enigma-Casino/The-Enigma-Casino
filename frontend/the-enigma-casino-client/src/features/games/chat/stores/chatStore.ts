@@ -11,7 +11,7 @@ export const messageReceived = createEvent<ChatMessage>();
 export const messageSent = createEvent<{ tableId: number; text: string }>();
 
 export const $chatMessages = createStore<ChatMessage[]>([])
-  .on(messageReceived, (state, msg) => [msg, ...state].slice(0, 50));
+.on(messageReceived, (state, msg) => [...state, msg].slice(-50));
 
 socketMessageReceived.watch((data) => {
   if (data.type !== "chat") return;

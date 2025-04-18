@@ -1,11 +1,12 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Utilities;
 
 public class ActiveGameSession
 {
     public Table Table { get; }
 
     private readonly Action<int> _onTimerComplete;
-    private readonly Timer _startTimer;
+    private readonly ReusableTimer _startTimer;
 
     private bool _isTimerRunning;
     private bool _countdownCancelled;
@@ -18,37 +19,21 @@ public class ActiveGameSession
     {
         Table = table;
         _onTimerComplete = onTimerComplete;
-        _startTimer = new Timer(_ => HandleTimerElapsed(), null, Timeout.Infinite, Timeout.Infinite);
+        _startTimer = new ReusableTimer(() => HandleTimerElapsed());
     }
 
     public void StartOrRestartCountdown()
     {
-        lock (_lock)
-        {
-            _countdownCancelled = false;
-            _startTimer.Change(10_000, Timeout.Infinite);
-            _isTimerRunning = true;
-        }
+        _startTimer.Start(30_000);
     }
 
     public void CancelCountdown()
     {
-        lock (_lock)
-        {
-            _countdownCancelled = true;
-            _startTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            _isTimerRunning = false;
-        }
+        _startTimer.Cancel();
     }
 
     private void HandleTimerElapsed()
     {
-        lock (_lock)
-        {
-            if (_countdownCancelled || !_isTimerRunning) return;
-            _isTimerRunning = false;
-        }
-
         _onTimerComplete.Invoke(Table.Id);
     }
 

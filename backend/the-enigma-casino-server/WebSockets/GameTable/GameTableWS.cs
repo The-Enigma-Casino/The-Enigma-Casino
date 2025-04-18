@@ -5,7 +5,6 @@ using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
-using the_enigma_casino_server.Websockets.Base;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
@@ -31,7 +30,9 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         _gameMatchWS = gameMatchWS;
         connectionManager.OnUserDisconnected += async userId =>
         {
-            await disconnectionHandler.HandleDisconnectionAsync(userId);
+            using var scope = serviceProvider.CreateScope();
+            var handler = scope.ServiceProvider.GetRequiredService<UserDisconnectionHandler>();
+            await handler.HandleDisconnectionAsync(userId);
         };
     }
 
@@ -188,7 +189,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         lock (table)
         {
-            if (table.TableState != TableState.Waiting)
+            if (table.TableState != TableState.Waiting && table.TableState != TableState.Starting)
             {
                 Console.WriteLine($"[GameTableWS] El estado de la mesa {tableId} ya no es 'Waiting' (es {table.TableState}).");
                 return;

@@ -22,7 +22,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
     IServiceProvider serviceProvider)
     : base(connectionManager, serviceProvider)
     {
-        connectionManager.OnUserDisconnected += HandleUserDisconnection;
     }
 
     private GameMatchManager CreateScopedManager(out IServiceScope scope)
@@ -80,7 +79,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             return;
         }
 
-        await EndMatchForPlayerAsync(tableId, userIdInt);
+        await ProcessPlayerMatchLeaveAsync(tableId, userIdInt);
     }
 
 
@@ -112,14 +111,13 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             {
                 type = GameMatchMessageTypes.MatchStarted,
                 tableId = table.Id,
-                matchId = 0,
                 players = table.Players.Select(p => p.User.NickName).ToArray(),
                 startedAt = match.StartedAt
             });
         }
     }
 
-    private async Task EndMatchForPlayerAsync(int tableId, int userId)
+    public async Task ProcessPlayerMatchLeaveAsync(int tableId, int userId)
     {
         if (!ActiveGameMatchStore.TryGet(tableId, out Match match))
         {
@@ -127,16 +125,20 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             return;
         }
 
+        Player player = GameMatchHelper.FindPlayer(match, userId);
+        if (player == null)
+            return;
+
+
         IServiceScope scope;
         GameMatchManager manager = CreateScopedManager(out scope);
+
         using (scope)
         {
-            GameTableManager tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+            IServiceProvider provider = scope.ServiceProvider;
 
-            Player player = GameMatchHelper.FindPlayer(match, userId);
-            if (player == null) return;
-
-            GameTurnServiceResolver turnResolver = scope.ServiceProvider.GetRequiredService<GameTurnServiceResolver>();
+            GameTableManager tableManager = provider.GetRequiredService<GameTableManager>();
+            GameTurnServiceResolver turnResolver = provider.GetRequiredService<GameTurnServiceResolver>();
             IGameTurnService turnService = turnResolver.Resolve(match.GameTable.GameType);
 
             if (match.GameTable.GameType == GameType.BlackJack)
@@ -145,26 +147,42 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             }
 
             await manager.HandlePlayerExitAsync(player, match, tableId, turnService);
-
             await GameMatchHelper.NotifyPlayerMatchEndedAsync(this, userId, tableId);
             await GameMatchHelper.NotifyOthersPlayerLeftAsync(this, match, userId, tableId);
-
             await GameMatchHelper.TryCancelMatchAsync(this, match, manager, tableManager, tableId);
         }
     }
 
-    public async Task EndMatchForAllPlayersAsync(int tableId)
+    public async Task FinalizeAndEvaluateMatchAsync(int tableId)
     {
-        if (!ActiveGameMatchStore.TryGet(tableId, out Match match)) return;
+        await FinalizeMatchAsync(tableId);
+        await EvaluatePostMatchAsync(tableId);
+    }
+
+    public async Task FinalizeMatchAsync(int tableId)
+    {
+        if (!ActiveGameMatchStore.TryGet(tableId, out Match match))
+        {
+            Console.WriteLine($"❌ [GameMatchWS] No se encontró Match activo para la mesa {tableId}");
+            return;
+        }
+
+        if (match.Players.Count == 0)
+        {
+            Console.WriteLine($"⚠️ [GameMatchWS] No hay jugadores en el Match activo de la mesa {tableId}");
+            return;
+        }
 
         IServiceScope scope;
         GameMatchManager manager = CreateScopedManager(out scope);
+
         using (scope)
         {
             await manager.EndMatchAsync(match);
-            ActiveGameMatchStore.Remove(tableId);
 
-            List<string> userIds = match.GameTable.Players.Select(p => p.UserId.ToString()).ToList();
+            List<string> userIds = match.GameTable.Players
+                .Select(p => p.UserId.ToString())
+                .ToList();
 
             await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
@@ -172,42 +190,27 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 tableId,
                 endedAt = DateTime.Now
             });
-
-            if (ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session))
-            {
-                Table table = session.Table;
-
-                if (table.Players.Count >= table.MinPlayer)
-                {
-                    await StartMatchForTableAsync(table.Id);
-                }
-                else
-                {
-                    if (table.GameType == GameType.Poker && table.Players.Count < table.MinPlayer)
-                    {
-                        // TODO: Extraer esta lógica a una implementación de IGameRuleEvaluator (PokerRuleEvaluator)
-                        foreach (Player player in table.Players.ToList())
-                        {
-                            await EndMatchForPlayerAsync(table.Id, player.UserId);
-                        }
-                    }
-                }
-            }
         }
     }
 
-
-    private async void HandleUserDisconnection(string userId)
+    public async Task EvaluatePostMatchAsync(int tableId)
     {
-        if (!int.TryParse(userId, out int userIdInt))
+        if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session))
             return;
 
-        foreach (var (tableId, match) in ActiveGameMatchStore.GetAll())
+        Table table = session.Table;
+
+        if (table.Players.Count >= table.MinPlayer)
         {
-            if (match.Players.Any(p => p.UserId == userIdInt))
+            await StartMatchForTableAsync(table.Id);
+        }
+
+        // En Poker, expulsar si no hay suficientes para una nueva partida (por si queda una persona sola)
+        else if (table.GameType == GameType.Poker)
+        {
+            foreach (Player player in table.Players.ToList())
             {
-                await EndMatchForPlayerAsync(tableId, userIdInt);
-                break;
+                await ProcessPlayerMatchLeaveAsync(table.Id, player.UserId);
             }
         }
     }

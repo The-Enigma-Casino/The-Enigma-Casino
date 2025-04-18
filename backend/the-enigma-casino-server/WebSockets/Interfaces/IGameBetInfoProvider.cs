@@ -7,6 +7,7 @@ public interface IGameBetInfoProvider
     int GetLastBetAmount(int tableId, int userId);
     int GetChipResult(Player player);
     int GetMatchCountForHistory(Player player);
+    bool HasPlayedThisMatch(Player player, Match match);
 }
 
 

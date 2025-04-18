@@ -16,4 +16,9 @@ public class PokerBetInfoProvider : IGameBetInfoProvider
     {
         return 1;
     }
+
+    public bool HasPlayedThisMatch(Player player, Match match)
+    {
+        throw new NotImplementedException();
+    }
 }

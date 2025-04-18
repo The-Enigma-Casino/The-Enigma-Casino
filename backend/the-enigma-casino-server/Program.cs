@@ -22,6 +22,7 @@ using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker;
 using the_enigma_casino_server.WebSockets.Resolvers;
+using the_enigma_casino_server.WebSockets.Resolversl;
 
 
 namespace the_enigma_casino_server;
@@ -93,11 +94,14 @@ public class Program
         builder.Services.AddScoped<GameBetInfoProviderResolver>(); 
         builder.Services.AddScoped<GameTurnServiceResolver>();
         builder.Services.AddScoped<GameSessionCleanerResolver>();
+        builder.Services.AddScoped<GameExitRuleResolver>();
+
 
         // --- Servicios concretos de Blackjack ---
         builder.Services.AddScoped<BlackjackBetInfoProvider>();
         builder.Services.AddScoped<BlackjackSessionCleaner>();
         builder.Services.AddScoped<BlackjackTurnService>();
+        builder.Services.AddScoped<BlackjackExitRuleHandler>();
 
         builder.Services.AddScoped<IGameBetInfoProvider, BlackjackBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, BlackjackTurnService>();
@@ -108,6 +112,7 @@ public class Program
         builder.Services.AddScoped<PokerBetInfoProvider>();
         builder.Services.AddScoped<PokerSessionCleaner>();
         builder.Services.AddScoped<PokerTurnService>();
+        builder.Services.AddScoped<PokerExitRuleHandler>();
 
         builder.Services.AddSingleton<PokerNotifier>(provider =>
         {

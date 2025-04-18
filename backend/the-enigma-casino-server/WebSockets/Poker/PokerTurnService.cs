@@ -7,6 +7,30 @@ namespace the_enigma_casino_server.WebSockets.Poker;
 
 public class PokerTurnService : IGameTurnService
 {
+
+    public async Task ForceAdvanceTurnAsync(int tableId, int userId)
+    {
+        if (!ActivePokerGameStore.TryGet(tableId, out var pokerGame))
+            return;
+
+        if (pokerGame.CurrentTurnUserId != userId)
+            return;
+
+        pokerGame.AdvanceTurn();
+        await Task.CompletedTask;
+    }
+
+    public async Task OnPlayerExitAsync(Player player, Match match)
+    {
+        if (match.GameTableId == 0) return;
+
+        int tableId = match.GameTableId;
+        int userId = player.UserId;
+
+        await ForceAdvanceTurnAsync(tableId, userId);
+    }
+
+
     public List<int> GetExpectedPlayers(Match match)
     {
         return match.Players
@@ -28,15 +52,5 @@ public class PokerTurnService : IGameTurnService
         return pokerGame.CurrentTurnUserId == userId;
     }
 
-    public async Task ForceAdvanceTurnAsync(int tableId, int userId)
-    {
-        if (!ActivePokerGameStore.TryGet(tableId, out var pokerGame))
-            return;
 
-        if (pokerGame.CurrentTurnUserId != userId)
-            return;
-
-        pokerGame.AdvanceTurn();
-        await Task.CompletedTask;
-    }
 }

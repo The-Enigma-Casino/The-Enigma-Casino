@@ -354,7 +354,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
             using (scope)
             {
                 Console.WriteLine($"🧾 [GameMatchWS] EndMatchForAllPlayersAsync llamado para mesa {tableId}");
-                await gameMatchWS.EndMatchForAllPlayersAsync(tableId);
+                await gameMatchWS.FinalizeAndEvaluateMatchAsync(tableId);
             }
 
             Console.WriteLine("✅ Ronda evaluada. Resultados enviados y partida finalizada.");

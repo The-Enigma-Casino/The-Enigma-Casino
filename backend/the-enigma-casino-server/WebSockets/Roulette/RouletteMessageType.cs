@@ -11,4 +11,7 @@ public static class RouletteMessageType
     // Implementar contador en fronto alerta
     public const string BetsOpened = "bets_opened";
     public const string BetsClosed = "bets_closed";
+    
+    // Pausa de ruleta
+    public const string RoulettePaused = "roulette_paused";
 }

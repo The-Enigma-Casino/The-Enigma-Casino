@@ -2,6 +2,8 @@
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
+using the_enigma_casino_server.Infrastructure.Database;
+using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable.Models;
 
 namespace the_enigma_casino_server.WebSockets.GameTable;
@@ -37,7 +39,22 @@ public class GameTableManager
 
     public PlayerLeaveResult ProcessPlayerLeaving(Table table, ActiveGameSession session, int userId)
     {
-        bool stopCountdown = false;
+
+        bool isPlayingMatch = table.TableState == TableState.InProgress && ActiveGameMatchStore.TryGet(table.Id, out Match activeMatch) && activeMatch.Players.Any(p => p.UserId == userId);
+
+        if (isPlayingMatch)
+        {
+            return new PlayerLeaveResult
+            {
+                PlayerRemoved = false,
+                StopCountdown = false,
+                StateChanged = true,
+                ConnectedUsers = session.GetConnectedUserIds().ToList(),
+                PlayerNames = session.GetPlayerNames().ToArray(),
+                State = table.TableState
+            };
+        }
+
 
         if (!RemovePlayerFromTable(table, userId, out Player player))
         {
@@ -51,10 +68,13 @@ public class GameTableManager
             };
         }
 
+        bool stopCountdown = false;
+
         if (table.Players.Count < table.MinPlayer)
         {
             session.CancelCountdown();
             stopCountdown = true;
+            table.TableState = TableState.Waiting;
         }
 
         return new PlayerLeaveResult

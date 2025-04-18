@@ -123,6 +123,11 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             if (table.Players.Count >= table.MinPlayer && !HasActiveMatch(table.Id))
             {
                 session.StartOrRestartCountdown();
+                table.TableState = TableState.Starting;
+
+                unitOfWork.GameTableRepository.Update(table);
+                await unitOfWork.SaveAsync();
+
 
                 await ((IWebSocketSender)this).BroadcastToUsersAsync(
                     session.GetConnectedUserIds(),
@@ -191,6 +196,12 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (shouldStart)
         {
+            using var scope = _serviceProvider.CreateScope();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+            unitOfWork.GameTableRepository.Update(table);
+            await unitOfWork.SaveAsync();
+
             Console.WriteLine($"[GameTableWS] Iniciando partida en la mesa {tableId} automáticamente.");
 
             await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
@@ -221,6 +232,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         GameTableManager tableManager = GetScopedService<GameTableManager>(out scope);
         using (scope)
         {
+            UnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
             lock (table)
             {
                 result = tableManager.ProcessPlayerLeaving(table, session, userIdInt);
@@ -231,6 +244,12 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             if (result.StopCountdown)
             {
                 await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
+            }
+
+            if (result.StateChanged)
+            {
+                unitOfWork.GameTableRepository.Update(table);
+                await unitOfWork.SaveAsync();
             }
 
             await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);

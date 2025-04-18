@@ -45,4 +45,17 @@ public class Card
             Value = (int)Rank;
         }
     }
+    public override string ToString()
+    {
+        string suitSymbol = Suit switch
+        {
+            Suit.Clubs => "♣",
+            Suit.Diamonds => "♦",
+            Suit.Hearts => "♥",
+            Suit.Spades => "♠",
+            _ => "?"
+        };
+
+        return $"{Rank} {suitSymbol}";
+    }
 }

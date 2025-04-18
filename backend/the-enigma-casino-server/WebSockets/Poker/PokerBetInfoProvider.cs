@@ -7,24 +7,10 @@ namespace the_enigma_casino_server.WebSockets.Poker;
 public class PokerBetInfoProvider : IGameBetInfoProvider
 {
     public int GetLastBetAmount(int tableId, int userId)
-    {
-        if (ActivePokerGameStore.TryGet(tableId, out var pokerGame))
-        {
-            return pokerGame.GetLastBetAmount(userId);
-        }
-
-        return 0;
-    }
+     => PokerBetTracker.GetTotalBet(tableId, userId);
 
     public int GetChipResult(Player player)
-    {
-        if (ActivePokerGameStore.TryGet(player.GameTableId, out var pokerGame))
-        {
-            return pokerGame.GetChipResult(player.UserId);
-        }
-
-        return 0;
-    }
+        => PokerBetTracker.GetChipResult(player.GameTableId, player.UserId);
 
     public int GetMatchCountForHistory(Player player)
     {

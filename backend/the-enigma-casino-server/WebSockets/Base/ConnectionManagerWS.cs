@@ -70,4 +70,11 @@ public class ConnectionManagerWS
     {
         return _connections.Values;
     }
+
+    public bool IsUserConnected(string userId)
+    {
+        return _connections.TryGetValue(userId, out var socket)
+               && socket.State == WebSocketState.Open;
+    }
+
 }

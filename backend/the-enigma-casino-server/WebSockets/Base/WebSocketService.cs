@@ -41,6 +41,11 @@ namespace the_enigma_casino_server.WebSockets.Base
                         Console.WriteLine($"❌ JSON inválido recibido: {ex.Message}");
                         continue;
                     }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"⚠️ WebSocket desconectado abruptamente: {ex.Message}");
+                        return;
+                    }
 
                     var messageData = document.RootElement;
                     var handler = ResolveHandler(messageData);

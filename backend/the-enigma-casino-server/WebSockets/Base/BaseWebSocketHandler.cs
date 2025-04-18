@@ -1,6 +1,8 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.WebSockets.GameMatch.Store;
 
 namespace the_enigma_casino_server.WebSockets.Base;
 
@@ -65,4 +67,41 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
             await ((IWebSocketSender)this).SendToUserAsync(userId, payload);
         }
     }
+
+    protected bool TryGetTableId(JsonElement message, out int tableId)
+    {
+        tableId = 0;
+        if (!message.TryGetProperty("tableId", out var tableIdProp) ||
+            !int.TryParse(tableIdProp.GetString(), out tableId))
+        {
+            Console.WriteLine("❌ [WebSocket] TableId inválido.");
+            return false;
+        }
+        return true;
+    }
+
+    protected bool TryGetMatch(int tableId, string userId, out Match match)
+    {
+        if (!ActiveGameMatchStore.TryGet(tableId, out match))
+        {
+            Console.WriteLine($"❌ [WebSocket] No se encontró Match en la mesa {tableId}");
+            _ = SendErrorAsync(userId, "No hay un match activo en esta mesa.");
+            return false;
+        }
+        return true;
+    }
+
+    protected bool TryGetPlayer(Match match, string userId, out Player player)
+    {
+        player = match.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
+        if (player == null)
+        {
+            Console.WriteLine($"❌ [WebSocket] Jugador {userId} no encontrado en Match.");
+            _ = SendErrorAsync(userId, "Jugador no encontrado en la mesa.");
+            return false;
+        }
+        return true;
+    }
+
+
 }

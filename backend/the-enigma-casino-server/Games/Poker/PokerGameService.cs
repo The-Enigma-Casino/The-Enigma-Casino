@@ -1,268 +1,61 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.WebSockets.Poker;
+using the_enigma_casino_server.WebSockets.Poker.Interfaces;
 
 namespace the_enigma_casino_server.Games.Poker;
 
 public class PokerGameService
 {
-    private Match _gameMatch;
+    public Match GameMatch => _gameMatch;
+    public int CurrentTurnUserId => _currentTurnUserId;
+
+
+    private readonly Match _gameMatch;
+    private readonly IPokerNotifier _notifier;
     private Deck _deck;
-    private List<Card> _communityCards = new();
-    private int _pot = 0;
-    private BlindManager _blindManager;
-    private List<Pot> _pots = new();
-    private const int SmallBlindAmount = 10;
-    private const int BigBlindAmount = 20;
+    private readonly BlindManager _blindManager;
     private readonly PokerHandComparer _handComparer = new();
     private readonly Dictionary<int, int> _initialCoinsByUserId = new();
+    private readonly List<Card> _communityCards = new();
+    private readonly List<Pot> _pots = new();
+    private readonly List<object> _lastShowdownSummary = new();
     private int _currentTurnUserId;
-    public int CurrentTurnUserId => _currentTurnUserId;
-    private List<object> _lastShowdownSummary = new();
-    public Match GameMatch => _gameMatch;
+    private int _pot = 0;
 
-
-    public PokerGameService(Match gameMatch)
+    public PokerGameService(Match gameMatch, IPokerNotifier notifier)
     {
         _gameMatch = gameMatch;
+        _notifier = notifier;
         _deck = new Deck(GameType.Poker);
         _deck.Shuffle();
         _blindManager = new BlindManager(gameMatch, this);
     }
 
-    public void AddToPot(int amount)
-    {
-        _pot += amount;
-    }
-
+    // FLUJO DE PARTIDA
     public void StartRound()
     {
-        _deck = new Deck(GameType.Poker);
-        _deck.Shuffle(); 
-
-        _communityCards.Clear(); 
-
-
-        foreach (Player player in _gameMatch.Players)
-        {
-            if (player.User.Coins <= 0)
-            {
-                player.PlayerState = PlayerState.Waiting;
-                Console.WriteLine($"{player.User.NickName} se queda sin fichas y pasa a modo espera.");
-            }
-            else
-            {
-                player.Hand = new Hand();
-                player.TotalContribution = 0; 
-                player.CurrentBet = 0;
-                player.PlayerState = PlayerState.Playing;
-                _initialCoinsByUserId[player.UserId] = player.User.Coins;
-            }
-
-        }
-
-        foreach (Player player in _gameMatch.Players.Where(p => p.PlayerState == PlayerState.Playing))
-        {
-            player.Hand.AddCard(_deck.Draw());
-            player.Hand.AddCard(_deck.Draw());
-        }
-
-        Console.WriteLine("\n--- Iniciando ronda de Poker ---\n");
-        foreach (var player in _gameMatch.Players.Where(p => p.PlayerState == PlayerState.Playing))
-        {
-            var hand = string.Join(", ", player.Hand.Cards.Select(c => c.ToString()));
-            Console.WriteLine($"{player.User.NickName}: {hand}");
-        }
-
-        var activePlayers = _gameMatch.Players
-            .Where(p => p.PlayerState == PlayerState.Playing && p.User.Coins > 0)
-            .ToList();
-
-        int bigBlindIndex = _gameMatch.Players.FindIndex(p => p.UserId == GetBigBlind().UserId);
-
-        for (int i = 1; i <= _gameMatch.Players.Count; i++)
-        {
-            int nextIndex = (bigBlindIndex + i) % _gameMatch.Players.Count;
-            var nextPlayer = _gameMatch.Players[nextIndex];
-
-            if (nextPlayer.PlayerState == PlayerState.Playing && nextPlayer.User.Coins > 0)
-            {
-                _currentTurnUserId = nextPlayer.UserId;
-                Console.WriteLine($"🟢 Primer turno asignado a {nextPlayer.User.NickName} (userId: {_currentTurnUserId})");
-                break;
-            }
-        }
-
+        ResetDeck();
+        ResetRoundState();
+        DealInitialCards();
+        AnnounceInitialHands();
+        AssignFirstTurn();
     }
 
-    public void Showdown()
-    {
-        Console.WriteLine("\n--- Showdown ---");
-        Console.WriteLine("Cartas comunitarias:");
-        foreach (var card in _communityCards)
-        {
-            Console.WriteLine(card);
-        }
-
-        _lastShowdownSummary.Clear();
-
-        List<Player> activePlayers = _gameMatch.Players
-            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
-            .ToList();
-
-        Console.WriteLine($"\n[DEBUG] Iniciando Showdown() con {_pots.Count} pot(s)");
-        Console.WriteLine($"Jugadores activos: {string.Join(", ", activePlayers.Select(p => p.User.NickName))}");
-
-        if (!activePlayers.Any())
-        {
-            Console.WriteLine("No hay jugadores activos para el showdown.");
-            return;
-        }
-
-        if (activePlayers.Count == 1)
-        {
-            Player winner = activePlayers.First();
-            int amountWon = _pots.Sum(p => p.Amount);
-            winner.Win(amountWon);
-
-            Console.WriteLine($"\n{winner.User.NickName} gana automáticamente el bote de {amountWon} fichas (único jugador activo).");
-
-            _lastShowdownSummary.Add(new
-            {
-                userId = winner.UserId,
-                nickname = winner.User.NickName,
-                amount = amountWon,
-                description = "Ganador automático (único jugador activo)",
-                hand = winner.Hand.Cards.Select(c => new
-                {
-                    suit = c.Suit.ToString(),
-                    rank = c.Rank.ToString(),
-                    value = c.Value
-                }),
-                potType = "Main Pot"
-            });
-
-            _pots.Clear();
-            ResetCurrentBets();
-
-            return;
-        }
-
-        Console.WriteLine("\nCartas de los jugadores:");
-        List<EvaluatedHand> evaluatedHands = new List<EvaluatedHand>();
-
-        foreach (Player player in activePlayers)
-        {
-            List<Card> allCards = player.Hand.Cards.Concat(_communityCards).ToList();
-            Console.WriteLine($"\n {player.User.NickName}: {string.Join(", ", player.Hand.Cards)}");
-
-            EvaluatedHand eval = PokerHandEvaluator.Evaluate(player, allCards);
-            evaluatedHands.Add(eval);
-
-            Console.WriteLine($"Evaluación: {eval.Description}");
-        }
-
-        Console.WriteLine("\n Repartiendo los botes:");
-
-        for (int i = 0; i < _pots.Count; i++)
-        {
-            Pot pot = _pots[i];
-            string label = _pots.Count == 1 ? "Main Pot" : i == 0 ? "Main Pot" : $"Side Pot {i}";
-            string participantNicks = string.Join(", ", pot.EligiblePlayers.Select(p => p.User.NickName));
-            string explanation = label.StartsWith("Side Pot")
-                ? $" (sólo {participantNicks} apuesta más que los demás)"
-                : $" (Participan: {participantNicks})";
-
-            Console.WriteLine($"\n🪙 {label}: {pot.Amount} fichas{explanation}");
-
-            List<EvaluatedHand> eligibleHands = evaluatedHands
-                .Where(eh => pot.EligiblePlayers.Contains(eh.Player))
-                .ToList();
-
-            Console.WriteLine($"🔍 Evaluando {eligibleHands.Count} jugadores para el {label}:");
-            foreach (var hand in eligibleHands)
-            {
-                Console.WriteLine($"✋ {hand.Player.User.NickName}: {hand.Description}");
-            }
-
-            EvaluatedHand bestHand = eligibleHands
-                .OrderByDescending(e => e, _handComparer)
-                .First();
-
-            List<EvaluatedHand> winners = eligibleHands
-                .Where(e => _handComparer.Compare(e, bestHand) == 0)
-                .ToList();
-
-            int rake = CalculateRake(pot.Amount);
-            int distributableAmount = pot.Amount - rake;
-            int winnings = distributableAmount / winners.Count;
-            int leftover = distributableAmount % winners.Count;
-
-            Console.WriteLine($"\n🏦 Rake aplicado: {rake} fichas de un total de {pot.Amount} fichas ({(rake * 100.0 / pot.Amount):0.##}%).");
-            Console.WriteLine($"📊 Se reparten {distributableAmount} fichas entre {winners.Count} ganador(es).");
-            Console.WriteLine($"💰 Cada uno recibe: {winnings} fichas");
-            if (leftover > 0)
-            {
-                Console.WriteLine($"💼 El casino se queda con {leftover} ficha(s) sobrante(s) por división impar.");
-            }
-
-            foreach (var winner in winners)
-            {
-                winner.Player.Win(winnings);
-                Console.WriteLine($"{winner.Player.User.NickName} gana {winnings} fichas del {label.ToLower()} con {winner.Description}.");
-
-                _lastShowdownSummary.Add(new
-                {
-                    userId = winner.Player.UserId,
-                    nickname = winner.Player.User.NickName,
-                    amount = winnings,
-                    description = winner.Description,
-                    hand = winner.Player.Hand.Cards.Select(c => new
-                    {
-                        suit = c.Suit.ToString(),
-                        rank = c.Rank.ToString(),
-                        value = c.Value
-                    }),
-                    potType = label
-                });
-            }
-
-            if (pot.Amount % winners.Count != 0)
-            {
-                Console.WriteLine($"{pot.Amount % winners.Count} ficha(s) no pudieron ser repartidas equitativamente.");
-            }
-        }
-
-        _pots.Clear();
-
-        foreach (Player player in _gameMatch.Players)
-        {
-            if (player.User.Coins <= 0)
-            {
-                player.PlayerState = PlayerState.Waiting;
-                Console.WriteLine($"{player.User.NickName} se ha quedado sin fichas y pasa a modo espera.");
-            }
-        }
-    }
-
-
-    public void AssignBlinds()
+    public async Task AssignBlinds()
     {
         Console.WriteLine("\n--- Asigna ciegas a los jugadores activos ---\n");
         _blindManager.AssignBlinds();
+
+        await _notifier.NotifyBlindsAsync(_gameMatch, this);
     }
-
-    public Player GetDealer() => _blindManager.Dealer;
-    public Player GetSmallBlind() => _blindManager.SmallBlind;
-    public Player GetBigBlind() => _blindManager.BigBlind;
-
 
     public void DealFlop()
     {
         _deck.BurnCard();
-        _communityCards.Add(_deck.Draw());
-        _communityCards.Add(_deck.Draw());
-        _communityCards.Add(_deck.Draw());
+        _communityCards.AddRange(new[] { _deck.Draw(), _deck.Draw(), _deck.Draw() });
+
+        ResetCurrentPhaseBets();
 
         Console.WriteLine("\n--- FLOP ---");
 
@@ -274,8 +67,9 @@ public class PokerGameService
         _deck.BurnCard();
         _communityCards.Add(_deck.Draw());
 
-        Console.WriteLine("\n--- TURN D ---");
+        ResetCurrentPhaseBets();
 
+        Console.WriteLine("\n--- TURN ---");
         PokerHelper.ShowCommunityCards(_communityCards);
     }
 
@@ -284,6 +78,8 @@ public class PokerGameService
         _deck.BurnCard();
         _communityCards.Add(_deck.Draw());
 
+        ResetCurrentPhaseBets();
+
         Console.WriteLine("\n--- RIVER  ---");
 
         PokerHelper.ShowCommunityCards(_communityCards);
@@ -291,25 +87,29 @@ public class PokerGameService
 
     public void AdvanceTurn()
     {
-        List<Player> activePlayers = _gameMatch.Players
-            .Where(p => p.PlayerState == PlayerState.Playing && p.User.Coins > 0)
-            .ToList();
+        string phase = GetCurrentPhase();
+        List<Player> players = _gameMatch.Players;
+        int totalPlayers = players.Count;
 
-        if (activePlayers.Count == 0)
+        if (totalPlayers == 0) return;
+
+
+        int currentIndex = players.FindIndex(p => p.UserId == _currentTurnUserId);
+        if (currentIndex == -1)
         {
-            Console.WriteLine("❌ No hay jugadores activos para avanzar turno.");
+            Player? fallback = GetFirstToAct(phase);
+            if (fallback != null)
+            {
+                _currentTurnUserId = fallback.UserId;
+                return;
+            }
             return;
         }
-
-        int currentIndex = _gameMatch.Players.FindIndex(p => p.UserId == _currentTurnUserId);
-        int totalPlayers = _gameMatch.Players.Count;
-
-        string phase = GetCurrentPhase(); 
 
         for (int i = 1; i < totalPlayers; i++)
         {
             int nextIndex = (currentIndex + i) % totalPlayers;
-            Player nextPlayer = _gameMatch.Players[nextIndex];
+            Player nextPlayer = players[nextIndex];
 
             if (nextPlayer.PlayerState != PlayerState.Playing || nextPlayer.User.Coins <= 0)
                 continue;
@@ -321,46 +121,18 @@ public class PokerGameService
             Console.WriteLine($"➡️ Turno avanzado a {nextPlayer.User.NickName} (userId: {_currentTurnUserId})");
             return;
         }
-
-        Console.WriteLine("⚠️ No hay más jugadores que necesiten actuar en esta fase.");
     }
-
-    public string GetCurrentPhase()
-    {
-        return _communityCards.Count switch
-        {
-            0 => "preflop",
-            3 => "flop",
-            4 => "turn",
-            5 => "river",
-            _ => "unknown"
-        };
-    }
-
 
     public void StartTurn(Match match)
     {
-        List<Player> activePlayers = match.Players
-            .Where(p => p.PlayerState == PlayerState.Playing && p.User.Coins > 0)
-            .ToList();
+        string phase = GetCurrentPhase();
 
-        if (!activePlayers.Any())
+        Player? firstToAct = GetFirstToAct(phase);
+
+        if (firstToAct != null)
         {
-            Console.WriteLine("⚠️ No hay jugadores activos para iniciar el turno.");
-            return;
-        }
-
-        Player firstToAct = activePlayers.First();
-        _currentTurnUserId = firstToAct.UserId;
-        Console.WriteLine($"🎯 Primer jugador en actuar: {firstToAct.User.NickName} (userId: {_currentTurnUserId})");
-    }
-
-    private void ResetCurrentBets()
-    {
-        foreach (Player player in _gameMatch.Players)
-        {
-            player.CurrentBet = 0;
-            player.TotalContribution = 0;
+            _currentTurnUserId = firstToAct.UserId;
+            Console.WriteLine($"🎯 Primer jugador en actuar en fase '{phase}': {firstToAct.User.NickName} (userId: {_currentTurnUserId})");
         }
     }
 
@@ -372,7 +144,8 @@ public class PokerGameService
             .Where(p => p.TotalContribution > 0)
             .ToList();
 
-        Console.WriteLine("\n♻️ [GeneratePots] Generando pots...");
+        Console.WriteLine("\n♻️ Generando pots...");
+
         foreach (Player p in playersWithBets)
         {
             Console.WriteLine($"   - {p.User.NickName} contribuyó: {p.TotalContribution} fichas");
@@ -398,76 +171,101 @@ public class PokerGameService
             _pots.Add(mainPot);
             Console.WriteLine($"💰 Pot único creado con {mainPot.Amount} fichas. Participantes: {string.Join(", ", mainPot.EligiblePlayers.Select(p => p.User.NickName))}");
             Console.WriteLine("✅ Solo se ha generado un Main Pot (todo normal)");
+        }
+        else
+        {
+            playersWithBets = playersWithBets.OrderBy(p => p.TotalContribution).ToList();
+
+            while (playersWithBets.Any())
+            {
+                int minContribution = playersWithBets.First().TotalContribution;
+                Pot pot = new Pot();
+
+                Console.WriteLine($"\n➕ Nuevo pot con contribución mínima: {minContribution}");
+
+                foreach (Player player in playersWithBets)
+                {
+                    int contribution = Math.Min(minContribution, player.TotalContribution);
+                    pot.AddChips(contribution);
+                    player.TotalContribution -= contribution;
+                    pot.AddEligiblePlayer(player);
+
+                    Console.WriteLine($"   ✅ {player.User.NickName} aporta {contribution} al pot (restante: {player.TotalContribution})");
+                }
+
+                Console.WriteLine($"💰 Pot creado con {pot.Amount} fichas. Participantes: {string.Join(", ", pot.EligiblePlayers.Select(p => p.User.NickName))}");
+
+                _pots.Add(pot);
+
+                playersWithBets = playersWithBets
+                    .Where(p => p.TotalContribution > 0)
+                    .OrderBy(p => p.TotalContribution)
+                    .ToList();
+            }
+
+            Console.WriteLine($"⚠️ Se han generado {_pots.Count} pots. Verifica si hubo diferencias en las contribuciones y jugadores All-In.");
+        }
+    }
+
+    public void Showdown()
+    {
+        ShowCommunityCards();  // Mostrar cartas comunitarias
+
+        _lastShowdownSummary.Clear();
+
+        List<Player> activePlayers = _gameMatch.Players
+            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
+            .ToList();
+
+        Console.WriteLine($"Jugadores activos: {string.Join(", ", activePlayers.Select(p => p.User.NickName))}");
+
+        if (!activePlayers.Any())
+        {
+            Console.WriteLine("No hay jugadores activos para el showdown.");
             return;
         }
 
-        playersWithBets = playersWithBets.OrderBy(p => p.TotalContribution).ToList();
-
-        while (playersWithBets.Any())
+        if (activePlayers.Count == 1)
         {
-            int minContribution = playersWithBets.First().TotalContribution;
-            Pot pot = new Pot();
+            Player winner = activePlayers.First();
+            int amountWon = _pots.Sum(p => p.Amount);
+            winner.Win(amountWon);
 
-            Console.WriteLine($"\n➕ Nuevo pot con contribución mínima: {minContribution}");
+            PokerBetTracker.RegisterWinnings(_gameMatch.GameTableId, winner.UserId, amountWon);
 
-            foreach (Player player in playersWithBets)
+            Console.WriteLine($"\n{winner.User.NickName} gana automáticamente el bote de {amountWon} fichas (único jugador activo).");
+
+            _lastShowdownSummary.Add(new
             {
-                int contribution = Math.Min(minContribution, player.TotalContribution);
-                pot.AddChips(contribution);
-                player.TotalContribution -= contribution;
-                pot.AddEligiblePlayer(player);
+                userId = winner.UserId,
+                nickname = winner.User.NickName,
+                amount = amountWon,
+                description = "Ganador automático (único jugador activo)",
+                hand = winner.Hand.Cards.Select(c => new { suit = c.Suit.ToString(), rank = c.Rank.ToString(), value = c.Value }),
+                potType = "Main Pot"
+            });
 
-                Console.WriteLine($"   ✅ {player.User.NickName} aporta {contribution} al pot (restante: {player.TotalContribution})");
-            }
-
-            Console.WriteLine($"💰 Pot creado con {pot.Amount} fichas. Participantes: {string.Join(", ", pot.EligiblePlayers.Select(p => p.User.NickName))}");
-
-            _pots.Add(pot);
-
-            playersWithBets = playersWithBets
-                .Where(p => p.TotalContribution > 0)
-                .OrderBy(p => p.TotalContribution)
-                .ToList();
+            _pots.Clear();
+            ResetCurrentBets();
+            return;
         }
 
-        Console.WriteLine($"⚠️ Se han generado {_pots.Count} pots. Verifica si hubo diferencias en las contribuciones y jugadores All-In.");
-    }
+        List<EvaluatedHand> evaluatedHands = EvaluatePlayerHands(activePlayers);
 
-    private int CalculateRake(int potAmount)
-    {
-        int rake = (int)Math.Floor(potAmount * 0.05);
+        _lastShowdownSummary.AddRange(DistributePots(evaluatedHands));
 
-        if (potAmount < 100) return Math.Min(rake, 2);   // máx 0.20 €
-        if (potAmount < 300) return Math.Min(rake, 5);   // máx 0.50 €
-        if (potAmount < 600) return Math.Min(rake, 10);  // máx 1.00 €
-        return Math.Min(rake, 20);                       // máx 2.00 €
+        UpdatePlayerStates();
+
+        _pots.Clear();
     }
 
 
-    public void HandlePokerBet(Player player, int amount)
-    {
-        if (amount == player.User.Coins)
-        {
-            player.PlayerState = PlayerState.AllIn;
-        }
-
-        player.TotalContribution += amount;
-
-        player.PlaceBet(amount);
-    }
 
 
-    public int GetLastBetAmount(int userId)
-    {
-        Player player = _gameMatch.Players.FirstOrDefault(p => p.User.Id == userId);
-        return player?.TotalContribution ?? 0;
-    }
-
-    public int GetChipResult(int userId)
-    {
-        Player player = _gameMatch.Players.FirstOrDefault(p => p.User.Id == userId);
-        return player != null ? player.User.Coins - player.TotalContribution : 0;
-    }
+    // UTILIDAD 
+    public Player GetDealer() => _blindManager.Dealer;
+    public Player GetSmallBlind() => _blindManager.SmallBlind;
+    public Player GetBigBlind() => _blindManager.BigBlind;
 
     public List<Card> GetCommunityCards()
     {
@@ -479,6 +277,260 @@ public class PokerGameService
         return _lastShowdownSummary;
     }
 
+    public Player? GetFirstToAct(string phase)
+    {
+        List<Player> players = _gameMatch.Players;
+        if (players.Count == 0) return null;
 
+        int startingIndex = -1;
+
+        if (phase == "preflop")
+        {
+            Player bigBlind = GetBigBlind();
+            startingIndex = players.FindIndex(p => p.UserId == bigBlind.UserId);
+        }
+        else
+        {
+            Player dealer = GetDealer();
+            startingIndex = players.FindIndex(p => p.UserId == dealer.UserId);
+        }
+
+        if (startingIndex == -1) return null;
+
+        int totalPlayers = players.Count;
+        for (int i = 1; i < totalPlayers; i++)
+        {
+            int index = (startingIndex + i) % totalPlayers;
+            Player candidate = players[index];
+
+            if (candidate.PlayerState == PlayerState.Playing && candidate.User.Coins > 0)
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    public void HandlePokerBet(Player player, int amount)
+    {
+        if (amount == player.User.Coins)
+            player.PlayerState = PlayerState.AllIn;
+
+        Console.WriteLine($"[DEBUG] Apostando en mesa {player.GameTableId} - Jugador {player.UserId}");
+        PokerBetTracker.RegisterBet(player.GameTableId, player.UserId, amount);
+
+        player.PlaceBet(amount);
+        player.TotalContribution += amount;
+    }
+
+    public string GetCurrentPhase()
+    {
+        return _communityCards.Count switch
+        {
+            0 => "preflop",
+            3 => "flop",
+            4 => "turn",
+            5 => "river",
+            _ => "unknown"
+        };
+    }
+
+    public void AddToPot(int amount)
+    {
+        _pot += amount;
+    }
+
+    // PRIVADAS
+
+
+    private void ResetCurrentPhaseBets()
+    {
+        foreach (var player in _gameMatch.Players)
+        {
+            player.CurrentBet = 0;
+        }
+    }
+
+    private void ResetCurrentBets()
+    {
+        foreach (Player player in _gameMatch.Players)
+        {
+            player.CurrentBet = 0;
+            player.TotalContribution = 0;
+        }
+    }
+
+    private void ResetDeck()
+    {
+        _deck = new Deck(GameType.Poker);
+        _deck.Shuffle();
+        _communityCards.Clear();
+    }
+
+    private void ResetRoundState()
+    {
+        foreach (Player player in _gameMatch.Players)
+        {
+            if (player.User.Coins <= 0)
+            {
+                player.PlayerState = PlayerState.Waiting;
+                Console.WriteLine($"{player.User.NickName} has no coins left and is now waiting.");
+            }
+            else
+            {
+                player.Hand = new Hand();
+                player.TotalContribution = 0;
+                player.CurrentBet = 0;
+                player.PlayerState = PlayerState.Playing;
+                _initialCoinsByUserId[player.UserId] = player.User.Coins;
+            }
+        }
+    }
+
+    private void DealInitialCards()
+    {
+        foreach (Player player in _gameMatch.Players.Where(p => p.PlayerState == PlayerState.Playing))
+        {
+            player.Hand.AddCard(_deck.Draw());
+            player.Hand.AddCard(_deck.Draw());
+        }
+    }
+
+    // BORRAR
+    private void AnnounceInitialHands()
+    {
+        Console.WriteLine("\n--- Starting Poker Round ---\n");
+        foreach (var player in _gameMatch.Players.Where(p => p.PlayerState == PlayerState.Playing))
+        {
+            string hand = string.Join(", ", player.Hand.Cards.Select(c => c.ToString()));
+            Console.WriteLine($"{player.User.NickName}: {hand}");
+        }
+    }
+
+    private void AssignFirstTurn()
+    {
+        Player? firstToAct = GetFirstToAct("preflop");
+        if (firstToAct != null)
+        {
+            _currentTurnUserId = firstToAct.UserId;
+            Console.WriteLine($"First turn assigned to {firstToAct.User.NickName} (userId: {_currentTurnUserId})");
+        }
+        else
+        {
+            Console.WriteLine("⚠️ No valid player found to assign the first turn.");
+        }
+    }
+
+    // BORRAR
+    private void ShowCommunityCards()
+    {
+        Console.WriteLine("\n--- Community Cards ---");
+        foreach (var card in _communityCards)
+        {
+            Console.WriteLine(card);
+        }
+    }
+
+    private List<EvaluatedHand> EvaluatePlayerHands(List<Player> activePlayers)
+    {
+        List<EvaluatedHand> evaluatedHands = new List<EvaluatedHand>();
+
+        foreach (Player player in activePlayers)
+        {
+            List<Card> allCards = player.Hand.Cards.Concat(_communityCards).ToList();
+            EvaluatedHand eval = PokerHandEvaluator.Evaluate(player, allCards);
+            evaluatedHands.Add(eval);
+
+            Console.WriteLine($"{player.User.NickName}: {string.Join(", ", player.Hand.Cards)} - Evaluación: {eval.Description}");
+        }
+
+        return evaluatedHands;
+    }
+
+    private List<object> DistributePots(List<EvaluatedHand> evaluatedHands)
+    {
+        Console.WriteLine("\n--- Distributing Pots ---");
+
+        List<object> summary = new();
+
+        for (int i = 0; i < _pots.Count; i++)
+        {
+            Pot pot = _pots[i];
+            string label = i == 0 ? "Main Pot" : $"Side Pot {i}";
+            string participantNicks = string.Join(", ", pot.EligiblePlayers.Select(p => p.User.NickName));
+
+            Console.WriteLine($"\n🪙 {label}: {pot.Amount} fichas (Participantes: {participantNicks})");
+
+            List<EvaluatedHand> eligibleHands = evaluatedHands
+                .Where(eh => pot.EligiblePlayers.Contains(eh.Player))
+                .ToList();
+
+            EvaluatedHand bestHand = eligibleHands
+                .OrderByDescending(e => e, _handComparer)
+                .First();
+
+            List<EvaluatedHand> winners = eligibleHands
+                .Where(e => _handComparer.Compare(e, bestHand) == 0)
+                .ToList();
+
+            int rake = CalculateRake(pot.Amount);
+            int distributableAmount = pot.Amount - rake;
+            int winnings = distributableAmount / winners.Count;
+
+            Console.WriteLine($"\n🏦 Rake aplicado: {rake} fichas de un total de {pot.Amount} fichas.");
+            Console.WriteLine($"📊 Se reparten {distributableAmount} fichas entre {winners.Count} ganador(es).");
+            Console.WriteLine($"💰 Cada uno recibe: {winnings} fichas");
+
+            foreach (var winner in winners)
+            {
+                winner.Player.Win(winnings);
+                PokerBetTracker.RegisterWinnings(_gameMatch.GameTableId, winner.Player.UserId, winnings);
+
+                Console.WriteLine($"{winner.Player.User.NickName} gana {winnings} fichas del {label.ToLower()} con {winner.Description}");
+
+                summary.Add(new
+                {
+
+                    userId = winner.Player.UserId,
+                    nickname = winner.Player.User.NickName,
+                    amount = winnings,
+                    description = winner.Description,
+                    hand = winner.Player.Hand.Cards.Select(c => new
+                    {
+                        suit = c.Suit.ToString(),
+                        rank = c.Rank.ToString(),
+                        value = c.Value
+                    }),
+                    potType = label
+                });
+            }
+        }
+
+        return summary;
+    }
+
+
+    private void UpdatePlayerStates()
+    {
+        foreach (Player player in _gameMatch.Players)
+        {
+            if (player.User.Coins <= 0)
+            {
+                player.PlayerState = PlayerState.Waiting;
+                Console.WriteLine($"{player.User.NickName} se ha quedado sin fichas y pasa a modo espera.");
+            }
+        }
+    }
+
+
+    private int CalculateRake(int potAmount)
+    {
+        int rake = (int)Math.Floor(potAmount * 0.05);
+
+        if (potAmount < 100) return Math.Min(rake, 2);   // máx 0.20 €
+        if (potAmount < 300) return Math.Min(rake, 5);   // máx 0.50 €
+        if (potAmount < 600) return Math.Min(rake, 10);  // máx 1.00 €
+        return Math.Min(rake, 20);                       // máx 2.00 €
+    }
 }
-

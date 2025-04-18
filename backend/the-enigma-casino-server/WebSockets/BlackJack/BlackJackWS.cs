@@ -406,43 +406,6 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         }
     }
 
-
-
-    private bool TryGetTableId(JsonElement message, out int tableId)
-    {
-        tableId = 0;
-        if (!message.TryGetProperty("tableId", out var tableIdProp) ||
-            !int.TryParse(tableIdProp.GetString(), out tableId))
-        {
-            Console.WriteLine("TableId inválido.");
-            return false;
-        }
-        return true;
-    }
-
-    private bool TryGetMatch(int tableId, string userId, out Match match)
-    {
-        if (!ActiveGameMatchStore.TryGet(tableId, out match))
-        {
-            Console.WriteLine($"No se encontró Match en la mesa {tableId}");
-            _ = SendErrorAsync(userId, "No hay un match activo en esta mesa.");
-            return false;
-        }
-        return true;
-    }
-
-    private bool TryGetPlayer(Match match, string userId, out Player player)
-    {
-        player = match.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
-        if (player == null)
-        {
-            Console.WriteLine($"Jugador {userId} no encontrado en Match.");
-            _ = SendErrorAsync(userId, "Jugador no encontrado en la mesa.");
-            return false;
-        }
-        return true;
-    }
-
     private bool TryGetBlackjackGame(int tableId, string userId, out BlackjackGame blackjackGame)
     {
         if (!ActiveBlackjackGameStore.TryGet(tableId, out blackjackGame))

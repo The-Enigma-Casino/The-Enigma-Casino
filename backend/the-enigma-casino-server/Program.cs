@@ -14,6 +14,7 @@ using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Infrastructure.Database.Seeder;
 using the_enigma_casino_server.Middleware;
 using the_enigma_casino_server.Utilities;
+using the_enigma_casino_server.Websockets.Poker;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.GameMatch;
@@ -106,6 +107,12 @@ public class Program
         builder.Services.AddScoped<PokerBetInfoProvider>();
         builder.Services.AddScoped<PokerSessionCleaner>();
         builder.Services.AddScoped<PokerTurnService>();
+
+        builder.Services.AddSingleton<PokerNotifier>(provider =>
+        {
+            var pokerWs = provider.GetRequiredService<PokerWS>();
+            return new PokerNotifier(pokerWs);
+        });
 
         builder.Services.AddScoped<IGameBetInfoProvider, PokerBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, PokerTurnService>();

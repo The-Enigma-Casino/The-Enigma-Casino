@@ -1,10 +1,14 @@
-﻿using the_enigma_casino_server.Infrastructure.Database.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using the_enigma_casino_server.Infrastructure.Database.Repositories;
 
 namespace the_enigma_casino_server.Infrastructure.Database;
 
 public class UnitOfWork
 {
     private readonly MyDbContext _context;
+
+    public MyDbContext DbContext => _context;
+
 
 
     // WEB

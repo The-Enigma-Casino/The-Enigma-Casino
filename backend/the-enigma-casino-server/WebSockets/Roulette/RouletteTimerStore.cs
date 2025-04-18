@@ -24,13 +24,14 @@ public static class RouletteTimerStore
                     await Task.Delay(TimeSpan.FromSeconds(seconds), cts.Token);
                     if (!cts.Token.IsCancellationRequested)
                     {
+                        _startTimes[tableId] = DateTime.UtcNow;
+
                         bool shouldContinue = await callback();
                         if (!shouldContinue)
                         {
                             CancelTimer(tableId);
                             break;
                         }
-                        _startTimes[tableId] = DateTime.UtcNow;
                     }
                 }
                 catch (TaskCanceledException)

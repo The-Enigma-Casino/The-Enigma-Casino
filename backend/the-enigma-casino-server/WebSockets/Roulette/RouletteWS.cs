@@ -103,7 +103,13 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
 
                 if (TryGetMatch(tableId, "SYSTEM", out var match))
                 {
-                    return match.Players.Any(p => p.PlayerState == PlayerState.Playing);
+                    bool continuar = match.Players.Any();
+
+                    if (!continuar) 
+                    {
+                        Console.WriteLine($"No quedan jugadores en la mesa {tableId}, se detiene la ruleta.");
+                    }
+                    return continuar;
                 }
 
                 return false;
@@ -164,15 +170,16 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
         rouletteGame.PauseBetting();
         await BroadcastBetsClosedAsync(tableId);
         Console.WriteLine("Apuestas cerradas");
-        await Task.Delay(TimeSpan.FromSeconds(5));
+
 
         rouletteGame.Reset();
+        rouletteGame.ResumeBetting();
 
         // Apuestas abiertas
-        rouletteGame.ResumeBetting();
         await BroadcastBetsOpenedAsync(tableId);
 
         await BroadcastGameStateAsync(tableId);
+        await Task.Delay(TimeSpan.FromSeconds(5));
         Console.WriteLine("Ronda finalizada y resultados enviados.");
     }
 
@@ -232,8 +239,12 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
                     bet = b.ToString(),
                     amount = b.Amount
                 }).ToList()
-
-            })
+            }),
+                lastResults = rouletteGame.LastResults.Select(r => new // Ultimas 5 tiradas de ruleta(Mostrar en front aparte)
+                {
+                    number = r.Number,
+                    color = r.Color
+                }).ToList()
         };
 
         foreach(var player in match.Players)

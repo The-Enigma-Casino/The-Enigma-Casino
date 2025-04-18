@@ -12,10 +12,11 @@ public class RouletteGame
     public int LastNumber { get; private set; }
     public string LastColor { get; private set; }
 
+    private readonly List<RouletteResult> _lastResults = new();
+    public IReadOnlyList<RouletteResult> LastResults => _lastResults;
+
     private bool _canAcceptBets = true;
-
     public bool CanAcceptBets => _canAcceptBets;
-
     public void PauseBetting() => _canAcceptBets = false;
     public void ResumeBetting() => _canAcceptBets = true;
 
@@ -49,6 +50,12 @@ public class RouletteGame
     {
         LastNumber = _wheel.Spin();
         LastColor = RouletteWheel.GetColor(LastNumber);
+
+        var result = new RouletteResult(LastNumber, LastColor);
+
+        _lastResults.Add(result);
+        if (_lastResults.Count > 5)
+            _lastResults.RemoveAt(0);
     }
 
     public Dictionary<int, List<RouletteSpinResult>> EvaluateAll(List<Player> players)

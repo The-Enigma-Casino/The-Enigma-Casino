@@ -67,7 +67,6 @@ public class GameMatchManager
         foreach (Player player in match.Players)
         {
             player.GameMatch = match;
-            player.GameMatchId = 0;
         }
 
         if (table.GameType == GameType.Poker)

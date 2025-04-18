@@ -7,6 +7,7 @@ using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.GameMatch;
+using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable.Models;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
@@ -119,20 +120,19 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 });
 
 
-            if (table.Players.Count >= table.MinPlayer)
+            if (table.Players.Count >= table.MinPlayer && !HasActiveMatch(table.Id))
             {
                 session.StartOrRestartCountdown();
+
+                await ((IWebSocketSender)this).BroadcastToUsersAsync(
+                    session.GetConnectedUserIds(),
+                    new
+                    {
+                        type = GameTableMessageTypes.CountdownStarted,
+                        tableId = table.Id,
+                        countdown = 30
+                    });
             }
-
-            await ((IWebSocketSender)this).BroadcastToUsersAsync(
-                session.GetConnectedUserIds(),
-                new
-                {
-                    type = GameTableMessageTypes.CountdownStarted,
-                    tableId = table.Id,
-                    countdown = 30
-                });
-
         }
     }
 
@@ -193,14 +193,12 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             Console.WriteLine($"[GameTableWS] Iniciando partida en la mesa {tableId} automáticamente.");
 
-            // Notificamos a los jugadores que el match empieza
             await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
                 type = GameTableMessageTypes.GameStart,
                 tableId = table.Id
             });
 
-            // Iniciamos la partida real con GameMatchWS
             await _gameMatchWS.StartMatchForTableAsync(tableId);
         }
     }
@@ -290,5 +288,11 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             type = GameTableMessageTypes.CountdownStopped,
             tableId
         });
+    }
+
+    private bool HasActiveMatch(int tableId)
+    {
+        return ActiveGameMatchStore.TryGet(tableId, out Match match)
+               && match.MatchState == MatchState.InProgress;
     }
 }

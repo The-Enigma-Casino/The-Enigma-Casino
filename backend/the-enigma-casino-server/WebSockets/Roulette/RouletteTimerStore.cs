@@ -7,6 +7,17 @@ public static class RouletteTimerStore
     private static readonly ConcurrentDictionary<int, CancellationTokenSource> _timers = new();
     private static readonly ConcurrentDictionary<int, DateTime> _startTimes = new();
 
+    private static readonly ConcurrentDictionary<int, int> _emptyRoundsTable = new();
+    public static int GetEmptyRounds(int tableId) =>
+        _emptyRoundsTable.TryGetValue(tableId, out var value) ? value : 0;
+    public static void ResetEmptyRounds(int tableId) =>
+        _emptyRoundsTable[tableId] = 0;
+    public static void IncrementEmptyRounds(int tableId) =>
+        _emptyRoundsTable[tableId] = GetEmptyRounds(tableId) + 1;
+    public static void ClearEmptyRounds(int tableId) =>
+        _emptyRoundsTable.TryRemove(tableId, out _);
+
+
     public static void StartRecurringTimer(int tableId, Func<Task<bool>> callback, int seconds)
     {
         CancelTimer(tableId);

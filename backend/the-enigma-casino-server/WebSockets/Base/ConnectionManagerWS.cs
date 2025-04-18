@@ -76,5 +76,4 @@ public class ConnectionManagerWS
         return _connections.TryGetValue(userId, out var socket)
                && socket.State == WebSocketState.Open;
     }
-
 }

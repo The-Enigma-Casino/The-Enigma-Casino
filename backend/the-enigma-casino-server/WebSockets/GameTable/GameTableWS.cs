@@ -5,6 +5,7 @@ using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
+using the_enigma_casino_server.Websockets.Base;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
@@ -23,11 +24,15 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     public GameTableWS(
         ConnectionManagerWS connectionManager,
         IServiceProvider serviceProvider,
-        GameMatchWS gameMatchWS)
+        GameMatchWS gameMatchWS,
+        UserDisconnectionHandler disconnectionHandler)
         : base(connectionManager, serviceProvider)
     {
         _gameMatchWS = gameMatchWS;
-        connectionManager.OnUserDisconnected += HandleUserDisconnection;
+        connectionManager.OnUserDisconnected += async userId =>
+        {
+            await disconnectionHandler.HandleDisconnectionAsync(userId);
+        };
     }
 
 
@@ -257,39 +262,24 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     }
 
 
-    private async void HandleUserDisconnection(string userId)
+    public PlayerLeaveResult? ForceRemovePlayerFromTable(int userId, ActiveGameSession session)
     {
-        if (!int.TryParse(userId, out int userIdInt))
-            return;
+        var table = session.Table;
 
-        foreach (var session in ActiveGameSessionStore.GetAll().Values)
+        IServiceScope scope;
+        GameTableManager tableManager = GetScopedService<GameTableManager>(out scope);
+        using (scope)
         {
-            Table table = session.Table;
-            PlayerLeaveResult result;
-
-            IServiceScope scope;
-            GameTableManager tableManager = GetScopedService<GameTableManager>(out scope);
-            using (scope)
+            lock (table)
             {
-                lock (table)
-                {
-                    result = tableManager.ProcessPlayerLeaving(table, session, userIdInt);
-                    if (!result.PlayerRemoved)
-                        return;
-                }
-
-                if (result.StopCountdown)
-                {
-                    await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
-                }
-
-                await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
+                var result = tableManager.ProcessPlayerLeaving(table, session, userId);
+                return result.PlayerRemoved ? result : null;
             }
         }
     }
 
 
-    private Task BroadcastTableUpdateAsync(Table table, IEnumerable<string> userIds, string[] playerNames)
+    public Task BroadcastTableUpdateAsync(Table table, IEnumerable<string> userIds, string[] playerNames)
     {
         return ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
         {
@@ -300,7 +290,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         });
     }
 
-    private Task BroadcastCountdownStoppedAsync(int tableId, IEnumerable<string> userIds)
+    public Task BroadcastCountdownStoppedAsync(int tableId, IEnumerable<string> userIds)
     {
         return ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
         {

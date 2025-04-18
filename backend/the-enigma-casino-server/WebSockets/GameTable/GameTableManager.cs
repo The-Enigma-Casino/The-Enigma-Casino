@@ -89,7 +89,8 @@ public class GameTableManager
 
         Player player = new Player(user)
         {
-            JoinedAt = DateTime.Now
+            JoinedAt = DateTime.Now,
+            GameTableId = table.Id
         };
 
         table.AddPlayer(player);

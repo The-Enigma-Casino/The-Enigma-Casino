@@ -60,7 +60,7 @@ public class UserController : BaseController
 
 
     [HttpGet("profile/{id}")]
-    public async Task<ActionResult<UserDto>> GetOtherProfile(int id)
+    public async Task<ActionResult<UserDto>> GetOtherProfile(int id) // Traer otro Dto
     {
         try
         {

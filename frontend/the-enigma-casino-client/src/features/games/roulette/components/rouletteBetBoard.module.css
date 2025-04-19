@@ -1,0 +1,100 @@
+.roulette {
+  margin: 40px;
+  padding: 40px;
+  background: #1C7022;
+  display: table;
+  position: relative;
+  width: 775px;
+}
+
+.roulette table {
+  float: left;
+  border-collapse: collapse;
+}
+
+.roulette td {
+  border: 2px solid white;
+  width: 50px;
+  height: 46px;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: bold;
+  font-size: 18px;
+  color: white;
+  white-space: nowrap;
+}
+
+.num {
+  font-size: 22px;
+}
+
+.num span {
+  display: block;
+  transform: rotate(270deg);
+}
+
+.zero {
+  width: 70px;
+  font-size: 56px;
+}
+
+.empty {
+  border: none;
+}
+
+.green {
+  background: #1C7022;
+  color: #8EB891;
+}
+
+.red {
+  background: #A91607;
+  color: #8EB891;
+}
+
+.black {
+  background: #0E3811;
+  color: #8EB891;
+}
+
+.sector {
+  background: #1C7022;
+  color: #8EB891;
+}
+
+.sector .vt {
+  font-size: 15px;
+}
+
+.nums .sector {
+  text-align: center;
+}
+
+.vt {
+  display: block;
+  transform: rotate(270deg);
+  white-space: nowrap;
+}
+
+.hidden {
+  display: none;
+}
+
+.controlls {
+  position: relative;
+  top: 0;
+  left: 0;
+  opacity: 0; /* activaremos más adelante si quieres mostrar */
+}
+
+.btn {
+  position: absolute;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.btn-zero {
+  width: 75px;
+  height: 152px;
+  z-index: 0;
+}

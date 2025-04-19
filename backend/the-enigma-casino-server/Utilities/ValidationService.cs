@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 public class ValidationService
 {
-    private readonly HashSet<string> _palabrasProhibidas = new();
+    private readonly HashSet<string> _bannedWords = new();
 
     public ValidationService()
     {
@@ -28,7 +28,7 @@ public class ValidationService
                     .Select(p => p.Trim().ToLower())
                     .Where(p => !string.IsNullOrWhiteSpace(p));
 
-                _palabrasProhibidas.UnionWith(palabras);
+                _bannedWords.UnionWith(palabras);
             }
 
             if (File.Exists(rutaArchivo2))
@@ -37,7 +37,7 @@ public class ValidationService
                     .Select(p => p.Trim().ToLower())
                     .Where(p => !string.IsNullOrWhiteSpace(p));
 
-                _palabrasProhibidas.UnionWith(palabras);
+                _bannedWords.UnionWith(palabras);
             }
         }
         catch (Exception ex)
@@ -56,7 +56,7 @@ public class ValidationService
     {
         name = name.ToLower().Trim();
 
-        foreach (var palabra in _palabrasProhibidas)
+        foreach (string palabra in _bannedWords)
         {
             string patron = Regex.Escape(palabra);
             if (Regex.IsMatch(name, patron, RegexOptions.IgnoreCase))
@@ -75,5 +75,19 @@ public class ValidationService
 
         return age >= 18;
     }
+
+    public string CensorWords(string text)
+    {
+        string result = text;
+
+        foreach (string word in _bannedWords)
+        {
+            string pattern = $@"\b{Regex.Escape(word)}\b";
+            result = Regex.Replace(result, pattern, new string('*', word.Length), RegexOptions.IgnoreCase);
+        }
+
+        return result;
+    }
+
 }
 

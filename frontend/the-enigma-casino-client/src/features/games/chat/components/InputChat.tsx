@@ -1,24 +1,23 @@
-// components/InputChat.tsx
 import { useState } from "react";
-
 import styles from "./InputChat.module.css";
 
 interface ChatInputProps {
-  onSend?: (message: string) => void;
+  onSend: (message: string) => void;
   disabled?: boolean;
   className?: string;
 }
 
-export const ChatInput = ({ onSend }: ChatInputProps) => {
+export const ChatInput = ({ onSend, disabled = false }: ChatInputProps) => {
   const [message, setMessage] = useState("");
 
   const handleSend = () => {
-    if (message.trim() === "") return;
-    onSend?.(message.trim());
+    const trimmed = message.trim();
+    if (!trimmed || disabled) return;
+    onSend(trimmed);
     setMessage("");
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleSend();
   };
 
@@ -29,12 +28,14 @@ export const ChatInput = ({ onSend }: ChatInputProps) => {
         placeholder="Escribe aquí..."
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyDown}
         className={styles.chatInput}
+        disabled={disabled}
       />
       <button
         className={styles.sendButton}
         onClick={handleSend}
+        disabled={disabled}
       >
         <img
           src="/svg/send_icon.svg"

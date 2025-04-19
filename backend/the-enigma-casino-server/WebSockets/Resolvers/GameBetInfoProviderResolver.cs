@@ -4,6 +4,7 @@ using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.Interfaces;
+using the_enigma_casino_server.WebSockets.Poker;
 
 public class GameBetInfoProviderResolver
 {
@@ -14,8 +15,8 @@ public class GameBetInfoProviderResolver
     public GameBetInfoProviderResolver(BlackjackBetInfoProvider blackjackProvider, RouletteBetInfoProvider rouletteProvider)
     {
         _blackjackProvider = blackjackProvider;
-        // _pokerProvider = pokerProvider;
         _rouletteProvider = rouletteProvider;
+        private readonly PokerBetInfoProvider _pokerProvider;
     }
 
     public IGameBetInfoProvider Resolve(GameType gameType)
@@ -23,8 +24,8 @@ public class GameBetInfoProviderResolver
         return gameType switch
         {
             GameType.BlackJack => _blackjackProvider,
-            // GameType.Poker => _pokerProvider,
             GameType.Roulette => _rouletteProvider,
+            GameType.Poker => _pokerProvider,
             _ => throw new NotSupportedException($"Juego no soportado: {gameType}")
         };
     }

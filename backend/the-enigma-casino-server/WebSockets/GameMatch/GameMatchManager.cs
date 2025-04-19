@@ -5,6 +5,7 @@ using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
+using the_enigma_casino_server.WebSockets.Poker;
 using the_enigma_casino_server.WebSockets.Resolvers;
 
 namespace the_enigma_casino_server.WebSockets.GameMatch;
@@ -16,15 +17,19 @@ public class GameMatchManager
     private readonly GameTurnServiceResolver _turnResolver;
     private readonly GameSessionCleanerResolver _sessionCleanerResolver;
 
+    private readonly IServiceProvider _serviceProvider;
+
     public GameMatchManager(UnitOfWork unitOfWork,
                             GameBetInfoProviderResolver betInfoResolver,
                             GameTurnServiceResolver turnResolver,
-                            GameSessionCleanerResolver sessionCleanerResolver)
+                            GameSessionCleanerResolver sessionCleanerResolver,
+                            IServiceProvider serviceProvider)
     {
         _unitOfWork = unitOfWork;
         _betInfoResolver = betInfoResolver;
         _turnResolver = turnResolver;
         _sessionCleanerResolver = sessionCleanerResolver;
+        _serviceProvider = serviceProvider;
     }
 
 
@@ -63,6 +68,12 @@ public class GameMatchManager
         {
             player.GameMatch = match;
             player.GameMatchId = 0;
+        }
+
+        if (table.GameType == GameType.Poker)
+        {
+            PokerWS pokerWS = _serviceProvider.GetRequiredService<PokerWS>();
+            await pokerWS.StartInitialDealAsync(match);
         }
 
         return match;

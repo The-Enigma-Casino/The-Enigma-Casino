@@ -17,6 +17,7 @@ using the_enigma_casino_server.Utilities;
 using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.BlackJack;
+using the_enigma_casino_server.WebSockets.Chat;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.Interfaces;
@@ -79,12 +80,14 @@ public class Program
         builder.Services.AddSingleton<BlackjackWS>();
         builder.Services.AddSingleton<PokerWS>();
         builder.Services.AddSingleton<RouletteWS>();
+        builder.Services.AddSingleton<GameChatWS>();
 
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, PokerWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, RouletteWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameChatWS>();
 
         // --- WebSocket: servicios específicos del juego ---
         builder.Services.AddScoped<GameTableManager>();
@@ -245,12 +248,13 @@ public class Program
 
     private static void SeedDatabase(IServiceProvider serviceProvider)
     {
-        using var scope = serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetService<MyDbContext>();
+        using IServiceScope scope = serviceProvider.CreateScope();
+        MyDbContext dbContext = scope.ServiceProvider.GetService<MyDbContext>();
+        UserService userService = scope.ServiceProvider.GetService<UserService>();
 
         if (dbContext.Database.EnsureCreated())
         {
-            var seeder = new SeedManager(dbContext);
+            SeedManager seeder = new SeedManager(dbContext, userService);
             seeder.SeedAll();
         }
     }

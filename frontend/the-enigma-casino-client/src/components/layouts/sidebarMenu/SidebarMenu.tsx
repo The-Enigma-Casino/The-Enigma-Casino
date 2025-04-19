@@ -2,6 +2,7 @@ import classes from "./SidebarMenu.module.css";
 import Button from "../../ui/button/Button";
 import { useNavigate } from "react-router-dom";
 import {
+  $image,
   $name,
   $token,
   loadName,
@@ -10,24 +11,28 @@ import { useEffect } from "react";
 import { useUnit } from "effector-react";
 import FriendsPanel from "../../../features/friends/components/layouts/friendsPanel";
 import { $onlineUsers } from "../../../websocket/store/wsIndex";
-
+import { USER_IMAGES } from "../../../config";
 
 function SidebarMenu() {
   // const userLive: number = 777;
   const token = useUnit($token);
   const name = useUnit($name);
-  const navigate = useNavigate();
+  const userImage = useUnit($image);
   const userLive = useUnit($onlineUsers);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadName();
   }, [token]);
 
+  const profileImage = token ? `${USER_IMAGES}/${userImage}` : "/svg/user.svg";
+
   return (
     <nav className={classes.sidebarMenu}>
       <div className={classes.container}>
         <div className={classes.profile}>
-          <img src="/svg/user.svg" alt="Imagen Perfil" />
+          <img src={profileImage} alt="Imagen de Perfil" />
           {token ? (
             <>
               <h2>{name}</h2>
@@ -35,7 +40,7 @@ function SidebarMenu() {
                 color="green"
                 variant="small"
                 font="bold"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/profile")}
               >
                 Perfil
               </Button>

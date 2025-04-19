@@ -9,14 +9,14 @@ using the_enigma_casino_server.WebSockets.Poker;
 public class GameBetInfoProviderResolver
 {
     private readonly BlackjackBetInfoProvider _blackjackProvider;
-    // private readonly PokerBetInfoProvider _pokerProvider;
+    private readonly PokerBetInfoProvider _pokerProvider;
     private readonly RouletteBetInfoProvider _rouletteProvider;
 
-    public GameBetInfoProviderResolver(BlackjackBetInfoProvider blackjackProvider, RouletteBetInfoProvider rouletteProvider)
+    public GameBetInfoProviderResolver(BlackjackBetInfoProvider blackjackProvider, RouletteBetInfoProvider rouletteProvider, PokerBetInfoProvider pokerBetInfoProvider)
     {
         _blackjackProvider = blackjackProvider;
         _rouletteProvider = rouletteProvider;
-        private readonly PokerBetInfoProvider _pokerProvider;
+        _pokerProvider = pokerBetInfoProvider;
     }
 
     public IGameBetInfoProvider Resolve(GameType gameType)

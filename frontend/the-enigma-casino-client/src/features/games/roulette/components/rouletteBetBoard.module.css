@@ -84,7 +84,7 @@
   position: relative;
   top: 0;
   left: 0;
-  opacity: 0; /* activaremos más adelante si quieres mostrar */
+  opacity: 0;
 }
 
 .btn {

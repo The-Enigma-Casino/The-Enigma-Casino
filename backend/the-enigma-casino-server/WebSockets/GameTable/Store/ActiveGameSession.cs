@@ -6,22 +6,30 @@ public class ActiveGameSession
     public Table Table { get; }
 
     private readonly Action<int> _onTimerComplete;
-    private readonly ReusableTimer _startTimer;
+
+    private readonly AsyncReusableTimer _startTimer;
+    private AsyncReusableTimer _postMatchTimer;
+
 
     private bool _isTimerRunning;
     private bool _countdownCancelled;
 
     private readonly object _lock = new();
 
-    public bool IsTimerRunning => _isTimerRunning;
+    public bool IsPostMatchTimerRunning => _postMatchTimer?.IsRunning == true;
 
     public ActiveGameSession(Table table, Action<int> onTimerComplete)
     {
         Table = table;
         _onTimerComplete = onTimerComplete;
-        _startTimer = new ReusableTimer(() => HandleTimerElapsed());
+        _startTimer = new AsyncReusableTimer(() =>
+        {
+            _onTimerComplete.Invoke(Table.Id);
+            return Task.CompletedTask;
+        });
     }
 
+    // Timer de inicio
     public void StartOrRestartCountdown()
     {
         _startTimer.Start(30_000);
@@ -35,6 +43,21 @@ public class ActiveGameSession
     private void HandleTimerElapsed()
     {
         _onTimerComplete.Invoke(Table.Id);
+    }
+
+    // Timer entre matches
+    public void StartPostMatchTimer(int milliseconds, Func<Task> onTimerCompleteAsync)
+    {
+        CancelPostMatchTimer();
+
+        _postMatchTimer = new AsyncReusableTimer(onTimerCompleteAsync);
+        _postMatchTimer.Start(milliseconds);
+    }
+
+    public void CancelPostMatchTimer()
+    {
+        _postMatchTimer?.Cancel();
+        _postMatchTimer = null;
     }
 
     public IEnumerable<string> GetConnectedUserIds()

@@ -2,7 +2,6 @@
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
-using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable.Models;
 
@@ -89,10 +88,9 @@ public class GameTableManager
 
     public (bool Success, string ErrorMessage) TryAddPlayer(Table table, User user)
     {
-        if (table.TableState != TableState.Waiting)
+        if (table.TableState == TableState.Maintenance)
         {
-            string msg = $"La mesa {table.Id} no está esperando jugadores. Estado actual: {table.TableState}.";
-            return (false, msg);
+            return (false, "maintenance");
         }
 
         if (table.Players.Any(p => p.UserId == user.Id))
@@ -110,7 +108,10 @@ public class GameTableManager
         Player player = new Player(user)
         {
             JoinedAt = DateTime.Now,
-            GameTableId = table.Id
+            GameTableId = table.Id,
+            PlayerState = table.TableState == TableState.InProgress
+                ? PlayerState.Spectating
+                : PlayerState.Waiting
         };
 
         table.AddPlayer(player);

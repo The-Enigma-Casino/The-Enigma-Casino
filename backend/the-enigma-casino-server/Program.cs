@@ -86,6 +86,8 @@ public class Program
         builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, PokerWS>();
 
+        builder.Services.AddSingleton<IWebSocketSender>(provider => provider.GetRequiredService<GameMatchWS>());
+
         // --- WebSocket: servicios específicos del juego ---
         builder.Services.AddScoped<GameTableManager>();
         builder.Services.AddScoped<GameMatchManager>();
@@ -95,6 +97,7 @@ public class Program
         builder.Services.AddScoped<GameTurnServiceResolver>();
         builder.Services.AddScoped<GameSessionCleanerResolver>();
         builder.Services.AddScoped<GameExitRuleResolver>();
+        builder.Services.AddScoped<GameJoinHelperResolver>();
 
 
         // --- Servicios concretos de Blackjack ---
@@ -102,10 +105,12 @@ public class Program
         builder.Services.AddScoped<BlackjackSessionCleaner>();
         builder.Services.AddScoped<BlackjackTurnService>();
         builder.Services.AddScoped<BlackjackExitRuleHandler>();
+        builder.Services.AddScoped<BlackjackJoinHelper>();
 
         builder.Services.AddScoped<IGameBetInfoProvider, BlackjackBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, BlackjackTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, BlackjackSessionCleaner>();
+        builder.Services.AddScoped<IGameJoinHelper, BlackjackJoinHelper>();
 
 
         // --- Servicios concretos de Poker ---

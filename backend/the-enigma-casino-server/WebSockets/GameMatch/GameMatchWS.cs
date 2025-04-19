@@ -9,6 +9,7 @@ using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Resolvers;
+using the_enigma_casino_server.WebSockets.Resolversl;
 
 
 namespace the_enigma_casino_server.WebSockets.GameMatch;
@@ -22,6 +23,20 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
     IServiceProvider serviceProvider)
     : base(connectionManager, serviceProvider)
     {
+        connectionManager.OnUserDisconnected += async userId =>
+        {
+            if (!int.TryParse(userId, out int userIdInt))
+                return;
+
+            foreach (var (tableId, match) in ActiveGameMatchStore.GetAll())
+            {
+                if (match.Players.Any(p => p.UserId == userIdInt))
+                {
+                    await ProcessPlayerMatchLeaveAsync(tableId, userIdInt);
+                    break;
+                }
+            }
+        };
     }
 
     private GameMatchManager CreateScopedManager(out IServiceScope scope)
@@ -33,8 +48,9 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         GameBetInfoProviderResolver betInfoResolver = provider.GetRequiredService<GameBetInfoProviderResolver>();
         GameTurnServiceResolver turnResolver = provider.GetRequiredService<GameTurnServiceResolver>();
         GameSessionCleanerResolver sessionCleaner = provider.GetRequiredService<GameSessionCleanerResolver>();
+        GameExitRuleResolver exitRuleResolver = provider.GetRequiredService<GameExitRuleResolver>();
 
-        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, provider);
+        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, exitRuleResolver, provider);
 
     }
 
@@ -150,6 +166,8 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             await GameMatchHelper.NotifyPlayerMatchEndedAsync(this, userId, tableId);
             await GameMatchHelper.NotifyOthersPlayerLeftAsync(this, match, userId, tableId);
             await GameMatchHelper.TryCancelMatchAsync(this, match, manager, tableManager, tableId);
+            await GameMatchHelper.CheckGamePostExitLogicAsync(match, tableId, _serviceProvider);
+
         }
     }
 
@@ -202,6 +220,13 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
         if (table.Players.Count >= table.MinPlayer)
         {
+            table.TableState = TableState.Starting;
+
+            using var scope = _serviceProvider.CreateScope();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+            unitOfWork.GameTableRepository.Update(table);
+            await unitOfWork.SaveAsync();
+
             await StartMatchForTableAsync(table.Id);
         }
 

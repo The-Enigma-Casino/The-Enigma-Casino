@@ -68,6 +68,15 @@ public static class GameMatchHelper
         return cancelled;
     }
 
+    public static async Task CheckGamePostExitLogicAsync(Match match, int tableId, IServiceProvider serviceProvider)
+    {
+        if (match.GameTable.GameType == GameType.BlackJack)
+        {
+            var blackjackWS = serviceProvider.GetRequiredService<BlackjackWS>();
+            await blackjackWS.CheckAutoStartAfterPlayerLeft(tableId);
+        }
+    }
+
     public static async Task TryAutoDealIfAllPlayersBetAsync(int tableId, Match match, BlackjackWS blackjackWS)
     {
         if (match.GameTable.GameType != GameType.BlackJack)

@@ -22,11 +22,14 @@ public class BlackjackBetInfoProvider : IGameBetInfoProvider
 
         return player.PlayerState switch
         {
-            PlayerState.Win => lastBet * 2,
-            PlayerState.Draw => lastBet,
+            PlayerState.Blackjack => (int)(lastBet * 1.5),
+            PlayerState.Win => lastBet,
+            PlayerState.Draw => 0,
+            PlayerState.Lose or PlayerState.Bust or PlayerState.Left => -lastBet,
             _ => 0
         };
     }
+
 
     public int GetMatchCountForHistory(Player player)
     {
@@ -35,6 +38,6 @@ public class BlackjackBetInfoProvider : IGameBetInfoProvider
 
     public bool HasPlayedThisMatch(Player player, Match match)
     {
-        throw new NotImplementedException();
+        return player.Hand != null && player.Hand.Cards.Count > 0;
     }
 }

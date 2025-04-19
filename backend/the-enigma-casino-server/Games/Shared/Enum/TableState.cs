@@ -5,5 +5,5 @@ public enum TableState
     Waiting,
     Starting,
     InProgress,
-    Manteinance
+    Maintenance
 }

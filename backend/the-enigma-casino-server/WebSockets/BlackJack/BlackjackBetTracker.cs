@@ -43,6 +43,4 @@ public static class BlackjackBetTracker
 
         return new List<int>();
     }
-
-
 }

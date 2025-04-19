@@ -11,6 +11,7 @@ using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable.Models;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
+using the_enigma_casino_server.WebSockets.Resolvers;
 
 namespace the_enigma_casino_server.WebSockets.GameTable;
 
@@ -19,6 +20,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     public string Type => "game_table";
 
     private readonly GameMatchWS _gameMatchWS;
+
 
     public GameTableWS(
         ConnectionManagerWS connectionManager,
@@ -106,14 +108,28 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             if (!addResult.success)
             {
-                await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                string errorType = addResult.errorMessage;
+
+                if (errorType == "maintenance")
                 {
-                    type = "error",
-                    message = addResult.errorMessage
-                });
+                    await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                    {
+                        type = "table_closed",
+                        tableId = table.Id,
+                        message = "Esta mesa está en mantenimiento y no se puede acceder por el momento."
+                    });
+                }
+                else
+                {
+                    await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                    {
+                        type = "error",
+                        message = errorType
+                    });
+                }
+
                 return;
             }
-
 
             await ((IWebSocketSender)this).BroadcastToUsersAsync(
                 session.GetConnectedUserIds(),
@@ -124,6 +140,26 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     players = session.GetPlayerNames(),
                     state = session.Table.TableState.ToString()
                 });
+
+            if (table.TableState == TableState.InProgress)
+            {
+                await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                {
+                    type = GameTableMessageTypes.WaitingNextMatch,
+                    tableId = table.Id,
+                    message = "Una partida está en curso. Te unirás automáticamente a la siguiente ronda."
+                });
+            }
+
+            using var gameScope = _serviceProvider.CreateScope();
+            var gameJoinHelperResolver = gameScope.ServiceProvider.GetRequiredService<GameJoinHelperResolver>();
+
+            var joinHelper = gameJoinHelperResolver.Resolve(table.GameType);
+
+            if (joinHelper != null)
+            {
+                await joinHelper.NotifyPlayerCanJoinCurrentMatchIfPossible(userIdInt, table, (IWebSocketSender)this);
+            }
 
 
             if (table.Players.Count >= table.MinPlayer && !HasActiveMatch(table.Id))
@@ -195,21 +231,12 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 return;
             }
 
-            table.TableState = TableState.InProgress;
             shouldStart = true;
             userIds = table.Players.Select(p => p.UserId.ToString()).ToList();
         }
 
         if (shouldStart)
         {
-            using var scope = _serviceProvider.CreateScope();
-            var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-
-            unitOfWork.GameTableRepository.Update(table);
-            await unitOfWork.SaveAsync();
-
-            Console.WriteLine($"[GameTableWS] Iniciando partida en la mesa {tableId} automáticamente.");
-
             await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
                 type = GameTableMessageTypes.GameStart,

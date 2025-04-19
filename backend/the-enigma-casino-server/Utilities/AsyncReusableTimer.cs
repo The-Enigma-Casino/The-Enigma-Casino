@@ -1,18 +1,18 @@
 ﻿namespace the_enigma_casino_server.Utilities;
 
-public class ReusableTimer
+public class AsyncReusableTimer
 {
-    private readonly Action _callback;
+    private readonly Func<Task> _callback;
     private Timer _timer;
     private bool _isRunning;
     private readonly object _lock = new();
 
     public bool IsRunning => _isRunning;
 
-    public ReusableTimer(Action callback)
+    public AsyncReusableTimer(Func<Task> callback)
     {
         _callback = callback;
-        _timer = new Timer(_ => Trigger(), null, Timeout.Infinite, Timeout.Infinite);
+        _timer = new Timer(OnTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
     }
 
     public void Start(int milliseconds)
@@ -33,7 +33,7 @@ public class ReusableTimer
         }
     }
 
-    private void Trigger()
+    private async void OnTimerElapsed(object state)
     {
         lock (_lock)
         {
@@ -41,6 +41,13 @@ public class ReusableTimer
             _isRunning = false;
         }
 
-        _callback?.Invoke();
+        try
+        {
+            await _callback();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ [AsyncReusableTimer] Error en callback: {ex.Message}");
+        }
     }
 }

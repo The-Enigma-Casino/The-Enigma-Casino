@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-interface CasinoRouletteProps {
-  resultNumber: number;
+interface Props {
+  winningNumber: number;
 }
 
 const numbers = [
@@ -13,89 +13,110 @@ const numbers = [
 
 const sectorAngle = 360 / numbers.length;
 
-export default function CasinoRoulette({ resultNumber }: CasinoRouletteProps) {
-  const [rotation, setRotation] = useState(0);
-  const [ballAngle, setBallAngle] = useState(0);
+export default function RouletteWheel({ winningNumber }: Props) {
+  const [wheelRotation, setWheelRotation] = useState(0);
+  const [ballRotation, setBallRotation] = useState(0);
 
-  const spinTo = (number: number) => {
-    const index = numbers.indexOf(number);
-    if (index === -1) return;
-
-    const randomOffset = Math.random() * sectorAngle;
-    const spinRounds = 8;
-    const finalAngle = 360 - index * sectorAngle - randomOffset;
-
-    setRotation(360 * spinRounds + finalAngle);
-    setBallAngle(index * sectorAngle + randomOffset);
-  };
+  const requestRef = useRef<number>(0);
+  const animationStart = useRef<number>(0);
 
   useEffect(() => {
-    if (resultNumber !== null) {
-      const timeout = setTimeout(() => {
-        spinTo(resultNumber);
-      }, 100);
+    const index = numbers.indexOf(winningNumber);
+    if (index === -1) return;
 
-      return () => clearTimeout(timeout);
-    }
-  }, [resultNumber]);
+    const totalSpins = 6;
+    const targetAngle = index * sectorAngle;
+    const duration = 6000;
+
+    const wheelStart = wheelRotation % 360;
+    const ballStart = ballRotation % 360;
+
+    animationStart.current = performance.now();
+
+    const animate = (time: number) => {
+      const elapsed = time - animationStart.current!;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 4); // ease-out
+
+      const newWheelRotation = wheelStart + ease * (360 * totalSpins + targetAngle);
+      const newBallRotation = ballStart - ease * (360 * (totalSpins + 2) + targetAngle);
+
+      setWheelRotation(newWheelRotation);
+      setBallRotation(newBallRotation);
+
+      if (progress < 1) {
+        requestRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    requestRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(requestRef.current!);
+  }, [winningNumber]);
 
   return (
-    <div className="relative w-[400px] h-[400px]">
+    <div className="relative flex items-center justify-center w-[400px] h-[400px]">
       <svg
+        width={400}
+        height={400}
         viewBox="0 0 400 400"
-        className="transition-transform duration-[4000ms] ease-out"
-        style={{ transform: `rotate(${rotation}deg)` }}
+        style={{ transform: `rotate(${wheelRotation}deg)` }}
+        className="transition-transform duration-[6000ms] ease-out"
       >
-        <circle cx="200" cy="200" r="190" fill="#8b4513" stroke="#daa520" strokeWidth="10" />
+        <circle cx="200" cy="200" r="190" fill="#0b6623" stroke="#FFD700" strokeWidth="5" />
 
         {numbers.map((num, i) => {
-          const start = i * sectorAngle;
-          const end = start + sectorAngle;
-          const largeArc = end - start > 180 ? 1 : 0;
-          const x1 = 200 + 190 * Math.cos((Math.PI * start) / 180);
-          const y1 = 200 + 190 * Math.sin((Math.PI * start) / 180);
-          const x2 = 200 + 190 * Math.cos((Math.PI * end) / 180);
-          const y2 = 200 + 190 * Math.sin((Math.PI * end) / 180);
-
-          const fillColor =
-            num === 0 ? "#0f0" : i % 2 === 0 ? "#000" : "#c00";
-          const textColor = num === 0 ? "#000" : "#fff";
+          const startAngle = i * sectorAngle;
+          const endAngle = startAngle + sectorAngle;
+          const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+          const x1 = 200 + 190 * Math.cos((Math.PI * startAngle) / 180);
+          const y1 = 200 + 190 * Math.sin((Math.PI * startAngle) / 180);
+          const x2 = 200 + 190 * Math.cos((Math.PI * endAngle) / 180);
+          const y2 = 200 + 190 * Math.sin((Math.PI * endAngle) / 180);
+          const color = num === 0 ? "green" : i % 2 === 0 ? "black" : "red";
 
           return (
-            <g key={i}>
-              <path
-                d={`M200,200 L${x1},${y1} A190,190 0 ${largeArc} 1 ${x2},${y2} Z`}
-                fill={fillColor}
-                stroke="white"
-                strokeWidth="1"
-              />
-              <text
-                x={200 + 160 * Math.cos((Math.PI * (start + sectorAngle / 2)) / 180)}
-                y={200 + 160 * Math.sin((Math.PI * (start + sectorAngle / 2)) / 180)}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill={textColor}
-                fontSize="14"
-                transform={`rotate(${start + sectorAngle / 2}, ${200 + 160 * Math.cos((Math.PI * (start + sectorAngle / 2)) / 180)}, ${200 + 160 * Math.sin((Math.PI * (start + sectorAngle / 2)) / 180)})`}
-              >
-                {num}
-              </text>
-            </g>
+            <path
+              key={i}
+              d={`M200,200 L${x1},${y1} A190,190 0 ${largeArc} 1 ${x2},${y2} Z`}
+              fill={color}
+              stroke="white"
+              strokeWidth={1}
+            />
           );
         })}
 
-
-        <circle cx="200" cy="200" r="30" fill="#999" />
-        <circle cx="200" cy="200" r="15" fill="#ccc" />
+        {numbers.map((num, i) => {
+          const angle = i * sectorAngle + sectorAngle / 2;
+          const x = 200 + 150 * Math.cos((Math.PI * angle) / 180);
+          const y = 200 + 150 * Math.sin((Math.PI * angle) / 180);
+          return (
+            <text
+              key={"label-" + i}
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="white"
+              fontSize="14"
+              transform={`rotate(${angle}, ${x}, ${y})`}
+            >
+              {num}
+            </text>
+          );
+        })}
       </svg>
 
-      <svg className="absolute top-0 left-0" viewBox="0 0 400 400">
+      <svg
+        className="absolute pointer-events-none"
+        width={400}
+        height={400}
+        viewBox="0 0 400 400"
+      >
         <circle
-          cx={200 + 160 * Math.cos((Math.PI * ballAngle) / 180)}
-          cy={200 + 160 * Math.sin((Math.PI * ballAngle) / 180)}
-          r="8"
-          fill="#fff"
-          className="transition-all duration-[4000ms] ease-out"
+          cx={200 + 160 * Math.cos((Math.PI * ballRotation) / 180)}
+          cy={200 + 160 * Math.sin((Math.PI * ballRotation) / 180)}
+          r={8}
+          fill="white"
         />
       </svg>
     </div>

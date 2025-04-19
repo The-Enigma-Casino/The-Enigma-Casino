@@ -1,23 +1,24 @@
 import { useState } from "react";
-import { RouletteBetBoard } from "../components/RouletteBetBoard";
-import CasinoRoulette from "../components/RouletteWheel";
+import RouletteWheel from "../components/RouletteWheel";
 
 function RouletteGamePage() {
   const [number, setNumber] = useState(0);
 
+  const handleSpin = () => {
+    const result = Math.floor(Math.random() * 37);
+    setNumber(result);
+  };
+
   return (
-    <div className="p-6">
-      <h1 className="text-4xl font-bold text-white mb-4">Ruleta</h1>
-      <div className="flex flex-col items-center justify-center gap-6 min-h-screen bg-black text-white">
-        <CasinoRoulette resultNumber={number} />
-        <button
-          onClick={() => setNumber(Math.floor(Math.random() * 37))}
-          className="bg-yellow-400 px-6 py-3 rounded-xl font-bold text-black"
-        >
-          Girar
-        </button>
-      </div>
-      <RouletteBetBoard />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      <h1 className="text-4xl font-bold mb-6">Ruleta</h1>
+      <RouletteWheel winningNumber={number} />
+      <button
+        onClick={handleSpin}
+        className="mt-6 px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded"
+      >
+        Girar
+      </button>
     </div>
   );
 }

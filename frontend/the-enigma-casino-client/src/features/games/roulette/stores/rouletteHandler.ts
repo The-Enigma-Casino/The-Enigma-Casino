@@ -1,11 +1,14 @@
-import { socketMessageReceived } from "../../../../websocket/store/wsIndex";
+import { socketMessageReceived, messageSent } from "../../../../websocket/store/wsIndex";
 import {
   gameStateReceived,
   spinResultReceived,
   betConfirmed,
   betsOpenedReceived,
   betsClosedReceived,
-  roulettePausedReceived
+  roulettePausedReceived,
+  placeRouletteBet,
+  resetSpinResult,
+  countdownTick
 } from "./rouletteEvents";
 
 socketMessageReceived.watch((data) => {
@@ -16,6 +19,9 @@ socketMessageReceived.watch((data) => {
   switch (data.action) {
     case "game_state":
       gameStateReceived(data);
+      if (data.secondsRemaining != null) {
+        countdownTick(data.secondsRemaining);
+      }
       break;
     case "spin_result":
       spinResultReceived(data);
@@ -25,6 +31,7 @@ socketMessageReceived.watch((data) => {
       break;
     case "bets_opened":
       betsOpenedReceived();
+      resetSpinResult();
       break;
     case "bets_closed":
       betsClosedReceived();
@@ -36,3 +43,16 @@ socketMessageReceived.watch((data) => {
       console.warn("[Ruleta] Acción desconocida:", data.action);
   }
 });
+
+placeRouletteBet.watch((payload) => {
+  const message = {
+    type: "roulette",
+    action: "place_bet",
+    ...payload,
+  };
+
+  console.log("[🎰 Ruleta] Enviando apuesta:", message);
+  messageSent(JSON.stringify(message));
+});
+
+

@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
 
-import { spinResult$ } from "../stores/rouletteStores";
-import { betsClosed$ } from "../stores/rouletteStores";
-import { isPaused$ } from "../stores/rouletteStores";
+import {
+  spinResult$,
+  betsClosed$,
+  isPaused$,
+  countdown$,
+} from "../stores/rouletteStores";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
 
-import { requestGameState } from "../stores/rouletteEvents";
+import { requestGameState, placeRouletteBet } from "../stores/rouletteEvents";
 import { RouletteBetBoard } from "../components/RouletteBetBoard";
+
+import type { PlaceRouletteBetPayload } from "../stores/rouletteEvents";
 
 type LocalBet = {
   key: string;
@@ -21,6 +26,7 @@ function RouletteGamePage() {
   const isBetsClosed = useUnit(betsClosed$);
   const isPaused = useUnit(isPaused$);
   const tableId = useUnit($currentTableId);
+  const countdown = useUnit(countdown$);
   const coins = useUnit($coins);
 
   const [betAmount, setBetAmount] = useState(0);
@@ -43,7 +49,7 @@ function RouletteGamePage() {
   };
 
   const handleBetClick = (bet: string | number) => {
-    if (isBetsClosed || betAmount <= 0 || betAmount > coins) return;
+    if (isBetsClosed || betAmount <= 0 || betAmount > coins || !tableId) return;
 
     const key = typeof bet === "number" ? `number_${bet}` : bet;
     const label = typeof bet === "number" ? `${bet}` : bet.toUpperCase();
@@ -53,23 +59,36 @@ function RouletteGamePage() {
 
     setBets((prev) => [...prev, { key, label, amount: betAmount }]);
 
+    const payload = buildBetPayload(tableId.toString(), key, betAmount);
+    if (payload) placeRouletteBet(payload);
+
     loadCoins();
   };
 
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">
-      <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">♠️ Ruleta</h1>
+      <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">
+        ♠️ Ruleta
+      </h1>
 
       {isPaused ? (
-        <h2 className="text-3xl font-bold text-red-500 mb-6">Ruleta pausada por inactividad</h2>
+        <h2 className="text-3xl font-bold text-red-500 mb-6">
+          Ruleta pausada por inactividad
+        </h2>
       ) : (
         <>
           <h2 className="text-2xl mb-4">Número ganador: {number}</h2>
           <h2 className="text-2xl mb-4">Color ganador: {color}</h2>
 
+          <h2 className="text-xl mb-4">
+            Tiempo restante para apostar:{" "}
+            <span className="text-yellow-400 font-bold">{countdown}</span>s
+          </h2>
+
           <div className="bg-black/30 p-4 rounded-xl mb-6 w-full max-w-md text-white">
-            <h3 className="text-xl mb-2 font-bold text-center">Selecciona tu apuesta</h3>
+            <h3 className="text-xl mb-2 font-bold text-center">
+              Selecciona tu apuesta
+            </h3>
             <div className="flex gap-3 justify-center">
               {[5, 10, 25, 50, 100].map((val) => (
                 <button
@@ -90,7 +109,9 @@ function RouletteGamePage() {
 
             <p className="text-center mt-4 text-lg">
               Apuesta actual:{" "}
-              <span className="text-green-400 font-bold">{betAmount} fichas</span>
+              <span className="text-green-400 font-bold">
+                {betAmount} fichas
+              </span>
             </p>
 
             {betAmount > coins && (
@@ -113,7 +134,9 @@ function RouletteGamePage() {
               {bets.map((bet) => (
                 <li key={bet.key} className="flex justify-between">
                   <span>{bet.label}</span>
-                  <span className="font-bold text-yellow-300">{bet.amount} fichas</span>
+                  <span className="font-bold text-yellow-300">
+                    {bet.amount} fichas
+                  </span>
                 </li>
               ))}
             </ul>
@@ -125,3 +148,42 @@ function RouletteGamePage() {
 }
 
 export default RouletteGamePage;
+
+function buildBetPayload(
+  tableId: string,
+  key: string,
+  amount: number
+): PlaceRouletteBetPayload | undefined {
+  if (key.startsWith("number_")) {
+    const number = parseInt(key.split("_")[1]);
+    return { tableId, amount, betType: "Straight", number };
+  }
+
+  if (key === "sector_9")
+    return { tableId, amount, betType: "Color", color: "red" };
+  if (key === "sector_10")
+    return { tableId, amount, betType: "Color", color: "black" };
+  if (key === "sector_8")
+    return { tableId, amount, betType: "EvenOdd", evenOdd: "Even" };
+  if (key === "sector_11")
+    return { tableId, amount, betType: "EvenOdd", evenOdd: "Odd" };
+  if (key === "sector_7")
+    return { tableId, amount, betType: "HighLow", highLow: "Low" };
+  if (key === "sector_12")
+    return { tableId, amount, betType: "HighLow", highLow: "High" };
+  if (key === "sector_4")
+    return { tableId, amount, betType: "Dozen", dozen: 1 };
+  if (key === "sector_5")
+    return { tableId, amount, betType: "Dozen", dozen: 2 };
+  if (key === "sector_6")
+    return { tableId, amount, betType: "Dozen", dozen: 3 };
+  if (key === "sector_1")
+    return { tableId, amount, betType: "Column", column: 1 };
+  if (key === "sector_2")
+    return { tableId, amount, betType: "Column", column: 2 };
+  if (key === "sector_3")
+    return { tableId, amount, betType: "Column", column: 3 };
+
+  console.warn("[Ruleta] Sector no reconocido:", key);
+  return undefined;
+}

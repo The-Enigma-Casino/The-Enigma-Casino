@@ -1,7 +1,7 @@
 .roulette {
   margin: 40px;
   padding: 40px;
-  background: #1C7022;
+  background: #14532d;
   display: table;
   position: relative;
   width: 775px;
@@ -43,7 +43,7 @@
 }
 
 .green {
-  background: #1C7022;
+  background: #14532d;
   color: #8EB891;
 }
 
@@ -58,7 +58,7 @@
 }
 
 .sector {
-  background: #1C7022;
+  background: #14532d;
   color: #8EB891;
 }
 

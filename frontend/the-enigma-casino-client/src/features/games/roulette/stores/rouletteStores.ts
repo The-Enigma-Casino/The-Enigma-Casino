@@ -15,7 +15,8 @@ export const rouletteGameState$ = createStore<any>(null).on(
 );
 
 export const spinResult$ = createStore<any>(null)
-  .on(spinResultReceived, (_, result) => result)
+  .on(spinResultReceived, (_, payload) => payload.result)
+  .on(betsOpenedReceived, () => null)
   .reset(resetSpinResult);
 
 export const betsClosed$ = createStore<boolean>(false)

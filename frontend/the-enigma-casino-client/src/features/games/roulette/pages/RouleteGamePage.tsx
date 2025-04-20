@@ -10,10 +10,12 @@ import {
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
 
-import { requestGameState, placeRouletteBet } from "../stores/rouletteEvents";
+import { requestGameState, placeRouletteBet, betsOpenedReceived } from "../stores/rouletteEvents";
 import { RouletteBetBoard } from "../components/RouletteBetBoard";
 
 import type { PlaceRouletteBetPayload } from "../stores/rouletteEvents";
+
+import "../stores/rouletteHandler";
 
 type LocalBet = {
   key: string;
@@ -37,8 +39,15 @@ function RouletteGamePage() {
     loadCoins();
   }, [tableId]);
 
-  const number = spinResult?.result?.number ?? "-";
-  const color = spinResult?.result?.color ?? "-";
+  useEffect(() => {
+    const unsub = betsOpenedReceived.watch(() => {
+      setBets([]);
+    });
+    return () => unsub();
+  }, []);
+
+  const number = spinResult?.number ?? "-";
+  const color = spinResult?.color ?? "-";
 
   const handleIncrement = (amount: number) => {
     setBetAmount((prev) => Math.min(prev + amount, coins));
@@ -159,30 +168,18 @@ function buildBetPayload(
     return { tableId, amount, betType: "Straight", number };
   }
 
-  if (key === "sector_9")
-    return { tableId, amount, betType: "Color", color: "red" };
-  if (key === "sector_10")
-    return { tableId, amount, betType: "Color", color: "black" };
-  if (key === "sector_8")
-    return { tableId, amount, betType: "EvenOdd", evenOdd: "Even" };
-  if (key === "sector_11")
-    return { tableId, amount, betType: "EvenOdd", evenOdd: "Odd" };
-  if (key === "sector_7")
-    return { tableId, amount, betType: "HighLow", highLow: "Low" };
-  if (key === "sector_12")
-    return { tableId, amount, betType: "HighLow", highLow: "High" };
-  if (key === "sector_4")
-    return { tableId, amount, betType: "Dozen", dozen: 1 };
-  if (key === "sector_5")
-    return { tableId, amount, betType: "Dozen", dozen: 2 };
-  if (key === "sector_6")
-    return { tableId, amount, betType: "Dozen", dozen: 3 };
-  if (key === "sector_1")
-    return { tableId, amount, betType: "Column", column: 1 };
-  if (key === "sector_2")
-    return { tableId, amount, betType: "Column", column: 2 };
-  if (key === "sector_3")
-    return { tableId, amount, betType: "Column", column: 3 };
+  if (key === "sector_9") return { tableId, amount, betType: "Color", color: "red" };
+  if (key === "sector_10") return { tableId, amount, betType: "Color", color: "black" };
+  if (key === "sector_8") return { tableId, amount, betType: "EvenOdd", evenOdd: "Even" };
+  if (key === "sector_11") return { tableId, amount, betType: "EvenOdd", evenOdd: "Odd" };
+  if (key === "sector_7") return { tableId, amount, betType: "HighLow", highLow: "Low" };
+  if (key === "sector_12") return { tableId, amount, betType: "HighLow", highLow: "High" };
+  if (key === "sector_4") return { tableId, amount, betType: "Dozen", dozen: 1 };
+  if (key === "sector_5") return { tableId, amount, betType: "Dozen", dozen: 2 };
+  if (key === "sector_6") return { tableId, amount, betType: "Dozen", dozen: 3 };
+  if (key === "sector_1") return { tableId, amount, betType: "Column", column: 1 };
+  if (key === "sector_2") return { tableId, amount, betType: "Column", column: 2 };
+  if (key === "sector_3") return { tableId, amount, betType: "Column", column: 3 };
 
   console.warn("[Ruleta] Sector no reconocido:", key);
   return undefined;

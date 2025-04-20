@@ -48,16 +48,14 @@ function RouletteGamePage() {
     const key = typeof bet === "number" ? `number_${bet}` : bet;
     const label = typeof bet === "number" ? `${bet}` : bet.toUpperCase();
 
-    setBets((prev) => {
-      const existing = prev.find((b) => b.key === key);
-      if (existing) {
-        return prev.map((b) =>
-          b.key === key ? { ...b, amount: b.amount + betAmount } : b
-        );
-      }
-      return [...prev, { key, label, amount: betAmount }];
-    });
+    const alreadyBet = bets.find((b) => b.key === key);
+    if (alreadyBet) return;
+
+    setBets((prev) => [...prev, { key, label, amount: betAmount }]);
+
+    loadCoins();
   };
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">

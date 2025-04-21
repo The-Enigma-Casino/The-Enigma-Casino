@@ -33,6 +33,12 @@ button.short {
   height: 5rem;
 }
 
+button.shortPlus {
+  width: 14rem;
+  height: 6rem;
+  font-size: 1.8rem;
+}
+
 button.medium {
   width: 20rem;
   height: 5rem;

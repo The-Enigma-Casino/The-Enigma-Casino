@@ -11,8 +11,8 @@ public class UserMapper
         return new UserDto(user.Email, user.FullName, user.NickName, user.Address, user.Country, user.Coins, user.Image);
     }
 
-    public UserNotFriendlyDto ToUserNotFriendlyDto(User user)
+    public OtherUserDto ToUserNotFriendlyDto(User user)
     {
-        return new UserNotFriendlyDto( user.NickName, user.Country, user.Image );
+        return new OtherUserDto( user.NickName, user.Country, user.Image );
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace the_enigma_casino_server.Application.Dtos.Request;
 
-public class UserNotFriendlyDto
+public class OtherUserDto
 {
    public string NickName { get; set; }
 
@@ -9,7 +9,7 @@ public class UserNotFriendlyDto
     public string Image { get; set; }
 
 
-    public UserNotFriendlyDto(string nickname, string nountry, string image)
+    public OtherUserDto(string nickname, string nountry, string image)
     {
         NickName = nickname;
         Country = nountry;

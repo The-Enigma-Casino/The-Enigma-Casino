@@ -7,6 +7,7 @@ import {
   roulettePausedReceived,
   resetSpinResult,
   countdownTick,
+  rouletteStopedReceived,
 } from "./rouletteEvents";
 
 export const rouletteGameState$ = createStore<any>(null).on(
@@ -38,3 +39,10 @@ export const countdown$ = createStore<number>(0).on(
   countdownTick,
   (_, seconds) => seconds
 );
+
+export const lastResults$ = createStore<{ number: number; color: string }[]>([])
+  .on(gameStateReceived, (_, payload) => payload.lastResults ?? []);
+
+export const isStopped$ = createStore<boolean>(false)
+  .on(rouletteStopedReceived, () => true)
+  .on(betsOpenedReceived, () => false);

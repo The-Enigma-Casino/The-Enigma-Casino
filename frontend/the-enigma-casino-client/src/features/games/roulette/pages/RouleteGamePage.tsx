@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { useEvent, useUnit } from "effector-react";
 
-import { spinResult$, betsClosed$, isPaused$ } from "../stores/rouletteStores";
+import {
+  spinResult$,
+  betsClosed$,
+  isPaused$,
+  lastResults$,
+  isStopped$,
+} from "../stores/rouletteStores";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
 
@@ -26,10 +32,13 @@ type LocalBet = {
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
   const isBetsClosed = useUnit(betsClosed$);
-  const isPaused = useUnit(isPaused$);
+  // const isPaused = useUnit(isPaused$);
+  const isPaused = false;
   const tableId = useUnit($currentTableId);
   const countdown = useUnit(syncedCountdown$);
   const coins = useUnit($coins);
+  const lastResults = useUnit(lastResults$);
+  const isStopped = useUnit(isStopped$);
 
   const decrement = useEvent(countdownDecrement);
 
@@ -128,6 +137,13 @@ function RouletteGamePage() {
     });
   }
 
+  const getColorClass = (color: string) => {
+    if (color === "red") return "text-red-500";
+    if (color === "black") return "text-gray-200";
+    if (color === "green") return "text-green-400";
+    return "text-white";
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">
       <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">
@@ -151,6 +167,18 @@ function RouletteGamePage() {
                 <span className="text-red-400">No acertaste esta vez. 😞</span>
               )}
             </h2>
+          )}
+
+          {isStopped ? (
+            <h2 className="text-3xl font-bold text-red-500 mb-6">
+              Ruleta detenida por inactividad prolongada
+            </h2>
+          ) : isPaused ? (
+            <h2 className="text-3xl font-bold text-red-500 mb-6">
+              Ruleta pausada por inactividad
+            </h2>
+          ) : (
+            <>{/* resto del contenido */}</>
           )}
 
           <h2 className="text-xl mb-4">
@@ -198,6 +226,22 @@ function RouletteGamePage() {
             onBet={handleBetClick}
             bets={bets}
           />
+
+          {lastResults.length > 0 && (
+            <div className="mb-4 text-center">
+              <h3 className="text-xl font-bold mb-1">Últimos resultados:</h3>
+              <div className="flex gap-2 justify-center">
+                {lastResults.map((r, idx) => (
+                  <span
+                    key={idx}
+                    className={`font-bold ${getColorClass(r.color)}`}
+                  >
+                    {r.number}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* <div className="bg-black/20 mt-8 p-4 rounded-xl w-full max-w-md text-white">
             <h3 className="text-xl font-bold mb-2">🎯 Tus apuestas</h3>

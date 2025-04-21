@@ -152,7 +152,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
         Console.WriteLine("Mostrando resultados durante 5 segundos");
         try
         {
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            await Task.Delay(TimeSpan.FromSeconds(15));
         }
         catch (TaskCanceledException)
         {

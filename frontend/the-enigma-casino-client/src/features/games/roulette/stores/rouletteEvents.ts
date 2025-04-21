@@ -46,3 +46,5 @@ export type PlaceRouletteBetPayload = {
   column?: 1 | 2 | 3;
   highLow?: "High" | "Low";
 };
+
+export const rouletteStopedReceived = createEvent();

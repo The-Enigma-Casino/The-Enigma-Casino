@@ -6,7 +6,7 @@ import {
   betsClosedReceived,
   roulettePausedReceived,
   resetSpinResult,
-  countdownTick
+  countdownTick,
 } from "./rouletteEvents";
 
 export const rouletteGameState$ = createStore<any>(null).on(
@@ -15,7 +15,13 @@ export const rouletteGameState$ = createStore<any>(null).on(
 );
 
 export const spinResult$ = createStore<any>(null)
-  .on(spinResultReceived, (_, payload) => payload.result)
+  .on(spinResultReceived, (_, payload) => {
+    if (payload?.result && typeof payload.result.number === "number") {
+      return payload.result;
+    }
+    console.warn("⚠️ spinResult inválido recibido:", payload);
+    return null;
+  })
   .on(betsOpenedReceived, () => null)
   .reset(resetSpinResult);
 

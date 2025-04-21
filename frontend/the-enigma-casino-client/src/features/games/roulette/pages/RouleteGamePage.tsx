@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
-import { useUnit } from "effector-react";
+import { useEvent, useUnit } from "effector-react";
 
-import {
-  spinResult$,
-  betsClosed$,
-  isPaused$,
-  countdown$,
-} from "../stores/rouletteStores";
+import { spinResult$, betsClosed$, isPaused$ } from "../stores/rouletteStores";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
 
-import { requestGameState, placeRouletteBet, betsOpenedReceived } from "../stores/rouletteEvents";
+import {
+  requestGameState,
+  placeRouletteBet,
+  betsOpenedReceived,
+} from "../stores/rouletteEvents";
 import { RouletteBetBoard } from "../components/RouletteBetBoard";
 
 import type { PlaceRouletteBetPayload } from "../stores/rouletteEvents";
 
 import "../stores/rouletteHandler";
+import { countdownDecrement, syncedCountdown$ } from "../stores/rouletteClock";
 
 type LocalBet = {
   key: string;
@@ -28,8 +28,10 @@ function RouletteGamePage() {
   const isBetsClosed = useUnit(betsClosed$);
   const isPaused = useUnit(isPaused$);
   const tableId = useUnit($currentTableId);
-  const countdown = useUnit(countdown$);
+  const countdown = useUnit(syncedCountdown$);
   const coins = useUnit($coins);
+
+  const decrement = useEvent(countdownDecrement);
 
   const [betAmount, setBetAmount] = useState(0);
   const [bets, setBets] = useState<LocalBet[]>([]);
@@ -38,6 +40,21 @@ function RouletteGamePage() {
     if (tableId) requestGameState(tableId);
     loadCoins();
   }, [tableId]);
+
+  useEffect(() => {
+    console.log("Spin result: ", spinResult);
+    if (spinResult) {
+      loadCoins();
+    }
+  }, [spinResult]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      decrement();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [decrement]);
 
   useEffect(() => {
     const unsub = betsOpenedReceived.watch(() => {
@@ -74,6 +91,43 @@ function RouletteGamePage() {
     loadCoins();
   };
 
+  function didWin(bets: LocalBet[], result: any): boolean {
+    if (!result || typeof result.number !== "number") return false;
+
+    return bets.some((bet) => {
+      if (bet.key === `number_${result.number}`) return true;
+      if (bet.key === "sector_9" && result.color === "red") return true;
+      if (bet.key === "sector_10" && result.color === "black") return true;
+
+      const isEven = result.number !== 0 && result.number % 2 === 0;
+      const isLow = result.number >= 1 && result.number <= 18;
+      const isHigh = result.number >= 19 && result.number <= 36;
+
+      if (bet.key === "sector_8" && isEven) return true;
+      if (bet.key === "sector_11" && !isEven && result.number !== 0)
+        return true;
+      if (bet.key === "sector_7" && isLow) return true;
+      if (bet.key === "sector_12" && isHigh) return true;
+
+      if (bet.key === "sector_4" && result.number >= 1 && result.number <= 12)
+        return true;
+      if (bet.key === "sector_5" && result.number >= 13 && result.number <= 24)
+        return true;
+      if (bet.key === "sector_6" && result.number >= 25 && result.number <= 36)
+        return true;
+
+      const col1 = [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34];
+      const col2 = [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35];
+      const col3 = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36];
+
+      if (bet.key === "sector_1" && col1.includes(result.number)) return true;
+      if (bet.key === "sector_2" && col2.includes(result.number)) return true;
+      if (bet.key === "sector_3" && col3.includes(result.number)) return true;
+
+      return false;
+    });
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">
       <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">
@@ -89,11 +143,20 @@ function RouletteGamePage() {
           <h2 className="text-2xl mb-4">Número ganador: {number}</h2>
           <h2 className="text-2xl mb-4">Color ganador: {color}</h2>
 
+          {spinResult && (
+            <h2 className="text-xl mb-4 font-bold">
+              {didWin(bets, spinResult) ? (
+                <span className="text-green-400">¡Ganaste una apuesta! 🎉</span>
+              ) : (
+                <span className="text-red-400">No acertaste esta vez. 😞</span>
+              )}
+            </h2>
+          )}
+
           <h2 className="text-xl mb-4">
             Tiempo restante para apostar:{" "}
             <span className="text-yellow-400 font-bold">{countdown}</span>s
           </h2>
-
           <div className="bg-black/30 p-4 rounded-xl mb-6 w-full max-w-md text-white">
             <h3 className="text-xl mb-2 font-bold text-center">
               Selecciona tu apuesta
@@ -136,7 +199,7 @@ function RouletteGamePage() {
             bets={bets}
           />
 
-          <div className="bg-black/20 mt-8 p-4 rounded-xl w-full max-w-md text-white">
+          {/* <div className="bg-black/20 mt-8 p-4 rounded-xl w-full max-w-md text-white">
             <h3 className="text-xl font-bold mb-2">🎯 Tus apuestas</h3>
             {bets.length === 0 && <p>No has apostado aún.</p>}
             <ul className="space-y-2">
@@ -149,7 +212,7 @@ function RouletteGamePage() {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
         </>
       )}
     </div>
@@ -168,18 +231,30 @@ function buildBetPayload(
     return { tableId, amount, betType: "Straight", number };
   }
 
-  if (key === "sector_9") return { tableId, amount, betType: "Color", color: "red" };
-  if (key === "sector_10") return { tableId, amount, betType: "Color", color: "black" };
-  if (key === "sector_8") return { tableId, amount, betType: "EvenOdd", evenOdd: "Even" };
-  if (key === "sector_11") return { tableId, amount, betType: "EvenOdd", evenOdd: "Odd" };
-  if (key === "sector_7") return { tableId, amount, betType: "HighLow", highLow: "Low" };
-  if (key === "sector_12") return { tableId, amount, betType: "HighLow", highLow: "High" };
-  if (key === "sector_4") return { tableId, amount, betType: "Dozen", dozen: 1 };
-  if (key === "sector_5") return { tableId, amount, betType: "Dozen", dozen: 2 };
-  if (key === "sector_6") return { tableId, amount, betType: "Dozen", dozen: 3 };
-  if (key === "sector_1") return { tableId, amount, betType: "Column", column: 1 };
-  if (key === "sector_2") return { tableId, amount, betType: "Column", column: 2 };
-  if (key === "sector_3") return { tableId, amount, betType: "Column", column: 3 };
+  if (key === "sector_9")
+    return { tableId, amount, betType: "Color", color: "red" };
+  if (key === "sector_10")
+    return { tableId, amount, betType: "Color", color: "black" };
+  if (key === "sector_8")
+    return { tableId, amount, betType: "EvenOdd", evenOdd: "Even" };
+  if (key === "sector_11")
+    return { tableId, amount, betType: "EvenOdd", evenOdd: "Odd" };
+  if (key === "sector_7")
+    return { tableId, amount, betType: "HighLow", highLow: "Low" };
+  if (key === "sector_12")
+    return { tableId, amount, betType: "HighLow", highLow: "High" };
+  if (key === "sector_4")
+    return { tableId, amount, betType: "Dozen", dozen: 1 };
+  if (key === "sector_5")
+    return { tableId, amount, betType: "Dozen", dozen: 2 };
+  if (key === "sector_6")
+    return { tableId, amount, betType: "Dozen", dozen: 3 };
+  if (key === "sector_1")
+    return { tableId, amount, betType: "Column", column: 1 };
+  if (key === "sector_2")
+    return { tableId, amount, betType: "Column", column: 2 };
+  if (key === "sector_3")
+    return { tableId, amount, betType: "Column", column: 3 };
 
   console.warn("[Ruleta] Sector no reconocido:", key);
   return undefined;

@@ -7,7 +7,7 @@ import {
   betsClosedReceived,
   roulettePausedReceived,
   placeRouletteBet,
-  resetSpinResult,
+  // resetSpinResult,
   countdownTick
 } from "./rouletteEvents";
 
@@ -25,14 +25,15 @@ socketMessageReceived.watch((data) => {
       break;
     case "spin_result":
       spinResultReceived(data);
+      console.log("🔍 SPIN RESULT LLEGÓ:", data);
       break;
     case "bet_confirmed":
       betConfirmed(data);
       break;
-    case "bets_opened":
-      betsOpenedReceived();
-      resetSpinResult();
-      break;
+      case "bets_opened":
+        betsOpenedReceived();
+        // resetSpinResult();
+        break;
     case "bets_closed":
       betsClosedReceived();
       break;

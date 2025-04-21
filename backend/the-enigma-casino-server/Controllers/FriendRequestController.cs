@@ -149,8 +149,12 @@ namespace the_enigma_casino_server.Controllers
             try
             {
                 int userId = GetUserId();
-                bool areFriends = _userFriendService.AreFriendsAsync(userId, otherUserId);
+                bool areFriends = await _userFriendService.AreFriendsAsync(userId, otherUserId);
                 return Ok(areFriends);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al comprobar la amistad: {ex.Message}");
             }
         }
     }

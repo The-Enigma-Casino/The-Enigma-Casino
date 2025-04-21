@@ -67,19 +67,6 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
 
             UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out var scope);
             await unitOfWork.SaveAsync();
-
-            var response = new
-            {
-                type = Type,
-                action = "bet_confirmed",
-                userId,
-                nickname = player.User.NickName,
-                bet = bet.ToString(),
-                amount = bet.Amount,
-                remainingCoins = player.User.Coins
-            };
-
-            await ((IWebSocketSender)this).SendToUserAsync(userId, response);
         }
         catch (Exception ex)
         {
@@ -91,7 +78,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
             _betLock.Release();
         }
 
-        // Iniciar el ciclo automático si no está activo
+        // Reiniciar despues de pausa por inactividad
         if (!RouletteTimerStore.IsTimerRunning(tableId))
         {
             Console.WriteLine($"Reiniciando ciclo automático en mesa {tableId} tras nueva apuesta");
@@ -101,7 +88,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
         await BroadcastGameStateAsync(tableId);
     }
 
-    public async Task HandleSpinAsync(string userId, JsonElement message)
+    public async Task HandleSpinAsync(string userId, JsonElement message, bool stopAfterSpin = false)
     {
         Console.WriteLine("Entrando en HandleSpinAsync");
 
@@ -109,6 +96,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
         if (!TryGetMatch(tableId, userId, out var match)) return;
         if (!TryGetRouletteGame(tableId, userId, out var rouletteGame)) return;
 
+        // Realiza el spin
         rouletteGame.SpinWheel();
         var result = rouletteGame.GetResult();
         Console.WriteLine($"Resultado: {result.Number} - {result.Color}");
@@ -125,7 +113,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
             await unitOfWork.SaveAsync();
         }
 
-        foreach(var player in match.Players)
+        foreach (var player in match.Players)
         {
             var spinResults = allResults.GetValueOrDefault(player.UserId) ?? new List<RouletteSpinResult>();
 
@@ -148,21 +136,48 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
             };
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), payload);
         }
-        // Apuestas cerradas
+
+        // Cerrar apuestas inmediatamente
         rouletteGame.PauseBetting();
         await BroadcastBetsClosedAsync(tableId);
-        Console.WriteLine("Apuestas cerradas");
 
+        // Mostrar mensaje de STOP visual
+        await SendToAllPlayersAsync(tableId, new
+        {
+            type = Type,
+            action = RouletteMessageType.RoulettePaused, // CAMBIAR A PAUSED
+            tableId
+        });
 
-        rouletteGame.Reset();
-        rouletteGame.ResumeBetting();
+        Console.WriteLine("Mostrando resultados durante 5 segundos");
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+        catch (TaskCanceledException)
+        {
+            Console.WriteLine("Task fue cancelado durante la pausa.");
+            return;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Excepcion inesperada: {ex.Message}");
+            return;
+        }
 
-        // Apuestas abiertas
-        await BroadcastBetsOpenedAsync(tableId);
-
-        await BroadcastGameStateAsync(tableId);
-        await Task.Delay(TimeSpan.FromSeconds(5));
-        Console.WriteLine("Ronda finalizada y resultados enviados.");
+        if (!stopAfterSpin)
+        {
+            // Reiniciar para la siguiente ronda
+            rouletteGame.Reset();
+            rouletteGame.ResumeBetting();
+            await BroadcastBetsOpenedAsync(tableId);
+            await BroadcastGameStateAsync(tableId);
+            Console.WriteLine("Ronda reiniciada");
+        }
+        else
+        {
+            Console.WriteLine("Ronda detenida por 5 rondas vacías. No se reinicia el estado.");
+        }
     }
 
     private RouletteBet BuildRouletteBet(JsonElement message)
@@ -337,7 +352,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
         var payload = new
         {
             type = Type,
-            action = "bets_closed",
+            action = RouletteMessageType.BetsClosed,
             tableId
         };
 
@@ -354,7 +369,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
         var payload = new
         {
             type = Type,
-            action = "bets_opened",
+            action = RouletteMessageType.BetsOpened,
             tableId
         };
 
@@ -381,45 +396,58 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGameT
 
         Console.WriteLine($"Iniciando ciclo automatico de ruleta en mesa {tableId}");
 
-        ActiveRouletteGameStore.Set(tableId, new RouletteGame());
+        if (!ActiveRouletteGameStore.TryGet(tableId, out var existingGame))
+        {
+            existingGame = new RouletteGame();
+            ActiveRouletteGameStore.Set(tableId, existingGame);
+            Console.WriteLine($"Nueva partida de ruleta creada en mesa {tableId} al iniciar ciclo.");
+        }
+
         RouletteTimerStore.ResetEmptyRounds(tableId);
 
         RouletteTimerStore.StartRecurringTimer(tableId, async () =>
         {
-            await HandleSpinAsync("SYSTEM", BuildSpinMessage(tableId));
-
-            if (!TryGetMatch(tableId, "SYSTEM", out var match)) return false;
-            if (!TryGetRouletteGame(tableId, "SYSTEM", out var rouletteGame)) return false;
-
-            bool anyBets = match.Players.Any(p => rouletteGame.HasPlayerBet(p.UserId));
-
-            if (!anyBets)
+            try
             {
-                RouletteTimerStore.IncrementEmptyRounds(tableId);
-                Console.WriteLine($"Ronda sin apuestas en mesa {tableId} ({RouletteTimerStore.GetEmptyRounds(tableId)}/5)");
-            }
-            else
-            {
-                RouletteTimerStore.ResetEmptyRounds(tableId);
-            }
+                if (!TryGetMatch(tableId, "SYSTEM", out var match)) return false;
+                if (!TryGetRouletteGame(tableId, "SYSTEM", out var rouletteGame)) return false;
 
-            if (RouletteTimerStore.GetEmptyRounds(tableId) >= 5)
-            {
-                Console.WriteLine($"Se detiene la ruleta en mesa {tableId} tras 5 rondas vacias.");
+                bool anyBets = match.Players.Any(p => rouletteGame.HasPlayerBet(p.UserId));
 
-                await SendToAllPlayersAsync(tableId, new
+                await HandleSpinAsync("SYSTEM", BuildSpinMessage(tableId));
+
+                if (anyBets)
                 {
-                    type = "roulette",
-                    action = "roulette_paused",
-                    tableId
-                });
+                    RouletteTimerStore.ResetEmptyRounds(tableId);
+                    Console.WriteLine($"Apuestas detectadas. Contador de rondas vacías reiniciado.");
+                }
+                else
+                {
+                    RouletteTimerStore.IncrementEmptyRounds(tableId);
+                    Console.WriteLine($"Sin apuestas en mesa {tableId} ({RouletteTimerStore.GetEmptyRounds(tableId)}/5)");
+                }
 
-                RouletteTimerStore.ClearEmptyRounds(tableId);
+                if (RouletteTimerStore.GetEmptyRounds(tableId) >= 5)
+                {
+                    Console.WriteLine($"Se detiene la ruleta en mesa {tableId} tras 5 rondas vacias.");
+                    await SendToAllPlayersAsync(tableId, new
+                    {
+                        type = "roulette",
+                        action = RouletteMessageType.RouletteStoped,
+                        tableId
+                    });
+
+                    RouletteTimerStore.ClearEmptyRounds(tableId);
+                    return false;
+                }
+
+                return match.Players.Any();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepcion en ciclo automatico de mesa {tableId}: {ex.Message}");
                 return false;
             }
-
-            return match.Players.Any();
         }, 30);
     }
-
 }

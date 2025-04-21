@@ -12,11 +12,11 @@ public class GameBetInfoProviderResolver
     private readonly PokerBetInfoProvider _pokerProvider;
     private readonly RouletteBetInfoProvider _rouletteProvider;
 
-    public GameBetInfoProviderResolver(BlackjackBetInfoProvider blackjackProvider, RouletteBetInfoProvider rouletteProvider, PokerBetInfoProvider pokerBetInfoProvider)
+    public GameBetInfoProviderResolver(BlackjackBetInfoProvider blackjackProvider, RouletteBetInfoProvider rouletteProvider, PokerBetInfoProvider pokerProvider)
     {
         _blackjackProvider = blackjackProvider;
         _rouletteProvider = rouletteProvider;
-        _pokerProvider = pokerBetInfoProvider;
+        _pokerProvider = pokerProvider;
     }
 
     public IGameBetInfoProvider Resolve(GameType gameType)

@@ -60,12 +60,12 @@ public class UserController : BaseController
 
 
     [HttpGet("profile/{id}")]
-    public async Task<ActionResult<UserDto>> GetOtherProfile(int id)
+    public async Task<ActionResult<OtherUserDto>> GetOtherProfile(int id) // Traer otro Dto
     {
         try
         {
-            UserDto userDto = await _userService.GetProfile(id);
-            return Ok(userDto);
+            OtherUserDto otherUserDto = await _userService.GetNotFriendlyProfile(id);
+            return Ok(otherUserDto);
         }
         catch (KeyNotFoundException ex)
         {

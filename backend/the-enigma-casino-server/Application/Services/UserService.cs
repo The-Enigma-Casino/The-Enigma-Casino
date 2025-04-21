@@ -240,6 +240,26 @@ public class UserService : BaseService
         }
     }
 
+    public async Task<OtherUserDto> GetNotFriendlyProfile(int id)
+    {
+        try
+        {
+            User user = await GetUserById(id);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("Usuario no encontrado");
+
+            }
+            return _userMapper.ToUserNotFriendlyDto(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new KeyNotFoundException(ex.Message);
+
+        }
+    }
+
     public async Task UpdateUserImageAsync(int userId, IFormFile imageFile)
     {
         if (imageFile == null || imageFile.Length == 0)

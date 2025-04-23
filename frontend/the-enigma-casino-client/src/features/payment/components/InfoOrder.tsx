@@ -1,4 +1,4 @@
-import classes from "./InfoOrder.module.css";
+import classes from "./infoOrder.module.css";
 
 import CoinsCard from "../../catalog/components/CoinsCard";
 import { OrderDto } from "../models/OrderDto.interface";

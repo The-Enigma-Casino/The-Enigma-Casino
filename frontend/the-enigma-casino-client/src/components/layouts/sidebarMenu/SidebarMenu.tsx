@@ -12,7 +12,8 @@ import { useUnit } from "effector-react";
 
 import { $onlineUsers } from "../../../websocket/store/wsIndex";
 import { USER_IMAGES } from "../../../config";
-import FriendsPanel from "../../../features/friends/components/layouts/ASDSADSADA";
+import FriendsPanel from "../../../features/friends/components/layouts/friendsPanel";
+
 
 
 function SidebarMenu() {

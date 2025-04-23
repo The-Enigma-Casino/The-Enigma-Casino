@@ -20,7 +20,7 @@ import {
   $paymentStatus,
 } from "../store/PaymentStore";
 
-import styles from "./stripePayment.module.css";
+import styles from "./StripePayment.module.css";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 

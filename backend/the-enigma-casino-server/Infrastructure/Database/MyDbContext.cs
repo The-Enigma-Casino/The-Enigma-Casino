@@ -18,6 +18,7 @@ public class MyDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<Table> GameTables { get; set; }
     public DbSet<History> GameHistory { get; set; }
+    public DbSet<UserFriend> UserFriends { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {

@@ -9,9 +9,10 @@ import {
 } from "../../../features/auth/store/authStore";
 import { useEffect } from "react";
 import { useUnit } from "effector-react";
-import FriendsPanel from "../../../features/friends/components/layouts/ASDASDSADSA";
+
 import { $onlineUsers } from "../../../websocket/store/wsIndex";
 import { USER_IMAGES } from "../../../config";
+import FriendsPanel from "../../../features/friends/components/layouts/friendsPanel";
 
 function SidebarMenu() {
   // const userLive: number = 777;

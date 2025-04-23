@@ -1,7 +1,5 @@
 import classes from "./FriendsPanel.module.css";
 
-// FriendsPanel.tsx
-
 function FriendsPanel() {
   const friends = [
     { id: 1, name: "Jose", imgSrc: "https://avatars.githubusercontent.com/u/146203038?v=4" },

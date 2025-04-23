@@ -1,4 +1,4 @@
-import styles from "./rouletteBetBoard.module.css";
+import styles from "./RouletteBetBoard.module.css";
 
 interface RouletteBetBoardProps {
   disabled?: boolean;

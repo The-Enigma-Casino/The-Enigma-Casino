@@ -240,7 +240,7 @@ public class UserService : BaseService
         }
     }
 
-    public async Task<OtherUserDto> GetNotFriendlyProfile(int id)
+    public async Task<OtherUserDto> GetOtherProfile(int id)
     {
         try
         {

@@ -1,5 +1,5 @@
 import Button from "../../../components/ui/button/Button";
-
+import { useNavigate } from "react-router-dom";
 interface UserData {
   name?: string;
   email?: string;
@@ -10,6 +10,7 @@ interface UserData {
   image: string;
   role?: string;
 }
+const imageStatic = "https://avatars.githubusercontent.com/u/146203038?v=4";
 
 interface UserInfoProps {
   user: UserData;
@@ -18,6 +19,7 @@ interface UserInfoProps {
 
 const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
   const { name, email, nickname, address, country, coins, image, role } = user;
+  const navigate = useNavigate();
 
   const isSelf = relation === "self";
   const isFriend = relation === "friend";
@@ -36,7 +38,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
                w-40 h-40 sm:w-48 sm:h-48 lg:w-60 lg:h-60 rounded-full overflow-hidden`}
           >
             <img
-              src={image}
+              src={imageStatic}
               alt="Foto de perfil"
               className="w-full h-full object-cover rounded-full"
             />
@@ -67,12 +69,12 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
                 : "text-xl sm:text-2xl lg:text-3xl w-full text-center lg:text-left items-center lg:items-start"
                 }`}
             >
-              <p><strong>Nickname:</strong> {nickname}</p>
-              {(isSelf) && country && <p><strong>Nacionalidad:</strong> {country}</p>}
-              {isSelf && name && <p><strong>Nombre de Usuario:</strong> {name}</p>}
-              {isSelf && email && <p><strong>Correo electrónico:</strong> {email}</p>}
-              {isSelf && address && <p><strong>Dirección:</strong> {address}</p>}
-              {isSelf && role && <p><strong>Rol:</strong> {role}</p>}
+              <p>Nickname: <strong>{nickname}</strong></p>
+              {(isSelf) && country && <p>Nacionalidad: <strong>{country}</strong></p>}
+              {isSelf && name && <p>Nombre de Usuario: <strong>{name}</strong></p>}
+              {isSelf && email && <p>Correo electrónico: <strong>{email}</strong></p>}
+              {isSelf && address && <p>Dirección: <strong>{address}</strong></p>}
+              {isSelf && role && <p>Rol: <strong>{role}</strong></p>}
             </div>
 
             {/* Botones */}
@@ -84,7 +86,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
                 <Button variant="shortPlus" color="green" font="bold">
                   Modificar Contraseña
                 </Button>
-                <Button variant="shortPlus" color="green" font="bold">
+                <Button variant="shortPlus" color="green" font="bold" onClick={() => navigate("/withdrawal")}>
                   Retirar Dinero
                 </Button>
               </div>

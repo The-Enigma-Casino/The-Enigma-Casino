@@ -46,3 +46,9 @@ export const OTHER_USER_PROFILE = `${API_BASE_URL}User/profile/`;
 
 /* ENDPOINTS PARA LAS IMAGENES */
 export const USER_IMAGES = `${BASE_URL}images/profile`;
+
+/* ENDPOINTS DE HISTORY GAMES */
+export const USER_HISTORY = `${API_BASE_URL}History`;
+
+/* ENDPOINTS DE HISTORY GAMES */
+export const USER_HISTORY_ORDERS = `${API_BASE_URL}Order/orders`;

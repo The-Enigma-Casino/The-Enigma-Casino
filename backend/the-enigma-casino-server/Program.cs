@@ -140,19 +140,22 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-
         // Configuración de CORS
+        string clientUrl = Environment.GetEnvironmentVariable("CLIENT_URL");
+
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("MyPolicy", policy =>
             {
-                policy.WithOrigins("http://localhost:5173") 
-                      .AllowAnyHeader()
-                      .AllowAnyMethod()
-                      .AllowCredentials();
+                if (!string.IsNullOrEmpty(clientUrl))
+                {
+                    policy.WithOrigins(clientUrl)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                }
             });
         });
-
 
         // Configuración de autenticación JWT
         string key = Environment.GetEnvironmentVariable("JWT_KEY");

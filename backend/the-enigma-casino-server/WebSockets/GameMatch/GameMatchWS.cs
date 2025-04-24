@@ -198,6 +198,12 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         {
             await manager.EndMatchAsync(match);
 
+            var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+            foreach (var player in match.Players.ToList())
+            {
+                tableManager.RemovePlayerFromTable(match.GameTable, player.UserId, out _);
+            }
+
             List<string> userIds = match.GameTable.Players
                 .Select(p => p.UserId.ToString())
                 .ToList();

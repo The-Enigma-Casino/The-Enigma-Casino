@@ -37,22 +37,33 @@ public static class PokerBetTracker
         {
             if (dict.TryGetValue(userId, out var amount))
             {
-                Console.WriteLine($"✅ [DEBUG] TotalBet para user {userId} en mesa {tableId}: {amount}");
                 return amount;
             }
-            else
-            {
-                Console.WriteLine($"⚠️ [DEBUG] No se encontró apuesta para user {userId} en mesa {tableId}.");
-            }
-        }
-        else
-        {
-            Console.WriteLine($"❌ [DEBUG] No hay registro de apuestas para la mesa {tableId}.");
         }
 
         return 0;
     }
 
+    public static void ReduceContribution(int tableId, int userId, int amount)
+    {
+        if (_betsByTable.TryGetValue(tableId, out var dict) &&
+            dict.TryGetValue(userId, out var current))
+        {
+            int newAmount = Math.Max(0, current - amount);
+            dict[userId] = newAmount;
+
+            Console.WriteLine($"🧮 [DEBUG] Se reducen {amount} fichas de {userId} en mesa {tableId}. Total ahora: {newAmount}");
+        }
+    }
+
+    public static void ResetContributions(int tableId)
+    {
+        if (_betsByTable.ContainsKey(tableId))
+        {
+            _betsByTable[tableId].Clear();
+            Console.WriteLine($"♻️ [DEBUG] Apuestas reiniciadas para la mesa {tableId}.");
+        }
+    }
 
     public static int GetTotalWinnings(int tableId, int userId)
     {

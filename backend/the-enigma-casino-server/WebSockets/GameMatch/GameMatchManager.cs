@@ -1,4 +1,5 @@
-﻿using the_enigma_casino_server.Games.Shared.Entities;
+﻿using System.Numerics;
+using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
@@ -81,7 +82,7 @@ public class GameMatchManager
             Id = matchId,
             GameTableId = table.Id,
             GameTable = table,
-            Players = table.Players,
+            Players = new List<Player>(table.Players),
             StartedAt = DateTime.Now,
             MatchState = MatchState.InProgress
         };
@@ -123,6 +124,8 @@ public class GameMatchManager
         await _unitOfWork.SaveAsync();
 
         ActiveGameMatchStore.Remove(match.GameTableId);
+
+        match.Players.Clear();
 
         IGameSessionCleaner cleaner = _sessionCleanerResolver.Resolve(match.GameTable.GameType);
         if (cleaner != null)
@@ -179,6 +182,7 @@ public class GameMatchManager
 
 
 
+
     public async Task RefundBetIfNotPlayedAsync(Player player, Match match)
     {
         bool gameStarted = match.Players.Any(p => p.Hand != null && p.Hand.Cards.Count > 0);
@@ -209,7 +213,6 @@ public class GameMatchManager
 
         await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed);
 
-        match.Players.Remove(player);
         return true;
     }
 

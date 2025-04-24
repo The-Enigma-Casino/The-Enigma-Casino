@@ -15,8 +15,6 @@ public class Player
     public PlayerState PlayerState { get; set; } = PlayerState.Waiting;
     public int CurrentBet { get; set; }
     public DateTime? JoinedAt { get; set; }
-    public int TotalContribution { get; set; } = 0;
-
 
     public Player(User user)
     {

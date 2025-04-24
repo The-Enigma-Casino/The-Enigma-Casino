@@ -1,5 +1,6 @@
 ﻿using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Games.Shared.Entities;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace the_enigma_casino_server.Core.Entities;
 
@@ -16,11 +17,17 @@ public class User
     public string Address { get; set; }
     public int Coins { get; set; }
     public bool IsBanned { get; set; }
+    public string? BanReason { get; set; }
+    public DateTime? BannedUntil { get; set; } 
     public bool EmailConfirm { get; set; }
     public string ConfirmationToken { get; set; }
     public Role Role { get; set; }
     public List<Order> Orders { get; set; }
     public List<History> Histories { get; set; }
+
+    [NotMapped]
+    public UserStatus Status { get; set; } = UserStatus.Offline;
+
 
 
     // FALTAN COSAS

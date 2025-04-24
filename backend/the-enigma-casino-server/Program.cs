@@ -74,6 +74,7 @@ public class Program
         builder.Services.AddSingleton<ConnectionManagerWS>();
         builder.Services.AddSingleton<WebSocketHandlerResolver>();
         builder.Services.AddSingleton<UserDisconnectionHandler>();
+        builder.Services.AddSingleton<BanManager>();
 
         // --- WebSocket: handlers (SIEMPRE singleton) ---
         builder.Services.AddSingleton<GameTableWS>();

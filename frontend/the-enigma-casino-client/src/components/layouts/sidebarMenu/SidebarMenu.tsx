@@ -12,12 +12,9 @@ import { useUnit } from "effector-react";
 
 import { $onlineUsers } from "../../../websocket/store/wsIndex";
 import { USER_IMAGES } from "../../../config";
-import FriendsPanel from "../../../features/friends/components/layouts/friendsPanel";
-
-
+import FriendsPanel from "../../../features/friends/components/layouts/FriendsPanel";
 
 function SidebarMenu() {
-  // const userLive: number = 777;
   const token = useUnit($token);
   const name = useUnit($name);
   const userImage = useUnit($image);

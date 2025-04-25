@@ -15,4 +15,19 @@ public class UserMapper
     {
         return new OtherUserDto( user.NickName, user.Country, user.Image, relation );
     }
+
+    public UserAdminDto ToUserAdminDto(User user)
+    {
+        return new UserAdminDto(user.Id, user.NickName, user.Image, user.Role);
+    }
+
+    public List<UserAdminDto> ToUserAdminList(List<User> users)
+    {
+        List<UserAdminDto> userAdminList = new List<UserAdminDto>();
+        foreach (User user in users)
+        {
+            userAdminList.Add(ToUserAdminDto(user));
+        }
+        return userAdminList;
+    }
 }

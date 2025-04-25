@@ -67,6 +67,7 @@ public class GameMatchManager
 
             PlayerState previousState = player.PlayerState;
             player.ResetForNewRound();
+            joinHelper?.ResetPlayerStateForMatch(player);
 
             if (previousState == PlayerState.Spectating && joinHelper != null)
             {
@@ -118,8 +119,15 @@ public class GameMatchManager
 
         foreach (Player player in match.Players)
         {
+            if (player.PlayerState == PlayerState.Left)
+            {
+                Console.WriteLine($"🛑 [EndMatchAsync] Saltando historial para {player.User.NickName} (ya abandonó la mesa).");
+                continue;
+            }
+
             await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: false, matchPlayed: true);
         }
+
 
         await _unitOfWork.SaveAsync();
 

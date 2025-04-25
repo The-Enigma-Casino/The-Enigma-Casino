@@ -275,6 +275,25 @@ public class PokerGame
             Console.WriteLine($"   - {p.User.NickName} contribuyó: {contribution} fichas");
         }
 
+        var eligiblePlayers = playersWithBets
+        .Where(p => p.PlayerState is PlayerState.Playing or PlayerState.AllIn)
+        .ToList();
+
+        if (eligiblePlayers.Count == 1)
+        {
+            int totalAmount = playersWithBets.Sum(p => PokerBetTracker.GetTotalBet(p.GameTableId, p.UserId));
+
+            Pot soloPot = new Pot
+            {
+                Amount = totalAmount,
+                EligiblePlayers = new List<Player> { eligiblePlayers[0] }
+            };
+
+            _pots.Add(soloPot);
+            Console.WriteLine($"🏆 Solo queda un jugador ({eligiblePlayers[0].User.NickName}). Se le asignan directamente {totalAmount} fichas.");
+            return;
+        }
+
         bool needsSidePots = playersWithBets
             .Select(p => PokerBetTracker.GetTotalBet(p.GameTableId, p.UserId))
             .Distinct()
@@ -285,9 +304,7 @@ public class PokerGame
             Pot mainPot = new Pot
             {
                 Amount = playersWithBets.Sum(p => PokerBetTracker.GetTotalBet(p.GameTableId, p.UserId)),
-                EligiblePlayers = playersWithBets
-                    .Where(p => p.PlayerState is PlayerState.Playing or PlayerState.AllIn)
-                    .ToList()
+                EligiblePlayers = eligiblePlayers
             };
 
             // Limpiar contribuciones

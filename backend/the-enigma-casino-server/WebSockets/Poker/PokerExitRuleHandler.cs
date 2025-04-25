@@ -13,6 +13,7 @@ public class PokerExitRuleHandler : IGameExitRuleHandler
             player.PlayerState = PlayerState.Fold;
             Console.WriteLine($"⚠️ {player.User.NickName} se ha desconectado. Marcado como Fold.");
         }
+        player.HasAbandoned = true;
 
         return Task.FromResult(true);
     }

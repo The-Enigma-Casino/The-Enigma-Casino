@@ -47,5 +47,5 @@ public class BlackjackJoinHelper : IGameJoinHelper
             message = "¡Bienvenido! Esta vez sí estás dentro de la partida. Prepárate para apostar 🎲"
         });
     }
-
+    public void ResetPlayerStateForMatch(Player player) { }
 }

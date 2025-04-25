@@ -66,8 +66,9 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
 
         await notifier.SendInitialHandsAsync(match);
-
         await notifier.NotifyStartBettingAsync(match);
+
+        PokerActionTracker.Clear(tableId, "preflop");
 
         int firstTurnUserId = pokerGame.CurrentTurnUserId;
         Player? firstPlayer = match.Players.FirstOrDefault(p => p.UserId == firstTurnUserId);

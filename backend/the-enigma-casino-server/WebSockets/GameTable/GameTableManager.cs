@@ -39,15 +39,16 @@ public class GameTableManager
     public PlayerLeaveResult ProcessPlayerLeaving(Table table, ActiveGameSession session, int userId)
     {
 
-        bool isPlayingMatch = table.TableState == TableState.InProgress && ActiveGameMatchStore.TryGet(table.Id, out Match activeMatch) && activeMatch.Players.Any(p => p.UserId == userId);
+        bool isInMatch = ActiveGameMatchStore.TryGet(table.Id, out Match activeMatch) &&
+                 activeMatch.Players.Any(p => p.UserId == userId);
 
-        if (isPlayingMatch)
+        if (table.TableState == TableState.InProgress && isInMatch)
         {
             return new PlayerLeaveResult
             {
                 PlayerRemoved = false,
                 StopCountdown = false,
-                StateChanged = true,
+                StateChanged = false,
                 ConnectedUsers = session.GetConnectedUserIds().ToList(),
                 PlayerNames = session.GetPlayerNames().ToArray(),
                 State = table.TableState

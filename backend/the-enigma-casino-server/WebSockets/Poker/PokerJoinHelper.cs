@@ -41,4 +41,10 @@ public class PokerJoinHelper : IGameJoinHelper
         // En Poker aún no se envía nada en este punto
         return Task.CompletedTask;
     }
+
+    public void ResetPlayerStateForMatch(Player player)
+    {
+        player.PlayerState = PlayerState.Playing;
+    }
+
 }

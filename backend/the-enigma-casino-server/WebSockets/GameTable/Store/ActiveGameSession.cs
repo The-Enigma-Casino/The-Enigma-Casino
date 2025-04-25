@@ -32,7 +32,7 @@ public class ActiveGameSession
     // Timer de inicio
     public void StartOrRestartCountdown()
     {
-        _startTimer.Start(30_000);
+        _startTimer.Start(5_000);
     }
 
     public void CancelCountdown()

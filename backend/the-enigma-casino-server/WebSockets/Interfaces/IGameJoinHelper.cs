@@ -8,6 +8,7 @@ namespace the_enigma_casino_server.WebSockets.Interfaces
         GameType ForGameType { get; }
 
         bool ShouldSendMatchReady(Player player, Match match);
+        void ResetPlayerStateForMatch(Player player);
         Task NotifyPlayerCanJoinCurrentMatchIfPossible(int userId, Table table, IWebSocketSender sender);
         Task NotifyPlayerJoinedNextMatch(int userId, IWebSocketSender sender); 
     }

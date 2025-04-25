@@ -15,6 +15,7 @@ public class Player
     public PlayerState PlayerState { get; set; } = PlayerState.Waiting;
     public int CurrentBet { get; set; }
     public DateTime? JoinedAt { get; set; }
+    public bool HasAbandoned { get; set; } = false;
 
     public Player(User user)
     {
@@ -69,5 +70,6 @@ public class Player
         CurrentBet = 0;
         PlayerState = PlayerState.Waiting;
         Hand = new Hand();
+        HasAbandoned = false;
     }
 }

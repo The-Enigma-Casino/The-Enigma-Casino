@@ -199,9 +199,14 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             await manager.EndMatchAsync(match);
 
             var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
-            foreach (var player in match.Players.ToList())
+            foreach (Player player in match.GameTable.Players.ToList())
             {
-                tableManager.RemovePlayerFromTable(match.GameTable, player.UserId, out _);
+                if (player.HasAbandoned)
+                {
+                    player.PlayerState = PlayerState.Left;
+                    tableManager.RemovePlayerFromTable(match.GameTable, player.UserId, out _);
+                    Console.WriteLine($"🚪 {player.User.NickName} abandonó el match y fue eliminado de la mesa.");
+                }
             }
 
             List<string> userIds = match.GameTable.Players
@@ -229,20 +234,68 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             table.TableState = TableState.Starting;
 
             using var scope = _serviceProvider.CreateScope();
-            var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-            unitOfWork.GameTableRepository.Update(table);
-            await unitOfWork.SaveAsync();
+            var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+            uow.GameTableRepository.Update(table);
+            await uow.SaveAsync();
 
             await StartMatchForTableAsync(table.Id);
+            return;
         }
 
-        // En Poker, expulsar si no hay suficientes para una nueva partida (por si queda una persona sola)
-        else if (table.GameType == GameType.Poker)
+        // Solo aplicamos limpieza si el juego es Poker
+        if (table.GameType != GameType.Poker)
+            return;
+
+        // 🔄 1. Eliminar jugadores abandonados
+        foreach (Player p in table.Players.Where(p => p.HasAbandoned).ToList())
         {
-            foreach (Player player in table.Players.ToList())
+            Console.WriteLine($"🧹 [PostMatch] Eliminando jugador abandonado: {p.User.NickName}");
+            using var scope = _serviceProvider.CreateScope();
+            var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+            tblMgr.RemovePlayerFromTable(table, p.UserId, out _);
+        }
+
+        // 🧍 2. Si solo queda uno, también eliminarlo y cerrar su historial
+        if (table.Players.Count == 1)
+        {
+            var lone = table.Players[0];
+
+            Console.WriteLine($"🚪 [PostMatch] Solo queda {lone.User.NickName}. Eliminarlo y cerrar historial.");
+
+            lone.PlayerState = PlayerState.Left;
+            lone.HasAbandoned = true;
+
+            using (var scope = _serviceProvider.CreateScope())
             {
-                await ProcessPlayerMatchLeaveAsync(table.Id, player.UserId);
+                var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+                tblMgr.RemovePlayerFromTable(table, lone.UserId, out _);
+            }
+
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+                var hist = await uow.GameHistoryRepository.FindActiveSessionAsync(lone.UserId, table.Id);
+
+                if (hist != null && hist.LeftAt == null)
+                {
+                    hist.LeftAt = DateTime.Now;
+                    uow.GameHistoryRepository.Update(hist);
+                    await uow.SaveAsync();
+                }
             }
         }
+
+        // 🕳️ 3. Si no queda nadie, poner mesa en estado Waiting
+        if (table.Players.Count == 0)
+        {
+            Console.WriteLine($"🕳️ [PostMatch] La mesa {table.Id} quedó vacía. Estado → Waiting.");
+            table.TableState = TableState.Waiting;
+
+            using var scope = _serviceProvider.CreateScope();
+            var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+            uow.GameTableRepository.Update(table);
+            await uow.SaveAsync();
+        }
     }
+
 }

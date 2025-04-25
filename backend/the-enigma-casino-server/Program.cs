@@ -64,6 +64,7 @@ public class Program
         builder.Services.AddScoped<TableService>();
         builder.Services.AddScoped<GachaponService>();
         builder.Services.AddScoped<BlockchainService>();
+        builder.Services.AddScoped<AdminUserService>();
 
         // --- Validaciones ---
         builder.Services.AddSingleton<ValidationService>();
@@ -94,7 +95,7 @@ public class Program
         builder.Services.AddScoped<GameMatchManager>();
 
         // --- Resolver de servicios por tipo de juego ---
-        builder.Services.AddScoped<GameBetInfoProviderResolver>(); 
+        builder.Services.AddScoped<GameBetInfoProviderResolver>();
         builder.Services.AddScoped<GameTurnServiceResolver>();
         builder.Services.AddScoped<GameSessionCleanerResolver>();
 
@@ -242,6 +243,9 @@ public class Program
 
         // Middleware de autenticación y autorización
         app.UseAuthentication();
+
+        UseBlockBannedUsersMiddleware(app);
+
         app.UseAuthorization();
 
         // Mapear rutas de controladores
@@ -277,5 +281,36 @@ public class Program
         StripeConfiguration.ApiKey = key;
 
     }
+
+    private static void UseBlockBannedUsersMiddleware(WebApplication app)
+    {
+        app.Use(async (context, next) =>
+        {
+            string path = context.Request.Path.Value?.ToLower();
+            if (path != null && (path.StartsWith("/api/auth") || path.StartsWith("/swagger")))
+            {
+                await next();
+                return;
+            }
+
+            var user = context.User;
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var roleClaim = user.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role);
+                if (roleClaim?.Value == "Banned")
+                {
+                    context.Response.StatusCode = 403;
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        error = "Tu cuenta ha sido baneada. Contacta con soporte si crees que es un error."
+                    });
+                    return;
+                }
+            }
+
+            await next();
+        });
+    }
+
 
 }

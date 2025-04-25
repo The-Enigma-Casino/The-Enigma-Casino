@@ -9,6 +9,7 @@ using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Mappers;
 using the_enigma_casino_server.Application.Services.Email;
 using the_enigma_casino_server.Core.Entities;
+using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Utilities;
 
@@ -58,6 +59,11 @@ public class UserService : BaseService
             throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
         }
 
+        if (user.IsBanned || user.Role == Role.Banned)
+        {
+            throw new UnauthorizedAccessException("Tu cuenta ha sido baneada. Contacta con soporte si crees que es un error.");
+        }
+
         if (!user.EmailConfirm)
         {
             throw new UnauthorizedAccessException("Debe confirmar su correo antes de iniciar sesión.");
@@ -79,7 +85,7 @@ public class UserService : BaseService
             },
 
             //Cambiar tiempo a 3 minutos al acabar proyecto --> 3000 segundos
-            Expires = DateTime.Now.AddDays(1),
+            Expires = DateTime.UtcNow.AddHours(8),
             SigningCredentials = new SigningCredentials(_tokenParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha256Signature)
         };
 

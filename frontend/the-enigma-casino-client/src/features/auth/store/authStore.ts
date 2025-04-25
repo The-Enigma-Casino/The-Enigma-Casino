@@ -1,6 +1,7 @@
 import { createStore, createEvent, sample } from "effector";
 import { loginFx, registerFx } from "../actions/authActions";
 import {
+  clearStorage,
   deleteLocalStorage,
   deleteSessionStorage,
   getVarLS,
@@ -10,7 +11,10 @@ import {
 } from "../../../utils/storageUtils";
 
 import { jwtDecode } from "jwt-decode";
-import { DecodedToken } from "../models/DecodedToken .interface";
+import { DecodedToken } from "../models/DecodedToken.interface";
+import { SessionCheckResult } from "../models/SessionCheckResult.type";
+
+import { toast } from "react-hot-toast";
 
 const storedToken: string =
   getVarLS("token") || getVarSessionStorage("token") || "";
@@ -35,6 +39,9 @@ export const $userId = createStore<string>("");
 export const loadUserId = createEvent();
 
 export const setAuthError = createEvent<string>();
+
+export const verifySession = createEvent();
+export const sessionChecked = createEvent<SessionCheckResult>();
 
 export const $authError = createStore<{ message: string; time: number } | null>(
   null
@@ -122,3 +129,52 @@ sample({
   },
   target: $image,
 });
+
+sample({
+  clock: verifySession,
+  source: $token,
+  fn: (token): SessionCheckResult => {
+    try {
+      if (!token) return { valid: false, reason: "No token" };
+
+      const decoded: DecodedToken = jwtDecode(token);
+      const now = Date.now() / 1000;
+
+      if (decoded.exp && decoded.exp < now) {
+        return { valid: false, reason: "Token expirado" };
+      }
+
+      if (decoded.role === "Banned") {
+        return { valid: false, reason: "Cuenta baneada" };
+      }
+
+      return { valid: true };
+    } catch {
+      return { valid: false, reason: "Token inválido" };
+    }
+  },
+  target: sessionChecked,
+});
+
+export const logoutWithReason = createEvent<string>();
+
+logoutWithReason.watch((reason) => {
+  clearToken();
+  console.error("Sesión inválida:", reason);
+
+  if (reason === "Cuenta baneada") {
+    toast.error("Tu cuenta ha sido baneada por un administrador.");
+  } else if (reason === "Token expirado") {
+    toast("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+  }
+
+  clearStorage();
+});
+
+sample({
+  source: sessionChecked,
+  filter: (result) => !result.valid,
+  fn: (result) => result.reason ?? "Desconocido",
+  target: logoutWithReason,
+});
+

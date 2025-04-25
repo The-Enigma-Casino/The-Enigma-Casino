@@ -1,6 +1,7 @@
 ﻿using the_enigma_casino_server.Games.Poker;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
+using the_enigma_casino_server.WebSockets.Poker;
 using the_enigma_casino_server.WebSockets.Poker.Interfaces;
 
 namespace the_enigma_casino_server.Websockets.Poker;
@@ -14,7 +15,7 @@ public class PokerNotifier : IPokerNotifier
         _sender = sender;
     }
 
-    public async Task NotifyBlindsAsync(Match match, PokerGameService pokerGame)
+    public async Task NotifyBlindsAsync(Match match, PokerGame pokerGame)
     {
         var dealer = pokerGame.GetDealer();
         var smallBlind = pokerGame.GetSmallBlind();
@@ -77,8 +78,13 @@ public class PokerNotifier : IPokerNotifier
 
     public async Task NotifyPlayerTurnAsync(Match match, Player player)
     {
-        int currentMaxBet = match.Players.Max(p => p.CurrentBet);
-        int toCall = currentMaxBet - player.CurrentBet;
+        int currentMaxBet = match.Players
+            .Where(p => p.PlayerState == PlayerState.Playing)
+            .Max(p => PokerBetTracker.GetTotalBet(p.GameTableId, p.UserId));
+
+        int playerBet = PokerBetTracker.GetTotalBet(player.GameTableId, player.UserId);
+        int toCall = currentMaxBet - playerBet;
+
 
         List<string> validMoves = new List<string>();
 
@@ -127,11 +133,14 @@ public class PokerNotifier : IPokerNotifier
             .Select(p => p.UserId.ToString());
         await _sender.BroadcastToUsersAsync(userIds, response);
 
+
         Console.WriteLine($"📢 Acción enviada: {player.User.NickName} hizo '{move}' con apuesta de {player.CurrentBet} fichas.");
     }
 
     public async Task NotifyBetConfirmedAsync(Player player)
     {
+        int totalBet = PokerBetTracker.GetTotalBet(player.GameTableId, player.UserId);
+
         var response = new
         {
             type = "poker",
@@ -139,7 +148,8 @@ public class PokerNotifier : IPokerNotifier
             userId = player.UserId,
             nickname = player.User.NickName,
             remainingCoins = player.User.Coins,
-            bet = player.CurrentBet
+            bet = player.CurrentBet,
+            totalBet
         };
 
         await _sender.SendToUserAsync(player.UserId.ToString(), response);

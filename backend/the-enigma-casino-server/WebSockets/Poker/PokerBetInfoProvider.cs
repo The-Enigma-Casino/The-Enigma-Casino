@@ -1,4 +1,5 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker.Store;
 
@@ -19,6 +20,6 @@ public class PokerBetInfoProvider : IGameBetInfoProvider
 
     public bool HasPlayedThisMatch(Player player, Match match)
     {
-        throw new NotImplementedException();
+        return player.Hand?.Cards.Count == 2;
     }
 }

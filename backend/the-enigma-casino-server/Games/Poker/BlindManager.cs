@@ -4,35 +4,26 @@ using the_enigma_casino_server.Games.Shared.Enum;
 
 public class BlindManager
 {
-    private readonly Match _gameMatch;
-    private readonly PokerGameService _pokerGameService;
+    private readonly List<Player> _players;
+    private readonly PokerGame _pokerGameService;
     private int _dealerIndex;
 
-    // Constantes de valor de ciegas, se pueden reducir en un futuro
     private const int SmallBlindAmount = 10;
     private const int BigBlindAmount = 20;
 
-    public BlindManager(Match gameMatch, PokerGameService pokerGameService)
+    public BlindManager(List<Player> players, PokerGame pokerGameService)
     {
-        _gameMatch = gameMatch;
+        _players = players;
         _pokerGameService = pokerGameService;
-        _dealerIndex = 0;     // _dealerIndex guarda el índice del jugador que es el dealer en la ronda actual.
+        _dealerIndex = 0;     
     }
 
-    // Propiedad que devuelve al jugador que es el dealer en la ronda actual
-    public Player Dealer => _gameMatch.Players[_dealerIndex % _gameMatch.Players.Count];
+    public Player Dealer => _players[_dealerIndex % _players.Count];
+    public Player SmallBlind => _players[(_dealerIndex + 1) % _players.Count];
+    public Player BigBlind => _players[(_dealerIndex + 2) % _players.Count];
+    public int FirstToActIndex => (_dealerIndex + 3) % _players.Count;
+    public int SmallBlindIndex => (_dealerIndex + 1) % _players.Count;
 
-    // Propiedad que devuelve al jugador que es el small blind (el jugador a la izquierda del dealer).
-    public Player SmallBlind => _gameMatch.Players[(_dealerIndex + 1) % _gameMatch.Players.Count];
-
-    // Propiedad que devuelve al jugador que es el big blind (el jugador a la izquierda del small blind).
-    public Player BigBlind => _gameMatch.Players[(_dealerIndex + 2) % _gameMatch.Players.Count];
-
-    // Propiedad que devuelve el indice del primer jugador en actuar (despues de las ciegas).
-    public int FirstToActIndex => (_dealerIndex + 3) % _gameMatch.Players.Count;
-
-    // Propiedad que devuelve el índice del jugador que tiene que pagar la small blind.
-    public int SmallBlindIndex => (_dealerIndex + 1) % _gameMatch.Players.Count;
 
     // Asigna las apuestas de las ciegas (small y big) 
     public void AssignBlinds()
@@ -46,7 +37,6 @@ public class BlindManager
         if (smallBlindAmount > 0)
         {
             _pokerGameService.HandlePokerBet(smallBlind, smallBlindAmount);
-            _pokerGameService.AddToPot(smallBlindAmount);
             Console.WriteLine($"{smallBlind.User.NickName} paga {smallBlindAmount} (Small Blind)");
         }
         else
@@ -58,7 +48,6 @@ public class BlindManager
         if (bigBlindAmount > 0)
         {
             _pokerGameService.HandlePokerBet(bigBlind, bigBlindAmount);
-            _pokerGameService.AddToPot(bigBlindAmount);
             Console.WriteLine($"{bigBlind.User.NickName} paga {bigBlindAmount} (Big Blind)");
         }
         else
@@ -73,7 +62,6 @@ public class BlindManager
     // Cambia al siguiente jugador como dealer para la siguiente ronda
     public void NextDealer()
     {
-        // Incrementa el indice del dealer y se asegura de que vuelva al principio si es el ultimo jugador.
-        _dealerIndex = (_dealerIndex + 1) % _gameMatch.Players.Count;
+        _dealerIndex = (_dealerIndex + 1) % _players.Count;
     }
 }

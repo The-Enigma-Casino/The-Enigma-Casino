@@ -9,20 +9,16 @@ namespace the_enigma_casino_server.Websockets.Poker;
 
 public static class PokerManager
 {
-    public static async Task<PokerGameService> StartNewRound(Match match, IServiceProvider serviceProvider)
+    public static PokerGame StartNewRound(Match match)
     {
-        PokerNotifier notifier = serviceProvider.GetRequiredService<PokerNotifier>();
-
-        PokerGameService pokerGame = new(match, notifier);
+        PokerGame pokerGame = new(match.Players);
         pokerGame.StartRound();
-        await pokerGame.AssignBlinds();
 
         ActivePokerGameStore.Set(match.GameTableId, pokerGame);
-
         return pokerGame;
     }
 
-    public static bool ExecutePlayerMove(PokerGameService game, Match match, Player player, string move, int amount)
+    public static bool ExecutePlayerMove(PokerGame game, Match match, Player player, string move, int amount)
     {
         string phase = game.GetCurrentPhase();
 
@@ -74,11 +70,11 @@ public static class PokerManager
     }
 
     public static async Task RegisterAndMaybeAdvancePhaseAsync(
-    int tableId,
-    Match match,
-    Player player,
-    string phase,
-    Func<int, string, Task> advancePhaseCallback)
+        int tableId,
+        Match match,
+        Player player,
+        string phase,
+        Func<int, string, Task> advancePhaseCallback)
     {
         PokerActionTracker.RegisterAction(tableId, player.UserId, phase);
 
@@ -89,7 +85,6 @@ public static class PokerManager
 
         if (PokerActionTracker.HaveAllPlayersActed(tableId, expected, phase))
         {
-            PokerActionTracker.Clear(tableId, phase);
             Console.WriteLine($"✅ Todos los jugadores han actuado en fase '{phase}'.");
             await advancePhaseCallback(tableId, phase);
         }

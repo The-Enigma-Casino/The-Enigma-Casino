@@ -31,7 +31,7 @@ public class PokerNotifier : IPokerNotifier
         };
 
         List<string> playerIds = match.Players
-            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .Select(p => p.UserId.ToString())
             .ToList();
         await _sender.BroadcastToUsersAsync(playerIds, blindInfo);
@@ -70,7 +70,7 @@ public class PokerNotifier : IPokerNotifier
         };
 
         List<string> playerIds = match.Players
-            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .Select(p => p.UserId.ToString())
             .ToList();
         await _sender.BroadcastToUsersAsync(playerIds, message);
@@ -129,7 +129,7 @@ public class PokerNotifier : IPokerNotifier
         };
 
         var userIds = player.GameMatch!.Players
-            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .Select(p => p.UserId.ToString());
         await _sender.BroadcastToUsersAsync(userIds, response);
 

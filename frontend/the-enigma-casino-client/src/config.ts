@@ -47,6 +47,8 @@ export const GACHAPON_PRICE = `${API_BASE_URL}Gachapon/price`;
 export const USER_PROFILE = `${API_BASE_URL}User/profile`;
 export const OTHER_USER_PROFILE = `${API_BASE_URL}User/profile/`;
 export const USER_IMAGE_UPDATE = `${API_BASE_URL}User/profile/image`;
+export const USER_HISTORY_BY_ID = `${API_BASE_URL}History/by-user-id`;
+
 
 /* ENDPOINTS PARA LAS IMAGENES */
 export const USER_IMAGES = `${BASE_URL}images/profile`;

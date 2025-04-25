@@ -5,6 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ModalEditImage from "../modal/ModalEditImage";
 import { IMAGE_PROFILE_URL } from "../../../config";
+import ModalEditPassword from "../modal/ModalEditPassword";
+import { useUnit } from "effector-react";
+import { getFlagUrlByCca3 } from "../../../utils/flagUtils";
+import { $allCountries } from "../../countries/actions/countriesActions";
+
 interface UserData {
   name?: string;
   email?: string;
@@ -18,23 +23,26 @@ interface UserData {
 
 interface UserInfoProps {
   user: UserData;
-  relation: "self" | "friend" | "stranger";
+  relations: "self" | "friend" | "stranger";
 }
 
-const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
+const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
   const { name, email, nickname, address, country, coins, image, role } = user;
   const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+  const countries = useUnit($allCountries);
+  const flagUrl = getFlagUrlByCca3(user.country, countries)
 
-  const isSelf = relation === "self";
-  const isFriend = relation === "friend";
-  const isStranger = relation === "stranger";
+  const isSelf = relations === "self";
+  const isFriend = relations === "friend";
+  const isStranger = relations === "stranger";
 
   return (
     <>
@@ -56,12 +64,12 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
           </div>
 
 
-          {/* Bandera (opcional futura API) */}
-          {(isFriend || isStranger) && (
+          {/* Bandera */}
+          {(isFriend || isStranger) && flagUrl && (
             <div className="absolute top-4 right-4">
               <img
-                src="/svg/flags/es.svg"
-                alt="Bandera"
+                src={flagUrl}
+                alt={`Bandera de ${user.country}`}
                 className="w-10 h-7 object-cover rounded"
               />
             </div>
@@ -81,7 +89,11 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
                 : "text-xl sm:text-2xl lg:text-3xl w-full text-center lg:text-left items-center lg:items-start"
                 }`}
             >
-              <p>Nickname: <strong>{nickname}</strong></p>
+
+              <p className={!isSelf ? "text-5xl" : ""}>
+                {isSelf && "Nickname: "}
+                <strong>{nickname}</strong>
+              </p>
               {(isSelf) && country && <p>Nacionalidad: <strong>{country}</strong></p>}
               {isSelf && name && <p>Nombre de Usuario: <strong>{name}</strong></p>}
               {isSelf && email && <p>Correo electrónico: <strong>{email}</strong></p>}
@@ -95,7 +107,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
                 <Button variant="shortPlus" color="green" font="bold" onClick={handleOpenModal}>
                   Modificar Datos
                 </Button>
-                <Button variant="shortPlus" color="green" font="bold">
+                <Button variant="shortPlus" color="green" font="bold" onClick={() => setShowPasswordModal(true)}>
                   Modificar Contraseña
                 </Button>
                 <Button variant="shortPlus" color="green" font="bold" onClick={() => navigate("/withdrawal")}>
@@ -166,7 +178,15 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
           }}
         />
       )}
-
+      {/* Modal Contrasena */}
+      {showPasswordModal && (
+        <ModalEditPassword
+          onCancel={() => setShowPasswordModal(false)}
+          onConfirm={(newPassword) => {
+            setShowPasswordModal(false);
+          }}
+        />
+      )}
 
 
     </>

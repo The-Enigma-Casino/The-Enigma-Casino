@@ -25,13 +25,6 @@ const UserOrders: React.FC<OrdersTableProps> = ({ orders, page, totalPages, onPa
 
   return (
     <div className="bg-Background-Page text-white flex flex-col items-center px-4 py-6 font-sans text-xl sm:text-2xl md:text-3xl">
-      {/* Título */}
-      <div className="w-full max-w-xl mb-4">
-        <h2 className="text-Principal font-bold text-4xl px-4 py-3">
-          HISTORIAL DE PEDIDOS
-        </h2>
-      </div>
-
       {/* Tabla */}
       <div className="w-full max-w-6xl border border-Green-lines rounded-md overflow-hidden">
         {/* Encabezado */}
@@ -40,7 +33,7 @@ const UserOrders: React.FC<OrdersTableProps> = ({ orders, page, totalPages, onPa
           <div>IMAGEN</div>
           <div>FICHAS</div>
           <div>MODO</div>
-          <div>PAGO / RECIBIDO</div>
+          <div>CANTIDAD</div>
           <div>TIPO</div>
         </div>
 

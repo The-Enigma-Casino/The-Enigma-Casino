@@ -44,7 +44,7 @@ const UserProfile = () => {
   return (
     <>
       <div className=" bg-Background-Page">
-        <UserInfo user={profile} relation="self" />
+        <UserInfo user={profile} relations="self" />
 
         {/* Botones para alternar vistas */}
         <div className="flex flex-wrap justify-center gap-6 my-10 ">

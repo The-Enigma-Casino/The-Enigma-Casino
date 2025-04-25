@@ -1,3 +1,10 @@
+export interface OtherUserProfile {
+  nickname: string;
+  country: string;
+  image: string;
+  relation: "friend" | "stranger";
+}
+
 export interface GameDto {
   id: number;
   joinedAt: string;

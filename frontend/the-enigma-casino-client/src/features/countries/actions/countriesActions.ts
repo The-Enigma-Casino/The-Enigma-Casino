@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createEffect } from "effector";
+import { createEffect, createStore } from "effector";
 import { COUNTRIES_API_URL } from "../config";
 import { Country } from "../models/country.interface";
 
@@ -8,11 +8,11 @@ export const countriesFx = createEffect<void, Country[], Error>(async () => {
     const response = await axios.get<Country[]>(`${COUNTRIES_API_URL}/all`, {
       headers: { "Content-Type": "application/json" },
     });
-    
-    return response.data; 
+
+    return response.data;
   } catch (error) {
     console.error("Error fetching countries:", error);
-    throw error; 
+    throw error;
   }
 });
 
@@ -33,7 +33,7 @@ export const searchByAlphaCodeFx = createEffect<string, Country | null, Error>(a
 
 export const searchCountryByName = async (term: string): Promise<Country[]> => {
   const url = `${COUNTRIES_API_URL}/name/${term}`;
-  
+
   try {
     const response = await axios.get<Country[]>(url);
     return response.data;
@@ -43,3 +43,7 @@ export const searchCountryByName = async (term: string): Promise<Country[]> => {
   }
 };
 
+export const $allCountries = createStore<Country[]>([]).on(
+  countriesFx.doneData,
+  (_, countries) => countries
+);

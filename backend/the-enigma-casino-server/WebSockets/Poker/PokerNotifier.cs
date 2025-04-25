@@ -29,7 +29,10 @@ public class PokerNotifier : IPokerNotifier
             bigBlind = new { userId = bigBlind.UserId, amount = bigBlind.CurrentBet }
         };
 
-        List<string> playerIds = match.Players.Select(p => p.UserId.ToString()).ToList();
+        List<string> playerIds = match.Players
+            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Select(p => p.UserId.ToString())
+            .ToList();
         await _sender.BroadcastToUsersAsync(playerIds, blindInfo);
     }
 
@@ -56,7 +59,7 @@ public class PokerNotifier : IPokerNotifier
         }
     }
 
-    public  async Task NotifyStartBettingAsync(Match match)
+    public async Task NotifyStartBettingAsync(Match match)
     {
         var message = new
         {
@@ -65,11 +68,14 @@ public class PokerNotifier : IPokerNotifier
             phase = "preflop"
         };
 
-        List<string> playerIds = match.Players.Select(p => p.UserId.ToString()).ToList();
+        List<string> playerIds = match.Players
+            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Select(p => p.UserId.ToString())
+            .ToList();
         await _sender.BroadcastToUsersAsync(playerIds, message);
     }
 
-    public  async Task NotifyPlayerTurnAsync(Match match, Player player)
+    public async Task NotifyPlayerTurnAsync(Match match, Player player)
     {
         int currentMaxBet = match.Players.Max(p => p.CurrentBet);
         int toCall = currentMaxBet - player.CurrentBet;
@@ -116,7 +122,9 @@ public class PokerNotifier : IPokerNotifier
             amount = player.CurrentBet
         };
 
-        var userIds = player.GameMatch!.Players.Select(p => p.UserId.ToString());
+        var userIds = player.GameMatch!.Players
+            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Select(p => p.UserId.ToString());
         await _sender.BroadcastToUsersAsync(userIds, response);
 
         Console.WriteLine($"📢 Acción enviada: {player.User.NickName} hizo '{move}' con apuesta de {player.CurrentBet} fichas.");

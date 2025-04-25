@@ -64,7 +64,6 @@ public class Program
         builder.Services.AddScoped<TableService>();
         builder.Services.AddScoped<GachaponService>();
         builder.Services.AddScoped<BlockchainService>();
-        builder.Services.AddScoped<AdminUserService>();
 
         // --- Validaciones ---
         builder.Services.AddSingleton<ValidationService>();

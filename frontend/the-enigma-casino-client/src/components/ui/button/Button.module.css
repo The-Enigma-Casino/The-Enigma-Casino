@@ -33,6 +33,12 @@ button.short {
   height: 5rem;
 }
 
+button.shortPlus {
+  width: 14rem;
+  height: 6rem;
+  font-size: 1.8rem;
+}
+
 button.medium {
   width: 20rem;
   height: 5rem;
@@ -52,6 +58,24 @@ button.big {
   width: 25rem;
   height: 5rem;
   font-size: 2.4rem;
+}
+
+/* BIGPLUS */
+button.bigPlus {
+  width: 38rem;
+  height: 5rem;
+  font-size: 2.4rem;
+}
+
+
+
+/* Pantallas pequeñas */
+@media (max-width: 480px) {
+  button.bigPlus {
+    width: 100%;
+    font-size: 1.8rem;
+    padding: 1rem 1.5rem;
+  }
 }
 
 /* @media (max-width: 45rem) {
@@ -107,6 +131,11 @@ button.green {
 button.selected {
   background-color: var(--Principal);
   color: var(--Black-color);
+}
+
+button.selectedProfile {
+  background-color: var(--Background-Overlay);
+  color: white;
 }
 
 button.disabled {

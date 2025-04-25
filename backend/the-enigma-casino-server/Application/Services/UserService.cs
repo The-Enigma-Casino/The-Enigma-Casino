@@ -8,9 +8,11 @@ using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Mappers;
 using the_enigma_casino_server.Application.Services.Email;
+using the_enigma_casino_server.Application.Services.Friendship;
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
+using the_enigma_casino_server.Infrastructure.Database.Repositories;
 using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Application.Services;
@@ -21,13 +23,15 @@ public class UserService : BaseService
     private readonly EmailService _emailService;
     private readonly ValidationService _validation;
     private readonly UserMapper _userMapper;
+    private readonly UserFriendService _userFriendService;
 
-    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper) : base(unitOfWork)
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper, UserFriendService userFriendService) : base(unitOfWork)
     {
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
         _emailService = emailService;
         _validation = validationService;
         _userMapper = userMapper;
+        _userFriendService = userFriendService;
     }
 
     public async Task<(bool, string)> CheckUser(string nickName, string email)
@@ -246,24 +250,27 @@ public class UserService : BaseService
         }
     }
 
-    public async Task<OtherUserDto> GetNotFriendlyProfile(int id)
+    public async Task<OtherUserDto> GetOtherProfile(int currentUserId, int profileUserId)
     {
-        try
+        User user = await GetUserById(profileUserId);
+
+        if (user == null)
+            throw new KeyNotFoundException("Usuario no encontrado");
+
+        string relation;
+
+        if (currentUserId == profileUserId)
         {
-            User user = await GetUserById(id);
-
-            if (user == null)
-            {
-                throw new KeyNotFoundException("Usuario no encontrado");
-
-            }
-            return _userMapper.ToUserNotFriendlyDto(user);
+            relation = "self";
         }
-        catch (KeyNotFoundException ex)
+        else
         {
-            throw new KeyNotFoundException(ex.Message);
-
+            bool isFriend = await _userFriendService.AreFriendsAsync(currentUserId, profileUserId);
+            relation = isFriend ? "friend" : "stranger";
         }
+
+        return new OtherUserDto(user.NickName, user.Country, user.Image, relation);
+
     }
 
     public async Task UpdateUserImageAsync(int userId, IFormFile imageFile)

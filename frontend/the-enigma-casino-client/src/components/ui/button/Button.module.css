@@ -133,6 +133,11 @@ button.selected {
   color: var(--Black-color);
 }
 
+button.selectedProfile {
+  background-color: var(--Background-Overlay);
+  color: white;
+}
+
 button.disabled {
   background-color: var(--Grey-color);
   color: var(--Black-color);

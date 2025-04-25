@@ -2,6 +2,9 @@ export const BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
 
 export const API_BASE_URL: string = `${BASE_URL}api/`;
 
+/* URL IMAGEN PERFIL */
+export const IMAGE_PROFILE_URL: string = `${BASE_URL}images/profile/`;
+
 /* ENDPOINTS DE LOGIN Y REGISTRO */
 export const LOGIN_ENDPOINT = `${API_BASE_URL}Auth/login`;
 export const REGISTER_ENDPOINT = `${API_BASE_URL}Auth/register`;
@@ -43,6 +46,7 @@ export const GACHAPON_PRICE = `${API_BASE_URL}Gachapon/price`;
 /* ENDPOINTS DE PROFILE */
 export const USER_PROFILE = `${API_BASE_URL}User/profile`;
 export const OTHER_USER_PROFILE = `${API_BASE_URL}User/profile/`;
+export const USER_IMAGE_UPDATE = `${API_BASE_URL}User/profile/image`;
 
 /* ENDPOINTS PARA LAS IMAGENES */
 export const USER_IMAGES = `${BASE_URL}images/profile`;

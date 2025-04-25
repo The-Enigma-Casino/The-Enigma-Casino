@@ -1,5 +1,10 @@
 import Button from "../../../components/ui/button/Button";
+import ModalEditUser from "../modal/ModalEditUser";
+import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import ModalEditImage from "../modal/ModalEditImage";
+import { IMAGE_PROFILE_URL } from "../../../config";
 interface UserData {
   name?: string;
   email?: string;
@@ -10,7 +15,6 @@ interface UserData {
   image: string;
   role?: string;
 }
-const imageStatic = "https://avatars.githubusercontent.com/u/146203038?v=4";
 
 interface UserInfoProps {
   user: UserData;
@@ -20,6 +24,13 @@ interface UserInfoProps {
 const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
   const { name, email, nickname, address, country, coins, image, role } = user;
   const navigate = useNavigate();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
   const isSelf = relation === "self";
   const isFriend = relation === "friend";
@@ -34,15 +45,16 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
         >
           {/* Avatar */}
           <div
-            className={`absolute -top-20 sm:-top-28 lg:-top-32
-               w-40 h-40 sm:w-48 sm:h-48 lg:w-60 lg:h-60 rounded-full overflow-hidden`}
+            className={`absolute -top-20 sm:-top-28 lg:-top-32 w-40 h-40 sm:w-48 sm:h-48 lg:w-60 lg:h-60 rounded-full overflow-hidden border-transparent cursor-pointer transition duration-100 transform hover:scale-105 hover:border-2 hover:border-Principal hover:shadow-[0_0_20px_var(--Principal)]`}
+            onClick={isSelf ? () => setShowImageModal(true) : undefined}
           >
             <img
-              src={imageStatic}
+              src={`${IMAGE_PROFILE_URL}${image}?${Date.now()}`}
               alt="Foto de perfil"
               className="w-full h-full object-cover rounded-full"
             />
           </div>
+
 
           {/* Bandera (opcional futura API) */}
           {(isFriend || isStranger) && (
@@ -80,7 +92,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
             {/* Botones */}
             {isSelf && (
               <div className="flex flex-col gap-4 items-center mx-auto lg:mx-0">
-                <Button variant="shortPlus" color="green" font="bold">
+                <Button variant="shortPlus" color="green" font="bold" onClick={handleOpenModal}>
                   Modificar Datos
                 </Button>
                 <Button variant="shortPlus" color="green" font="bold">
@@ -130,6 +142,31 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relation }) => {
           )}
         </div>
       </div>
+
+      {/* Modal editar perfil */}
+      {isModalOpen && (
+        <ModalEditUser
+          user={user}
+          onCancel={handleCloseModal}
+          onSave={() => {
+            handleCloseModal();
+          }}
+        />
+      )}
+      {/* Modal imagen */}
+      {showImageModal && (
+        <ModalEditImage
+          image={image}
+          onCancel={() => setShowImageModal(false)}
+          onConfirm={() => {
+            setShowImageModal(false);
+          }}
+          onFileSelect={(file) => {
+            setSelectedImage(file);
+          }}
+        />
+      )}
+
 
 
     </>

@@ -7,15 +7,15 @@
     <RootNamespace>the_enigma_casino_server</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
+		<None Remove="Utilities\en_words.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
     <None Remove="Utilities\es_words.txt" />
   </ItemGroup>
 
-  <ItemGroup>
-	  <None Include="Utilities\es_words.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
+	<ItemGroup>
     <PackageReference Include="F23.StringSimilarity" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
@@ -40,6 +40,10 @@
 		<Content Update="wwwroot\**\*">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\filters\" />
 	</ItemGroup>
 
 </Project>

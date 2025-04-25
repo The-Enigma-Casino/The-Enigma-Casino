@@ -1,5 +1,6 @@
 export const BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
 
+export const WS_BASE_URL: string = import.meta.env.VITE_WS_BASE_URL;
 export const API_BASE_URL: string = `${BASE_URL}api/`;
 
 /* URL IMAGEN PERFIL */

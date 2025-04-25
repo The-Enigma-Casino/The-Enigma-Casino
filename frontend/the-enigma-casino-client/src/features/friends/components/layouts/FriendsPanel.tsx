@@ -31,3 +31,4 @@ function FriendsPanel() {
 }
 
 export default FriendsPanel;
+

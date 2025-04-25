@@ -1,6 +1,8 @@
 import { useParams } from "react-router-dom";
 import { Chat } from "../chat/components/Chat";
 import { BlackjackGamePage } from "../blackjack/pages/BlackjackGamePage";
+import RouletteGamePage from "../roulette/pages/RouleteGamePage";
+import PokerGamePage from "../pocker/pages/PokerGamePage";
 
 export const GameLayout = () => {
   const { tableId } = useParams<{ tableId: string }>();
@@ -22,7 +24,13 @@ export const GameLayout = () => {
         </div>
 
         <div className="flex-grow h-full overflow-auto">
-          <BlackjackGamePage />
+          <div className="flex flex-col h-full w-full bg-Background-Overlay text-white">
+            <div className="flex-grow overflow-auto">
+              {gameType === "blackjack" && <BlackjackGamePage />}
+              {gameType === "poker" && <PokerGamePage/>}
+              {gameType === "roulette" && <RouletteGamePage/>}
+            </div>
+          </div>
         </div>
       </div>
     </>

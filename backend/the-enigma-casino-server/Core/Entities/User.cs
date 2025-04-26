@@ -16,6 +16,7 @@ public class User
     public string Address { get; set; }
     public int Coins { get; set; }
     public bool IsSelfBanned { get; set; }
+    public DateTime? SelfBannedAt { get; set; }
     public bool EmailConfirm { get; set; }
     public string ConfirmationToken { get; set; }
     public Role Role { get; set; }

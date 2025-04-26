@@ -69,6 +69,11 @@ public class UserConfig : IEntityTypeConfiguration<User>
               .HasColumnName("date_of_birth")
               .IsRequired();
 
+        entity.Property(e => e.SelfBannedAt)
+              .HasColumnName("self_banned_at")
+                .HasColumnType("datetime")
+                    .IsRequired(false);
+
         entity.Property(e => e.EmailConfirm)
               .HasColumnName("email_confirm")
               .IsRequired();

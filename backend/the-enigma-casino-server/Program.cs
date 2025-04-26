@@ -127,8 +127,8 @@ public class Program
         builder.Services.AddScoped<IGameBetInfoProvider, RouletteBetInfoProvider>();
         builder.Services.AddScoped<IGameSessionCleaner, RouletteSessionCleaner>();
 
-
-
+        // --- Servicios en background ---
+        builder.Services.AddHostedService<SelfBanReversalService>();
 
         // --- Mappers ---
         builder.Services.AddScoped<StripeMapper>();

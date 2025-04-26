@@ -63,9 +63,14 @@ public class UserService : BaseService
             throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
         }
 
-        if (user.IsSelfBanned || user.Role == Role.Banned)
+        if (user.Role == Role.Banned)
         {
             throw new UnauthorizedAccessException("Tu cuenta ha sido baneada. Contacta con soporte si crees que es un error.");
+        }
+
+        if(user.IsSelfBanned)
+        {
+            throw new UnauthorizedAccessException("Tu cuenta fue auto baneada. Contacta con soporte si crees que es un error.");
         }
 
         if (!user.EmailConfirm)
@@ -342,5 +347,22 @@ public class UserService : BaseService
             .ToList();
 
         return filteredUsers;
+    }
+
+    public async Task AutoBan(int id)
+    {
+        User user = await GetUserById(id);
+
+        if (user == null)
+            throw new KeyNotFoundException("Usuario no encontrado");
+
+        if (user.Role == Role.Admin)
+            throw new UnauthorizedAccessException("Un usuario admin no puede auto banearse.");
+
+        user.IsSelfBanned = true;
+        user.SelfBannedAt = DateTime.Now;
+
+        _unitOfWork.UserRepository.Update(user);
+        await _unitOfWork.SaveAsync();
     }
 }

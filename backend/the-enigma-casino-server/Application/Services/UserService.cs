@@ -8,11 +8,9 @@ using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Mappers;
 using the_enigma_casino_server.Application.Services.Email;
-using the_enigma_casino_server.Application.Services.Friendship;
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
-using the_enigma_casino_server.Infrastructure.Database.Repositories;
 using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Application.Services;
@@ -24,14 +22,16 @@ public class UserService : BaseService
     private readonly ValidationService _validation;
     private readonly UserMapper _userMapper;
     private readonly UserFriendService _userFriendService;
+    private readonly SmartSearchService _smartSearchService;
 
-    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper, UserFriendService userFriendService) : base(unitOfWork)
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper, UserFriendService userFriendService, SmartSearchService smartSearchService) : base(unitOfWork)
     {
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
         _emailService = emailService;
         _validation = validationService;
         _userMapper = userMapper;
         _userFriendService = userFriendService;
+        _smartSearchService = smartSearchService;
     }
 
     public async Task<(bool, string)> CheckUser(string nickName, string email)
@@ -298,7 +298,7 @@ public class UserService : BaseService
 
             WebpEncoder encoder = new WebpEncoder
             {
-                Quality = 75 
+                Quality = 75
             };
 
             await image.SaveAsync(filePath, encoder);
@@ -325,5 +325,22 @@ public class UserService : BaseService
         }
 
         return user;
+    }
+
+    public async Task<List<User>> SearchUsersByNickName(string nickName)
+    {
+        List<User> users = await _unitOfWork.UserRepository.GetAllUserAsync();
+        List<string> userNickNames = users.Select(u => u.NickName).ToList();
+
+        IEnumerable<string> matchedNickNames = _smartSearchService.Search(nickName, userNickNames);
+
+        if (matchedNickNames == null || !matchedNickNames.Any())
+            throw new Exception("No se encontraron usuarios con ese NickName.");
+
+        List<User> filteredUsers = users
+            .Where(u => matchedNickNames.Contains(u.NickName))
+            .ToList();
+
+        return filteredUsers;
     }
 }

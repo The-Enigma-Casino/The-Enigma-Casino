@@ -74,4 +74,22 @@ public class AdminUserController : BaseController
             return StatusCode(500, "Un error ha ocurrido al enviar su petición.");
         }
     }
+
+    [HttpGet("search-users")]
+    public async Task<ActionResult<List<UserAdminDto>>> SearchUsersByNickName([FromQuery] string nickName)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(nickName))
+                return BadRequest("Debe ingresar un NickName para buscar.");
+
+            List<UserAdminDto> users = await _adminUserService.SearchUsersByNickName(nickName);
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Un error ha ocurrido al enviar su petición.");
+        }
+    }
+
 }

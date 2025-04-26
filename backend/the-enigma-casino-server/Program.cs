@@ -56,6 +56,7 @@ public class Program
 
         // --- Servicios ---
         builder.Services.AddScoped<BaseService>();
+        builder.Services.AddScoped<SmartSearchService>();
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<EmailService>();
         builder.Services.AddScoped<CoinsPackService>();

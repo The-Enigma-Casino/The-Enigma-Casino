@@ -64,4 +64,12 @@ public class AdminUserService : BaseService
         return user.Role;
     }
 
+    public async Task<List<UserAdminDto>> SearchUsersByNickName(string nickName)
+    {
+        List<User> users = await _userService.SearchUsersByNickName(nickName);
+
+        return _userMapper.ToUserAdminList(users);
+    }
+
+
 }

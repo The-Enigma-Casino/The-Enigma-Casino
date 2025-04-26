@@ -31,7 +31,6 @@ function Header() {
   const [isGachaponModalOpen, setIsGachaponModalOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
 
-
   useEffect(() => {
     loadCoins();
     loadRole();
@@ -92,7 +91,9 @@ function Header() {
                 src="/svg/admin.svg"
                 alt="Admin"
                 onClick={() => setIsAdminMenuOpen((prev) => !prev)}
-                className={classes.adminIcon}
+                className={`${classes.adminIcon} ${
+                  isAdminMenuOpen ? classes.rotatingOpen : classes.rotatingClose
+                }`}
               />
               {isAdminMenuOpen && (
                 <div className={classes.adminMenu}>

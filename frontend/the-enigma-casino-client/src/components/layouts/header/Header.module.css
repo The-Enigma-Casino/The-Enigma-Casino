@@ -172,3 +172,29 @@
     transform: translateY(0);
   }
 }
+
+@keyframes rotateOpen {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+
+@keyframes rotateClose {
+  0% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.rotatingOpen {
+  animation: rotateOpen 0.5s ease forwards;
+}
+
+.rotatingClose {
+  animation: rotateClose 0.5s ease forwards;
+}

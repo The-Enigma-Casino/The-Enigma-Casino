@@ -48,7 +48,7 @@ public static class PokerManager
 
                 game.HandlePokerBet(player, totalBet);
 
-                PokerActionTracker.ResetActionsForRaise(
+                PokerActionTracker.ResetActionsForNewBet(
                     match.GameTableId,
                     match.Players.Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn).Select(p => p.UserId).ToList(),
                     player.UserId,
@@ -58,6 +58,13 @@ public static class PokerManager
 
             case "all-in":
                 game.HandlePokerBet(player, player.User.Coins);
+
+                PokerActionTracker.ResetActionsForNewBet(
+                   match.GameTableId,
+                   match.Players.Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn).Select(p => p.UserId).ToList(),
+                   player.UserId,
+                   phase
+               );
                 return true;
 
             case "fold":

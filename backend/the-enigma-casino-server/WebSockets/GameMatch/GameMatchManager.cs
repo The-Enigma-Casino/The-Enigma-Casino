@@ -75,7 +75,6 @@ public class GameMatchManager
             }
         }
 
-
         int matchId = Interlocked.Increment(ref _nextMatchId);
 
         Match match = new Match
@@ -87,8 +86,6 @@ public class GameMatchManager
             StartedAt = DateTime.Now,
             MatchState = MatchState.InProgress
         };
-
-        Console.WriteLine($"👥 Jugadores añadidos al Match de mesa {table.Id}: {string.Join(", ", match.Players.Select(p => p.User.NickName))}");
 
         foreach (Player player in match.Players)
         {

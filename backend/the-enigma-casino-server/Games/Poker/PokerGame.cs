@@ -129,6 +129,18 @@ public class PokerGame
             return;
         }
 
+        if (PokerHelper.OnlyOnePlayerLeft(_players))
+        {
+            Console.WriteLine("🏆 Solo queda un jugador. Ganador automático.");
+            return;
+        }
+
+        if (PokerHelper.AllPlayersAllInOrNoChips(_players))
+        {
+            Console.WriteLine("♠️ Todos están all-in o sin fichas. Se debe forzar showdown.");
+            return;
+        }
+
         for (int i = 1; i < _players.Count; i++)
         {
             int nextIndex = (currentIndex + i) % _players.Count;
@@ -152,6 +164,15 @@ public class PokerGame
             Console.WriteLine($"➡️ Turno avanzado a {nextPlayer.User.NickName}");
             return;
         }
+    }
+    public bool ShouldHandleImmediateWinner()
+    {
+        return PokerHelper.OnlyOnePlayerLeft(_players);
+    }
+
+    public bool ShouldHandleAllInShowdown()
+    {
+        return PokerHelper.AllPlayersAllInOrNoChips(_players);
     }
 
 
@@ -275,7 +296,7 @@ public class PokerGame
             Console.WriteLine($"   - {p.User.NickName} contribuyó: {contribution} fichas");
         }
 
-        var eligiblePlayers = playersWithBets
+        List<Player> eligiblePlayers = playersWithBets
         .Where(p => p.PlayerState is PlayerState.Playing or PlayerState.AllIn)
         .ToList();
 
@@ -414,9 +435,22 @@ public class PokerGame
     {
         _lastShowdownSummary.Clear();
 
+        Console.WriteLine("[DEBUG] Estados de los jugadores al entrar a Showdown():");
+        foreach (var p in _players)
+        {
+            Console.WriteLine($" - {p.User.NickName}: {p.PlayerState}");
+        }
+
         List<Player> activePlayers = _players
             .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
             .ToList();
+
+        Console.WriteLine("[DEBUG] Jugadores activos detectados para el showdown:");
+        foreach (var p in activePlayers)
+        {
+            Console.WriteLine($" - {p.User.NickName}");
+        }
+
 
         if (!activePlayers.Any())
         {

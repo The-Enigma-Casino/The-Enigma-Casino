@@ -15,7 +15,13 @@ public class BlindManager
     {
         _players = players;
         _pokerGameService = pokerGameService;
-        _dealerIndex = 0;     
+        _dealerIndex = 0;
+
+        Console.WriteLine("[BLINDS] BlindManager creado con jugadores:");
+        foreach (var p in _players)
+        {
+            Console.WriteLine($" - {p.User.NickName} (Estado: {p.PlayerState})");
+        }
     }
 
     public Player Dealer => _players[_dealerIndex % _players.Count];
@@ -24,12 +30,15 @@ public class BlindManager
     public int FirstToActIndex => (_dealerIndex + 3) % _players.Count;
     public int SmallBlindIndex => (_dealerIndex + 1) % _players.Count;
 
-
-    // Asigna las apuestas de las ciegas (small y big) 
     public void AssignBlinds()
     {
         var smallBlind = SmallBlind;
         var bigBlind = BigBlind;
+
+        Console.WriteLine($"[BLINDS] Asignando blinds:");
+        Console.WriteLine($" - Dealer: {Dealer.User.NickName} (Index: {_dealerIndex % _players.Count})");
+        Console.WriteLine($" - Small Blind: {smallBlind.User.NickName} (Index: {SmallBlindIndex})");
+        Console.WriteLine($" - Big Blind: {bigBlind.User.NickName} (Index: {(_dealerIndex + 2) % _players.Count})");
 
         int smallBlindAmount = Math.Min(SmallBlindAmount, smallBlind.User.Coins);
         int bigBlindAmount = Math.Min(BigBlindAmount, bigBlind.User.Coins);
@@ -56,12 +65,12 @@ public class BlindManager
             Console.WriteLine($"{bigBlind.User.NickName} no tiene fichas suficientes para la Big Blind y pasa a modo espera.");
         }
 
-        Console.WriteLine($"\nDealer: {Dealer.User.NickName}");
+        Console.WriteLine($"[BLINDS] Final de asignación de blinds.\n");
     }
 
-    // Cambia al siguiente jugador como dealer para la siguiente ronda
     public void NextDealer()
     {
         _dealerIndex = (_dealerIndex + 1) % _players.Count;
+        Console.WriteLine($"[BLINDS] Cambiando dealer. Nuevo índice: {_dealerIndex}");
     }
 }

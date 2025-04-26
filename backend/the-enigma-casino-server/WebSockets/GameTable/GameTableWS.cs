@@ -1,4 +1,5 @@
 ﻿
+using System.Collections.Concurrent;
 using System.Text.Json;
 using the_enigma_casino_server.Application.Services;
 using the_enigma_casino_server.Core.Entities;
@@ -20,6 +21,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     public string Type => "game_table";
 
     private readonly GameMatchWS _gameMatchWS;
+
+    private static readonly ConcurrentDictionary<int, SemaphoreSlim> _tableLocks = new();
 
 
     public GameTableWS(
@@ -101,10 +104,32 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             (bool success, string errorMessage) addResult;
 
-            lock (table)
+            var semaphore = _tableLocks.GetOrAdd(tableId, _ => new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
+            try
             {
+                using var betScope = _serviceProvider.CreateScope();
+                var betInfoProvider = betScope.ServiceProvider.GetRequiredService<GameBetInfoProviderResolver>().Resolve(table.GameType);
+                int minimumCoins = betInfoProvider.GetMinimumRequiredCoins();
+
+                if (user.Coins < minimumCoins)
+                {
+                    Console.WriteLine($"❌ {user.NickName} tiene {user.Coins} monedas, pero se requieren al menos {minimumCoins} para unirse a esta mesa.");
+                    await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                    {
+                        type = "error",
+                        message = $"Necesitas al menos {minimumCoins} monedas para unirte a esta mesa."
+                    });
+                    return;
+                }
+
                 addResult = tableManager.TryAddPlayer(table, user);
             }
+            finally
+            {
+                semaphore.Release();
+            }
+
 
             if (!addResult.success)
             {
@@ -274,6 +299,18 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     return;
             }
 
+            // 🧾 Cerrar historial si lo hay
+            var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(userIdInt, table.Id);
+
+            if (history != null && history.LeftAt == null)
+            {
+                history.LeftAt = DateTime.Now;
+                unitOfWork.GameHistoryRepository.Update(history);
+                await unitOfWork.SaveAsync();
+
+                Console.WriteLine($"✅ Historial cerrado para jugador {userIdInt} al salir de la mesa {tableId}.");
+            }
+
             if (result.StopCountdown)
             {
                 await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
@@ -288,6 +325,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
         }
     }
+
+
 
 
     public PlayerLeaveResult? ForceRemovePlayerFromTable(int userId, ActiveGameSession session)

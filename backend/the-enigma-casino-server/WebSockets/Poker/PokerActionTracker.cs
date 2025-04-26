@@ -50,7 +50,7 @@ public static class PokerActionTracker
         return new List<int>();
     }
 
-    public static void ResetActionsForRaise(int tableId, List<int> userIds, int raiserUserId, string phase)
+    public static void ResetActionsForNewBet(int tableId, List<int> userIds, int raiserUserId, string phase)
     {
         var key = (tableId, phase);
 

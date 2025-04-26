@@ -141,6 +141,15 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             return;
         }
 
+        Console.WriteLine($"[DEBUG] Estado actual del Match en evento para mesa {tableId}: {match.MatchState}");
+
+
+        if (match.MatchState != MatchState.InProgress)
+        {
+            Console.WriteLine($"[DEBUG] Ignorando LeaveMatch para la mesa {tableId} porque el Match ya terminó ({match.MatchState}).");
+            return;
+        }
+
         Player player = GameMatchHelper.FindPlayer(match, userId);
         if (player == null)
             return;
@@ -229,73 +238,119 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
         Table table = session.Table;
 
-        if (table.Players.Count >= table.MinPlayer)
+
+        using (var betScope = _serviceProvider.CreateScope())
         {
-            table.TableState = TableState.Starting;
+            var betInfoProvider = betScope.ServiceProvider.GetRequiredService<GameBetInfoProviderResolver>().Resolve(table.GameType);
+            int minimumCoins = betInfoProvider.GetMinimumRequiredCoins();
 
-            using var scope = _serviceProvider.CreateScope();
-            var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-            uow.GameTableRepository.Update(table);
-            await uow.SaveAsync();
-
-            await StartMatchForTableAsync(table.Id);
-            return;
-        }
-
-        // Solo aplicamos limpieza si el juego es Poker
-        if (table.GameType != GameType.Poker)
-            return;
-
-        // 🔄 1. Eliminar jugadores abandonados
-        foreach (Player p in table.Players.Where(p => p.HasAbandoned).ToList())
-        {
-            Console.WriteLine($"🧹 [PostMatch] Eliminando jugador abandonado: {p.User.NickName}");
-            using var scope = _serviceProvider.CreateScope();
-            var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
-            tblMgr.RemovePlayerFromTable(table, p.UserId, out _);
-        }
-
-        // 🧍 2. Si solo queda uno, también eliminarlo y cerrar su historial
-        if (table.Players.Count == 1)
-        {
-            var lone = table.Players[0];
-
-            Console.WriteLine($"🚪 [PostMatch] Solo queda {lone.User.NickName}. Eliminarlo y cerrar historial.");
-
-            lone.PlayerState = PlayerState.Left;
-            lone.HasAbandoned = true;
-
-            using (var scope = _serviceProvider.CreateScope())
+            foreach (Player p in table.Players.Where(p => p.User.Coins < minimumCoins).ToList())
             {
-                var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
-                tblMgr.RemovePlayerFromTable(table, lone.UserId, out _);
-            }
-
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-                var hist = await uow.GameHistoryRepository.FindActiveSessionAsync(lone.UserId, table.Id);
-
-                if (hist != null && hist.LeftAt == null)
+                Console.WriteLine($"🚪 [PostMatch] {p.User.NickName} no tiene mínimo para jugar ({p.User.Coins} fichas). Eliminándolo de la mesa.");
+                using (var scope = _serviceProvider.CreateScope())
                 {
-                    hist.LeftAt = DateTime.Now;
-                    uow.GameHistoryRepository.Update(hist);
-                    await uow.SaveAsync();
+                    var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+                    tblMgr.RemovePlayerFromTable(table, p.UserId, out _);
+
+                    await NotifyPlayerKickedAsync(p.UserId.ToString());
+
+                    var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+                    var history = await uow.GameHistoryRepository.FindActiveSessionAsync(p.UserId, table.Id);
+                    if (history != null && history.LeftAt == null)
+                    {
+                        history.LeftAt = DateTime.Now;
+                        uow.GameHistoryRepository.Update(history);
+                        await uow.SaveAsync();
+                    }
                 }
             }
-        }
 
-        // 🕳️ 3. Si no queda nadie, poner mesa en estado Waiting
-        if (table.Players.Count == 0)
-        {
-            Console.WriteLine($"🕳️ [PostMatch] La mesa {table.Id} quedó vacía. Estado → Waiting.");
-            table.TableState = TableState.Waiting;
+            if (table.GameType == GameType.Poker)
+            {
+                foreach (Player p in table.Players.Where(p => p.HasAbandoned).ToList())
+                {
+                    Console.WriteLine($"🧹 [PostMatch] Eliminando jugador abandonado: {p.User.NickName}");
+                    using var scope = _serviceProvider.CreateScope();
+                    var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+                    tblMgr.RemovePlayerFromTable(table, p.UserId, out _);
+                }
+            }
 
-            using var scope = _serviceProvider.CreateScope();
-            var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-            uow.GameTableRepository.Update(table);
-            await uow.SaveAsync();
+            if (table.Players.Count >= table.MinPlayer)
+            {
+                table.TableState = TableState.Starting;
+
+                using var scope = _serviceProvider.CreateScope();
+                var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+                uow.GameTableRepository.Update(table);
+                await uow.SaveAsync();
+
+                await StartMatchForTableAsync(table.Id);
+                return;
+            }
+
+
+            if (table.GameType != GameType.Poker)
+                return;
+
+            if (table.Players.Count == 1)
+            {
+                var lone = table.Players[0];
+
+                Console.WriteLine($"🚪 [PostMatch] Solo queda {lone.User.NickName}. Eliminándolo de la mesa y cerrando historial.");
+
+                await ((IWebSocketSender)this).SendToUserAsync(lone.UserId.ToString(), new
+                {
+                    type = "game_match",
+                    action = "return_to_table",
+                    message = "Todos los demás jugadores han abandonado. Volverás a la sala principal."
+                });
+
+
+                lone.PlayerState = PlayerState.Left;
+                lone.HasAbandoned = true;
+
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+                    tblMgr.RemovePlayerFromTable(table, lone.UserId, out _);
+                }
+
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    UnitOfWork uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+                    History hist = await uow.GameHistoryRepository.FindActiveSessionAsync(lone.UserId, table.Id);
+
+                    if (hist != null && hist.LeftAt == null)
+                    {
+                        hist.LeftAt = DateTime.Now;
+                        uow.GameHistoryRepository.Update(hist);
+                        await uow.SaveAsync();
+                    }
+                }
+            }
+
+
+            if (table.Players.Count == 0)
+            {
+                Console.WriteLine($"🕳️ [PostMatch] La mesa {table.Id} quedó vacía. Estado → Waiting.");
+                table.TableState = TableState.Waiting;
+
+                using var scope = _serviceProvider.CreateScope();
+                var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+                uow.GameTableRepository.Update(table);
+                await uow.SaveAsync();
+            }
         }
     }
 
+    private async Task NotifyPlayerKickedAsync(string userId)
+    {
+        await ((IWebSocketSender)this).SendToUserAsync(userId, new
+        {
+            type = "game_match",
+            action = "eliminated_no_coins",
+            message = "Te has quedado sin monedas suficientes para continuar. Has sido eliminado de la mesa."
+        });
+    }
 }

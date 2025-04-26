@@ -71,6 +71,14 @@ public static class GameMatchHelper
 
     public static async Task CheckGamePostExitLogicAsync(Match match, int tableId, IServiceProvider serviceProvider)
     {
+        Console.WriteLine($"[DEBUG] Estado actual del Match en evento para mesa {tableId}: {match.MatchState}");
+
+        if (match.MatchState != MatchState.InProgress)
+        {
+            Console.WriteLine($"[DEBUG] Ignorando CheckGamePostExitLogic para la mesa {tableId} porque el Match ya terminó ({match.MatchState}).");
+            return;
+        }
+
         if (match.GameTable.GameType == GameType.BlackJack)
         {
             var blackjackWS = serviceProvider.GetRequiredService<BlackjackWS>();

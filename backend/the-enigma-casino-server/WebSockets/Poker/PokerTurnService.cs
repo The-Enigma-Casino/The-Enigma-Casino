@@ -17,6 +17,8 @@ public class PokerTurnService : IGameTurnService
             return;
 
         pokerGame.AdvanceTurn();
+
+
         await Task.CompletedTask;
     }
 
@@ -51,6 +53,4 @@ public class PokerTurnService : IGameTurnService
 
         return pokerGame.CurrentTurnUserId == userId;
     }
-
-
 }

@@ -6,9 +6,12 @@ using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Websockets.Poker;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.GameMatch;
+using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker.Store;
+using the_enigma_casino_server.WebSockets.Resolvers;
+using the_enigma_casino_server.WebSockets.Resolversl;
 
 
 namespace the_enigma_casino_server.WebSockets.Poker;
@@ -21,6 +24,20 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
     public PokerWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
         : base(connectionManager, serviceProvider)
     {
+    }
+
+    private GameMatchManager CreateScopedManager(out IServiceScope scope)
+    {
+        scope = _serviceProvider.CreateScope();
+        IServiceProvider provider = scope.ServiceProvider;
+
+        UnitOfWork unitOfWork = provider.GetRequiredService<UnitOfWork>();
+        GameBetInfoProviderResolver betInfoResolver = provider.GetRequiredService<GameBetInfoProviderResolver>();
+        GameTurnServiceResolver turnResolver = provider.GetRequiredService<GameTurnServiceResolver>();
+        GameSessionCleanerResolver sessionCleaner = provider.GetRequiredService<GameSessionCleanerResolver>();
+        GameExitRuleResolver exitRuleResolver = provider.GetRequiredService<GameExitRuleResolver>();
+
+        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, exitRuleResolver, provider);
     }
 
     public async Task HandleAsync(string userId, JsonElement message)
@@ -51,6 +68,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         PokerNotifier notifier = _serviceProvider.GetRequiredService<PokerNotifier>();
 
         PokerGame pokerGame = PokerManager.StartNewRound(match);
+
+        await notifier.NotifyBlindsAsync(match, pokerGame);
 
         UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out var scope);
         using (scope)
@@ -106,14 +125,28 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         string phase = pokerGame.GetCurrentPhase();
 
+        bool shouldAdvance = false;
+
         try
         {
-            bool shouldAdvance = PokerManager.ExecutePlayerMove(pokerGame, match, player, move, amount);
+            shouldAdvance = PokerManager.ExecutePlayerMove(pokerGame, match, player, move, amount);
 
             if (move is "call" or "raise" or "all-in")
                 await HandleBetAndNotifyAsync(player);
 
             await notifier.NotifyPlayerActionAsync(player, move);
+
+            if (pokerGame.ShouldHandleImmediateWinner())
+            {
+                await HandleImmediateWinnerAsync(tableId);
+                return;
+            }
+
+            if (pokerGame.ShouldHandleAllInShowdown())
+            {
+                await HandleAllInShowdownAsync(tableId);
+                return;
+            }
 
             if (shouldAdvance)
                 await NotifyNextTurnAsync(tableId, pokerGame, match, phase, notifier);
@@ -133,6 +166,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             HandlePhaseAdvanceAsync
         );
     }
+
 
     private async Task HandlePlaceBetAsync(string userId, JsonElement message)
     {
@@ -348,7 +382,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             .Where(p => p.PlayerState != PlayerState.Spectating)
             .Select(p => p.UserId.ToString())
             .ToList();
-        
+
         await ((IWebSocketSender)this).BroadcastToUsersAsync(playerIds, response);
 
         PokerActionTracker.Clear(tableId, "river");
@@ -379,7 +413,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         var summary = pokerGame.GetShowdownSummary();
         var response = new
         {
-            type = Type, 
+            type = Type,
             action = "round_result",
             summary
         };
@@ -391,20 +425,26 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, response);
 
-        // ⏱️ Esperar 20 segundos antes de cerrar el match
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var gameMatchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
+            await gameMatchWS.FinalizeMatchAsync(tableId);
+            PokerBetTracker.ResetContributions(tableId);
+        }
+
+        Console.WriteLine($"✅ Match de la mesa {tableId} cerrado inmediatamente tras el showdown.");
+
         Console.WriteLine("⏱️ Iniciando temporizador de fin de ronda...");
 
         if (ActiveGameSessionStore.TryGet(tableId, out var session))
         {
             session.StartPostMatchTimer(20_000, async () =>
             {
-                var gameMatchWS = GetScopedService<GameMatchWS>(out var scope);
-                using (scope)
+                using (var postMatchScope = _serviceProvider.CreateScope())
                 {
-                    Console.WriteLine($"🧾 [GameMatchWS] EndMatchForAllPlayersAsync llamado para mesa {tableId} (desde temporizador)");
-                    await gameMatchWS.FinalizeAndEvaluateMatchAsync(tableId);
-                    pokerGame.ResetCurrentBets();
-                    PokerBetTracker.ResetContributions(tableId);
+                    var gameMatchWS = postMatchScope.ServiceProvider.GetRequiredService<GameMatchWS>();
+                    Console.WriteLine($"⏱️ [Timer] Evaluando si puede empezar nuevo match para mesa {tableId}");
+                    await gameMatchWS.EvaluatePostMatchAsync(tableId);
                 }
             });
         }
@@ -424,6 +464,38 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         Console.WriteLine($"✅ Apuesta confirmada. {player.User.NickName} tiene ahora {player.User.Coins} fichas.");
     }
+
+    private async Task HandleImmediateWinnerAsync(int tableId)
+    {
+        if (!TryGetPokerGame(tableId, "system", out var pokerGame)) return;
+        if (!TryGetMatch(tableId, "system", out var match)) return;
+
+        Console.WriteLine($"🏆 [PokerWS] Solo queda un jugador en mesa {tableId}. Avanzando a showdown automático.");
+
+        await HandleShowdownAsync(tableId);
+    }
+
+
+    private async Task HandleAllInShowdownAsync(int tableId)
+    {
+        if (!TryGetPokerGame(tableId, "system", out var pokerGame)) return;
+        if (!TryGetMatch(tableId, "system", out var match)) return;
+
+        Console.WriteLine("♠️ [PokerWS] Todos los jugadores están all-in o sin fichas. Avanzando automáticamente a showdown.");
+
+        while (pokerGame.GetCurrentPhase() != "river")
+        {
+            if (pokerGame.GetCurrentPhase() == "preflop")
+                pokerGame.DealFlop();
+            else if (pokerGame.GetCurrentPhase() == "flop")
+                pokerGame.DealTurn();
+            else if (pokerGame.GetCurrentPhase() == "turn")
+                pokerGame.DealRiver();
+        }
+
+        await HandleShowdownAsync(tableId);
+    }
+
 
     private bool TryGetPokerGame(int tableId, out PokerGame pokerGame)
     => TryGetWithError(ActivePokerGameStore.TryGetNullable, tableId, out pokerGame, "partida de Poker");
@@ -447,5 +519,4 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             await notifier.NotifyPlayerTurnAsync(match, nextPlayer);
         }
     }
-
 }

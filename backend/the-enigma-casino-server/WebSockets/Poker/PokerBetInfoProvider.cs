@@ -22,4 +22,9 @@ public class PokerBetInfoProvider : IGameBetInfoProvider
     {
         return player.Hand?.Cards.Count == 2;
     }
+
+    public int GetMinimumRequiredCoins()
+    {
+        return 20; 
+    }
 }

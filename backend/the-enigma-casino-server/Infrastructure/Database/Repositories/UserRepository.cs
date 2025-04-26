@@ -92,4 +92,14 @@ public class UserRepository : Repository<User, int>
             .FirstOrDefaultAsync(u => u.ConfirmationToken == token);
     }
 
+    public async Task<List<User>> GetUsersEligibleForSelfBanReversalAsync()
+    {
+        DateTime thresholdDate = DateTime.UtcNow.AddDays(-15);
+
+        return await GetQueryable()
+            .Where(u => u.IsSelfBanned && u.SelfBannedAt != null && u.SelfBannedAt <= thresholdDate)
+            .ToListAsync();
+    }
+
+
 }

@@ -29,4 +29,9 @@ public class UserFriendService
         await _userFriendRepository.RemoveFriendshipAsync(userId, friendId);
         await _unitOfWork.SaveAsync();
     }
+
+    public async Task<bool> AreFriendsAsync(int userId, int friendId)
+    {
+        return await _userFriendRepository.AreFriendsAsync(userId,friendId);
+    }
 }

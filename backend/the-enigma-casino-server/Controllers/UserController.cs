@@ -22,10 +22,10 @@ public class UserController : BaseController
     {
         try
         {
-            int id = GetUserId(); 
+            int id = GetUserId();
             int coins = await _userService.GetCoins(id);
 
-            return Ok(coins); 
+            return Ok(coins);
         }
         catch (KeyNotFoundException ex)
         {
@@ -59,13 +59,16 @@ public class UserController : BaseController
     }
 
 
-    [HttpGet("profile/{id}")]
-    public async Task<ActionResult<UserDto>> GetOtherProfile(int id)
+    [HttpGet("profile/{idOtherUser}")]
+    public async Task<ActionResult<OtherUserDto>> GetOtherProfile(int idOtherUser)
     {
         try
         {
-            UserDto userDto = await _userService.GetProfile(id);
-            return Ok(userDto);
+            int currentUserId = GetUserId();
+
+            OtherUserDto otherUserDto = await _userService.GetOtherProfile(currentUserId, idOtherUser);
+
+            return Ok(otherUserDto);
         }
         catch (KeyNotFoundException ex)
         {
@@ -90,6 +93,26 @@ public class UserController : BaseController
         catch (Exception ex)
         {
             return StatusCode(500, $"Error al actualizar la imagen: {ex.Message}");
+        }
+    }
+
+    [HttpPut("auto-ban")]
+    public async Task<ActionResult> AutoBan()
+    {
+        try
+        {
+            int userId = GetUserId();
+            await _userService.AutoBan(userId);
+
+            return Ok("Usuario auto baneado");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno: {ex.Message}");
         }
     }
 }

@@ -73,7 +73,7 @@ public class CoinsPackSeeder
                 Price = 0,
                 Quantity = 0,
                 Offer = 0,
-                Image = "images/cards/as_clubs.webp",
+                Image = "images/coins/pack6.webp",
             },
 
         };

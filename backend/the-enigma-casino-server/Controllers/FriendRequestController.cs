@@ -141,5 +141,21 @@ namespace the_enigma_casino_server.Controllers
                 return StatusCode(500, $"Ocurrió un error al eliminar la amistad. {exception.Message}");
             }
         }
+
+
+        [HttpGet("is-friend")]
+        public async Task<ActionResult<bool>> IsFriend([FromQuery] int otherUserId)
+        {
+            try
+            {
+                int userId = GetUserId();
+                bool areFriends = await _userFriendService.AreFriendsAsync(userId, otherUserId);
+                return Ok(areFriends);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al comprobar la amistad: {ex.Message}");
+            }
+        }
     }
 }

@@ -15,10 +15,12 @@ public class UnitOfWork
     private UserRepository _userRepository;
     private CoinsPackRepository _coinsPackRepository;
     private OrderRepository _orderRepository;
+    private UserFriendRepository _userFriendRepository;
 
     public UserRepository UserRepository => _userRepository ??= new UserRepository(_context);
     public CoinsPackRepository CoinsPackRepository => _coinsPackRepository ??= new CoinsPackRepository(_context);
     public OrderRepository OrderRepository => _orderRepository ??= new OrderRepository(_context);
+    public UserFriendRepository UserFriendRepository => _userFriendRepository ??= new UserFriendRepository(_context);
 
 
     // GAME

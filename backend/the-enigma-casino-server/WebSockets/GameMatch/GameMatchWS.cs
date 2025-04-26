@@ -2,6 +2,7 @@
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
+using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
@@ -59,7 +60,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         if (!message.TryGetProperty("tableId", out var tableIdProp) ||
             !int.TryParse(tableIdProp.GetString(), out int tableId))
         {
-            Console.WriteLine($"❌ start_match: tableId inválido.");
+            Console.WriteLine($"start_match: tableId inválido.");
             return;
         }
 
@@ -69,14 +70,14 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
     {
         if (!int.TryParse(userId, out int userIdInt))
         {
-            Console.WriteLine("❌ leave_match: userId inválido.");
+            Console.WriteLine("leave_match: userId inválido.");
             return;
         }
 
         if (!message.TryGetProperty("tableId", out var tableIdProp) ||
             !int.TryParse(tableIdProp.GetString(), out int tableId))
         {
-            Console.WriteLine("❌ leave_match: tableId inválido.");
+            Console.WriteLine("leave_match: tableId inválido.");
             return;
         }
 
@@ -88,7 +89,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
     {
         if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session))
         {
-            Console.WriteLine($"❌ [GameMatchWS] No se encontró sesión activa para la mesa {tableId}");
+            Console.WriteLine($"[GameMatchWS] No se encontró sesión activa para la mesa {tableId}");
             return;
         }
 
@@ -104,7 +105,14 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
             ActiveGameMatchStore.Set(table.Id, match);
 
-            Console.WriteLine($"✅ [GameMatchWS] Partida iniciada en mesa {table.Id} con {match.Players.Count} jugadores.");
+            // Ruleta ciclo pausa
+            if (match.GameTable.GameType == GameType.Roulette)
+            {
+                var rouletteWS = scope.ServiceProvider.GetRequiredService<RouletteWS>();
+                rouletteWS.StartAutomaticCycle(table.Id);
+            }
+
+            Console.WriteLine($"[GameMatchWS] Partida iniciada en mesa {table.Id} con {match.Players.Count} jugadores.");
 
             string[] userIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
 

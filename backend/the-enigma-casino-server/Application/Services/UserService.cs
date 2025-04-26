@@ -9,6 +9,7 @@ using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Mappers;
 using the_enigma_casino_server.Application.Services.Email;
 using the_enigma_casino_server.Core.Entities;
+using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Utilities;
 
@@ -20,13 +21,17 @@ public class UserService : BaseService
     private readonly EmailService _emailService;
     private readonly ValidationService _validation;
     private readonly UserMapper _userMapper;
+    private readonly UserFriendService _userFriendService;
+    private readonly SmartSearchService _smartSearchService;
 
-    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper) : base(unitOfWork)
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper, UserFriendService userFriendService, SmartSearchService smartSearchService) : base(unitOfWork)
     {
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
         _emailService = emailService;
         _validation = validationService;
         _userMapper = userMapper;
+        _userFriendService = userFriendService;
+        _smartSearchService = smartSearchService;
     }
 
     public async Task<(bool, string)> CheckUser(string nickName, string email)
@@ -58,6 +63,16 @@ public class UserService : BaseService
             throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
         }
 
+        if (user.Role == Role.Banned)
+        {
+            throw new UnauthorizedAccessException("Tu cuenta ha sido baneada. Contacta con soporte si crees que es un error.");
+        }
+
+        if(user.IsSelfBanned)
+        {
+            throw new UnauthorizedAccessException("Tu cuenta fue auto baneada. Contacta con soporte si crees que es un error.");
+        }
+
         if (!user.EmailConfirm)
         {
             throw new UnauthorizedAccessException("Debe confirmar su correo antes de iniciar sesión.");
@@ -79,7 +94,7 @@ public class UserService : BaseService
             },
 
             //Cambiar tiempo a 3 minutos al acabar proyecto --> 3000 segundos
-            Expires = DateTime.Now.AddDays(1),
+            Expires = DateTime.UtcNow.AddHours(8),
             SigningCredentials = new SigningCredentials(_tokenParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha256Signature)
         };
 
@@ -240,6 +255,29 @@ public class UserService : BaseService
         }
     }
 
+    public async Task<OtherUserDto> GetOtherProfile(int currentUserId, int profileUserId)
+    {
+        User user = await GetUserById(profileUserId);
+
+        if (user == null)
+            throw new KeyNotFoundException("Usuario no encontrado");
+
+        string relation;
+
+        if (currentUserId == profileUserId)
+        {
+            relation = "self";
+        }
+        else
+        {
+            bool isFriend = await _userFriendService.AreFriendsAsync(currentUserId, profileUserId);
+            relation = isFriend ? "friend" : "stranger";
+        }
+
+        return new OtherUserDto(user.NickName, user.Country, user.Image, relation);
+
+    }
+
     public async Task UpdateUserImageAsync(int userId, IFormFile imageFile)
     {
         if (imageFile == null || imageFile.Length == 0)
@@ -265,7 +303,7 @@ public class UserService : BaseService
 
             WebpEncoder encoder = new WebpEncoder
             {
-                Quality = 75 
+                Quality = 75
             };
 
             await image.SaveAsync(filePath, encoder);
@@ -273,6 +311,56 @@ public class UserService : BaseService
 
         User user = await GetUserById(userId);
         user.Image = fileName;
+
+        _unitOfWork.UserRepository.Update(user);
+        await _unitOfWork.SaveAsync();
+    }
+
+    public async Task<User> SetRoleByUser(User user, Role role)
+    {
+        if (user == null)
+            throw new Exception("Usuario no existente.");
+
+        if (user.Role != role)
+        {
+            user.Role = role;
+
+            _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveAsync();
+        }
+
+        return user;
+    }
+
+    public async Task<List<User>> SearchUsersByNickName(string nickName)
+    {
+        List<User> users = await _unitOfWork.UserRepository.GetAllUserAsync();
+        List<string> userNickNames = users.Select(u => u.NickName).ToList();
+
+        IEnumerable<string> matchedNickNames = _smartSearchService.Search(nickName, userNickNames);
+
+        if (matchedNickNames == null || !matchedNickNames.Any())
+            throw new Exception("No se encontraron usuarios con ese NickName.");
+
+        List<User> filteredUsers = users
+            .Where(u => matchedNickNames.Contains(u.NickName))
+            .ToList();
+
+        return filteredUsers;
+    }
+
+    public async Task AutoBan(int id)
+    {
+        User user = await GetUserById(id);
+
+        if (user == null)
+            throw new KeyNotFoundException("Usuario no encontrado");
+
+        if (user.Role == Role.Admin)
+            throw new UnauthorizedAccessException("Un usuario admin no puede auto banearse.");
+
+        user.IsSelfBanned = true;
+        user.SelfBannedAt = DateTime.Now;
 
         _unitOfWork.UserRepository.Update(user);
         await _unitOfWork.SaveAsync();

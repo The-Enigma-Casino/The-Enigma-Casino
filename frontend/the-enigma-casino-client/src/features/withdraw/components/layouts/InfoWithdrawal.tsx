@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import classes from "./infoWithdrawal.module.css";
+import { useEffect, useRef } from "react";
+import classes from "./InfoWithdrawal.module.css";
 import { useUnit } from "effector-react";
 import { fetchLastOrderWithdrawalFx } from "../../actions/withdrawalActions";
 import { $lastOrderWithdrawal } from "../../store/WithdrawalStore";

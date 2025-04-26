@@ -88,5 +88,14 @@ public class EmailService
 
     }
 
+    public async Task SendBannedEmailAsync(User user)
+    {
+        string emailContent = await GetEmailTemplateAsync("banned.html");
+
+        emailContent = emailContent.Replace("{UserName}", user.NickName);
+
+        await EmailHelper.SendEmailAsync(user.Email, "Cuenta baneada", emailContent, true);
+    }
+
 }
 

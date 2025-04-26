@@ -28,5 +28,9 @@ public class SeedManager
 
         GameHistorySeeder gameHistorySeeder = new GameHistorySeeder(_context);
         gameHistorySeeder.Seed();
+
+        UserFriendSeeder friendSeeder = new UserFriendSeeder(_context);
+        friendSeeder.Seed();
+
     }
 }

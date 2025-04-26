@@ -1,48 +1,49 @@
-﻿namespace the_enigma_casino_server.Utilities;
+﻿using System.Text.RegularExpressions;
 
-using System.Text.RegularExpressions;
+namespace the_enigma_casino_server.Utilities;
 
 public class ValidationService
 {
-    private readonly HashSet<string> _palabrasProhibidas = new();
+    private readonly HashSet<string> _bannedWords = new();
 
     public ValidationService()
     {
-        LoadRestrictedWords();
+        LoadBannedWords();
     }
 
-    private void LoadRestrictedWords()
+    private void LoadBannedWords()
     {
         try
         {
-            string baseDir = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.FullName;
+            // Ruta base ajustada a wwwroot/filters
+            string basePath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "filters");
 
-            if (baseDir == null) return;
+            string enWordsPath = Path.Combine(basePath, "en_words.txt");
+            string esWordsPath = Path.Combine(basePath, "es_words.txt");
 
-            string rutaArchivo1 = Path.Combine(baseDir, "Utilities", "en_words.txt");
-            string rutaArchivo2 = Path.Combine(baseDir, "Utilities", "es_words.txt");
-
-            if (File.Exists(rutaArchivo1))
+            if (File.Exists(enWordsPath))
             {
-                var palabras = File.ReadAllLines(rutaArchivo1)
-                    .Select(p => p.Trim().ToLower())
-                    .Where(p => !string.IsNullOrWhiteSpace(p));
+                var words = File.ReadAllLines(enWordsPath)
+                    .Select(w => w.Trim().ToLower())
+                    .Where(w => !string.IsNullOrWhiteSpace(w));
 
-                _palabrasProhibidas.UnionWith(palabras);
+                _bannedWords.UnionWith(words);
             }
 
-            if (File.Exists(rutaArchivo2))
+            if (File.Exists(esWordsPath))
             {
-                var palabras = File.ReadAllLines(rutaArchivo2)
-                    .Select(p => p.Trim().ToLower())
-                    .Where(p => !string.IsNullOrWhiteSpace(p));
+                var words = File.ReadAllLines(esWordsPath)
+                    .Select(w => w.Trim().ToLower())
+                    .Where(w => !string.IsNullOrWhiteSpace(w));
 
-                _palabrasProhibidas.UnionWith(palabras);
+                _bannedWords.UnionWith(words);
             }
+
+            Console.WriteLine($"✅ Cargadas {_bannedWords.Count} palabras prohibidas.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al cargar palabras ofensivas: {ex.Message}");
+            Console.WriteLine($"❌ Error loading banned words: {ex.Message}");
         }
     }
 
@@ -56,24 +57,36 @@ public class ValidationService
     {
         name = name.ToLower().Trim();
 
-        foreach (var palabra in _palabrasProhibidas)
+        foreach (string word in _bannedWords)
         {
-            string patron = Regex.Escape(palabra);
-            if (Regex.IsMatch(name, patron, RegexOptions.IgnoreCase))
+            string pattern = Regex.Escape(word);
+            if (Regex.IsMatch(name, pattern, RegexOptions.IgnoreCase))
                 return false;
         }
 
         return true;
     }
 
-    public bool IsAdult(DateTime dateOfBirth)
+    public bool IsAdult(DateTime birthDate)
     {
         var today = DateTime.Today;
-        int age = today.Year - dateOfBirth.Year;
+        int age = today.Year - birthDate.Year;
 
-        if (dateOfBirth.Date > today.AddYears(-age)) age--;
+        if (birthDate.Date > today.AddYears(-age)) age--;
 
         return age >= 18;
     }
-}
 
+    public string CensorWords(string text)
+    {
+        string result = text;
+
+        foreach (string word in _bannedWords)
+        {
+            string pattern = $@"\b{Regex.Escape(word)}\b";
+            result = Regex.Replace(result, pattern, new string('*', word.Length), RegexOptions.IgnoreCase);
+        }
+
+        return result;
+    }
+}

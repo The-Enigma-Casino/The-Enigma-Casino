@@ -1,4 +1,5 @@
 ﻿using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Websockets.Chat;
 
 public class ActiveGameSession
 {
@@ -13,6 +14,8 @@ public class ActiveGameSession
     private readonly object _lock = new();
 
     public bool IsTimerRunning => _isTimerRunning;
+
+    public List<ChatMessage> ChatMessages { get; } = new();
 
     public ActiveGameSession(Table table, Action<int> onTimerComplete)
     {

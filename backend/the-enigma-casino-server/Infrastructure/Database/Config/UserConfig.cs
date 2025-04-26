@@ -61,13 +61,18 @@ public class UserConfig : IEntityTypeConfiguration<User>
             .HasColumnName("coins")
                 .IsRequired();
 
-        entity.Property(e => e.IsBanned)
-            .HasColumnName("is_banned")
+        entity.Property(e => e.IsSelfBanned)
+            .HasColumnName("is_self_banned")
                 .IsRequired();
 
         entity.Property(e => e.DateOfBirth)
               .HasColumnName("date_of_birth")
               .IsRequired();
+
+        entity.Property(e => e.SelfBannedAt)
+              .HasColumnName("self_banned_at")
+                .HasColumnType("datetime")
+                    .IsRequired(false);
 
         entity.Property(e => e.EmailConfirm)
               .HasColumnName("email_confirm")

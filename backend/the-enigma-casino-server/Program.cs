@@ -15,8 +15,10 @@ using the_enigma_casino_server.Infrastructure.Database.Seeder;
 using the_enigma_casino_server.Middleware;
 using the_enigma_casino_server.Utilities;
 using the_enigma_casino_server.Websockets.Poker;
+using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.BlackJack;
+using the_enigma_casino_server.WebSockets.Chat;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.Interfaces;
@@ -55,6 +57,7 @@ public class Program
 
         // --- Servicios ---
         builder.Services.AddScoped<BaseService>();
+        builder.Services.AddScoped<SmartSearchService>();
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<EmailService>();
         builder.Services.AddScoped<CoinsPackService>();
@@ -63,6 +66,9 @@ public class Program
         builder.Services.AddScoped<TableService>();
         builder.Services.AddScoped<GachaponService>();
         builder.Services.AddScoped<BlockchainService>();
+        builder.Services.AddScoped<UserFriendService>(); 
+        builder.Services.AddScoped<AdminUserService>();
+        builder.Services.AddScoped<AdminCoinsPackService>();
 
         // --- Validaciones ---
         builder.Services.AddSingleton<ValidationService>();
@@ -77,19 +83,23 @@ public class Program
         builder.Services.AddSingleton<GameTableWS>();
         builder.Services.AddSingleton<GameMatchWS>();
         builder.Services.AddSingleton<BlackjackWS>();
-        builder.Services.AddSingleton<PokerWS>(); 
+        builder.Services.AddSingleton<PokerWS>();
+        builder.Services.AddSingleton<RouletteWS>();
+        builder.Services.AddSingleton<GameChatWS>();
 
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, BlackjackWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, PokerWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, RouletteWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, GameChatWS>();
 
         // --- WebSocket: servicios específicos del juego ---
         builder.Services.AddScoped<GameTableManager>();
         builder.Services.AddScoped<GameMatchManager>();
 
         // --- Resolver de servicios por tipo de juego ---
-        builder.Services.AddScoped<GameBetInfoProviderResolver>(); 
+        builder.Services.AddScoped<GameBetInfoProviderResolver>();
         builder.Services.AddScoped<GameTurnServiceResolver>();
         builder.Services.AddScoped<GameSessionCleanerResolver>();
 
@@ -101,7 +111,6 @@ public class Program
         builder.Services.AddScoped<IGameBetInfoProvider, BlackjackBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, BlackjackTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, BlackjackSessionCleaner>();
-
 
         // --- Servicios concretos de Poker ---
         builder.Services.AddScoped<PokerBetInfoProvider>();
@@ -118,6 +127,15 @@ public class Program
         builder.Services.AddScoped<IGameTurnService, PokerTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, PokerSessionCleaner>();
 
+        // --- Servicios concretos de Ruleta ---
+        builder.Services.AddScoped<RouletteBetInfoProvider>();
+        builder.Services.AddScoped<RouletteSessionCleaner>();
+
+        builder.Services.AddScoped<IGameBetInfoProvider, RouletteBetInfoProvider>();
+        builder.Services.AddScoped<IGameSessionCleaner, RouletteSessionCleaner>();
+
+        // --- Servicios en background ---
+        builder.Services.AddHostedService<SelfBanReversalService>();
 
         // --- Mappers ---
         builder.Services.AddScoped<StripeMapper>();
@@ -133,19 +151,22 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-
         // Configuración de CORS
+        string clientUrl = Environment.GetEnvironmentVariable("CLIENT_URL");
+
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("MyPolicy", policy =>
             {
-                policy.WithOrigins("http://localhost:5173") 
-                      .AllowAnyHeader()
-                      .AllowAnyMethod()
-                      .AllowCredentials();
+                if (!string.IsNullOrEmpty(clientUrl))
+                {
+                    policy.WithOrigins(clientUrl)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                }
             });
         });
-
 
         // Configuración de autenticación JWT
         string key = Environment.GetEnvironmentVariable("JWT_KEY");
@@ -232,6 +253,9 @@ public class Program
 
         // Middleware de autenticación y autorización
         app.UseAuthentication();
+
+        UseBlockBannedUsersMiddleware(app);
+
         app.UseAuthorization();
 
         // Mapear rutas de controladores
@@ -267,5 +291,36 @@ public class Program
         StripeConfiguration.ApiKey = key;
 
     }
+
+    private static void UseBlockBannedUsersMiddleware(WebApplication app)
+    {
+        app.Use(async (context, next) =>
+        {
+            string path = context.Request.Path.Value?.ToLower();
+            if (path != null && (path.StartsWith("/api/auth") || path.StartsWith("/swagger")))
+            {
+                await next();
+                return;
+            }
+
+            var user = context.User;
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var roleClaim = user.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role);
+                if (roleClaim?.Value == "Banned")
+                {
+                    context.Response.StatusCode = 403;
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        error = "Tu cuenta ha sido baneada. Contacta con soporte si crees que es un error."
+                    });
+                    return;
+                }
+            }
+
+            await next();
+        });
+    }
+
 
 }

@@ -29,6 +29,8 @@ function Header() {
   const transactionEnded = useUnit($transactionEnd);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isGachaponModalOpen, setIsGachaponModalOpen] = useState(false);
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+
 
   useEffect(() => {
     loadCoins();
@@ -85,29 +87,55 @@ function Header() {
 
         <div className={classes.rightHeader}>
           {role?.toLowerCase() === "admin" && (
-            <img
-              src="/svg/admin.svg"
-              alt="Admin"
-              onClick={() => navigate("/admin")}
-            />
+            <div className={classes.adminContainer}>
+              <img
+                src="/svg/admin.svg"
+                alt="Admin"
+                onClick={() => setIsAdminMenuOpen((prev) => !prev)}
+                className={classes.adminIcon}
+              />
+              {isAdminMenuOpen && (
+                <div className={classes.adminMenu}>
+                  <p className={classes.adminTitle}>ADMIN</p>
+                  <button
+                    className={classes.adminMenuItem}
+                    onClick={() => {
+                      navigate("/admin/users");
+                      setIsAdminMenuOpen(false);
+                    }}
+                  >
+                    Panel Usuarios
+                  </button>
+                  <button
+                    className={classes.adminMenuItem}
+                    onClick={() => {
+                      navigate("/admin/coins");
+                      setIsAdminMenuOpen(false);
+                    }}
+                  >
+                    Panel Fichas
+                  </button>
+                </div>
+              )}
+            </div>
           )}
 
           {(role?.toLowerCase() === "user" ||
             role?.toLowerCase() === "admin") && (
-              <>
-                <button
-                  className={classes.coinsButton}
-                  onClick={() => navigate("/catalog")}
-                >
-                  {coins} <img src="/svg/coins.svg" alt="Fichas" />
-                </button>
-                <img
-                  src="/svg/exit.svg"
-                  alt="Cerrar sesión"
-                  onClick={() => setIsLogoutModalOpen(true)}
-                />
-              </>
-            )}
+            <>
+              <button
+                className={classes.coinsButton}
+                onClick={() => navigate("/catalog")}
+              >
+                {coins} <img src="/svg/coins.svg" alt="Fichas" />
+              </button>
+              <img
+                src="/svg/exit.svg"
+                alt="Cerrar sesión"
+                onClick={() => setIsLogoutModalOpen(true)}
+              />
+            </>
+          )}
 
           {!role && (
             <Button

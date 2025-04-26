@@ -24,6 +24,7 @@ using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker;
 using the_enigma_casino_server.WebSockets.Resolvers;
+using the_enigma_casino_server.WebSockets.Resolversl;
 
 
 namespace the_enigma_casino_server;
@@ -78,6 +79,8 @@ public class Program
         builder.Services.AddSingleton<WebSocketService>();
         builder.Services.AddSingleton<ConnectionManagerWS>();
         builder.Services.AddSingleton<WebSocketHandlerResolver>();
+        builder.Services.AddSingleton<UserDisconnectionHandler>();
+        builder.Services.AddSingleton<BanManager>();
 
         // --- WebSocket: handlers (SIEMPRE singleton) ---
         builder.Services.AddSingleton<GameTableWS>();
@@ -94,6 +97,8 @@ public class Program
         builder.Services.AddSingleton<IWebSocketMessageHandler, RouletteWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameChatWS>();
 
+        builder.Services.AddSingleton<IWebSocketSender>(provider => provider.GetRequiredService<GameMatchWS>());
+
         // --- WebSocket: servicios específicos del juego ---
         builder.Services.AddScoped<GameTableManager>();
         builder.Services.AddScoped<GameMatchManager>();
@@ -102,20 +107,28 @@ public class Program
         builder.Services.AddScoped<GameBetInfoProviderResolver>();
         builder.Services.AddScoped<GameTurnServiceResolver>();
         builder.Services.AddScoped<GameSessionCleanerResolver>();
+        builder.Services.AddScoped<GameExitRuleResolver>();
+        builder.Services.AddScoped<GameJoinHelperResolver>();
+
 
         // --- Servicios concretos de Blackjack ---
         builder.Services.AddScoped<BlackjackBetInfoProvider>();
         builder.Services.AddScoped<BlackjackSessionCleaner>();
         builder.Services.AddScoped<BlackjackTurnService>();
+        builder.Services.AddScoped<BlackjackExitRuleHandler>();
+        builder.Services.AddScoped<BlackjackJoinHelper>();
 
         builder.Services.AddScoped<IGameBetInfoProvider, BlackjackBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, BlackjackTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, BlackjackSessionCleaner>();
+        builder.Services.AddScoped<IGameJoinHelper, BlackjackJoinHelper>();
 
         // --- Servicios concretos de Poker ---
         builder.Services.AddScoped<PokerBetInfoProvider>();
         builder.Services.AddScoped<PokerSessionCleaner>();
         builder.Services.AddScoped<PokerTurnService>();
+        builder.Services.AddScoped<PokerExitRuleHandler>();
+        builder.Services.AddScoped<PokerJoinHelper>();
 
         builder.Services.AddSingleton<PokerNotifier>(provider =>
         {
@@ -126,6 +139,7 @@ public class Program
         builder.Services.AddScoped<IGameBetInfoProvider, PokerBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, PokerTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, PokerSessionCleaner>();
+        builder.Services.AddScoped<IGameJoinHelper, PokerJoinHelper>();
 
         // --- Servicios concretos de Ruleta ---
         builder.Services.AddScoped<RouletteBetInfoProvider>();

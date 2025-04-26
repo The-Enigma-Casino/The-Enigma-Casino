@@ -42,6 +42,7 @@ export const setAuthError = createEvent<string>();
 
 export const verifySession = createEvent();
 export const sessionChecked = createEvent<SessionCheckResult>();
+export const logout = createEvent();
 
 export const $authError = createStore<{ message: string; time: number } | null>(
   null
@@ -55,6 +56,7 @@ $token
   .on(setToken, (_, { token }) => token)
   .on(clearToken, () => "")
   .on(loginFx.doneData, (_, token) => token);
+
 
 setToken.watch(({ token, rememberMe }) => {
   if (token) {
@@ -178,3 +180,7 @@ sample({
   target: logoutWithReason,
 });
 
+
+
+$token.on(logout, () => "");
+$role.on(logout, () => "");

@@ -1,4 +1,5 @@
 ﻿
+using System.Collections.Concurrent;
 using System.Text.Json;
 using the_enigma_casino_server.Application.Services;
 using the_enigma_casino_server.Core.Entities;
@@ -7,9 +8,11 @@ using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.GameMatch;
+using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable.Models;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
+using the_enigma_casino_server.WebSockets.Resolvers;
 
 namespace the_enigma_casino_server.WebSockets.GameTable;
 
@@ -19,14 +22,23 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private readonly GameMatchWS _gameMatchWS;
 
+    private static readonly ConcurrentDictionary<int, SemaphoreSlim> _tableLocks = new();
+
+
     public GameTableWS(
         ConnectionManagerWS connectionManager,
         IServiceProvider serviceProvider,
-        GameMatchWS gameMatchWS)
+        GameMatchWS gameMatchWS,
+        UserDisconnectionHandler disconnectionHandler)
         : base(connectionManager, serviceProvider)
     {
         _gameMatchWS = gameMatchWS;
-        connectionManager.OnUserDisconnected += HandleUserDisconnection;
+        connectionManager.OnUserDisconnected += async userId =>
+        {
+            using var scope = serviceProvider.CreateScope();
+            var handler = scope.ServiceProvider.GetRequiredService<UserDisconnectionHandler>();
+            await handler.HandleDisconnectionAsync(userId);
+        };
     }
 
 
@@ -92,21 +104,57 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             (bool success, string errorMessage) addResult;
 
-            lock (table)
+            var semaphore = _tableLocks.GetOrAdd(tableId, _ => new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
+            try
             {
+                using var betScope = _serviceProvider.CreateScope();
+                var betInfoProvider = betScope.ServiceProvider.GetRequiredService<GameBetInfoProviderResolver>().Resolve(table.GameType);
+                int minimumCoins = betInfoProvider.GetMinimumRequiredCoins();
+
+                if (user.Coins < minimumCoins)
+                {
+                    Console.WriteLine($"❌ {user.NickName} tiene {user.Coins} monedas, pero se requieren al menos {minimumCoins} para unirse a esta mesa.");
+                    await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                    {
+                        type = "error",
+                        message = $"Necesitas al menos {minimumCoins} monedas para unirte a esta mesa."
+                    });
+                    return;
+                }
+
                 addResult = tableManager.TryAddPlayer(table, user);
             }
+            finally
+            {
+                semaphore.Release();
+            }
+
 
             if (!addResult.success)
             {
-                await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                string errorType = addResult.errorMessage;
+
+                if (errorType == "maintenance")
                 {
-                    type = "error",
-                    message = addResult.errorMessage
-                });
+                    await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                    {
+                        type = "table_closed",
+                        tableId = table.Id,
+                        message = "Esta mesa está en mantenimiento y no se puede acceder por el momento."
+                    });
+                }
+                else
+                {
+                    await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                    {
+                        type = "error",
+                        message = errorType
+                    });
+                }
+
                 return;
             }
-
 
             await ((IWebSocketSender)this).BroadcastToUsersAsync(
                 session.GetConnectedUserIds(),
@@ -118,21 +166,45 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     state = session.Table.TableState.ToString()
                 });
 
-
-            if (table.Players.Count >= table.MinPlayer)
+            if (table.TableState == TableState.InProgress)
             {
-                session.StartOrRestartCountdown();
+                await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                {
+                    type = GameTableMessageTypes.WaitingNextMatch,
+                    tableId = table.Id,
+                    message = "Una partida está en curso. Te unirás automáticamente a la siguiente ronda."
+                });
             }
 
-            await ((IWebSocketSender)this).BroadcastToUsersAsync(
-                session.GetConnectedUserIds(),
-                new
-                {
-                    type = GameTableMessageTypes.CountdownStarted,
-                    tableId = table.Id,
-                    countdown = 30
-                });
+            using var gameScope = _serviceProvider.CreateScope();
+            var gameJoinHelperResolver = gameScope.ServiceProvider.GetRequiredService<GameJoinHelperResolver>();
 
+            var joinHelper = gameJoinHelperResolver.Resolve(table.GameType);
+
+            if (joinHelper != null)
+            {
+                await joinHelper.NotifyPlayerCanJoinCurrentMatchIfPossible(userIdInt, table, (IWebSocketSender)this);
+            }
+
+
+            if (table.Players.Count >= table.MinPlayer && !HasActiveMatch(table.Id))
+            {
+                session.StartOrRestartCountdown();
+                table.TableState = TableState.Starting;
+
+                unitOfWork.GameTableRepository.Update(table);
+                await unitOfWork.SaveAsync();
+
+
+                await ((IWebSocketSender)this).BroadcastToUsersAsync(
+                    session.GetConnectedUserIds(),
+                    new
+                    {
+                        type = GameTableMessageTypes.CountdownStarted,
+                        tableId = table.Id,
+                        countdown = 30
+                    });
+            }
         }
     }
 
@@ -178,29 +250,24 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         lock (table)
         {
-            if (table.TableState != TableState.Waiting)
+            if (table.TableState != TableState.Waiting && table.TableState != TableState.Starting)
             {
                 Console.WriteLine($"[GameTableWS] El estado de la mesa {tableId} ya no es 'Waiting' (es {table.TableState}).");
                 return;
             }
 
-            table.TableState = TableState.InProgress;
             shouldStart = true;
             userIds = table.Players.Select(p => p.UserId.ToString()).ToList();
         }
 
         if (shouldStart)
         {
-            Console.WriteLine($"[GameTableWS] Iniciando partida en la mesa {tableId} automáticamente.");
-
-            // Notificamos a los jugadores que el match empieza
             await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
                 type = GameTableMessageTypes.GameStart,
                 tableId = table.Id
             });
 
-            // Iniciamos la partida real con GameMatchWS
             await _gameMatchWS.StartMatchForTableAsync(tableId);
         }
     }
@@ -223,6 +290,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         GameTableManager tableManager = GetScopedService<GameTableManager>(out scope);
         using (scope)
         {
+            UnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
             lock (table)
             {
                 result = tableManager.ProcessPlayerLeaving(table, session, userIdInt);
@@ -230,9 +299,27 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     return;
             }
 
+            // 🧾 Cerrar historial si lo hay
+            var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(userIdInt, table.Id);
+
+            if (history != null && history.LeftAt == null)
+            {
+                history.LeftAt = DateTime.Now;
+                unitOfWork.GameHistoryRepository.Update(history);
+                await unitOfWork.SaveAsync();
+
+                Console.WriteLine($"✅ Historial cerrado para jugador {userIdInt} al salir de la mesa {tableId}.");
+            }
+
             if (result.StopCountdown)
             {
                 await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
+            }
+
+            if (result.StateChanged)
+            {
+                unitOfWork.GameTableRepository.Update(table);
+                await unitOfWork.SaveAsync();
             }
 
             await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
@@ -240,39 +327,26 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     }
 
 
-    private async void HandleUserDisconnection(string userId)
+
+
+    public PlayerLeaveResult? ForceRemovePlayerFromTable(int userId, ActiveGameSession session)
     {
-        if (!int.TryParse(userId, out int userIdInt))
-            return;
+        var table = session.Table;
 
-        foreach (var session in ActiveGameSessionStore.GetAll().Values)
+        IServiceScope scope;
+        GameTableManager tableManager = GetScopedService<GameTableManager>(out scope);
+        using (scope)
         {
-            Table table = session.Table;
-            PlayerLeaveResult result;
-
-            IServiceScope scope;
-            GameTableManager tableManager = GetScopedService<GameTableManager>(out scope);
-            using (scope)
+            lock (table)
             {
-                lock (table)
-                {
-                    result = tableManager.ProcessPlayerLeaving(table, session, userIdInt);
-                    if (!result.PlayerRemoved)
-                        return;
-                }
-
-                if (result.StopCountdown)
-                {
-                    await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
-                }
-
-                await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
+                var result = tableManager.ProcessPlayerLeaving(table, session, userId);
+                return result.PlayerRemoved ? result : null;
             }
         }
     }
 
 
-    private Task BroadcastTableUpdateAsync(Table table, IEnumerable<string> userIds, string[] playerNames)
+    public Task BroadcastTableUpdateAsync(Table table, IEnumerable<string> userIds, string[] playerNames)
     {
         return ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
         {
@@ -283,12 +357,18 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         });
     }
 
-    private Task BroadcastCountdownStoppedAsync(int tableId, IEnumerable<string> userIds)
+    public Task BroadcastCountdownStoppedAsync(int tableId, IEnumerable<string> userIds)
     {
         return ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
         {
             type = GameTableMessageTypes.CountdownStopped,
             tableId
         });
+    }
+
+    private bool HasActiveMatch(int tableId)
+    {
+        return ActiveGameMatchStore.TryGet(tableId, out Match match)
+               && match.MatchState == MatchState.InProgress;
     }
 }

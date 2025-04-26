@@ -13,12 +13,14 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
     {
     }
 
+    // 🔧 Utilidades de inyección de dependencias
     protected T GetScopedService<T>(out IServiceScope scope)
     {
         scope = _serviceProvider.CreateScope();
         return scope.ServiceProvider.GetRequiredService<T>();
     }
 
+    // 📤 Envío de mensajes a un usuario
     async Task IWebSocketSender.SendToUserAsync(string userId, object payload)
     {
         WebSocket? socket = _connectionManager.GetConnectionById(userId);
@@ -49,6 +51,16 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         }
     }
 
+    // 📢 Broadcast a varios usuarios
+    async Task IWebSocketSender.BroadcastToUsersAsync(IEnumerable<string> userIds, object payload)
+    {
+        foreach (string userId in userIds)
+        {
+            await ((IWebSocketSender)this).SendToUserAsync(userId, payload);
+        }
+    }
+
+    // ❌ Enviar error
     public async Task SendErrorAsync(string userId, string errorMessage)
     {
         var error = new
@@ -60,14 +72,7 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         await ((IWebSocketSender)this).SendToUserAsync(userId, error);
     }
 
-    async Task IWebSocketSender.BroadcastToUsersAsync(IEnumerable<string> userIds, object payload)
-    {
-        foreach (string userId in userIds)
-        {
-            await ((IWebSocketSender)this).SendToUserAsync(userId, payload);
-        }
-    }
-
+    // 📥 Parseo de tableId desde mensaje
     protected bool TryGetTableId(JsonElement message, out int tableId)
     {
         tableId = 0;
@@ -80,28 +85,63 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         return true;
     }
 
+    // 🔁 Getters reutilizables con error
+    public bool TryGetWithError<T>(
+        Func<int, T?> getter,
+        int tableId,
+        out T result,
+        string entityName,
+        string? userId = null)
+    {
+        result = getter(tableId)!;
+
+        if (result == null)
+        {
+            Console.WriteLine($"❌ No se encontró {entityName} para mesa {tableId}");
+            if (userId != null)
+                _ = SendErrorAsync(userId, $"No se encontró {entityName} en esta mesa.");
+            return false;
+        }
+
+        return true;
+    }
+
+    protected bool TryGetWithError<T>(
+        Func<T?> getter,
+        out T result,
+        string entityName,
+        string? userId = null)
+    {
+        result = getter()!;
+
+        if (result == null)
+        {
+            Console.WriteLine($"❌ No se encontró {entityName}");
+            if (userId != null)
+                _ = SendErrorAsync(userId, $"No se encontró {entityName}.");
+            return false;
+        }
+
+        return true;
+    }
+
+    // 🎮 Obtener Match
     protected bool TryGetMatch(int tableId, string userId, out Match match)
-    {
-        if (!ActiveGameMatchStore.TryGet(tableId, out match))
-        {
-            Console.WriteLine($"❌ [WebSocket] No se encontró Match en la mesa {tableId}");
-            _ = SendErrorAsync(userId, "No hay un match activo en esta mesa.");
-            return false;
-        }
-        return true;
-    }
+        => TryGetWithError(ActiveGameMatchStore.TryGetNullable, tableId, out match, "match", userId);
 
+    protected bool TryGetMatch(int tableId, out Match match)
+        => TryGetWithError(ActiveGameMatchStore.TryGetNullable, tableId, out match, "match");
+
+    // 🧑‍🤝‍🧑 Obtener Player desde Match
     protected bool TryGetPlayer(Match match, string userId, out Player player)
+        => TryGetWithError(
+            () => TryGetPlayerFromMatch(match, userId),
+            out player,
+            "jugador",
+            userId);
+
+    private Player? TryGetPlayerFromMatch(Match match, string userId)
     {
-        player = match.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
-        if (player == null)
-        {
-            Console.WriteLine($"❌ [WebSocket] Jugador {userId} no encontrado en Match.");
-            _ = SendErrorAsync(userId, "Jugador no encontrado en la mesa.");
-            return false;
-        }
-        return true;
+        return match.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
     }
-
-
 }

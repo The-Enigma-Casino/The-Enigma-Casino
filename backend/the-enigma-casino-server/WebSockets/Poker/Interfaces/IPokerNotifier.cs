@@ -5,7 +5,7 @@ namespace the_enigma_casino_server.WebSockets.Poker.Interfaces;
 
 public interface IPokerNotifier
 {
-    Task NotifyBlindsAsync(Match match, PokerGameService game);
+    Task NotifyBlindsAsync(Match match, PokerGame game);
     Task SendInitialHandsAsync(Match match);
     Task NotifyStartBettingAsync(Match match);
     Task NotifyPlayerTurnAsync(Match match, Player player);

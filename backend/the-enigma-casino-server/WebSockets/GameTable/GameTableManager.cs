@@ -2,6 +2,7 @@
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
+using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable.Models;
 
 namespace the_enigma_casino_server.WebSockets.GameTable;
@@ -37,7 +38,23 @@ public class GameTableManager
 
     public PlayerLeaveResult ProcessPlayerLeaving(Table table, ActiveGameSession session, int userId)
     {
-        bool stopCountdown = false;
+
+        bool isInMatch = ActiveGameMatchStore.TryGet(table.Id, out Match activeMatch) &&
+                 activeMatch.Players.Any(p => p.UserId == userId);
+
+        if (table.TableState == TableState.InProgress && isInMatch)
+        {
+            return new PlayerLeaveResult
+            {
+                PlayerRemoved = false,
+                StopCountdown = false,
+                StateChanged = false,
+                ConnectedUsers = session.GetConnectedUserIds().ToList(),
+                PlayerNames = session.GetPlayerNames().ToArray(),
+                State = table.TableState
+            };
+        }
+
 
         if (!RemovePlayerFromTable(table, userId, out Player player))
         {
@@ -51,10 +68,13 @@ public class GameTableManager
             };
         }
 
+        bool stopCountdown = false;
+
         if (table.Players.Count < table.MinPlayer)
         {
             session.CancelCountdown();
             stopCountdown = true;
+            table.TableState = TableState.Waiting;
         }
 
         return new PlayerLeaveResult
@@ -69,10 +89,9 @@ public class GameTableManager
 
     public (bool Success, string ErrorMessage) TryAddPlayer(Table table, User user)
     {
-        if (table.TableState != TableState.Waiting)
+        if (table.TableState == TableState.Maintenance)
         {
-            string msg = $"La mesa {table.Id} no está esperando jugadores. Estado actual: {table.TableState}.";
-            return (false, msg);
+            return (false, "maintenance");
         }
 
         if (table.Players.Any(p => p.UserId == user.Id))
@@ -90,7 +109,10 @@ public class GameTableManager
         Player player = new Player(user)
         {
             JoinedAt = DateTime.Now,
-            GameTableId = table.Id
+            GameTableId = table.Id,
+            PlayerState = table.TableState == TableState.InProgress
+                ? PlayerState.Spectating
+                : PlayerState.Waiting
         };
 
         table.AddPlayer(player);

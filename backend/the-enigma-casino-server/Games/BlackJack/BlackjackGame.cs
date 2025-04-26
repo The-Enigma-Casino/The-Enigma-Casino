@@ -34,6 +34,15 @@ public class BlackjackGame
         _gameMatch.GameTable.Croupier.Hand.AddCard(Deck.Draw());
         _gameMatch.GameTable.Croupier.Hand.AddCard(Deck.Draw());
 
+        foreach (Player player in _gameMatch.Players)
+        {
+            if (player.Hand.GetTotal() == 21 && player.Hand.Cards.Count == 2)
+            {
+                Console.WriteLine($"🃏 {player.User.NickName} tiene Blackjack natural.");
+                player.PlayerState = PlayerState.Blackjack;
+            }
+        }
+
         var playingPlayers = _gameMatch.Players
             .Where(p => p.PlayerState == PlayerState.Playing)
             .ToList();
@@ -66,7 +75,13 @@ public class BlackjackGame
             return;
         }
 
-        if (player.Hand.GetTotal() >= 21)
+        if (player.PlayerState == PlayerState.Blackjack)
+        {
+            Console.WriteLine($"{player.User.NickName} tiene Blackjack y no puede actuar.");
+            return;
+        }
+
+        if (player.Hand.GetTotal() >= 21 && (player.PlayerState != PlayerState.Blackjack))
         {
             Console.WriteLine($"{player.User.NickName} ya ha alcanzado 21 o más y no puede tomar más cartas.");
             return;
@@ -105,14 +120,36 @@ public class BlackjackGame
         int croupierTotal = _gameMatch.GameTable.Croupier.Hand.GetTotal();
         bool dealerBust = _gameMatch.GameTable.Croupier.Hand.IsBusted();
 
-        foreach (Player player in _gameMatch.GameTable.Players)
+        var playersSnapshot = _gameMatch.Players
+            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .ToList();
+
+        foreach (Player player in playersSnapshot)
         {
+            Console.WriteLine($"⚠️ Evaluando resultado para jugador: {player.User.NickName}");
             int playerTotal = player.Hand.GetTotal();
             bool playerBust = player.Hand.IsBusted();
             string result = "";
             int coinsChange = 0;
 
-            if (playerBust)
+            bool playerHasBlackjack = player.PlayerState == PlayerState.Blackjack;
+            bool dealerHasBlackjack = croupierTotal == 21 && _gameMatch.GameTable.Croupier.Hand.Cards.Count == 2;
+
+            if (playerHasBlackjack && dealerHasBlackjack)
+            {
+                player.Draw();
+                result = "draw";
+                coinsChange = 0;
+                Console.WriteLine($"{player.User.NickName} y el crupier empatan con Blackjack.");
+            }
+            else if (playerHasBlackjack)
+            {
+                WinBlackjack(player);
+                result = "blackjack";
+                coinsChange = (int)(player.CurrentBet * 1.5);
+                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack y gana {coinsChange} monedas.");
+            }
+            else if (playerBust)
             {
                 player.Bust();
                 result = "lose";
@@ -139,20 +176,6 @@ public class BlackjackGame
                 result = "draw";
                 coinsChange = 0;
                 Console.WriteLine($"{player.User.NickName} ha empatado.");
-            }
-            else if (playerTotal == 21 && player.Hand.Cards.Count == 2 && croupierTotal == 21 && _gameMatch.GameTable.Croupier.Hand.Cards.Count == 2)
-            {
-                player.Draw();
-                result = "draw";
-                coinsChange = 0;
-                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack empatado.");
-            }
-            else if (playerTotal == 21 && player.Hand.Cards.Count == 2)
-            {
-                WinBlackjack(player);
-                result = "blackjack";
-                coinsChange = (int)(player.CurrentBet * 1.5);
-                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack y gana {coinsChange} monedas.");
             }
 
             results.Add(new
@@ -228,9 +251,13 @@ public class BlackjackGame
         CurrentPlayerTurnId = userId;
 
         Player player = _gameMatch.Players.FirstOrDefault(p => p.UserId == userId);
-        if (player != null)
+        if (player != null && player.PlayerState == PlayerState.Playing)
         {
             player.PlayerState = PlayerState.Playing;
+        }
+        else if (player?.PlayerState == PlayerState.Blackjack)
+        {
+            Console.WriteLine($"⏭️ {player.User.NickName} tiene Blackjack, se omite turno.");
         }
     }
 

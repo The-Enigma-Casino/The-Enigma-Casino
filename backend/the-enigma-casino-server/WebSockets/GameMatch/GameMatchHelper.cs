@@ -3,6 +3,7 @@ using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable;
+using the_enigma_casino_server.WebSockets.Poker.Store;
 
 namespace the_enigma_casino_server.WebSockets.GameMatch;
 
@@ -66,6 +67,47 @@ public static class GameMatchHelper
             await NotifyMatchCancelledAsync(sender, match, tableId);
         }
         return cancelled;
+    }
+
+    public static async Task CheckGamePostExitLogicAsync(Match match, int tableId, IServiceProvider serviceProvider)
+    {
+        Console.WriteLine($"[DEBUG] Estado actual del Match en evento para mesa {tableId}: {match.MatchState}");
+
+        if (match.MatchState != MatchState.InProgress)
+        {
+            Console.WriteLine($"[DEBUG] Ignorando CheckGamePostExitLogic para la mesa {tableId} porque el Match ya terminó ({match.MatchState}).");
+            return;
+        }
+
+        if (match.GameTable.GameType == GameType.BlackJack)
+        {
+            var blackjackWS = serviceProvider.GetRequiredService<BlackjackWS>();
+            await blackjackWS.CheckAutoStartAfterPlayerLeft(tableId);
+        }
+
+        if (match.GameTable.GameType == GameType.Poker)
+        {
+            int activePlayers = match.Players.Count(p => p.PlayerState == PlayerState.Playing);
+
+            if (activePlayers == 1)
+            {
+                Console.WriteLine("🏆 [Poker] Solo queda un jugador. Ganador automático.");
+
+                if (ActivePokerGameStore.TryGet(tableId, out var pokerGame))
+                {
+                    pokerGame.GeneratePots();
+                    pokerGame.Showdown();
+
+                    Player onlyPlayer = match.Players.FirstOrDefault(p => p.PlayerState != PlayerState.Spectating && p.PlayerState != PlayerState.Left);
+                    {
+                        onlyPlayer.PlayerState = PlayerState.Left;
+                    }
+
+                    var gameMatchWS = serviceProvider.GetRequiredService<GameMatchWS>();
+                    await gameMatchWS.FinalizeAndEvaluateMatchAsync(tableId);
+                }
+            }
+        }
     }
 
     public static async Task TryAutoDealIfAllPlayersBetAsync(int tableId, Match match, BlackjackWS blackjackWS)

@@ -53,12 +53,7 @@ public class UserService : BaseService
     {
         User user = await _unitOfWork.UserRepository.UserValidate(request.Identifier, request.Password);
 
-        if (user == null)
-        {
-            throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
-        }
-
-        if (user.Id == -1)
+        if (user == null || user.Id == -1)
         {
             throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
         }
@@ -78,8 +73,32 @@ public class UserService : BaseService
             throw new UnauthorizedAccessException("Debe confirmar su correo antes de iniciar sesión.");
         }
 
+        if (user.IsBanned)
+        {
+            if (user.BannedUntil == null || user.BannedUntil > DateTime.UtcNow)
+            {
+                string reason = user.BanReason ?? "Tu cuenta ha sido suspendida.";
+                string until = user.BannedUntil != null
+                    ? $" Podrás volver a jugar a partir del {user.BannedUntil.Value.ToLocalTime():g}."
+                    : " Este baneo es permanente.";
+
+                throw new UnauthorizedAccessException(reason + until);
+            }
+            else
+            {
+                user.IsBanned = false;
+                user.BanReason = null;
+                user.BannedUntil = null;
+
+                _unitOfWork.UserRepository.Update(user);
+                await _unitOfWork.SaveAsync();
+            }
+        }
+
+
         return user;
     }
+
 
     public string GenerateToken(User user)
     {
@@ -153,7 +172,6 @@ public class UserService : BaseService
             await _unitOfWork.SaveAsync();
 
             return true;
-
         }
         catch (Exception ex)
         {

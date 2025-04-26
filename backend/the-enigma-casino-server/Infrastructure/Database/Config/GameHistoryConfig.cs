@@ -48,6 +48,9 @@ public class GameHistoryConfig : IEntityTypeConfiguration<History>
         entity.Property(e => e.LeftAt)
             .HasColumnName("left_at");
 
+        entity.Property(e => e.LastMatchIdProcessed)
+            .HasColumnName("last_match_id_processed");
+
         entity.HasOne(e => e.GameTable)
             .WithMany()
             .HasForeignKey(e => e.GameTableId)

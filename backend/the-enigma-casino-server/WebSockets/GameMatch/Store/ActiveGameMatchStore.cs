@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using the_enigma_casino_server.Games.Poker;
 using the_enigma_casino_server.Games.Shared.Entities;
 
 namespace the_enigma_casino_server.WebSockets.GameMatch.Store;
@@ -15,4 +16,8 @@ public static class ActiveGameMatchStore
 
     public static IReadOnlyDictionary<int, Match> GetAll() => _matches;
 
+    public static Match? TryGetNullable(int tableId)
+    {
+        return _matches.TryGetValue(tableId, out var match) ? match : null;
+    }
 }

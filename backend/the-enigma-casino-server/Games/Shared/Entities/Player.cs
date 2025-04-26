@@ -11,13 +11,11 @@ public class Player
     public Hand Hand { get; set; } = new();
     public int GameTableId { get; set; }
     public Table GameTable { get; set; }
-    public int? GameMatchId { get; set; }
     public Match? GameMatch { get; set; }
     public PlayerState PlayerState { get; set; } = PlayerState.Waiting;
     public int CurrentBet { get; set; }
     public DateTime? JoinedAt { get; set; }
-    public int TotalContribution { get; set; } = 0;
-
+    public bool HasAbandoned { get; set; } = false;
 
     public Player(User user)
     {
@@ -72,5 +70,6 @@ public class Player
         CurrentBet = 0;
         PlayerState = PlayerState.Waiting;
         Hand = new Hand();
+        HasAbandoned = false;
     }
 }

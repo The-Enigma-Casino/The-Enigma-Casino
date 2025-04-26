@@ -1,4 +1,5 @@
-﻿using the_enigma_casino_server.Games.Shared.Entities;
+﻿using System.Numerics;
+using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
@@ -7,6 +8,7 @@ using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker;
 using the_enigma_casino_server.WebSockets.Resolvers;
+using the_enigma_casino_server.WebSockets.Resolversl;
 
 namespace the_enigma_casino_server.WebSockets.GameMatch;
 
@@ -16,13 +18,17 @@ public class GameMatchManager
     private readonly GameBetInfoProviderResolver _betInfoResolver;
     private readonly GameTurnServiceResolver _turnResolver;
     private readonly GameSessionCleanerResolver _sessionCleanerResolver;
+    private readonly GameExitRuleResolver _exitRuleResolver;
 
     private readonly IServiceProvider _serviceProvider;
+
+    private static int _nextMatchId = 1;
 
     public GameMatchManager(UnitOfWork unitOfWork,
                             GameBetInfoProviderResolver betInfoResolver,
                             GameTurnServiceResolver turnResolver,
                             GameSessionCleanerResolver sessionCleanerResolver,
+                            GameExitRuleResolver exitRuleResolver,
                             IServiceProvider serviceProvider)
     {
         _unitOfWork = unitOfWork;
@@ -30,6 +36,7 @@ public class GameMatchManager
         _turnResolver = turnResolver;
         _sessionCleanerResolver = sessionCleanerResolver;
         _serviceProvider = serviceProvider;
+        _exitRuleResolver = exitRuleResolver;
     }
 
 
@@ -37,55 +44,107 @@ public class GameMatchManager
     {
         if (table.Players.Count < table.MinPlayer) return null;
 
+        if (table.TableState != TableState.Waiting && table.TableState != TableState.Starting)
+        {
+            Console.WriteLine($"❌ [GameMatchManager] El estado de la mesa {table.Id} es inválido para iniciar partida: {table.TableState}");
+            return null;
+        }
+
+        table.TableState = TableState.InProgress;
+        _unitOfWork.GameTableRepository.Update(table);
+        await _unitOfWork.SaveAsync();
+
+        using var joinHelperScope = _serviceProvider.CreateScope();
+        var joinHelperResolver = joinHelperScope.ServiceProvider.GetRequiredService<GameJoinHelperResolver>();
+        var joinHelper = joinHelperResolver.Resolve(table.GameType);
+
         foreach (Player player in table.Players)
         {
             if (player.User == null)
             {
                 player.User = await _unitOfWork.UserRepository.GetByIdAsync(player.UserId);
             }
+
+            PlayerState previousState = player.PlayerState;
+            player.ResetForNewRound();
+            joinHelper?.ResetPlayerStateForMatch(player);
+
+            if (previousState == PlayerState.Spectating && joinHelper != null)
+            {
+                await joinHelper.NotifyPlayerJoinedNextMatch(player.UserId, (IWebSocketSender)_serviceProvider.GetRequiredService(typeof(IWebSocketSender)));
+            }
         }
+
+        int matchId = Interlocked.Increment(ref _nextMatchId);
 
         Match match = new Match
         {
+            Id = matchId,
             GameTableId = table.Id,
             GameTable = table,
-            Players = table.Players,
+            Players = new List<Player>(table.Players),
             StartedAt = DateTime.Now,
             MatchState = MatchState.InProgress
         };
 
         foreach (Player player in match.Players)
         {
-            player.ResetForNewRound();
-            _unitOfWork.UserRepository.Update(player.User);
-        }
-
-        await _unitOfWork.SaveAsync();
-
-
-
-        foreach (Player player in match.Players)
-        {
             player.GameMatch = match;
-            player.GameMatchId = 0;
         }
 
-        if (table.GameType == GameType.Poker)
+        ActiveGameMatchStore.Set(table.Id, match);
+
+        switch (table.GameType)
         {
-            PokerWS pokerWS = _serviceProvider.GetRequiredService<PokerWS>();
-            await pokerWS.StartInitialDealAsync(match);
+            case GameType.Poker:
+                var pokerWS = _serviceProvider.GetRequiredService<PokerWS>();
+                await pokerWS.StartInitialDealAsync(match);
+                break;
+
+            default:
+                Console.WriteLine($"ℹ️ [GameMatchManager] El juego {table.GameType} no requiere inicialización inmediata.");
+                break;
         }
 
         return match;
     }
 
-    public async Task<bool> EndMatchForPlayerAsync(Match match, int userId)
+    public async Task EndMatchAsync(Match match)
+    {
+        match.EndedAt = DateTime.Now;
+        match.MatchState = MatchState.Finished;
+
+        foreach (Player player in match.Players)
+        {
+            if (player.PlayerState == PlayerState.Left)
+            {
+                Console.WriteLine($"🛑 [EndMatchAsync] Saltando historial para {player.User.NickName} (ya abandonó la mesa).");
+                continue;
+            }
+
+            await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: false, matchPlayed: true);
+        }
+
+
+        await _unitOfWork.SaveAsync();
+
+        ActiveGameMatchStore.Remove(match.GameTableId);
+
+        match.Players.Clear();
+
+        IGameSessionCleaner cleaner = _sessionCleanerResolver.Resolve(match.GameTable.GameType);
+        if (cleaner != null)
+        {
+            cleaner.Clean(match.GameTableId);
+        }
+    }
+
+    public bool EndMatchForPlayer(Match match, int userId)
     {
         Player player = match.Players.FirstOrDefault(p => p.UserId == userId);
         if (player == null) return false;
 
         bool matchPlayed = player.Hand?.Cards.Any() == true;
-        await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed);
 
         match.Players.Remove(player);
         return true;
@@ -125,29 +184,8 @@ public class GameMatchManager
         return false;
     }
 
-    public async Task EndMatchAsync(Match match)
-    {
-        match.EndedAt = DateTime.Now;
-        match.MatchState = MatchState.Finished;
 
-        foreach (Player player in match.Players)
-        {
-            if (player.PlayerState == PlayerState.Left)
-            {
-                continue;
-            }
 
-            await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: false, matchPlayed: true);
-        }
-
-        ActiveGameMatchStore.Remove(match.GameTableId);
-
-        IGameSessionCleaner cleaner = _sessionCleanerResolver.Resolve(match.GameTable.GameType);
-        if (cleaner != null)
-        {
-            cleaner.Clean(match.GameTableId);
-        }
-    }
 
 
     public async Task RefundBetIfNotPlayedAsync(Player player, Match match)
@@ -166,66 +204,41 @@ public class GameMatchManager
 
     public async Task<bool> HandlePlayerExitAsync(Player player, Match match, int tableId, IGameTurnService turnService)
     {
-        bool gameStarted = match.Players.Any(p => p.Hand != null && p.Hand.Cards.Count > 0);
+        IGameExitRuleHandler handler = _exitRuleResolver.Resolve(match.GameTable.GameType);
+        bool handled = await handler.HandlePlayerExitAsync(player, match);
 
-        if (!gameStarted && player.CurrentBet > 0)
-        {
-            // Jugador se va antes de que empiece la ronda: se le devuelve la apuesta
-            int betAmount = player.CurrentBet;
-
-            player.User.Coins += player.CurrentBet;
-            player.CurrentBet = 0;
-
-            _unitOfWork.UserRepository.Update(player.User);
-            await _unitOfWork.SaveAsync();
-        }
-        else
-        {
-            // Jugador se va con la ronda ya empezada → derrota y se guarda historial
-            if (player.PlayerState == PlayerState.Playing)
-            {
-                player.PlayerState = PlayerState.Lose;
-            }
-
-            await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed: true);
-        }
-
-        player.PlayerState = PlayerState.Left;
+        if (!handled) return false;
 
         if (turnService != null)
         {
-            await turnService.ForceAdvanceTurnAsync(tableId, player.UserId);
+            await turnService.OnPlayerExitAsync(player, match);
         }
 
+        bool matchPlayed = _betInfoResolver.Resolve(match.GameTable.GameType).HasPlayedThisMatch(player, match);
 
-        bool removed = await EndMatchForPlayerAsync(match, player.UserId);
-
-        if (!removed) return false;
+        await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed);
 
         return true;
     }
 
-    private async Task UpdateOrInsertHistoryAsync(Player player, Match match, bool playerLeftTable, bool matchPlayed)
+
+    public async Task UpdateOrInsertHistoryAsync(Player player, Match match, bool playerLeftTable, bool matchPlayed)
     {
         if (player.User == null)
         {
             player.User = await _unitOfWork.UserRepository.GetByIdAsync(player.UserId);
         }
 
-        if (player.PlayerState == PlayerState.Left) return;
-
         IGameBetInfoProvider provider = _betInfoResolver.Resolve(match.GameTable.GameType);
-
-        // Obtener los datos específicos del juego
         int chips = matchPlayed ? provider.GetChipResult(player) : 0;
         int totalBet = matchPlayed ? provider.GetLastBetAmount(match.GameTableId, player.UserId) : 0;
 
-        bool hasPlayed = matchPlayed && player.Hand != null && player.Hand.Cards.Count > 0;
+        bool hasPlayed = matchPlayed && provider.HasPlayedThisMatch(player, match);
         bool hasBet = matchPlayed && totalBet > 0;
 
         History history = await _unitOfWork.GameHistoryRepository.FindActiveSessionAsync(player.UserId, match.GameTableId);
 
-        int matchCount = matchPlayed ? provider.GetMatchCountForHistory(player) : 0;
+        int matchesPlayed = matchPlayed ? provider.GetMatchCountForHistory(player) : 0;
 
 
         if (history == null)
@@ -238,10 +251,11 @@ public class GameMatchManager
                 GameTableId = match.GameTableId,
                 GameType = match.GameTable.GameType,
                 JoinedAt = player.JoinedAt ?? DateTime.Now,
-                TotalMatchesPlayed = matchCount,
+                TotalMatchesPlayed = matchesPlayed,
                 TotalBetAmount = totalBet,
                 ChipResult = chips,
-                LeftAt = playerLeftTable ? DateTime.Now : null
+                LeftAt = playerLeftTable ? DateTime.Now : null,
+                LastMatchIdProcessed  = match.Id
             };
 
             await _unitOfWork.GameHistoryRepository.InsertAsync(history);
@@ -250,12 +264,14 @@ public class GameMatchManager
         }
 
         // Ya existe historial → acumular datos si jugó
-        if (matchPlayed && hasBet)
+        if (matchPlayed && hasBet && history.LastMatchIdProcessed != match.Id)
         {
-            history.TotalMatchesPlayed += matchCount;
+            history.TotalMatchesPlayed += matchesPlayed;
             history.TotalBetAmount += totalBet;
             history.ChipResult += chips;
+            history.LastMatchIdProcessed = match.Id;
         }
+
 
         // Si se va de la mesa → cerrar historial
         if (playerLeftTable)

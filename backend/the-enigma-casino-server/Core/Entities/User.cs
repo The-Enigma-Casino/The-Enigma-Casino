@@ -1,5 +1,6 @@
 ﻿using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Games.Shared.Entities;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace the_enigma_casino_server.Core.Entities;
 
@@ -22,6 +23,10 @@ public class User
     public Role Role { get; set; }
     public List<Order> Orders { get; set; }
     public List<History> Histories { get; set; }
+
+    [NotMapped]
+    public UserStatus Status { get; set; } = UserStatus.Offline;
+
 
 
     // FALTAN COSAS

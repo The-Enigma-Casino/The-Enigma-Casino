@@ -8,7 +8,7 @@ public class UserMapper
 {
     public UserDto ToUserDto(User user)
     {
-        return new UserDto(user.Email, user.FullName, user.NickName, user.Address, user.Country, user.Coins, user.Image, user.IsSelfBanned);
+        return new UserDto(user.Email, user.FullName, user.NickName, user.Address, user.Country, user.Coins, user.Image);
     }
 
     public OtherUserDto ToUserNotFriendlyDto(User user, string relation)
@@ -18,7 +18,7 @@ public class UserMapper
 
     public UserAdminDto ToUserAdminDto(User user)
     {
-        return new UserAdminDto(user.Id, user.NickName, user.Image, user.Role);
+        return new UserAdminDto(user.Id, user.NickName, user.Image, user.Role, user.IsSelfBanned);
     }
 
     public List<UserAdminDto> ToUserAdminList(List<User> users)

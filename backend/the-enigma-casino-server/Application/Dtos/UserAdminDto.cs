@@ -8,17 +8,19 @@ public class UserAdminDto
     private string Nickname { get; set; }
     private string Image { get; set; }
     private Role Role { get; set; }
+    private bool IsSelfBanned { get; set; }
 
     public UserAdminDto()
     {
     }
 
-    public UserAdminDto(int id, string nickname, string image, Role role)
+    public UserAdminDto(int id, string nickname, string image, Role role, bool isSelfBanned)
     {
         Id = id;
         Nickname = nickname;
         Image = image;
         Role = role;
+        IsSelfBanned = isSelfBanned;
     }
 
 }

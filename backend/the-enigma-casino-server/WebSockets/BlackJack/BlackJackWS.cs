@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Text.Json;
 using the_enigma_casino_server.Games.BlackJack;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
@@ -83,12 +84,15 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         }
 
         int amount = message.GetProperty("amount").GetInt32();
+        var betInfoProvider = _serviceProvider.GetRequiredService<GameBetInfoProviderResolver>().Resolve(match.GameTable.GameType);
+        int minimumBet = betInfoProvider.GetMinimumRequiredCoins();
+
         Console.WriteLine($"🪙 [place_bet] Usuario {userId} intenta apostar {amount} monedas en la mesa {tableId}");
 
-        if (amount > 5000 || amount < 50)
+        if (amount > 5000 || amount < minimumBet)
         {
-            Console.WriteLine($"❌ Apuesta inválida. Debe ser mayor a 0 y menor o igual a 5000. 🪙");
-            await SendErrorAsync(userId, "La apuesta debe ser mayor a 0 y menor o igual a 5000.");
+            Console.WriteLine($"❌ Apuesta inválida. Debe ser mayor o igual a {minimumBet} y menor o igual a 5000. 🪙");
+            await SendErrorAsync(userId, $"La apuesta debe ser mayor o igual a {minimumBet} y menor o igual a 5000.");
             return;
         }
 

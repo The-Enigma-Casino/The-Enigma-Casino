@@ -30,7 +30,6 @@ public class BlackjackBetInfoProvider : IGameBetInfoProvider
         };
     }
 
-
     public int GetMatchCountForHistory(Player player)
     {
         return 1;
@@ -39,5 +38,10 @@ public class BlackjackBetInfoProvider : IGameBetInfoProvider
     public bool HasPlayedThisMatch(Player player, Match match)
     {
         return player.Hand != null && player.Hand.Cards.Count > 0;
+    }
+
+    public int GetMinimumRequiredCoins()
+    {
+        return 10; 
     }
 }

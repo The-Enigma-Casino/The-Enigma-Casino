@@ -310,4 +310,20 @@ public class UserService : BaseService
         _unitOfWork.UserRepository.Update(user);
         await _unitOfWork.SaveAsync();
     }
+
+    public async Task<User> SetRoleByUser(User user, Role role)
+    {
+        if (user == null)
+            throw new Exception("Usuario no existente.");
+
+        if (user.Role != role)
+        {
+            user.Role = role;
+
+            _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveAsync();
+        }
+
+        return user;
+    }
 }

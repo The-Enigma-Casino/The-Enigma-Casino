@@ -4,11 +4,11 @@ namespace the_enigma_casino_server.Application.Dtos;
 
 public class UserAdminDto
 {
-    private int Id { get; set; }
-    private string Nickname { get; set; }
-    private string Image { get; set; }
-    private Role Role { get; set; }
-    private bool IsSelfBanned { get; set; }
+    public int Id { get; set; }
+    public string Nickname { get; set; }
+    public string Image { get; set; }
+    public Role Role { get; set; }
+    public bool IsSelfBanned { get; set; }
 
     public UserAdminDto()
     {

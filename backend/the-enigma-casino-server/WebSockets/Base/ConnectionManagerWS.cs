@@ -1,6 +1,7 @@
 ﻿
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using the_enigma_casino_server.Core.Entities.Enum;
 
 namespace the_enigma_casino_server.WebSockets.Base;
 
@@ -31,6 +32,12 @@ public class ConnectionManagerWS
 
         _connections[userId] = webSocket;
         Console.WriteLine($"✅ Conexión WebSocket activa para {userId}");
+
+        if (int.TryParse(userId, out int id))
+        {
+            UserStatusStore.SetStatus(id, UserStatus.Online);
+            Console.WriteLine($"🟢 Usuario {id} marcado como Online");
+        }
     }
 
     public async Task RemoveConnectionAsync(string userId)
@@ -51,6 +58,11 @@ public class ConnectionManagerWS
                 Console.WriteLine($"❌ Error al cerrar conexión de {userId}: {ex.Message}");
             }
 
+            if (int.TryParse(userId, out int id))
+            {
+                UserStatusStore.SetStatus(id, UserStatus.Offline);
+                Console.WriteLine($"🔴 Usuario {id} marcado como Offline");
+            }
             OnUserDisconnected?.Invoke(userId);
         }
     }

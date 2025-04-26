@@ -46,3 +46,6 @@ export const OTHER_USER_PROFILE = `${API_BASE_URL}User/profile/`;
 
 /* ENDPOINTS PARA LAS IMAGENES */
 export const USER_IMAGES = `${BASE_URL}images/profile`;
+
+/* ENDPOINTS PARA LOS BANEOS */
+export const AUTOBAN = `${API_BASE_URL}user/ban-self`;

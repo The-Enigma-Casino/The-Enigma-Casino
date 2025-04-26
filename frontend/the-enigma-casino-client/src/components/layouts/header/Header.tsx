@@ -4,21 +4,19 @@ import { useUnit } from "effector-react";
 import {
   $role,
   $token,
-  clearToken,
   loadRole,
 } from "../../../features/auth/store/authStore";
 import {
   $coins,
   loadCoins,
-  resetCoins,
 } from "../../../features/coins/store/coinsStore";
 
 import Button from "../../ui/button/Button";
 import classes from "./Header.module.css";
-import { clearStorage } from "../../../utils/storageUtils";
 import Modal from "../../ui/modal/Modal";
 import { $transactionEnd } from "../../../features/withdraw/store/WithdrawalStore";
 import ModalGachaComponent from "../../../features/gachapon/components/ModalGachaComponent";
+import { useLogout } from "../../../features/auth/utils/logout";
 
 function Header() {
   const navigate = useNavigate();
@@ -26,6 +24,9 @@ function Header() {
   const token = useUnit($token);
   const role = useUnit($role);
   const coins = useUnit($coins);
+  
+  const logout = useLogout();
+
   const transactionEnded = useUnit($transactionEnd);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isGachaponModalOpen, setIsGachaponModalOpen] = useState(false);
@@ -36,11 +37,7 @@ function Header() {
   }, [token, transactionEnded]);
 
   const handleLogout = () => {
-    setIsLogoutModalOpen(false);
-    clearToken();
-    clearStorage();
-    resetCoins();
-    navigate("/");
+    logout();
   };
 
   const openGachaponModal = () => {

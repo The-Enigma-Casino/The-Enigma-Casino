@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Services;
 using the_enigma_casino_server.Core.Entities;
@@ -26,7 +27,7 @@ public class AuthController : BaseController
                 return BadRequest(validationMessage);
 
             (bool exists, string message) = await _userService.CheckUser(request.NickName, request.Email);
-            if (exists) 
+            if (exists)
                 return BadRequest(message);
 
 
@@ -43,7 +44,7 @@ public class AuthController : BaseController
     }
 
 
-    [HttpPut("confirm-email")] 
+    [HttpPut("confirm-email")]
     public async Task<ActionResult<string>> ConfirmEmail([FromQuery] string token)
     {
         try
@@ -85,5 +86,16 @@ public class AuthController : BaseController
         {
             return StatusCode(500, new { message = "Un error ha ocurrido al procesar tu solicitud." });
         }
+    }
+
+    [HttpPost("ban-self")]
+    [Authorize]
+    public async Task<IActionResult> BanSelf()
+    {
+        int userId = GetUserId();
+
+        await _userService.AutoBanUserAsync(userId);
+
+        return Ok("Has sido autobaneado exitosamente.");
     }
 }

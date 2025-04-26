@@ -36,6 +36,8 @@ export const loadUserId = createEvent();
 
 export const setAuthError = createEvent<string>();
 
+export const logout = createEvent();
+
 export const $authError = createStore<{ message: string; time: number } | null>(
   null
 )
@@ -48,6 +50,7 @@ $token
   .on(setToken, (_, { token }) => token)
   .on(clearToken, () => "")
   .on(loginFx.doneData, (_, token) => token);
+
 
 setToken.watch(({ token, rememberMe }) => {
   if (token) {
@@ -122,3 +125,8 @@ sample({
   },
   target: $image,
 });
+
+
+
+$token.on(logout, () => "");
+$role.on(logout, () => "");

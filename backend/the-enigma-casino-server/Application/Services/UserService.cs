@@ -20,13 +20,16 @@ public class UserService : BaseService
     private readonly EmailService _emailService;
     private readonly ValidationService _validation;
     private readonly UserMapper _userMapper;
+    private readonly BanManager _banManager;
 
-    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper) : base(unitOfWork)
+
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper, BanManager banManager) : base(unitOfWork)
     {
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
         _emailService = emailService;
         _validation = validationService;
         _userMapper = userMapper;
+        _banManager = banManager;
     }
 
     public async Task<(bool, string)> CheckUser(string nickName, string email)
@@ -48,12 +51,7 @@ public class UserService : BaseService
     {
         User user = await _unitOfWork.UserRepository.UserValidate(request.Identifier, request.Password);
 
-        if (user == null)
-        {
-            throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
-        }
-
-        if (user.Id == -1)
+        if (user == null || user.Id == -1)
         {
             throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
         }
@@ -63,8 +61,32 @@ public class UserService : BaseService
             throw new UnauthorizedAccessException("Debe confirmar su correo antes de iniciar sesión.");
         }
 
+        if (user.IsBanned)
+        {
+            if (user.BannedUntil == null || user.BannedUntil > DateTime.UtcNow)
+            {
+                string reason = user.BanReason ?? "Tu cuenta ha sido suspendida.";
+                string until = user.BannedUntil != null
+                    ? $" Podrás volver a jugar a partir del {user.BannedUntil.Value.ToLocalTime():g}."
+                    : " Este baneo es permanente.";
+
+                throw new UnauthorizedAccessException(reason + until);
+            }
+            else
+            {
+                user.IsBanned = false;
+                user.BanReason = null;
+                user.BannedUntil = null;
+
+                _unitOfWork.UserRepository.Update(user);
+                await _unitOfWork.SaveAsync();
+            }
+        }
+
+
         return user;
     }
+
 
     public string GenerateToken(User user)
     {
@@ -138,7 +160,6 @@ public class UserService : BaseService
             await _unitOfWork.SaveAsync();
 
             return true;
-
         }
         catch (Exception ex)
         {
@@ -265,7 +286,7 @@ public class UserService : BaseService
 
             WebpEncoder encoder = new WebpEncoder
             {
-                Quality = 75 
+                Quality = 75
             };
 
             await image.SaveAsync(filePath, encoder);
@@ -276,5 +297,27 @@ public class UserService : BaseService
 
         _unitOfWork.UserRepository.Update(user);
         await _unitOfWork.SaveAsync();
+    }
+
+    public async Task AutoBanUserAsync(int userId)
+    {
+        var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+
+        if (user == null)
+            throw new Exception("Usuario no encontrado.");
+
+        if (user.IsBanned)
+            throw new InvalidOperationException("Ya estás baneado.");
+
+        user.IsBanned = true;
+        user.BanReason = "Autobaneo voluntario. Estás tomando un descanso de Enigma, estaremos aquí cuando vuelvas 💚";
+        user.BannedUntil = DateTime.UtcNow.AddDays(7);
+
+        _unitOfWork.UserRepository.Update(user);
+        await _unitOfWork.SaveAsync();
+
+        await _banManager.ForceDisconnectIfConnected(userId);
+
+        Console.WriteLine($"🛑 [AUTOBAN] Usuario {user.NickName} (ID {user.Id}) se ha autobaneado.");
     }
 }

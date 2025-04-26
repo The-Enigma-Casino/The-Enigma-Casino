@@ -67,6 +67,7 @@ public class Program
         builder.Services.AddScoped<BlockchainService>();
         builder.Services.AddScoped<UserFriendService>(); 
         builder.Services.AddScoped<AdminUserService>();
+        builder.Services.AddScoped<AdminCoinsPackService>();
 
         // --- Validaciones ---
         builder.Services.AddSingleton<ValidationService>();

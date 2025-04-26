@@ -8,6 +8,8 @@ public class PokerGame
 {
     private readonly List<Player> _players;
     private Deck _deck;
+
+    private int _dealerUserId;
     private readonly BlindManager _blindManager;
     private readonly PokerHandComparer _handComparer = new();
     private readonly List<Card> _communityCards = new();
@@ -16,12 +18,13 @@ public class PokerGame
     private readonly List<object> _lastShowdownSummary = new();
     public int CurrentTurnUserId { get; private set; }
 
-    public PokerGame(List<Player> players)
+    public PokerGame(List<Player> players, int dealerUserId)
     {
         _players = players;
+        _dealerUserId = dealerUserId;
         _deck = new Deck(GameType.Poker);
         _deck.Shuffle();
-        _blindManager = new BlindManager(_players, this);
+        _blindManager = new BlindManager(_players, this, _dealerUserId);
     }
 
     public List<Card> GetCommunityCards() => _communityCards;

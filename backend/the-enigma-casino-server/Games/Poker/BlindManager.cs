@@ -11,11 +11,14 @@ public class BlindManager
     private const int SmallBlindAmount = 10;
     private const int BigBlindAmount = 20;
 
-    public BlindManager(List<Player> players, PokerGame pokerGameService)
+    public BlindManager(List<Player> players, PokerGame pokerGameService, int dealerUserId)
     {
         _players = players;
         _pokerGameService = pokerGameService;
-        _dealerIndex = 0;
+        _dealerIndex = _players.FindIndex(p => p.UserId == dealerUserId);
+
+        if (_dealerIndex == -1)
+            _dealerIndex = 0;
 
         Console.WriteLine("[BLINDS] BlindManager creado con jugadores:");
         foreach (var p in _players)

@@ -9,10 +9,11 @@ public class UserDto
     public string Country { get; set; }
     public int Coins { get; set; }
     public string Image { get; set; }
+    public bool IsSelfBanned { get; set; }
 
     public UserDto() { }
 
-    public UserDto(string name, string email, string nickname, string address, string country, int coins, string image)
+    public UserDto(string name, string email, string nickname, string address, string country, int coins, string image, bool isSelfBanned)
     {
         Name = name;
         Email = email;
@@ -21,5 +22,6 @@ public class UserDto
         Country = country;
         Coins = coins;
         Image = image;
+        IsSelfBanned = isSelfBanned;
     }
 }

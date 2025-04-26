@@ -8,7 +8,7 @@ public class UserMapper
 {
     public UserDto ToUserDto(User user)
     {
-        return new UserDto(user.Email, user.FullName, user.NickName, user.Address, user.Country, user.Coins, user.Image);
+        return new UserDto(user.Email, user.FullName, user.NickName, user.Address, user.Country, user.Coins, user.Image, user.IsSelfBanned);
     }
 
     public OtherUserDto ToUserNotFriendlyDto(User user, string relation)

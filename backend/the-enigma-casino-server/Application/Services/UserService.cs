@@ -63,7 +63,7 @@ public class UserService : BaseService
             throw new UnauthorizedAccessException("Identificador o contraseña inválidos.");
         }
 
-        if (user.IsBanned || user.Role == Role.Banned)
+        if (user.IsSelfBanned || user.Role == Role.Banned)
         {
             throw new UnauthorizedAccessException("Tu cuenta ha sido baneada. Contacta con soporte si crees que es un error.");
         }

@@ -15,7 +15,7 @@ public class User
     public string Country { get; set; }
     public string Address { get; set; }
     public int Coins { get; set; }
-    public bool IsBanned { get; set; }
+    public bool IsSelfBanned { get; set; }
     public bool EmailConfirm { get; set; }
     public string ConfirmationToken { get; set; }
     public Role Role { get; set; }
@@ -28,7 +28,7 @@ public class User
     public User()
     {
         Coins = 0;
-        IsBanned = false;
+        IsSelfBanned = false;
         EmailConfirm = false;
         ConfirmationToken = null;
         Role = Role.User;

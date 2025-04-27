@@ -1,17 +1,23 @@
 import { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
-import { $adminUsers, loadAdminUsers, resetAdminUsers, searchAdminUsers, changeAdminUserRole } from "../stores/usersAdminStore";
-import { loadAdminUsersFx } from "../actions/loadUsersActions";
+import {
+  $adminUsers,
+  loadAdminUsers,
+  resetAdminUsers,
+  searchAdminUsers,
+  changeAdminUserRole,
+} from "../stores/usersAdminStore";
 import { CardUser } from "../components/cardUser/CardUser";
 import { SearchBarUser } from "../components/searchBar/SearchBarUser";
 import Modal from "../../../components/ui/modal/Modal";
+import Button from "../../../components/ui/button/Button";
 
 export default function UsersAdminPage() {
   const users = useUnit($adminUsers);
-  const isLoading = useUnit(loadAdminUsersFx.pending);
 
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     loadAdminUsers();
@@ -21,13 +27,15 @@ export default function UsersAdminPage() {
     };
   }, []);
 
-  const handleSearch = (searchTerm: string) => {
-    if (searchTerm.trim() !== "") {
-      searchAdminUsers(searchTerm);
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    if (term.trim() !== "") {
+      searchAdminUsers(term);
     }
   };
 
   const handleReset = () => {
+    setSearchTerm("");
     loadAdminUsers();
   };
 
@@ -44,7 +52,11 @@ export default function UsersAdminPage() {
     setSelectedUserId(null);
 
     setTimeout(() => {
-      loadAdminUsers();
+      if (searchTerm.trim() !== "") {
+        searchAdminUsers(searchTerm);
+      } else {
+        loadAdminUsers();
+      }
     }, 500);
   };
 
@@ -62,44 +74,50 @@ export default function UsersAdminPage() {
 
         <SearchBarUser onSearch={handleSearch} onReset={handleReset} />
 
-        {isLoading ? (
-          <div className="text-white text-2xl font-bold flex justify-center items-center h-40">
-            Cargando usuarios...
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-20 gap-x-0 xl:gap-x-0 2xl:gap-x-0 justify-items-center">
-            {users.map(user => (
-              <div
-                key={user.id}
-                className="transform transition-transform duration-300 hover:scale-105"
-              >
-                <CardUser
-                  user={user}
-                  adminId={1}
-                  onChangeRole={() => handleOpenChangeRoleModal(user.id)}
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-20 gap-x-0 xl:gap-x-0 2xl:gap-x-0 justify-items-center">
+          {users.map((user) => (
+            <div
+              key={user.id}
+              className="transform transition-transform duration-300 hover:scale-105"
+            >
+              <CardUser
+                user={user}
+                adminId={1}
+                onChangeRole={() => handleOpenChangeRoleModal(user.id)}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={handleCancelChangeRole} size="small" position="center">
-        <div className="flex flex-col items-center justify-center p-4 gap-6">
-          <h2 className="text-white text-2xl font-bold text-center">¿Cambiar el rol de este usuario?</h2>
-          <div className="flex gap-6">
-            <button
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCancelChangeRole}
+        size="small"
+        position="center"
+      >
+        <div className="flex flex-col items-center justify-center p-6 gap-8">
+          <h2 className="text-white text-3xl font-bold text-center">
+            ¿Cambiar el rol de este usuario?
+          </h2>
+          <div className="flex gap-8">
+            <Button
               onClick={handleConfirmChangeRole}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+              variant="short"
+              color="green"
+              font="bold"
             >
               Confirmar
-            </button>
-            <button
+            </Button>
+
+            <Button
               onClick={handleCancelChangeRole}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+              variant="short"
+              color="red"
+              font="bold"
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>

@@ -63,7 +63,9 @@ public class ConnectionManagerWS
                 UserStatusStore.SetStatus(id, UserStatus.Offline);
                 Console.WriteLine($"🔴 Usuario {id} marcado como Offline");
             }
-            OnUserDisconnected?.Invoke(userId);
+
+            var handler = OnUserDisconnected;
+            handler?.Invoke(userId);
         }
     }
 

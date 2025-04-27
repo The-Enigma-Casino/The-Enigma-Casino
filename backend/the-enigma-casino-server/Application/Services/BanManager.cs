@@ -36,7 +36,14 @@ public class BanManager
 
             await Task.Delay(300);
 
-            await ws.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Banned", CancellationToken.None);
+            try
+            {
+                await ws.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Banned", CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BanManager] Error cerrando WebSocket: {ex.Message}");
+            }
         }
     }
 }

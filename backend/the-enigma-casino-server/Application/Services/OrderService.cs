@@ -41,6 +41,9 @@ public class OrderService : BaseService
             PayMode = PayMode.CreditCard,
         };
 
+        if (coinsPack.Offer > 0)
+            order.Price = coinsPack.Offer;
+
         await _unitOfWork.OrderRepository.InsertAsync(order);
         await _unitOfWork.SaveAsync();
 

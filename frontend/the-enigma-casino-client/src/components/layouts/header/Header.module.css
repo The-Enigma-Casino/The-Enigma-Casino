@@ -64,7 +64,7 @@
 
 .modalButtons {
   display: flex;
-  justify-content: center; 
+  justify-content: center;
 }
 
 @media (max-width: 500px) {
@@ -112,4 +112,89 @@
     justify-content: center;
     padding: 1rem;
   }
+}
+
+.adminContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.adminIcon {
+  width: 4rem;
+  height: 4rem;
+  cursor: pointer;
+}
+
+.adminMenu {
+  position: absolute;
+  top: 5rem;
+  background-color: var(--Background-Nav);
+  border: 2px solid var(--Principal);
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeSlideIn 0.3s ease forwards;
+  z-index: 10;
+  width: 14rem;
+}
+
+.adminTitle {
+  font-weight: bold;
+  color: var(--Principal);
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+}
+
+.adminMenuItem {
+  all: unset;
+  cursor: pointer;
+  color: white;
+  font-size: 1.4rem;
+  transition: color 0.2s;
+}
+
+.adminMenuItem:hover {
+  color: var(--Principal);
+}
+
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotateOpen {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+
+@keyframes rotateClose {
+  0% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.rotatingOpen {
+  animation: rotateOpen 0.5s ease forwards;
+}
+
+.rotatingClose {
+  animation: rotateClose 0.5s ease forwards;
 }

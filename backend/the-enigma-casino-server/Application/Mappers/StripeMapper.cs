@@ -7,12 +7,17 @@ public class StripeMapper
 {
     public SessionLineItemOptions ToSessionLineItemOptions(CoinsPack coinsPack)
     {
+        int unitAmount = coinsPack.Price;
+
+        if (coinsPack.Offer > 0)
+            unitAmount = coinsPack.Offer;
+
         SessionLineItemOptions sessionLineItemOptions = new SessionLineItemOptions()
         {
             PriceData = new SessionLineItemPriceDataOptions()
             {
                 Currency = "eur",
-                UnitAmount = coinsPack.Price,
+                UnitAmount = unitAmount,
                 ProductData = new SessionLineItemPriceDataProductDataOptions()
                 {
                     Name = coinsPack.Quantity.ToString() + " fichas.",

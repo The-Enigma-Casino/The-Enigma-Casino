@@ -27,8 +27,9 @@ const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
   }
 
   const totalPaid = `Total pagado: ${formatPriceWithCurrency(
-    order.coinsPack.price
+    order.coinsPack.offer > 0 ? order.coinsPack.offer : order.coinsPack.price
   )}`;
+
 
   return (
     <div className={classes.infoOrderContainer}>

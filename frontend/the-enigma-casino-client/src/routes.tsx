@@ -15,6 +15,7 @@ import GameTable from "./features/gameTables/pages/GameTablePage";
 import Withdrawal from "./features/withdraw/pages/Withdrawal";
 import routeProfile from "./features/profile/routes";
 import { TestingPage } from "./features/testing/TestingPage";
+import routeAdmin from "./features/admin/routes";
 
 const router = createBrowserRouter([
   {
@@ -38,7 +39,8 @@ const router = createBrowserRouter([
   },
   ...routeAuth,
   ...routeGames,
-  ...routeProfile
+  ...routeProfile,
+  ...routeAdmin
 ]);
 
 export default router;

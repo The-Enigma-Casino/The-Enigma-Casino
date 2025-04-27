@@ -31,9 +31,11 @@ public class OrderRepository : Repository<Order, int>
     public async Task<List<Order>> GetOrdersByUserIdAsync(int userId)
     {
         return await GetQueryable()
-            .Where(o => o.UserId == userId)
+            .Where(o => o.UserId == userId && o.IsPaid)
             .Include(o => o.CoinsPack)
             .ToListAsync();
+
+
     }
 
 }

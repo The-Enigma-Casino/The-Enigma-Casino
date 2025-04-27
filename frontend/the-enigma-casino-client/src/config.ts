@@ -65,3 +65,8 @@ export const USERS_ADMIN = `${API_BASE_URL}AdminUser/users`;
 export const search_USERS_ADMIN = `${API_BASE_URL}AdminUser/search-users`;
 export const UPDATE_ROLE_ADMIN = `${API_BASE_URL}AdminUser/update-role`;
 export const BAN_USER_ADMIN = `${API_BASE_URL}AdminUser/ban-user`;
+
+/* ENDPOINTS DE PANEL DE PACK EN ADMIN */
+export const PACKS_ADMIN = `${API_BASE_URL}AdminCoinsPack/coins-packs`;
+export const PACKS_ADMIN_ID = `${API_BASE_URL}AdminCoinsPack/coins-pack`;
+export const UPDATE_PACK_ADMIN = `${API_BASE_URL}AdminCoinsPack/coins-pack`;

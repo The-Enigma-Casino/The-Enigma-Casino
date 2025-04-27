@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useEvent, useUnit } from "effector-react";
+import { useUnit, useEvent } from "effector-react";
 
 import {
   spinResult$,
@@ -22,6 +22,7 @@ import type { PlaceRouletteBetPayload } from "../stores/rouletteEvents";
 
 import "../stores/rouletteHandler";
 import { countdownDecrement, syncedCountdown$ } from "../stores/rouletteClock";
+import { RouletteHistory } from "../components/RouletteHistory";
 
 type LocalBet = {
   key: string;
@@ -32,7 +33,6 @@ type LocalBet = {
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
   const isBetsClosed = useUnit(betsClosed$);
-  // const isPaused = useUnit(isPaused$);
   const isPaused = false;
   const tableId = useUnit($currentTableId);
   const countdown = useUnit(syncedCountdown$);
@@ -51,7 +51,6 @@ function RouletteGamePage() {
   }, [tableId]);
 
   useEffect(() => {
-    console.log("Spin result: ", spinResult);
     if (spinResult) {
       loadCoins();
     }
@@ -100,48 +99,22 @@ function RouletteGamePage() {
     loadCoins();
   };
 
-  function didWin(bets: LocalBet[], result: any): boolean {
-    if (!result || typeof result.number !== "number") return false;
-
-    return bets.some((bet) => {
-      if (bet.key === `number_${result.number}`) return true;
-      if (bet.key === "sector_9" && result.color === "red") return true;
-      if (bet.key === "sector_10" && result.color === "black") return true;
-
-      const isEven = result.number !== 0 && result.number % 2 === 0;
-      const isLow = result.number >= 1 && result.number <= 18;
-      const isHigh = result.number >= 19 && result.number <= 36;
-
-      if (bet.key === "sector_8" && isEven) return true;
-      if (bet.key === "sector_11" && !isEven && result.number !== 0)
-        return true;
-      if (bet.key === "sector_7" && isLow) return true;
-      if (bet.key === "sector_12" && isHigh) return true;
-
-      if (bet.key === "sector_4" && result.number >= 1 && result.number <= 12)
-        return true;
-      if (bet.key === "sector_5" && result.number >= 13 && result.number <= 24)
-        return true;
-      if (bet.key === "sector_6" && result.number >= 25 && result.number <= 36)
-        return true;
-
-      const col1 = [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34];
-      const col2 = [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35];
-      const col3 = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36];
-
-      if (bet.key === "sector_1" && col1.includes(result.number)) return true;
-      if (bet.key === "sector_2" && col2.includes(result.number)) return true;
-      if (bet.key === "sector_3" && col3.includes(result.number)) return true;
-
-      return false;
-    });
+  function didWin(spinResult: any): boolean {
+    if (!spinResult || !Array.isArray(spinResult.bets)) return false;
+    return spinResult.bets.some((b: any) => b.isWinner === true);
   }
 
   const getColorClass = (color: string) => {
     if (color === "red") return "text-red-500";
-    if (color === "black") return "text-gray-200";
+    if (color === "black") return "text-gray-300";
     if (color === "green") return "text-green-400";
     return "text-white";
+  };
+
+  const getBarColor = (countdown: number) => {
+    if (countdown <= 5) return "bg-Color-Cancel";
+    if (countdown <= 10) return "bg-orange-400";
+    return "bg-Coins";
   };
 
   return (
@@ -156,12 +129,16 @@ function RouletteGamePage() {
         </h2>
       ) : (
         <>
-          <h2 className="text-2xl mb-4">Número ganador: {number}</h2>
-          <h2 className="text-2xl mb-4">Color ganador: {color}</h2>
+          <h2 className={`text-5xl mb-4 font-bold ${getColorClass(color)}`}>
+            {number}
+          </h2>
+          <h2 className={`text-2xl mb-6 font-bold ${getColorClass(color)}`}>
+            {color.toUpperCase()}
+          </h2>
 
           {spinResult && (
             <h2 className="text-xl mb-4 font-bold">
-              {didWin(bets, spinResult) ? (
+              {didWin(spinResult) ? (
                 <span className="text-green-400">¡Ganaste una apuesta! 🎉</span>
               ) : (
                 <span className="text-red-400">No acertaste esta vez. 😞</span>
@@ -173,18 +150,19 @@ function RouletteGamePage() {
             <h2 className="text-3xl font-bold text-red-500 mb-6">
               Ruleta detenida por inactividad prolongada
             </h2>
-          ) : isPaused ? (
-            <h2 className="text-3xl font-bold text-red-500 mb-6">
-              Ruleta pausada por inactividad
-            </h2>
           ) : (
-            <>{/* resto del contenido */}</>
+            <></>
           )}
 
-          <h2 className="text-xl mb-4">
-            Tiempo restante para apostar:{" "}
-            <span className="text-yellow-400 font-bold">{countdown}</span>s
-          </h2>
+          <div className="w-full max-w-md bg-Background-Overlay rounded-full h-6 mb-6 overflow-hidden">
+            <div
+              className={`${getBarColor(countdown)} h-full transition-all duration-1000`}
+              style={{
+                width: `${Math.min(((30 - countdown) / 30) * 100, 100)}%`,
+              }}
+            ></div>
+          </div>
+
           <div className="bg-black/30 p-4 rounded-xl mb-6 w-full max-w-md text-white">
             <h3 className="text-xl mb-2 font-bold text-center">
               Selecciona tu apuesta
@@ -194,14 +172,14 @@ function RouletteGamePage() {
                 <button
                   key={val}
                   onClick={() => handleIncrement(val)}
-                  className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded shadow"
+                  className="px-4 py-2 bg-Coins hover:bg-yellow-500 text-black font-bold rounded shadow"
                 >
                   +{val}
                 </button>
               ))}
               <button
                 onClick={handleReset}
-                className="text-sm text-red-300 hover:underline ml-2"
+                className="text-sm text-Color-Cancel hover:underline ml-2"
               >
                 Reset
               </button>
@@ -228,35 +206,11 @@ function RouletteGamePage() {
           />
 
           {lastResults.length > 0 && (
-            <div className="mb-4 text-center">
-              <h3 className="text-xl font-bold mb-1">Últimos resultados:</h3>
-              <div className="flex gap-2 justify-center">
-                {lastResults.map((r, idx) => (
-                  <span
-                    key={idx}
-                    className={`font-bold ${getColorClass(r.color)}`}
-                  >
-                    {r.number}
-                  </span>
-                ))}
-              </div>
+            <div className="mb-6 text-center">
+              <h3 className="text-xl font-bold mb-2">Últimos resultados:</h3>
+              <RouletteHistory results={lastResults} />
             </div>
           )}
-
-          {/* <div className="bg-black/20 mt-8 p-4 rounded-xl w-full max-w-md text-white">
-            <h3 className="text-xl font-bold mb-2">🎯 Tus apuestas</h3>
-            {bets.length === 0 && <p>No has apostado aún.</p>}
-            <ul className="space-y-2">
-              {bets.map((bet) => (
-                <li key={bet.key} className="flex justify-between">
-                  <span>{bet.label}</span>
-                  <span className="font-bold text-yellow-300">
-                    {bet.amount} fichas
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div> */}
         </>
       )}
     </div>
@@ -265,6 +219,7 @@ function RouletteGamePage() {
 
 export default RouletteGamePage;
 
+// Función para construir la apuesta a enviar
 function buildBetPayload(
   tableId: string,
   key: string,
@@ -275,30 +230,18 @@ function buildBetPayload(
     return { tableId, amount, betType: "Straight", number };
   }
 
-  if (key === "sector_9")
-    return { tableId, amount, betType: "Color", color: "red" };
-  if (key === "sector_10")
-    return { tableId, amount, betType: "Color", color: "black" };
-  if (key === "sector_8")
-    return { tableId, amount, betType: "EvenOdd", evenOdd: "Even" };
-  if (key === "sector_11")
-    return { tableId, amount, betType: "EvenOdd", evenOdd: "Odd" };
-  if (key === "sector_7")
-    return { tableId, amount, betType: "HighLow", highLow: "Low" };
-  if (key === "sector_12")
-    return { tableId, amount, betType: "HighLow", highLow: "High" };
-  if (key === "sector_4")
-    return { tableId, amount, betType: "Dozen", dozen: 1 };
-  if (key === "sector_5")
-    return { tableId, amount, betType: "Dozen", dozen: 2 };
-  if (key === "sector_6")
-    return { tableId, amount, betType: "Dozen", dozen: 3 };
-  if (key === "sector_1")
-    return { tableId, amount, betType: "Column", column: 1 };
-  if (key === "sector_2")
-    return { tableId, amount, betType: "Column", column: 2 };
-  if (key === "sector_3")
-    return { tableId, amount, betType: "Column", column: 3 };
+  if (key === "sector_9") return { tableId, amount, betType: "Color", color: "red" };
+  if (key === "sector_10") return { tableId, amount, betType: "Color", color: "black" };
+  if (key === "sector_8") return { tableId, amount, betType: "EvenOdd", evenOdd: "Even" };
+  if (key === "sector_11") return { tableId, amount, betType: "EvenOdd", evenOdd: "Odd" };
+  if (key === "sector_7") return { tableId, amount, betType: "HighLow", highLow: "Low" };
+  if (key === "sector_12") return { tableId, amount, betType: "HighLow", highLow: "High" };
+  if (key === "sector_4") return { tableId, amount, betType: "Dozen", dozen: 1 };
+  if (key === "sector_5") return { tableId, amount, betType: "Dozen", dozen: 2 };
+  if (key === "sector_6") return { tableId, amount, betType: "Dozen", dozen: 3 };
+  if (key === "sector_1") return { tableId, amount, betType: "Column", column: 1 };
+  if (key === "sector_2") return { tableId, amount, betType: "Column", column: 2 };
+  if (key === "sector_3") return { tableId, amount, betType: "Column", column: 3 };
 
   console.warn("[Ruleta] Sector no reconocido:", key);
   return undefined;

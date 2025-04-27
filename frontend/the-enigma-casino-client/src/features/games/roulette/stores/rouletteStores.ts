@@ -18,12 +18,28 @@ export const rouletteGameState$ = createStore<any>(null).on(
 export const spinResult$ = createStore<any>(null)
   .on(spinResultReceived, (_, payload) => {
     if (payload?.result && typeof payload.result.number === "number") {
-      return payload.result;
+      return {
+        number: payload.result.number,
+        color: payload.result.color,
+        bets: payload.results ?? [],
+      };
     }
     console.warn("⚠️ spinResult inválido recibido:", payload);
     return null;
   })
   .on(betsOpenedReceived, () => null)
+  .reset(resetSpinResult);
+
+  export const lastResults$ = createStore<{ number: number; color: string }[]>([])
+  .on(spinResultReceived, (state, payload) => {
+    if (!payload?.result) return state;
+    const newResult = { number: payload.result.number, color: payload.result.color };
+    const updated = [...state, newResult];
+    if (updated.length > 6) {
+      return updated.slice(1);
+    }
+    return updated;
+  })
   .reset(resetSpinResult);
 
 export const betsClosed$ = createStore<boolean>(false)
@@ -39,9 +55,6 @@ export const countdown$ = createStore<number>(0).on(
   countdownTick,
   (_, seconds) => seconds
 );
-
-export const lastResults$ = createStore<{ number: number; color: string }[]>([])
-  .on(gameStateReceived, (_, payload) => payload.lastResults ?? []);
 
 export const isStopped$ = createStore<boolean>(false)
   .on(rouletteStopedReceived, () => true)

@@ -34,10 +34,12 @@ socketMessageReceived.watch((data) => {
     case "bet_confirmed":
       betConfirmed(data);
       break;
-    case "bets_opened":
-      betsOpenedReceived();
-      // resetSpinResult();
-      break;
+      case "bets_opened":
+        betsOpenedReceived();
+        if (data.countdown != null) {
+          countdownTick(data.countdown);
+        }
+        break;
     case "bets_closed":
       betsClosedReceived();
       break;

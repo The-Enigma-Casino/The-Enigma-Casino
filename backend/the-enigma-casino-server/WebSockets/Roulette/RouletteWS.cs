@@ -545,7 +545,8 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = RouletteMessageType.BetsOpened,
-            tableId
+            tableId,
+            countdown = 30
         };
 
         foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))

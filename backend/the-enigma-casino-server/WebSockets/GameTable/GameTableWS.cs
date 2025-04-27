@@ -73,6 +73,15 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!int.TryParse(userId, out int userIdInt))
             return;
 
+        if (IsUserBusyInAnotherTable(userIdInt))
+        {
+            await ((IWebSocketSender)this).SendToUserAsync(userId, new
+            {
+                type = "error",
+                message = "No puedes unirte a otra mesa mientras participas en una partida activa."
+            });
+            return;
+        }
 
         IServiceScope scope;
         UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out scope);
@@ -333,6 +342,26 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
     }
 
+    public bool IsUserBusyInAnotherTable(int userId)
+    {
+        foreach (var session in ActiveGameSessionStore.GetAll().Values)
+        {
+            var table = session.Table;
+            var player = table.Players.FirstOrDefault(p => p.UserId == userId);
+
+            if (player != null)
+            {
+                bool allowedBecauseFold = (player.PlayerState == PlayerState.Fold && player.HasAbandoned);
+                bool allowedBecauseLeft = player.PlayerState == PlayerState.Left;
+                bool allowedBecauseWaitingTable = table.TableState == TableState.Waiting;
+
+                if (allowedBecauseFold || allowedBecauseLeft || allowedBecauseWaitingTable) continue;
+
+                return true;
+            }
+        }
+        return false;
+    }
 
 
 

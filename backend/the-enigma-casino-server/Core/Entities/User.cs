@@ -33,6 +33,6 @@ public class User
         EmailConfirm = false;
         ConfirmationToken = null;
         Role = Role.User;
-        Image = "user_default.png";
+        Image = "user_default.webp";
     }
 }

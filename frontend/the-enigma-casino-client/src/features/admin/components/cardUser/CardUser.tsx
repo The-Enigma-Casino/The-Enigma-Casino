@@ -1,3 +1,4 @@
+import { IMAGE_PROFILE_URL } from "../../../../config";
 import { UserAdmin } from "../../interfaces/UserAdmin.interface";
 
 interface Props {
@@ -7,20 +8,34 @@ interface Props {
   onToggleBan?: (id: number) => void;
 }
 
-export function CardUser({ user, adminId , onChangeRole, onToggleBan }: Props) {
+export function CardUser({ user, adminId, onChangeRole, onToggleBan }: Props) {
   const { id, nickname, image, role, isSelfBanned } = user;
 
-  const avatarUrl = image.startsWith("http") ? image : `/uploads/${image}`;
-
-  const isAdminBan = role === "Banned";
-  const showUnbanButton = isAdminBan;
   const isSelf = id === adminId;
 
-  const displayRole = isAdminBan ? "BANNED" : role.toUpperCase();
+  const mapRole = (roleValue: number | string): string => {
+    if (typeof roleValue === "string") return roleValue.toUpperCase();
+
+    switch (Number(roleValue)) {
+      case 0:
+        return "ADMIN";
+      case 1:
+        return "USER";
+      case 2:
+        return "BANNED";
+      default:
+        return "UNKNOWN";
+    }
+  };
+
+  const displayRole = mapRole(role);
+
+  const isAdminBan = displayRole === "BANNED";
+  const showUnbanButton = isAdminBan;
 
   const roleColor = isAdminBan
     ? "text-Color-Cancel"
-    : role === "Admin"
+    : displayRole === "ADMIN"
     ? "text-Principal"
     : "text-white";
 
@@ -32,7 +47,7 @@ export function CardUser({ user, adminId , onChangeRole, onToggleBan }: Props) {
 
           <div className="relative mt-3">
             <img
-              src={avatarUrl}
+              src={IMAGE_PROFILE_URL + image}
               alt={nickname}
               className={`w-[60px] h-[60px] rounded-full object-cover ${
                 (isAdminBan || isSelfBanned) ? "opacity-40" : ""
@@ -46,7 +61,7 @@ export function CardUser({ user, adminId , onChangeRole, onToggleBan }: Props) {
           </div>
 
           <p className={`mt-3 font-bold text-base ${roleColor}`}>
-            {isSelfBanned && !isAdminBan ? role.toUpperCase() : displayRole}
+            {displayRole}
           </p>
         </div>
 

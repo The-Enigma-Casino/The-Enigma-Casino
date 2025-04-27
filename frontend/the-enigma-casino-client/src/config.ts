@@ -59,3 +59,7 @@ export const USER_HISTORY = `${API_BASE_URL}History`;
 
 /* ENDPOINTS DE HISTORY GAMES */
 export const USER_HISTORY_ORDERS = `${API_BASE_URL}Order/orders`;
+
+/* ENDPOINTS DE PANEL DE USER EN ADMIN */
+export const USERS_ADMIN = `${API_BASE_URL}AdminUser/users`;
+export const search_USERS_ADMIN = `${API_BASE_URL}AdminUser/search-users`;

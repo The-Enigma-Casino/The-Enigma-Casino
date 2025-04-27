@@ -1,14 +1,26 @@
 import { useState } from "react";
 
-export function SearchBarUser() {
+interface Props {
+  onSearch: (searchTerm: string) => void;
+  onReset: () => void;
+}
+
+export function SearchBarUser({ onSearch, onReset }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+    const value = event.target.value;
+    setSearchTerm(value);
+
+    if (value.trim() === "") {
+      onReset();
+    }
   };
 
   const handleSearch = () => {
-    console.log("Texto buscado:", searchTerm);
+    if (searchTerm.trim() !== "") {
+      onSearch(searchTerm);
+    }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -19,7 +31,7 @@ export function SearchBarUser() {
 
   const handleReset = () => {
     setSearchTerm("");
-    console.log("Buscador reseteado");
+    onReset();
   };
 
   return (

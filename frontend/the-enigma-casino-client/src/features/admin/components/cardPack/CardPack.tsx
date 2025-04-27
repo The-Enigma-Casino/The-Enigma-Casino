@@ -52,41 +52,19 @@ export const CardPack = ({ pack }: Props) => {
   const displayImage = imagePreview || `${BASE_URL}${pack.image}`;
 
   return (
-    <div className="w-[300px] h-[220px] rounded-[20px] bg-Background-nav border-2 border-Green-lines flex flex-col items-center justify-between p-4 transition-transform duration-300 hover:scale-102">
+    <div className="w-[320px] h-[250px] rounded-[20px] bg-Background-nav border-2 border-Green-lines flex flex-col items-center justify-between p-5 transition-transform duration-300 hover:scale-102">
 
-      <div className="flex items-center justify-center gap-6 w-full">
-        <div className="relative">
-          <img
-            src={displayImage}
-            alt="Pack"
-            className="w-[80px] h-[80px] rounded-lg object-cover"
-          />
-          {pack.offer > 0 && !editing && (
-            <div className="absolute top-[-0.5rem] left-[-1rem] bg-Color-Cancel text-white text-xs font-bold px-2 py-1 rounded-full">
-              % OFERTA
-            </div>
-          )}
-        </div>
-
-        {!editing ? (
-          <div className="flex flex-col items-start justify-center">
-            <p className="text-Coins font-bold text-lg">{quantity} fichas</p>
-
-            <div className="flex items-center gap-2 mt-2">
-              {pack.offer > 0 && (
-                <div className="border border-Principal text-Color-Cancel px-2 py-1 rounded-full line-through">
-                  <p className="text-xs font-bold">{formatPriceWithCurrency(pack.price)}</p>
-                </div>
-              )}
-              <div className="border border-Principal text-white px-2 py-1 rounded-full">
-                <p className="text-xs font-bold">
-                  {pack.offer > 0 ? formatPriceWithCurrency(pack.offer) : formatPriceWithCurrency(pack.price)}
-                </p>
-              </div>
-            </div>
+      {editing ? (
+        <div className="flex items-start justify-center gap-6 w-full">
+          <div className="relative">
+            <img
+              src={displayImage}
+              alt="Pack"
+              className="w-[80px] aspect-square rounded-lg object-contain"
+            />
           </div>
-        ) : (
-          <div className="flex flex-col gap-3 w-full">
+
+          <div className="flex flex-col gap-2 w-full">
             <div className="flex flex-col">
               <label className="text-white text-sm font-semibold mb-1">Cantidad</label>
               <input
@@ -94,7 +72,7 @@ export const CardPack = ({ pack }: Props) => {
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 placeholder="Cantidad"
-                className="bg-Background-Overlay text-white border border-Green-lines rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-Principal transition"
+                className="bg-Background-Overlay text-white border border-Green-lines rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-Principal transition"
               />
             </div>
 
@@ -105,7 +83,7 @@ export const CardPack = ({ pack }: Props) => {
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="Precio (€)"
-                className="bg-Background-Overlay text-white border border-Green-lines rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-Principal transition"
+                className="bg-Background-Overlay text-white border border-Green-lines rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-Principal transition"
               />
             </div>
 
@@ -116,7 +94,7 @@ export const CardPack = ({ pack }: Props) => {
                 value={offer}
                 onChange={(e) => setOffer(e.target.value)}
                 placeholder="Oferta (€)"
-                className="bg-Background-Overlay text-white border border-Green-lines rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-Principal transition"
+                className="bg-Background-Overlay text-white border border-Green-lines rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-Principal transition"
               />
             </div>
 
@@ -129,8 +107,40 @@ export const CardPack = ({ pack }: Props) => {
               />
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-3 w-full">
+          <div className="relative">
+            <img
+              src={displayImage}
+              alt="Pack"
+              className="w-[100px] h-[100px] rounded-lg object-cover"
+            />
+            {pack.offer > 0 && (
+              <div className="absolute top-[-0.5rem] left-[-1rem] bg-Color-Cancel text-white text-xs font-bold px-2 py-1 rounded-full">
+                % OFERTA
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col items-center justify-center text-center">
+            <p className="text-Coins font-bold text-lg">{quantity} fichas</p>
+
+            <div className="flex items-center gap-2 mt-2">
+              {pack.offer > 0 && (
+                <div className="border border-Principal text-Color-Cancel px-3 py-1 rounded-full line-through">
+                  <p className="text-base font-bold">{formatPriceWithCurrency(pack.price)}</p>
+                </div>
+              )}
+              <div className="border border-Principal text-white px-3 py-1 rounded-full">
+                <p className="text-base font-bold">
+                  {pack.offer > 0 ? formatPriceWithCurrency(pack.offer) : formatPriceWithCurrency(pack.price)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!editing ? (
         <Button

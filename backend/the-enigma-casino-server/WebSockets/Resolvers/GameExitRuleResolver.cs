@@ -4,6 +4,7 @@ using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker;
+using the_enigma_casino_server.WebSockets.Roulette;
 
 public class GameExitRuleResolver
 {
@@ -20,7 +21,7 @@ public class GameExitRuleResolver
         {
             GameType.BlackJack => _provider.GetRequiredService<BlackjackExitRuleHandler>(),
             GameType.Poker => _provider.GetRequiredService<PokerExitRuleHandler>(),
-           // GameType.Roulette => _provider.GetRequiredService<RouletteExitRuleHandler>(),
+            GameType.Roulette => _provider.GetRequiredService<RouletteExitRuleHandler>(),
             _ => throw new NotSupportedException($"GameType {gameType} no soportado en GameExitRuleResolver.")
         };
     }

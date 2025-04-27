@@ -189,8 +189,11 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             if (table.Players.Count >= table.MinPlayer && !HasActiveMatch(table.Id))
             {
+                Console.WriteLine($"🔍 [HandleJoinTableAsync] Mesa {table.Id} cumple minPlayer. Estado actual: {table.TableState}");
+
                 session.StartOrRestartCountdown();
                 table.TableState = TableState.Starting;
+                Console.WriteLine($"✅ [HandleJoinTableAsync] Estado de mesa {table.Id} cambiado a: {table.TableState}");
 
                 unitOfWork.GameTableRepository.Update(table);
                 await unitOfWork.SaveAsync();
@@ -204,6 +207,10 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                         tableId = table.Id,
                         countdown = 30
                     });
+            }
+            else
+            {
+                Console.WriteLine($"⏳ [HandleJoinTableAsync] Mesa {table.Id} aún no cumple condiciones para cambiar a 'Starting'. Jugadores: {table.Players.Count}/{table.MinPlayer}");
             }
         }
     }

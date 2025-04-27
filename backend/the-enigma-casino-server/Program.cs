@@ -21,10 +21,12 @@ using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.Chat;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameTable;
+using the_enigma_casino_server.WebSockets.Handlers;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker;
 using the_enigma_casino_server.WebSockets.Resolvers;
 using the_enigma_casino_server.WebSockets.Resolversl;
+using the_enigma_casino_server.WebSockets.Roulette;
 
 
 namespace the_enigma_casino_server;
@@ -102,6 +104,8 @@ public class Program
         // --- WebSocket: servicios específicos del juego ---
         builder.Services.AddScoped<GameTableManager>();
         builder.Services.AddScoped<GameMatchManager>();
+        builder.Services.AddScoped<GameInactivityHandler>();
+
 
         // --- Resolver de servicios por tipo de juego ---
         builder.Services.AddScoped<GameBetInfoProviderResolver>();
@@ -109,6 +113,7 @@ public class Program
         builder.Services.AddScoped<GameSessionCleanerResolver>();
         builder.Services.AddScoped<GameExitRuleResolver>();
         builder.Services.AddScoped<GameJoinHelperResolver>();
+        builder.Services.AddScoped<GameInactivityTrackerResolver>();
 
 
         // --- Servicios concretos de Blackjack ---
@@ -144,9 +149,14 @@ public class Program
         // --- Servicios concretos de Ruleta ---
         builder.Services.AddScoped<RouletteBetInfoProvider>();
         builder.Services.AddScoped<RouletteSessionCleaner>();
+        builder.Services.AddScoped<RouletteExitRuleHandler>();
+        builder.Services.AddScoped<RouletteJoinHelper>();
+        builder.Services.AddScoped<RouletteInactivityTracker>();
 
         builder.Services.AddScoped<IGameBetInfoProvider, RouletteBetInfoProvider>();
         builder.Services.AddScoped<IGameSessionCleaner, RouletteSessionCleaner>();
+        builder.Services.AddScoped<IGameJoinHelper, RouletteJoinHelper>();
+        builder.Services.AddScoped<IGameInactivityTracker, RouletteInactivityTracker>();
 
         // --- Servicios en background ---
         builder.Services.AddHostedService<SelfBanReversalService>();

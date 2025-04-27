@@ -2,6 +2,7 @@
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
+using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
@@ -19,6 +20,7 @@ public class GameMatchManager
     private readonly GameTurnServiceResolver _turnResolver;
     private readonly GameSessionCleanerResolver _sessionCleanerResolver;
     private readonly GameExitRuleResolver _exitRuleResolver;
+    private readonly GameInactivityTrackerResolver _inactivityTrackerResolver;
 
     private readonly IServiceProvider _serviceProvider;
 
@@ -29,6 +31,7 @@ public class GameMatchManager
                             GameTurnServiceResolver turnResolver,
                             GameSessionCleanerResolver sessionCleanerResolver,
                             GameExitRuleResolver exitRuleResolver,
+                            GameInactivityTrackerResolver inactivityTrackerResolver,
                             IServiceProvider serviceProvider)
     {
         _unitOfWork = unitOfWork;
@@ -37,6 +40,7 @@ public class GameMatchManager
         _sessionCleanerResolver = sessionCleanerResolver;
         _serviceProvider = serviceProvider;
         _exitRuleResolver = exitRuleResolver;
+        _inactivityTrackerResolver = inactivityTrackerResolver;
     }
 
 
@@ -99,6 +103,11 @@ public class GameMatchManager
             case GameType.Poker:
                 var pokerWS = _serviceProvider.GetRequiredService<PokerWS>();
                 await pokerWS.StartInitialDealAsync(match);
+                break;
+
+            case GameType.Roulette:
+                var rouletteWS = _serviceProvider.GetRequiredService<RouletteWS>();
+                await rouletteWS.StartRound(match);
                 break;
 
             default:

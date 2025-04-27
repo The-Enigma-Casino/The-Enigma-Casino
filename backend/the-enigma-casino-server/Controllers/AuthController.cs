@@ -87,15 +87,4 @@ public class AuthController : BaseController
             return StatusCode(500, new { message = "Un error ha ocurrido al procesar tu solicitud." });
         }
     }
-
-    [HttpPost("ban-self")]
-    [Authorize]
-    public async Task<IActionResult> BanSelf()
-    {
-        int userId = GetUserId();
-
-        await _userService.AutoBanUserAsync(userId);
-
-        return Ok("Has sido autobaneado exitosamente.");
-    }
 }

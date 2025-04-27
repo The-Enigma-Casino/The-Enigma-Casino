@@ -8,6 +8,7 @@ using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
+using the_enigma_casino_server.WebSockets.Handlers;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Resolvers;
 using the_enigma_casino_server.WebSockets.Resolversl;
@@ -18,6 +19,7 @@ namespace the_enigma_casino_server.WebSockets.GameMatch;
 public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebSocketSender
 {
     public string Type => "game_match";
+
 
     public GameMatchWS(
     ConnectionManagerWS connectionManager,
@@ -50,8 +52,9 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         GameTurnServiceResolver turnResolver = provider.GetRequiredService<GameTurnServiceResolver>();
         GameSessionCleanerResolver sessionCleaner = provider.GetRequiredService<GameSessionCleanerResolver>();
         GameExitRuleResolver exitRuleResolver = provider.GetRequiredService<GameExitRuleResolver>();
+        GameInactivityTrackerResolver inactivityTrackerResolver = provider.GetRequiredService<GameInactivityTrackerResolver>();
 
-        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, exitRuleResolver, provider);
+        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, exitRuleResolver, inactivityTrackerResolver, provider);
 
     }
 
@@ -119,14 +122,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 return;
 
             ActiveGameMatchStore.Set(table.Id, match);
-
-            // Ruleta ciclo pausa
-            if (match.GameTable.GameType == GameType.Roulette)
-            {
-                var rouletteWS = scope.ServiceProvider.GetRequiredService<RouletteWS>();
-                rouletteWS.StartAutomaticCycle(table.Id);
-            }
-
+       
             Console.WriteLine($"[GameMatchWS] Partida iniciada en mesa {table.Id} con {match.Players.Count} jugadores.");
 
             string[] userIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
@@ -283,6 +279,13 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                     tblMgr.RemovePlayerFromTable(table, p.UserId, out _);
                 }
             }
+
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var inactivityHandler = scope.ServiceProvider.GetRequiredService<GameInactivityHandler>();
+                await inactivityHandler.HandleInactivityAsync(table);
+            }
+
 
             if (table.Players.Count >= table.MinPlayer)
             {

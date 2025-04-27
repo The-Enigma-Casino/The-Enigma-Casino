@@ -10,6 +10,8 @@ public class ActiveGameSession
 
     private readonly AsyncReusableTimer _startTimer;
     private AsyncReusableTimer _postMatchTimer;
+    private AsyncReusableTimer _bettingTimer;
+
 
 
     private bool _isTimerRunning;
@@ -71,5 +73,20 @@ public class ActiveGameSession
     public IEnumerable<string> GetPlayerNames()
     {
         return Table.Players.Select(p => p.User.NickName);
+    }
+
+    // Timer de apuestas de ruleta
+    public void StartBettingTimer(int milliseconds, Func<Task> onTimerCompleteAsync)
+    {
+        CancelBettingTimer();
+
+        _bettingTimer = new AsyncReusableTimer(onTimerCompleteAsync);
+        _bettingTimer.Start(milliseconds);
+    }
+
+    public void CancelBettingTimer()
+    {
+        _bettingTimer?.Cancel();
+        _bettingTimer = null;
     }
 }

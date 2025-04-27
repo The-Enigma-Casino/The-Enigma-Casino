@@ -22,18 +22,41 @@ public class RouletteBetInfoProvider : IGameBetInfoProvider
         if (ActiveRouletteGameStore.TryGet(player.GameTableId, out var rouletteGame))
         {
             var bets = rouletteGame.GetBetsForPlayer(player.UserId);
-            var results = bets.Select(bet =>
+
+            int totalBet = bets.Sum(bet => bet.Amount);
+
+            int totalWin = bets.Sum(bet =>
             {
                 bool won = BetEvaluator.CheckWin(bet, rouletteGame.LastNumber, rouletteGame.LastColor);
-                return won ? bet.Amount * bet.CalculatePayoutMultiplier() : 0;
+                return won ? bet.Amount * (bet.CalculatePayoutMultiplier() + 1) : 0;
             });
-            return results.Sum();
+
+            return totalWin - totalBet;
         }
+
         return 0;
     }
+
 
     public int GetMatchCountForHistory(Player player)
     {
         return 1;
+    }
+
+    public bool HasPlayedThisMatch(Player player, Match match)
+    {
+        if (ActiveRouletteGameStore.TryGet(match.GameTableId, out var rouletteGame))
+        {
+            var bets = rouletteGame.GetBetsForPlayer(player.UserId);
+            return bets.Any();
+        }
+
+        return false;
+    }
+
+
+    public int GetMinimumRequiredCoins()
+    {
+        return 20;
     }
 }

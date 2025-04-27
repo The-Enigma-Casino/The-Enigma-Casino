@@ -6,7 +6,6 @@ using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Websockets.Poker;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.GameMatch;
-using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker.Store;
@@ -36,8 +35,9 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         GameTurnServiceResolver turnResolver = provider.GetRequiredService<GameTurnServiceResolver>();
         GameSessionCleanerResolver sessionCleaner = provider.GetRequiredService<GameSessionCleanerResolver>();
         GameExitRuleResolver exitRuleResolver = provider.GetRequiredService<GameExitRuleResolver>();
+        GameInactivityTrackerResolver inactivityTrackerResolver = provider.GetRequiredService<GameInactivityTrackerResolver>();
 
-        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, exitRuleResolver, provider);
+        return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, exitRuleResolver, inactivityTrackerResolver, provider);
     }
 
     public async Task HandleAsync(string userId, JsonElement message)
@@ -71,7 +71,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         await notifier.NotifyBlindsAsync(match, pokerGame);
 
-        UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out var scope);
+        UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out IServiceScope scope);
         using (scope)
         {
             var smallBlind = match.Players.FirstOrDefault(p => p.UserId == pokerGame.GetSmallBlind().UserId);
@@ -398,7 +398,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         pokerGame.GeneratePots();
         pokerGame.Showdown();
 
-        UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out var coinsScope);
+        UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out IServiceScope coinsScope);
         using (coinsScope)
         {
             foreach (var player in match.Players)
@@ -425,7 +425,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, response);
 
-        using (var scope = _serviceProvider.CreateScope())
+        using (IServiceScope scope = _serviceProvider.CreateScope())
         {
             var gameMatchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
             await gameMatchWS.FinalizeMatchAsync(tableId);
@@ -440,7 +440,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             session.StartPostMatchTimer(20_000, async () =>
             {
-                using (var postMatchScope = _serviceProvider.CreateScope())
+                using (IServiceScope postMatchScope = _serviceProvider.CreateScope())
                 {
                     var gameMatchWS = postMatchScope.ServiceProvider.GetRequiredService<GameMatchWS>();
                     Console.WriteLine($"⏱️ [Timer] Evaluando si puede empezar nuevo match para mesa {tableId}");
@@ -453,7 +453,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private async Task HandleBetAndNotifyAsync(Player player)
     {
-        UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out var scope);
+        UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out IServiceScope scope);
         PokerNotifier notifier = _serviceProvider.GetRequiredService<PokerNotifier>();
 
         using (scope)

@@ -35,12 +35,10 @@ function StripePayment() {
 
   useEffect(() => {
     if (!token) {
-      console.error("❌ No se encontró el token de autenticación.");
       return;
     }
 
     if (!coinCard) {
-      console.error("❌ No se encontró ninguna tarjeta seleccionada.");
       return;
     }
 
@@ -48,26 +46,21 @@ function StripePayment() {
   }, [token, coinCard]);
 
   const handleOnComplete = async () => {
-    console.log("🔄 Fetching last order...");
 
     const fetchedOrderId = await fetchLastOrderIdFx();
-    console.log("✅ Última orden después del fetch:", fetchedOrderId);
 
     if (fetchedOrderId) {
       await fetchPaymentStatusFx(fetchedOrderId);
     } else {
-      console.error("❌ La orden sigue siendo null después del fetch.");
       return;
     }
   };
 
   useEffect(() => {
     if (paymentStatus === "paid") {
-      console.log("✅ Pago confirmado, redirigiendo...");
       fetchLastOrderFx();
       navigate("/payment-confirmation?pagado=true");
     } else if (paymentError) {
-      console.log("❌ Error en el pago, redirigiendo...");
       navigate("/payment-confirmation?error=true");
     }
   }, [paymentStatus, paymentError, navigate]);

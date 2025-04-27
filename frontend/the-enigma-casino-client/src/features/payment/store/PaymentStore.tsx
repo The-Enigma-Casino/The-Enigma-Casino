@@ -6,15 +6,19 @@ import {
 } from "../actions/stripeActions";
 import { OrderDto } from "../models/OrderDto.interface";
 
+export const resetClientSecret = createEvent();
+
 export const $clientSecret = createStore<string | null>(null).on(
   fetchClientSecretFx.doneData,
   (_, data) => {
     return data.clientSecret;
   }
-);
+).reset(resetClientSecret);
 
 export const resetLastOrder = createEvent();
 export const resetPaymentStatus = createEvent();
+export const resetLastOrderId = createEvent();
+
 
 export const $lastOrder = createStore<OrderDto | null>(null)
   .on(fetchLastOrderFx.doneData, (_, order) => {
@@ -25,7 +29,8 @@ export const $lastOrder = createStore<OrderDto | null>(null)
 
 export const $lastOrderId = createStore<number | null>(null)
   .on(fetchLastOrderIdFx.doneData, (_, id) => id)
-  .reset(fetchLastOrderIdFx.fail);
+  .reset(fetchLastOrderIdFx.fail)
+  .reset(resetLastOrderId);
 
 export const $paymentStatus = createStore<string | null>(null)
   .on(fetchPaymentStatusFx.doneData, (_, paymentStatus) => {

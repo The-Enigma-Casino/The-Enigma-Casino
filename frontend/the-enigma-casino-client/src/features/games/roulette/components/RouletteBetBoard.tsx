@@ -6,6 +6,11 @@ interface RouletteBetBoardProps {
   bets: { key: string; label: string; amount: number }[];
 }
 
+const redNumbers = new Set([
+  1, 3, 5, 7, 9, 12, 14, 16, 18,
+  19, 21, 23, 25, 27, 30, 32, 34, 36,
+]);
+
 export const RouletteBetBoard = ({
   disabled = false,
   onBet,
@@ -14,12 +19,15 @@ export const RouletteBetBoard = ({
   const getBetAmount = (key: string) =>
     bets.find((b) => b.key === key)?.amount ?? 0;
 
-  const renderCell = (
-    n: number,
-    color: "red" | "black" | "green" = "green"
-  ) => {
+  const getNumberColor = (n: number): "red" | "black" | "green" => {
+    if (n === 0) return "green";
+    return redNumbers.has(n) ? "red" : "black";
+  };
+
+  const renderCell = (n: number) => {
     const betKey = `number_${n}`;
     const hasBet = getBetAmount(betKey) > 0;
+    const color = getNumberColor(n);
 
     return (
       <td
@@ -76,24 +84,24 @@ export const RouletteBetBoard = ({
                 </div>
               )}
             </td>
-            {[3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36].map((n, i) =>
-              renderCell(n, i % 2 === 0 ? "red" : "black")
+            {[3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36].map((n) =>
+              renderCell(n)
             )}
             {renderSector("2 to 1", "sector_1")}
           </tr>
 
           <tr className={styles.nums}>
             <td className={styles.hidden}></td>
-            {[2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35].map((n, i) =>
-              renderCell(n, i % 2 === 0 ? "black" : "red")
+            {[2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35].map((n) =>
+              renderCell(n)
             )}
             {renderSector("2 to 1", "sector_2")}
           </tr>
 
           <tr className={styles.nums}>
             <td className={styles.hidden}></td>
-            {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34].map((n, i) =>
-              renderCell(n, i % 2 === 0 ? "red" : "black")
+            {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34].map((n) =>
+              renderCell(n)
             )}
             {renderSector("2 to 1", "sector_3")}
           </tr>

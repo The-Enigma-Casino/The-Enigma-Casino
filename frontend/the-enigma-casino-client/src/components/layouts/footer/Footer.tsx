@@ -4,7 +4,6 @@ import classes from "./Footer.module.css";
 import { useNavigate } from "react-router-dom";
 import { $role, $token, loadRole } from "../../../features/auth/store/authStore";
 import { useEffect } from "react";
-import { autoBanFx } from "../../../features/auth/actions/authActions";
 
 function Footer() {
   const navigate = useNavigate();
@@ -70,7 +69,6 @@ function Footer() {
           <div className={classes.autoExpulsion}>
             <button
               className={`${classes.InvisibilityButton} ${classes.autoExpulsion}`}
-              onClick={() => autoBanFx()}
             >
               AutoExpulsión
             </button>

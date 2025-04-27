@@ -2,14 +2,12 @@ import axios from "axios";
 import { createEffect } from "effector";
 
 import {
-  AUTOBAN,
   CONFIRM_EMAIL_ENDPOINT,
   LOGIN_ENDPOINT,
   REGISTER_ENDPOINT,
 } from "../../../config";
 import { LoginReq } from "../models/LoginReq.interface";
 import { RegisterReq } from "../models/RegisterReq.interface";
-import { logout } from "../store/authStore";
 
 // LOGIN
 export const loginFx = createEffect<LoginReq, string, string>(
@@ -68,27 +66,3 @@ export const confirmEmailFx = createEffect<string, string, string>(
     }
   }
 );
-
-// AUTOBAN
-export const autoBanFx = createEffect<void, string, string>(async () => {
-  try {
-    const response = await axios.post<string>(
-      AUTOBAN,
-      null,
-      {
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-
-    return response.data;
-  } catch (error: any) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Ocurrió un error inesperado al solicitar la autoexpulsión.";
-    throw errorMessage;
-  }
-});
-
-autoBanFx.done.watch(() => {
-  logout();
-});

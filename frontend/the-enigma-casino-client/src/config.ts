@@ -64,3 +64,4 @@ export const USER_HISTORY_ORDERS = `${API_BASE_URL}Order/orders`;
 export const USERS_ADMIN = `${API_BASE_URL}AdminUser/users`;
 export const search_USERS_ADMIN = `${API_BASE_URL}AdminUser/search-users`;
 export const UPDATE_ROLE_ADMIN = `${API_BASE_URL}AdminUser/update-role`;
+export const BAN_USER_ADMIN = `${API_BASE_URL}AdminUser/ban-user`;

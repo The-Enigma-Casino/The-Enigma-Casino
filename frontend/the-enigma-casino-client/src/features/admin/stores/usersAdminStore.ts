@@ -3,11 +3,15 @@ import { UserAdmin } from "../interfaces/UserAdmin.interface";
 import { loadAdminUsersFx } from "../actions/loadUsersActions";
 import { searchAdminUsersFx } from "../actions/searchUsersActions";
 import { changeUserRoleFx } from "../actions/changeUserRoleAction";
+import { banUserFx } from "../actions/banUserAction";
+import toast from "react-hot-toast";
+import { getErrorMessage } from "../../../utils/errorUtils";
 
 export const loadAdminUsers = createEvent();
 export const searchAdminUsers = createEvent<string>();
 export const resetAdminUsers = createEvent();
 export const changeAdminUserRole = createEvent<number>();
+export const banAdminUser = createEvent<number>();
 
 sample({
   clock: loadAdminUsers,
@@ -23,6 +27,24 @@ sample({
   clock: changeAdminUserRole,
   target: changeUserRoleFx,
 });
+
+sample({
+  clock: banAdminUser,
+  target: banUserFx,
+});
+
+changeUserRoleFx.failData.watch((error) => {
+  toast.error(getErrorMessage(error), {
+    className: "text-lg font-bold p-3",
+  });
+});
+
+banUserFx.failData.watch((error) => {
+  toast.error(getErrorMessage(error), {
+    className: "text-lg font-bold p-3",
+  });
+});
+
 
 export const $adminUsers = createStore<UserAdmin[]>([])
   .on(loadAdminUsersFx.doneData, (_, users) => users)

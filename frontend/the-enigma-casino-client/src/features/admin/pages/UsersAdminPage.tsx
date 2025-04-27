@@ -6,6 +6,7 @@ import {
   resetAdminUsers,
   searchAdminUsers,
   changeAdminUserRole,
+  banAdminUser,
 } from "../stores/usersAdminStore";
 import { CardUser } from "../components/cardUser/CardUser";
 import { SearchBarUser } from "../components/searchBar/SearchBarUser";
@@ -17,11 +18,11 @@ export default function UsersAdminPage() {
 
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState<"changeRole" | "banUser" | null>(null); // 🔥 Saber qué acción es
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     loadAdminUsers();
-
     return () => {
       resetAdminUsers();
     };
@@ -41,15 +42,27 @@ export default function UsersAdminPage() {
 
   const handleOpenChangeRoleModal = (userId: number) => {
     setSelectedUserId(userId);
+    setModalAction("changeRole");
     setModalOpen(true);
   };
 
-  const handleConfirmChangeRole = () => {
+  const handleOpenBanUserModal = (userId: number) => {
+    setSelectedUserId(userId);
+    setModalAction("banUser");
+    setModalOpen(true);
+  };
+
+  const handleConfirmAction = () => {
     if (selectedUserId !== null) {
-      changeAdminUserRole(selectedUserId);
+      if (modalAction === "changeRole") {
+        changeAdminUserRole(selectedUserId);
+      } else if (modalAction === "banUser") {
+        banAdminUser(selectedUserId);
+      }
     }
     setModalOpen(false);
     setSelectedUserId(null);
+    setModalAction(null);
 
     setTimeout(() => {
       if (searchTerm.trim() !== "") {
@@ -60,9 +73,10 @@ export default function UsersAdminPage() {
     }, 500);
   };
 
-  const handleCancelChangeRole = () => {
+  const handleCancelAction = () => {
     setModalOpen(false);
     setSelectedUserId(null);
+    setModalAction(null);
   };
 
   return (
@@ -84,6 +98,7 @@ export default function UsersAdminPage() {
                 user={user}
                 adminId={1}
                 onChangeRole={() => handleOpenChangeRoleModal(user.id)}
+                onToggleBan={() => handleOpenBanUserModal(user.id)}
               />
             </div>
           ))}
@@ -92,17 +107,19 @@ export default function UsersAdminPage() {
 
       <Modal
         isOpen={isModalOpen}
-        onClose={handleCancelChangeRole}
+        onClose={handleCancelAction}
         size="small"
         position="center"
       >
         <div className="flex flex-col items-center justify-center p-6 gap-8">
           <h2 className="text-white text-3xl font-bold text-center">
-            ¿Cambiar el rol de este usuario?
+            {modalAction === "changeRole"
+              ? "¿Cambiar el rol de este usuario?"
+              : "¿Bloquear o desbloquear este usuario?"}
           </h2>
           <div className="flex gap-8">
             <Button
-              onClick={handleConfirmChangeRole}
+              onClick={handleConfirmAction}
               variant="short"
               color="green"
               font="bold"
@@ -111,7 +128,7 @@ export default function UsersAdminPage() {
             </Button>
 
             <Button
-              onClick={handleCancelChangeRole}
+              onClick={handleCancelAction}
               variant="short"
               color="red"
               font="bold"

@@ -30,14 +30,18 @@ export function CardUser({ user, adminId, onChangeRole, onToggleBan }: Props) {
 
   const displayRole = mapRole(role);
 
+  const isAdmin = displayRole === "ADMIN";
   const isAdminBan = displayRole === "BANNED";
   const showUnbanButton = isAdminBan;
 
   const roleColor = isAdminBan
     ? "text-Color-Cancel"
-    : displayRole === "ADMIN"
+    : isAdmin
     ? "text-Principal"
     : "text-white";
+
+  const canChangeRole = !isSelf && !isAdminBan;
+  const canToggleBan = !isSelf && !isAdmin;
 
   return (
     <div className="transform transition-transform duration-300 hover:scale-105">
@@ -65,29 +69,35 @@ export function CardUser({ user, adminId, onChangeRole, onToggleBan }: Props) {
           </p>
         </div>
 
-        {!isSelf && (
+        {(canChangeRole || canToggleBan) && (
           <div className="flex items-center justify-center gap-5 mb-2">
-            <button
-              onClick={() => onChangeRole?.(id)}
-              className="hover:scale-125 transition-transform"
-              title="Cambiar Rol"
-            >
-              <img src="/svg/change-rol.svg" alt="Change Role" className="w-10 h-10" />
-            </button>
+            {canChangeRole && (
+              <button
+                onClick={() => onChangeRole?.(id)}
+                className="hover:scale-125 transition-transform"
+                title="Cambiar Rol"
+              >
+                <img src="/svg/change-rol.svg" alt="Change Role" className="w-10 h-10" />
+              </button>
+            )}
 
-            <div className="w-px h-8 bg-Green-lines" />
+            {canChangeRole && canToggleBan && (
+              <div className="w-px h-8 bg-Green-lines" />
+            )}
 
-            <button
-              onClick={() => onToggleBan?.(id)}
-              className="hover:scale-125 transition-transform"
-              title={showUnbanButton ? "Desbloquear usuario" : "Bloquear usuario"}
-            >
-              <img
-                src={showUnbanButton ? "/svg/unbanuser.svg" : "/svg/ban-user.svg"}
-                alt={showUnbanButton ? "Unban User" : "Ban User"}
-                className="w-10 h-10"
-              />
-            </button>
+            {canToggleBan && (
+              <button
+                onClick={() => onToggleBan?.(id)}
+                className="hover:scale-125 transition-transform"
+                title={showUnbanButton ? "Desbloquear usuario" : "Bloquear usuario"}
+              >
+                <img
+                  src={showUnbanButton ? "/svg/unbanuser.svg" : "/svg/ban-user.svg"}
+                  alt={showUnbanButton ? "Unban User" : "Ban User"}
+                  className="w-10 h-10"
+                />
+              </button>
+            )}
           </div>
         )}
       </div>

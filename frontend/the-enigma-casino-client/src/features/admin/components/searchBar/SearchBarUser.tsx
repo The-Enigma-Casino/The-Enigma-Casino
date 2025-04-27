@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Props {
   onSearch: (searchTerm: string) => void;
@@ -7,6 +7,7 @@ interface Props {
 
 export function SearchBarUser({ onSearch, onReset }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -33,6 +34,25 @@ export function SearchBarUser({ onSearch, onReset }: Props) {
     setSearchTerm("");
     onReset();
   };
+
+  useEffect(() => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    if (searchTerm.trim() !== "") {
+      debounceTimeout.current = setTimeout(() => {
+        onSearch(searchTerm);
+      }, 500);
+    }
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchTerm, onSearch]);
+
 
   return (
     <div className="flex items-center gap-6 justify-center mb-10">

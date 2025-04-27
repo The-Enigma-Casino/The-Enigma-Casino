@@ -178,7 +178,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
             if (match.GameTable.GameType == GameType.Poker)
             {
-                BlackjackBetTracker.RemovePlayer(tableId, userId);
+                PokerBetTracker.ClearPlayer(tableId, userId);
             }
 
             if (match.GameTable.GameType == GameType.Poker)

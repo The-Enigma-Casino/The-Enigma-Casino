@@ -3,6 +3,7 @@ using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Websockets.Roulette;
+using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
@@ -100,6 +101,11 @@ public class GameMatchManager
 
         switch (table.GameType)
         {
+
+            case GameType.BlackJack:
+                var blackjackWS = _serviceProvider.GetRequiredService<BlackjackWS>();
+                await blackjackWS.StartRoundAsync(match);
+                break;
             case GameType.Poker:
                 var pokerWS = _serviceProvider.GetRequiredService<PokerWS>();
                 await pokerWS.StartInitialDealAsync(match);

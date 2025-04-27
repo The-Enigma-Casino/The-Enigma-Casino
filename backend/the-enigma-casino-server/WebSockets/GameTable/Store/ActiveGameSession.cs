@@ -11,7 +11,7 @@ public class ActiveGameSession
     private readonly AsyncReusableTimer _startTimer;
     private AsyncReusableTimer _postMatchTimer;
     private AsyncReusableTimer _bettingTimer;
-
+    private AsyncReusableTimer _turnTimer;
 
 
     private bool _isTimerRunning;
@@ -88,5 +88,18 @@ public class ActiveGameSession
     {
         _bettingTimer?.Cancel();
         _bettingTimer = null;
+    }
+
+    public void StartTurnTimer(int milliseconds, Func<Task> onTimerCompleteAsync)
+    {
+        CancelTurnTimer();
+        _turnTimer = new AsyncReusableTimer(onTimerCompleteAsync);
+        _turnTimer.Start(milliseconds);
+    }
+
+    public void CancelTurnTimer()
+    {
+        _turnTimer?.Cancel();
+        _turnTimer = null;
     }
 }

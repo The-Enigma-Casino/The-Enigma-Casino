@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.Text.Json;
+﻿using System.Text.Json;
 using the_enigma_casino_server.Games.BlackJack;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
@@ -7,6 +6,7 @@ using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
+using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Resolvers;
@@ -39,6 +39,15 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
             });
         }
     }
+
+    public async Task StartRoundAsync(Match match)
+    {
+        Console.WriteLine($"🟢 [BlackjackWS] Iniciando nueva ronda de Blackjack para mesa {match.GameTableId}.");
+
+        await HandleBetsOpenedAsync(match);
+    }
+
+
 
     private async Task HandleDealInitialCardsFromMessageAsync(JsonElement message)
     {
@@ -84,7 +93,8 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         }
 
         int amount = message.GetProperty("amount").GetInt32();
-        var betInfoProvider = _serviceProvider.GetRequiredService<GameBetInfoProviderResolver>().Resolve(match.GameTable.GameType);
+        using var betScope = _serviceProvider.CreateScope();
+        var betInfoProvider = betScope.ServiceProvider.GetRequiredService<GameBetInfoProviderResolver>().Resolve(match.GameTable.GameType);
         int minimumBet = betInfoProvider.GetMinimumRequiredCoins();
 
         Console.WriteLine($"🪙 [place_bet] Usuario {userId} intenta apostar {amount} monedas en la mesa {tableId}");
@@ -136,10 +146,102 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         if (BlackjackBetTracker.HaveAllPlayersBet(tableId, expectedPlayerIds))
         {
             BlackjackBetTracker.Clear(tableId);
+
+            if (ActiveGameSessionStore.TryGet(tableId, out var session))
+            {
+                session.CancelBettingTimer();
+            }
+
             Console.WriteLine($"♠️ Todos los jugadores han apostado en la mesa {tableId}. Iniciando reparto...");
             await HandleDealInitialCardsAsync(tableId);
         }
+
     }
+
+    private async Task HandleBetsOpenedAsync(Match match)
+    {
+        var connectedUserIds = match.Players
+            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.Blackjack)
+            .Select(p => p.UserId.ToString())
+            .ToList();
+
+        await ((IWebSocketSender)this).BroadcastToUsersAsync(connectedUserIds, new
+        {
+            type = "blackjack",
+            action = "bets_opened",
+            tableId = match.GameTableId,
+            bettingDuration = 30
+        });
+
+        Console.WriteLine($"🟢 [BlackjackWS] Fase de apuestas abierta para mesa {match.GameTableId}. Temporizador iniciado.");
+
+        if (ActiveGameSessionStore.TryGet(match.GameTableId, out var session))
+        {
+            session.StartBettingTimer(30_000, async () =>
+            {
+                Console.WriteLine($"⏰ [BlackjackWS] Tiempo de apuestas agotado en mesa {match.GameTableId}. Evaluando estado...");
+                await HandleNoBetsTimeoutAsync(match.GameTableId);
+            });
+        }
+    }
+
+
+    private async Task HandleNoBetsTimeoutAsync(int tableId)
+    {
+        if (!ActiveGameMatchStore.TryGet(tableId, out var match)) return;
+
+        var expectedPlayerIds = match.Players
+            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.Blackjack)
+            .Select(p => p.UserId)
+            .ToList();
+
+        bool anyBets = expectedPlayerIds
+            .Any(id => BlackjackBetTracker.GetAllForTable(tableId).Contains(id));
+
+        if (anyBets)
+        {
+            Console.WriteLine($"✅ [BlackjackWS] Algún jugador apostó en la mesa {tableId}. No se cancela la partida.");
+            return;
+        }
+
+        Console.WriteLine($"🧹 [BlackjackWS] Nadie apostó en la mesa {tableId}. Finalizando partida y limpiando mesa...");
+
+        using var scope = _serviceProvider.CreateScope();
+        var gameMatchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
+
+        await gameMatchWS.FinalizeAndEvaluateMatchAsync(tableId);
+
+        if (ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            var table = session.Table;
+            var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+
+            foreach (var player in table.Players.ToList())
+            {
+                tableManager.RemovePlayerFromTable(table, player.UserId, out _);
+            }
+
+            table.TableState = TableState.Waiting;
+
+            var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+            uow.GameTableRepository.Update(table);
+            await uow.SaveAsync();
+        }
+
+        var connectedUserIds = match.Players
+            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.Blackjack)
+            .Select(p => p.UserId.ToString())
+            .ToList();
+
+        await ((IWebSocketSender)this).BroadcastToUsersAsync(connectedUserIds, new
+        {
+            type = "blackjack",
+            action = "match_cancelled",
+            reason = "Nadie apostó. La partida ha sido cancelada.",
+            tableId
+        });
+    }
+
 
     public async Task CheckAutoStartAfterPlayerLeft(int tableId)
     {
@@ -240,9 +342,16 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         if (!TryGetPlayer(match, userId, out Player player)) return;
         if (!TryGetBlackjackGame(tableId, userId, out BlackjackGame blackjackGame)) return;
 
+        if (ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            session.CancelTurnTimer();
+        }
+
         if (!await IsPlayerTurnAsync(blackjackGame, player, userId)) return;
 
         blackjackGame.PlayerHit(player);
+        var inactivityTracker = _serviceProvider.GetRequiredService<IGameInactivityTracker>();
+        inactivityTracker.ResetActivity(player);
 
         Console.WriteLine($"🃏 {player.User.NickName} ha pedido carta. Nueva mano:");
 
@@ -262,9 +371,6 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         await BroadcastGameStateAsync(match, blackjackGame);
     }
 
-
-
-
     private async Task HandlePlayerStandAsync(string userId, JsonElement message)
     {
         if (!TryGetTableId(message, out var tableId)) return;
@@ -274,7 +380,14 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
 
         if (!await IsPlayerTurnAsync(blackjackGame, player, userId)) return;
 
+        if (ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            session.CancelTurnTimer();
+        }
+
         player.Stand();
+        var inactivityTracker = _serviceProvider.GetRequiredService<IGameInactivityTracker>();
+        inactivityTracker.ResetActivity(player);
 
         Console.WriteLine($"🛑 {player.User.NickName} se planta.");
 
@@ -291,7 +404,14 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
 
         if (!await IsPlayerTurnAsync(blackjackGame, player, userId)) return;
 
+        if (ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            session.CancelTurnTimer();
+        }
+
         blackjackGame.DoubleDown(player);
+        var inactivityTracker = _serviceProvider.GetRequiredService<IGameInactivityTracker>();
+        inactivityTracker.ResetActivity(player);
 
         var unitOfWork = GetScopedService<UnitOfWork>(out var scope);
         using (scope)
@@ -341,6 +461,28 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         {
             blackjackGame.SetCurrentPlayer(nextPlayer.UserId);
             Console.WriteLine($"🔁 Turno cambiado → ahora juega {nextPlayer.User.NickName} (UserId: {nextPlayer.UserId})");
+            if (ActiveGameSessionStore.TryGet(tableId, out var session))
+            {
+                session.StartTurnTimer(20_000, async () =>
+                {
+                    Console.WriteLine($"⏰ [BlackjackWS] Tiempo agotado para jugador {nextPlayer.UserId}, forzando Stand automático.");
+                    await ForceStandAndAdvanceTurnAsync(nextPlayer.UserId, tableId);
+                });
+            }
+
+            var connectedUserIds = match.Players
+                .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.Blackjack)
+                .Select(p => p.UserId.ToString())
+                .ToList();
+
+            await ((IWebSocketSender)this).BroadcastToUsersAsync(connectedUserIds, new
+            {
+                type = "blackjack",
+                action = "turn_started",
+                tableId = tableId,
+                currentTurnUserId = nextPlayer.UserId,
+                turnDuration = 20
+            });
         }
         else
         {
@@ -511,4 +653,32 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         await ForceAdvanceTurnAsync(tableId, userId);
     }
 
+    private async Task ForceStandAndAdvanceTurnAsync(int userId, int tableId)
+    {
+        if (!ActiveGameMatchStore.TryGet(tableId, out var match)) return;
+        if (!TryGetPlayer(match, userId.ToString(), out Player player)) return;
+        if (!ActiveBlackjackGameStore.TryGet(tableId, out BlackjackGame blackjackGame)) return;
+
+        player.Stand();
+        var inactivityTracker = _serviceProvider.GetRequiredService<IGameInactivityTracker>();
+        inactivityTracker.RegisterInactivity(player);
+
+        Console.WriteLine($"🛑 [BlackjackWS] Jugador {player.User.NickName} forzado a Stand por inactividad.");
+
+        var connectedUserIds = match.Players
+            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.Blackjack)
+            .Select(p => p.UserId.ToString())
+            .ToList();
+
+        await ((IWebSocketSender)this).BroadcastToUsersAsync(connectedUserIds, new
+        {
+            type = "blackjack",
+            action = "forced_stand",
+            tableId = tableId,
+            userId = player.UserId
+        });
+
+        await AdvanceTurnAsync(blackjackGame, match, tableId);
+        await BroadcastGameStateAsync(match, blackjackGame);
+    }
 }

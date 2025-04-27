@@ -349,7 +349,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
-        foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))
+        foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Win || p.PlayerState == PlayerState.Lose))
         {
             var spinResults = allResults.GetValueOrDefault(player.UserId) ?? new List<RouletteSpinResult>();
 
@@ -545,7 +545,8 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = RouletteMessageType.BetsOpened,
-            tableId
+            tableId,
+            time = 30
         };
 
         foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))

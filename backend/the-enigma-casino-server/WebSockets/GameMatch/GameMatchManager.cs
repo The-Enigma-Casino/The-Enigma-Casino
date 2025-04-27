@@ -227,6 +227,16 @@ public class GameMatchManager
 
         await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed);
 
+        if (!matchPlayed)
+        {
+            if (ActiveGameSessionStore.TryGet(tableId, out var session))
+            {
+                var tableManager = _serviceProvider.GetRequiredService<GameTableManager>();
+                tableManager.RemovePlayerFromTable(session.Table, player.UserId, out _);
+                Console.WriteLine($"🚪 {player.User.NickName} salió del Match SIN apostar, eliminado de la mesa inmediatamente.");
+            }
+        }
+
         return true;
     }
 

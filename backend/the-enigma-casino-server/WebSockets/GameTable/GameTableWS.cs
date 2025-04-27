@@ -296,6 +296,15 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             !int.TryParse(userId, out int userIdInt))
             return;
 
+        if (ActiveGameMatchStore.TryGet(tableId, out Match match) && match.MatchState == MatchState.InProgress)
+        {
+            Console.WriteLine($"[LeaveTable] Jugador {userId} intentó salir durante un Match activo. Ejecutando LeaveMatch automáticamente.");
+
+            var gameMatchWS = _serviceProvider.GetRequiredService<GameMatchWS>();
+            await gameMatchWS.ProcessPlayerMatchLeaveAsync(tableId, int.Parse(userId));
+            return; 
+        }
+
         if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session))
             return;
 

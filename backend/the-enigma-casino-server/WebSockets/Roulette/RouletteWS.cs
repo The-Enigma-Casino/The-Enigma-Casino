@@ -8,6 +8,7 @@ using the_enigma_casino_server.Utilities;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
+using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
 
@@ -157,11 +158,74 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             using var finalizeScope = _serviceProvider.CreateScope();
             var gameMatchWS = finalizeScope.ServiceProvider.GetRequiredService<GameMatchWS>();
             await gameMatchWS.FinalizeAndEvaluateMatchAsync(tableId);
+
+            if (ActiveGameSessionStore.TryGet(tableId, out var session))
+            {
+
+                session.CancelCountdown();
+                session.CancelBettingTimer();
+                session.CancelPostMatchTimer();
+
+                var table = session.Table;
+                var tableManager = finalizeScope.ServiceProvider.GetRequiredService<GameTableManager>();
+                var unitOfWork = finalizeScope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+                foreach (var player in table.Players.ToList())
+                {
+                    tableManager.RemovePlayerFromTable(table, player.UserId, out _);
+
+                    var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(player.UserId, tableId);
+                    if (history != null && history.LeftAt == null)
+                    {
+                        history.LeftAt = DateTime.Now;
+                        unitOfWork.GameHistoryRepository.Update(history);
+                    }
+                }
+
+                table.TableState = TableState.Waiting;
+                unitOfWork.GameTableRepository.Update(table);
+                await unitOfWork.SaveAsync();
+
+                Console.WriteLine($"[RouletteWS] Todos los jugadores eliminados de la mesa {tableId} tras ronda sin apuestas.");
+            }
+
             ActiveRouletteGameStore.Remove(tableId);
         }
     }
 
-   
+
+    private async Task CleanupTableAfterNoBetsAsync(int tableId, IServiceScope finalizeScope)
+    {
+        if (!ActiveGameSessionStore.TryGet(tableId, out var session))
+            return;
+
+        session.CancelCountdown();
+        session.CancelBettingTimer();
+        session.CancelPostMatchTimer();
+
+        var table = session.Table;
+        var tableManager = finalizeScope.ServiceProvider.GetRequiredService<GameTableManager>();
+        var unitOfWork = finalizeScope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+        foreach (var player in table.Players.ToList())
+        {
+            tableManager.RemovePlayerFromTable(table, player.UserId, out _);
+
+            var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(player.UserId, tableId);
+            if (history != null && history.LeftAt == null)
+            {
+                history.LeftAt = DateTime.Now;
+                unitOfWork.GameHistoryRepository.Update(history);
+            }
+        }
+
+        table.TableState = TableState.Waiting;
+        unitOfWork.GameTableRepository.Update(table);
+        await unitOfWork.SaveAsync();
+
+        Console.WriteLine($"[RouletteWS] Todos los jugadores eliminados y mesa reseteada en mesa {tableId} tras ronda sin apuestas.");
+    }
+
 
     public async Task HandleSpinAsync(string userId, JsonElement message, bool stopAfterSpin = false)
     {
@@ -285,7 +349,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
-        foreach (var player in match.Players)
+        foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))
         {
             var spinResults = allResults.GetValueOrDefault(player.UserId) ?? new List<RouletteSpinResult>();
 
@@ -358,7 +422,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }).ToList()
         };
 
-        foreach (var player in match.Players)
+        foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))
         {
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), statePayload);
         }
@@ -467,7 +531,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             tableId
         };
 
-        foreach (var player in match.Players)
+        foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))
         {
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), payload);
         }
@@ -484,7 +548,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             tableId
         };
 
-        foreach (var player in match.Players)
+        foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))
         {
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), payload);
         }
@@ -494,7 +558,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!TryGetMatch(tableId, "SYSTEM", out var match)) return;
 
-        foreach (var player in match.Players)
+        foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))
         {
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), payload);
         }

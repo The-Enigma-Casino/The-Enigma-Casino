@@ -226,7 +226,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
             foreach (Player player in match.GameTable.Players.ToList())
             {
-                if (player.HasAbandoned)
+                if (player.PlayerState == PlayerState.Left || player.HasAbandoned)
                 {
                     player.PlayerState = PlayerState.Left;
                     tableManager.RemovePlayerFromTable(match.GameTable, player.UserId, out _);

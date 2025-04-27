@@ -94,15 +94,23 @@ public class GameTableManager
             return (false, "maintenance");
         }
 
-        if (table.Players.Any(p => p.UserId == user.Id))
+        Player existingPlayer = table.Players.FirstOrDefault(p => p.UserId == user.Id);
+
+        if (existingPlayer != null)
         {
+            if (existingPlayer.PlayerState == PlayerState.Left || existingPlayer.HasAbandoned)
+            {
+                Console.WriteLine($"[JoinTable] Usuario {user.NickName} intentó volver pero ya abandonó la partida.");
+                return (false, "already_left");
+            }
+
             string msg = $"El usuario {user.Id} ya está en la mesa {table.Id}.";
             return (false, msg);
         }
 
-        if (table.Players.Count >= table.MaxPlayer)
+        if (table.Players.Count(IsActivePlayer) >= table.MaxPlayer)
         {
-            string msg = $"La mesa {table.Id} está llena ({table.Players.Count}/{table.MaxPlayer}).";
+            string msg = $"La mesa {table.Id} está llena ({table.Players.Count(IsActivePlayer)}/{table.MaxPlayer}).";
             return (false, msg);
         }
 
@@ -117,5 +125,11 @@ public class GameTableManager
 
         table.AddPlayer(player);
         return (true, null);
+    }
+
+
+    private bool IsActivePlayer(Player player)
+    {
+        return player.PlayerState != PlayerState.Left && !player.HasAbandoned;
     }
 }

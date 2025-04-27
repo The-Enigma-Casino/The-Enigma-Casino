@@ -126,6 +126,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         string phase = pokerGame.GetCurrentPhase();
 
         bool shouldAdvance = false;
+        bool phaseAdvanced = false; 
 
         try
         {
@@ -148,8 +149,28 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 return;
             }
 
-            if (shouldAdvance)
-                await NotifyNextTurnAsync(tableId, pokerGame, match, phase, notifier);
+            if (shouldAdvance && move != "fold")
+            {
+                Console.WriteLine("🔁 Avanzando turno después de acción del jugador...");
+                bool hasNextTurn = pokerGame.AdvanceTurn();
+
+                if (!hasNextTurn)
+                {
+                    Console.WriteLine($"✅ Todos actuaron en fase {phase}. Avanzando fase desde HandlePlayerActionAsync.");
+                    await HandlePhaseAdvanceAsync(tableId, phase);
+                    phaseAdvanced = true;
+                }
+                else
+                {
+                    int nextUserId = pokerGame.CurrentTurnUserId;
+                    Player? nextPlayer = match.Players.FirstOrDefault(p => p.UserId == nextUserId);
+
+                    if (nextPlayer != null && !PokerActionTracker.HasPlayerActed(tableId, nextPlayer.UserId, phase))
+                    {
+                        await notifier.NotifyPlayerTurnAsync(match, nextPlayer);
+                    }
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -158,14 +179,19 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
-        await PokerManager.RegisterAndMaybeAdvancePhaseAsync(
-            tableId,
-            match,
-            player,
-            phase,
-            HandlePhaseAdvanceAsync
-        );
+        await PokerManager.RegisterPlayerActionAsync(tableId, player.UserId, phase);
+
+        if (!phaseAdvanced)
+        {
+            await PokerManager.MaybeAdvancePhaseAsync(
+                tableId,
+                match,
+                phase,
+                HandlePhaseAdvanceAsync
+            );
+        }
     }
+
 
 
     private async Task HandlePlaceBetAsync(string userId, JsonElement message)
@@ -205,10 +231,11 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
-        await PokerManager.RegisterAndMaybeAdvancePhaseAsync(
+        await PokerManager.RegisterPlayerActionAsync(tableId, player.UserId, phase);
+
+        await PokerManager.MaybeAdvancePhaseAsync(
             tableId,
             match,
-            player,
             phase,
             HandlePhaseAdvanceAsync
         );
@@ -219,6 +246,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!TryGetPokerGame(tableId, "system", out var pokerGame)) return;
         if (!TryGetMatch(tableId, "system", out var match)) return;
+
 
         string actionName;
         switch (phase)
@@ -259,7 +287,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         };
 
         List<string> userIds = match.Players
-            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .Select(p => p.UserId.ToString())
             .ToList();
 
@@ -312,7 +340,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         };
 
         List<string> userIds = match.Players
-            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .Select(p => p.UserId.ToString())
             .ToList();
 
@@ -349,7 +377,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         };
 
         List<string> userIds = match.Players
-            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .Select(p => p.UserId.ToString())
             .ToList();
 
@@ -379,7 +407,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         };
 
         List<string> playerIds = match.Players
-            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .Select(p => p.UserId.ToString())
             .ToList();
 
@@ -419,7 +447,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         };
 
         List<string> userIds = match.Players
-            .Where(p => p.PlayerState != PlayerState.Spectating)
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .Select(p => p.UserId.ToString())
             .ToList();
 
@@ -506,13 +534,54 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
     private async Task NotifyNextTurnAsync(int tableId, PokerGame pokerGame, Match match, string phase, PokerNotifier notifier)
     {
         Console.WriteLine($"🔁 Llamando a AdvanceTurn() desde fase {phase}");
-        pokerGame.AdvanceTurn();
+        bool hasNextTurn = pokerGame.AdvanceTurn();
+
+        if (!hasNextTurn)
+        {
+            Console.WriteLine($"✅ Todos actuaron en fase {phase}. Avanzando fase.");
+            await HandlePhaseAdvanceAsync(tableId, phase);
+            return;
+        }
 
         int nextUserId = pokerGame.CurrentTurnUserId;
-
         Player? nextPlayer = match.Players.FirstOrDefault(p => p.UserId == nextUserId);
 
         if (nextPlayer == null) return;
+
+        if (!PokerActionTracker.HasPlayerActed(tableId, nextPlayer.UserId, phase))
+        {
+            await notifier.NotifyPlayerTurnAsync(match, nextPlayer);
+        }
+    }
+
+    public async Task HandlePlayerDisconnectedAsync(int tableId, int userId)
+    {
+        if (!TryGetPokerGame(tableId, "system", out var pokerGame)) return;
+        if (!TryGetMatch(tableId, "system", out var match)) return;
+
+        var player = match.Players.FirstOrDefault(p => p.UserId == userId);
+        if (player == null)
+            return;
+
+        Console.WriteLine($"⚠️ [PokerWS] Jugador {player.User.NickName} desconectado. Evaluando avance...");
+
+        string phase = pokerGame.GetCurrentPhase();
+
+        bool hasNextTurn = pokerGame.AdvanceTurn();
+
+        if (!hasNextTurn)
+        {
+            Console.WriteLine($"✅ Todos actuaron en fase {phase}. Avanzando fase tras desconexión.");
+            await HandlePhaseAdvanceAsync(tableId, phase);
+            return;
+        }
+
+        int nextUserId = pokerGame.CurrentTurnUserId;
+        Player? nextPlayer = match.Players.FirstOrDefault(p => p.UserId == nextUserId);
+
+        if (nextPlayer == null) return;
+
+        PokerNotifier notifier = _serviceProvider.GetRequiredService<PokerNotifier>();
 
         if (!PokerActionTracker.HasPlayerActed(tableId, nextPlayer.UserId, phase))
         {

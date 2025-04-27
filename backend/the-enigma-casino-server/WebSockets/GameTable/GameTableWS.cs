@@ -187,7 +187,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
 
 
-            if (table.Players.Count >= table.MinPlayer && !HasActiveMatch(table.Id))
+            if (table.Players.Count >= table.MinPlayer && table.TableState == TableState.Waiting && !HasActiveMatch(table.Id))
             {
                 Console.WriteLine($"🔍 [HandleJoinTableAsync] Mesa {table.Id} cumple minPlayer. Estado actual: {table.TableState}");
 

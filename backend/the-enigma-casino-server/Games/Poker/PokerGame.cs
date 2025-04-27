@@ -117,7 +117,7 @@ public class PokerGame
     }
 
 
-    public void AdvanceTurn()
+    public bool AdvanceTurn()
     {
         string phase = GetCurrentPhase();
         int currentIndex = _players.FindIndex(p => p.UserId == CurrentTurnUserId);
@@ -128,46 +128,44 @@ public class PokerGame
             if (fallback != null)
             {
                 CurrentTurnUserId = fallback.UserId;
+                return true;
             }
-            return;
+            return false;
         }
 
         if (PokerHelper.OnlyOnePlayerLeft(_players))
         {
             Console.WriteLine("🏆 Solo queda un jugador. Ganador automático.");
-            return;
+            return false;
         }
 
         if (PokerHelper.AllPlayersAllInOrNoChips(_players))
         {
             Console.WriteLine("♠️ Todos están all-in o sin fichas. Se debe forzar showdown.");
-            return;
+            return false;
         }
 
         for (int i = 1; i < _players.Count; i++)
         {
             int nextIndex = (currentIndex + i) % _players.Count;
             Player nextPlayer = _players[nextIndex];
-            Console.WriteLine($"🔍 Evaluando posible siguiente turno: {nextPlayer.User.NickName}");
 
-
-            if (nextPlayer.PlayerState != PlayerState.Playing || nextPlayer.User.Coins <= 0)
-            {
-                Console.WriteLine($"⛔ Saltando {nextPlayer.User.NickName}: no está jugando o sin fichas.");
+            if (nextPlayer.PlayerState != PlayerState.Playing || nextPlayer.User.Coins <= 0 || nextPlayer.HasAbandoned)
                 continue;
-            }
 
             if (PokerActionTracker.HasPlayerActed(nextPlayer.GameTableId, nextPlayer.UserId, phase))
-            {
-                Console.WriteLine($"⛔ Saltando {nextPlayer.User.NickName}: ya ha actuado en fase {phase}.");
                 continue;
-            }
 
             CurrentTurnUserId = nextPlayer.UserId;
             Console.WriteLine($"➡️ Turno avanzado a {nextPlayer.User.NickName}");
-            return;
+            return true;
         }
+
+        Console.WriteLine("✅ Todos los jugadores activos han actuado. Debería avanzar fase.");
+        return false;
     }
+
+
     public bool ShouldHandleImmediateWinner()
     {
         return PokerHelper.OnlyOnePlayerLeft(_players);

@@ -10,6 +10,7 @@ using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Handlers;
 using the_enigma_casino_server.WebSockets.Interfaces;
+using the_enigma_casino_server.WebSockets.Poker;
 using the_enigma_casino_server.WebSockets.Resolvers;
 using the_enigma_casino_server.WebSockets.Resolversl;
 
@@ -175,6 +176,17 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 BlackjackBetTracker.RemovePlayer(tableId, userId);
             }
 
+            if (match.GameTable.GameType == GameType.Poker)
+            {
+                BlackjackBetTracker.RemovePlayer(tableId, userId);
+            }
+
+            if (match.GameTable.GameType == GameType.Poker)
+            {
+                var pokerWS = _serviceProvider.GetRequiredService<PokerWS>();
+                await pokerWS.HandlePlayerDisconnectedAsync(tableId, userId);
+            }
+
             await manager.HandlePlayerExitAsync(player, match, tableId, turnService);
             await GameMatchHelper.NotifyPlayerMatchEndedAsync(this, userId, tableId);
             await GameMatchHelper.NotifyOthersPlayerLeftAsync(this, match, userId, tableId);
@@ -237,11 +249,11 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
     public async Task EvaluatePostMatchAsync(int tableId)
     {
+
         if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session))
             return;
 
         Table table = session.Table;
-
 
         using (var betScope = _serviceProvider.CreateScope())
         {

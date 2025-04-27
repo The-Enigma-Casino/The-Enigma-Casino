@@ -83,15 +83,18 @@ public static class PokerManager
         }
     }
 
-    public static async Task RegisterAndMaybeAdvancePhaseAsync(
+    public static Task RegisterPlayerActionAsync(int tableId, int userId, string phase)
+    {
+        PokerActionTracker.RegisterAction(tableId, userId, phase);
+        return Task.CompletedTask;
+    }
+
+    public static async Task MaybeAdvancePhaseAsync(
         int tableId,
         Match match,
-        Player player,
         string phase,
         Func<int, string, Task> advancePhaseCallback)
     {
-        PokerActionTracker.RegisterAction(tableId, player.UserId, phase);
-
         var expected = match.Players
             .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
             .Select(p => p.UserId)
@@ -103,6 +106,7 @@ public static class PokerManager
             await advancePhaseCallback(tableId, phase);
         }
     }
+
 
     public static async Task UpdatePlayerCoinsAsync(UnitOfWork unitOfWork, Player player)
     {

@@ -27,6 +27,6 @@
 - **Vercel**
 - **MonsterASP**
  
-## 📗 Anteproyecto
+## 📗 Documentación
 
-[Notion](https://aquatic-breadfruit-03f.notion.site/Anteproyecto-de-The-Enigma-Casino-1c25df69c5bd801f898bc5d9760d4172)
+[Notion](https://aquatic-breadfruit-03f.notion.site/1ba5df69c5bd80b49b87d9999c427090?v=1ba5df69c5bd8043a150000c22dd6466)

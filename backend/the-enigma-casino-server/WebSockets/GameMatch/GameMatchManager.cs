@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using the_enigma_casino_server.Games.Shared.Entities;
+﻿using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Websockets.Roulette;
@@ -240,8 +239,24 @@ public class GameMatchManager
                 var tableManager = _serviceProvider.GetRequiredService<GameTableManager>();
                 tableManager.RemovePlayerFromTable(session.Table, player.UserId, out _);
                 Console.WriteLine($"🚪 {player.User.NickName} salió del Match SIN apostar, eliminado de la mesa inmediatamente.");
+
+                if (session.Table.Players.Count == 0)
+                {
+                    Console.WriteLine($"🧹 [HandlePlayerExitAsync] Mesa {tableId} sin jugadores tras abandono. Limpiando...");
+
+                    using var cleanupScope = _serviceProvider.CreateScope();
+                    var cleanupUnitOfWork = cleanupScope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+                    session.Table.TableState = TableState.Waiting;
+                    cleanupUnitOfWork.GameTableRepository.Update(session.Table);
+                    await cleanupUnitOfWork.SaveAsync();
+
+                    ActiveGameSessionStore.Remove(tableId);
+                    ActiveGameMatchStore.Remove(tableId);
+                }
             }
         }
+
 
         return true;
     }
@@ -280,7 +295,7 @@ public class GameMatchManager
                 TotalBetAmount = totalBet,
                 ChipResult = chips,
                 LeftAt = playerLeftTable ? DateTime.Now : null,
-                LastMatchIdProcessed  = match.Id
+                LastMatchIdProcessed = match.Id
             };
 
             await _unitOfWork.GameHistoryRepository.InsertAsync(history);

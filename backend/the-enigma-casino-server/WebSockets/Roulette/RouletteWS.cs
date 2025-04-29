@@ -240,12 +240,13 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         var result = rouletteGame.GetResult();
         Console.WriteLine($"Resultado: {result.Number} - {result.Color}");
 
-        var allResults = rouletteGame.EvaluateAll(match.Players);
+        var activePlayers = match.Players.Where(p => p.PlayerState != PlayerState.Left).ToList();
+        var allResults = rouletteGame.EvaluateAll(activePlayers);
 
         UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out IServiceScope scope);
         using (scope)
         {
-            foreach (Player p in match.Players)
+            foreach (Player p in activePlayers)
             {
                 unitOfWork.UserRepository.Update(p.User);
             }

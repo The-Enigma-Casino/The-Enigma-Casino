@@ -179,10 +179,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             if (match.GameTable.GameType == GameType.Poker)
             {
                 PokerBetTracker.ClearPlayer(tableId, userId);
-            }
-
-            if (match.GameTable.GameType == GameType.Poker)
-            {
                 var pokerWS = _serviceProvider.GetRequiredService<PokerWS>();
                 await pokerWS.HandlePlayerDisconnectedAsync(tableId, userId);
             }
@@ -244,6 +240,8 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 tableId,
                 endedAt = DateTime.Now
             });
+
+            await CleanupTableIfEmptyAsync(tableId);
         }
     }
 
@@ -375,5 +373,30 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             action = "eliminated_no_coins",
             message = "Te has quedado sin monedas suficientes para continuar. Has sido eliminado de la mesa."
         });
+    }
+    private async Task CleanupTableIfEmptyAsync(int tableId)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+        if (!ActiveGameSessionStore.TryGet(tableId, out var session))
+            return;
+
+        var table = session.Table;
+
+        bool noPlayers = table.Players.Count == 0 || table.Players.All(p => p.PlayerState == PlayerState.Left);
+
+        if (noPlayers)
+        {
+            Console.WriteLine($"🧹 [Cleanup] Mesa {tableId} vacía al finalizar el match. Reseteando...");
+
+            table.TableState = TableState.Waiting;
+            unitOfWork.GameTableRepository.Update(table);
+            await unitOfWork.SaveAsync();
+
+            ActiveGameSessionStore.Remove(tableId);
+            ActiveGameMatchStore.Remove(tableId);
+
+        }
     }
 }

@@ -15,6 +15,7 @@ import {
   requestGameState,
   placeRouletteBet,
   betsOpenedReceived,
+  resetSpinResult,
 } from "../stores/rouletteEvents";
 import { RouletteBetBoard } from "../components/RouletteBetBoard";
 
@@ -23,6 +24,7 @@ import type { PlaceRouletteBetPayload } from "../stores/rouletteEvents";
 import "../stores/rouletteHandler";
 import { countdownDecrement, syncedCountdown$ } from "../stores/rouletteClock";
 import { RouletteHistory } from "../components/RouletteHistory";
+import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar";
 
 type LocalBet = {
   key: string;
@@ -40,7 +42,7 @@ function RouletteGamePage() {
   const lastResults = useUnit(lastResults$);
   const isStopped = useUnit(isStopped$);
 
-  const decrement = useEvent(countdownDecrement);
+  const decrement = useUnit(countdownDecrement);
 
   const [betAmount, setBetAmount] = useState(0);
   const [bets, setBets] = useState<LocalBet[]>([]);
@@ -69,6 +71,12 @@ function RouletteGamePage() {
       setBets([]);
     });
     return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      resetSpinResult();
+    };
   }, []);
 
   const number = spinResult?.number ?? "-";
@@ -154,14 +162,7 @@ function RouletteGamePage() {
             <></>
           )}
 
-          <div className="w-full max-w-md bg-Background-Overlay rounded-full h-6 mb-6 overflow-hidden">
-            <div
-              className={`${getBarColor(countdown)} h-full transition-all duration-1000`}
-              style={{
-                width: `${Math.min(((30 - countdown) / 30) * 100, 100)}%`,
-              }}
-            ></div>
-          </div>
+          <CountdownBar countdown={countdown} />
 
           <div className="bg-black/30 p-4 rounded-xl mb-6 w-full max-w-md text-white">
             <h3 className="text-xl mb-2 font-bold text-center">

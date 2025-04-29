@@ -18,7 +18,7 @@ export const CountdownBar = ({ countdown, total = 30 }: CountdownBarProps) => {
         className={`${getBarColor()} h-full`}
         style={{
           width: `${percentage}%`,
-          transition: "width 0.95s linear", // ⬅ casi 1s, para suavizar entre ticks
+          transition: "width 0.95s linear",
         }}
       />
     </div>

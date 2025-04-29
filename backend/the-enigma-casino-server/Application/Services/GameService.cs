@@ -1,26 +1,28 @@
-﻿using the_enigma_casino_server.Core.Entities;
+﻿using the_enigma_casino_server.Application.Dtos;
+using the_enigma_casino_server.Application.Mappers;
+using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Infrastructure.Database;
 
 namespace the_enigma_casino_server.Application.Services;
 
 public class GameService : BaseService
 {
-    public GameService(UnitOfWork unitOfWork) : base(unitOfWork)
+    UserMapper _userMapper;
+
+    public GameService(UnitOfWork unitOfWork, UserMapper userMapper) : base(unitOfWork)
     {
+        _userMapper = userMapper;
     }
 
 
-    public async Task<Dictionary<string, string>> GetPlayerByNickNames(List<string> nickNames)
+    public async Task<List<PlayerDto>> GetPlayerByNickNames(List<string> nickNames)
     {
         if (nickNames == null || nickNames.Count == 0)
-            return new Dictionary<string, string>();
+            return new List<PlayerDto> { };
 
         List<User> players = await _unitOfWork.UserRepository.GetByNickNamesAsync(nickNames);
 
-        return players.ToDictionary(
-            p => p.NickName,
-            p => p.Image
-        );
+        return _userMapper.ToPlayerDtoList(players);
     }
 
 }

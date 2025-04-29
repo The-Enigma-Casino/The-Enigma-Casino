@@ -13,9 +13,9 @@ public class GachaponService : BaseService
     {
             (1, 0.5),       // 50% de probabilidad para ganar 1 ficha
             (10, 0.3),      // 30% de probabilidad para ganar 10 fichas
-            (20, 0.15),     // 15% de probabilidad para ganar 20 fichas
-            (50, 0.04),     // 4% de probabilidad para ganar 50 fichas
-            (100, 0.01),    // 1% de probabilidad para ganar 100 fichas
+            (20, 0.14),     // 15% de probabilidad para ganar 20 fichas
+            (50, 0.05),     // 4% de probabilidad para ganar 50 fichas
+            (100, 0.009),    // 1% de probabilidad para ganar 100 fichas
             (10000, 0.001)  // 0.001% de probabilidad para ganar 10,000 fichas
     };
 

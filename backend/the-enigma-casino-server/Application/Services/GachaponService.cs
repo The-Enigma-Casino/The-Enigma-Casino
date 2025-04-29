@@ -1,30 +1,33 @@
-﻿using the_enigma_casino_server.Core.Entities;
+﻿using the_enigma_casino_server.Application.Dtos;
+using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Infrastructure.Database;
-using the_enigma_casino_server.Application.Dtos;
 
 namespace the_enigma_casino_server.Application.Services;
 
 public class GachaponService : BaseService
 {
 
-    UserService _userService;
+    private readonly UserService _userService;
+
+    private readonly RandomService _randomService;
 
     private List<(int prize, double probability)> awards = new List<(int prize, double probability)>
     {
-            (1, 0.5),       // 50% de probabilidad para ganar 1 ficha
-            (10, 0.3),      // 30% de probabilidad para ganar 10 fichas
-            (20, 0.15),     // 15% de probabilidad para ganar 20 fichas
-            (50, 0.04),     // 4% de probabilidad para ganar 50 fichas
-            (100, 0.01),    // 1% de probabilidad para ganar 100 fichas
-            (10000, 0.001)  // 0.001% de probabilidad para ganar 10,000 fichas
+        (1, 0.75),
+        (10, 0.15),
+        (20, 0.05),
+        (50, 0.028),
+        (100, 0.009),
+        (666, 0.003)
     };
 
     private const int GrandPrize = 10000;
 
 
-    public GachaponService(UserService userService, UnitOfWork unitOfWork) : base(unitOfWork)
+    public GachaponService(UserService userService, RandomService randomService, UnitOfWork unitOfWork) : base(unitOfWork)
     {
         _userService = userService;
+        _randomService = randomService;
     }
 
     public int GetGachaponPrice()
@@ -43,7 +46,7 @@ public class GachaponService : BaseService
 
         int benefit = awards[0].prize;
 
-        double randomValue = new Random().NextDouble();
+        double randomValue = _randomService.NextDouble();
         double cumulativeProbability = 0.0;
 
         foreach (var (prize, probability) in awards)

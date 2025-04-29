@@ -58,6 +58,9 @@ public class Program
         builder.Services.AddScoped<MyDbContext>();
         builder.Services.AddScoped<UnitOfWork>();
 
+        // --- Random generador ---
+        builder.Services.AddSingleton<RandomService>();
+
         // --- Servicios ---
         builder.Services.AddScoped<BaseService>();
         builder.Services.AddScoped<SmartSearchService>();
@@ -72,6 +75,7 @@ public class Program
         builder.Services.AddScoped<UserFriendService>(); 
         builder.Services.AddScoped<AdminUserService>();
         builder.Services.AddScoped<AdminCoinsPackService>();
+        builder.Services.AddScoped<GameService>();
 
         // --- Validaciones ---
         builder.Services.AddSingleton<ValidationService>();

@@ -102,4 +102,11 @@ public class UserRepository : Repository<User, int>
     }
 
 
+    public async Task<List<User>> GetByNickNamesAsync(List<string> nickNames)
+    {
+        return await GetQueryable()
+            .Where(u => nickNames.Contains(u.NickName))
+            .ToListAsync();
+    }
+
 }

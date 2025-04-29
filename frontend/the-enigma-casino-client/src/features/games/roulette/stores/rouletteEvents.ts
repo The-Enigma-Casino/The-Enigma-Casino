@@ -1,4 +1,5 @@
-import { createEvent } from "effector";
+import { createEvent, sample } from "effector";
+import { navigateTo } from "../../shared/router/navigateFx";
 
 export const gameStateReceived = createEvent<any>();
 export const spinResultReceived = createEvent<any>();
@@ -48,3 +49,15 @@ export type PlaceRouletteBetPayload = {
 };
 
 export const rouletteStopedReceived = createEvent();
+
+export const matchReadyReceived = createEvent<number>();
+
+
+sample({
+  clock: matchReadyReceived,
+  fn: (tableId) => {
+    const path = `/game/roulette/${tableId}`;
+    return path;
+  },
+  target: navigateTo,
+});

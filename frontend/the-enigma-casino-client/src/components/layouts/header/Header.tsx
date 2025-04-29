@@ -24,7 +24,7 @@ function Header() {
   const token = useUnit($token);
   const role = useUnit($role);
   const coins = useUnit($coins);
-  
+
   const logout = useLogout();
 
   const transactionEnded = useUnit($transactionEnd);
@@ -39,6 +39,7 @@ function Header() {
 
   const handleLogout = () => {
     logout();
+    setIsLogoutModalOpen(false);
   };
 
   const openGachaponModal = () => {

@@ -2,6 +2,7 @@ import {
   socketMessageReceived,
   messageSent,
 } from "../../../../websocket/store/wsIndex";
+import { $currentTableId } from "../../../gameTables/store/tablesIndex";
 import {
   gameStateReceived,
   spinResultReceived,
@@ -10,9 +11,9 @@ import {
   betsClosedReceived,
   roulettePausedReceived,
   placeRouletteBet,
-  // resetSpinResult,
   countdownTick,
   rouletteStopedReceived,
+  matchReadyReceived,
 } from "./rouletteEvents";
 
 socketMessageReceived.watch((data) => {
@@ -36,7 +37,9 @@ socketMessageReceived.watch((data) => {
       break;
     case "bets_opened":
       betsOpenedReceived();
-      // resetSpinResult();
+      if (data.countdown != null) {
+        countdownTick(data.countdown);
+      }
       break;
     case "bets_closed":
       betsClosedReceived();
@@ -44,9 +47,21 @@ socketMessageReceived.watch((data) => {
     case "roulette_paused":
       roulettePausedReceived();
       break;
-      case "roulette_stoped":
-        rouletteStopedReceived();
+    case "roulette_stoped":
+      rouletteStopedReceived();
+      break;
+      case "match_ready": {
+        const tableId = $currentTableId.getState();
+
+        console.log(tableId);
+
+        if (tableId !== null) {
+          matchReadyReceived(tableId);
+        } else {
+          console.warn('⚠️ No se encontró una mesa activa en el store.');
+        }
         break;
+      }
     default:
       console.warn("[Ruleta] Acción desconocida:", data.action);
   }

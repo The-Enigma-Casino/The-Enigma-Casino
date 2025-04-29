@@ -12,6 +12,9 @@ import { GameTable, Player } from "../models/GameTable.interface";
 import { JSX, useEffect } from "react";
 import { fetchTables } from "../actions/tableActions";
 
+import "../../games/roulette/stores/rouletteHandler";
+
+
 function GameTablePage() {
   const navigate = useNavigate();
 

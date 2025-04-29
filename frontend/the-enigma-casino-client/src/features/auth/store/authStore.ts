@@ -180,7 +180,8 @@ sample({
   target: logoutWithReason,
 });
 
-
-
 $token.on(logout, () => "");
 $role.on(logout, () => "");
+$name.on(logout, () => "");
+$image.on(logout, () => "user_default.png");
+$userId.on(logout, () => "");

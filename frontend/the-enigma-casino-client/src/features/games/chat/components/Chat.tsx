@@ -5,7 +5,7 @@ import { useUnit } from "effector-react";
 import { $coins } from "../../../coins/store/coinsStore";
 import { ChatMessage } from "./ChatMessage";
 import { GameInfoModal } from "../../shared/components/modals/GameInfoModal";
-import { $chatMessages } from "../stores/chatStore";
+import { $chatMessages, resetMessages } from "../stores/chatStore";
 import { $userId } from "../../../auth/store/authStore";
 import { messageSent } from "../stores/chatStore";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
@@ -24,6 +24,9 @@ export const Chat = ({ gameType }: ChatProps) => {
 
   useEffect(() => {
     console.log("[Chat] Mensajes recibidos:", chatMessages);
+    return () => {
+      resetMessages();
+    }
   }, [chatMessages]);
 
   const [showInfo, setShowInfo] = useState(false);

@@ -30,4 +30,22 @@ public class UserMapper
         }
         return userAdminList;
     }
+
+
+    public PlayerDto ToPlayerDto(User user)
+    {
+        return new PlayerDto(user.Id, user.NickName, user.Image, user.Country);
+    }
+
+    public List<PlayerDto> ToPlayerDtoList(List<User> users)
+    {
+        List<PlayerDto> players = new List<PlayerDto>();
+
+        foreach(User user in users)
+        {
+            players.Add(ToPlayerDto(user));
+        }
+
+        return players;
+    }
 }

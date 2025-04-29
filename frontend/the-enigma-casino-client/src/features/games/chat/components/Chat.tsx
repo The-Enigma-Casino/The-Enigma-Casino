@@ -23,10 +23,10 @@ export const Chat = ({ gameType }: ChatProps) => {
   const chatMessages = useUnit($chatMessages);
 
   useEffect(() => {
-    console.log("[Chat] Mensajes recibidos:", chatMessages);
-    return () => {
-      resetMessages();
-    }
+    console.log("[Chat] UseEffect Mensajes recibidos:", chatMessages);
+    // return () => {
+    //   resetMessages();
+    // }
   }, [chatMessages]);
 
   const [showInfo, setShowInfo] = useState(false);

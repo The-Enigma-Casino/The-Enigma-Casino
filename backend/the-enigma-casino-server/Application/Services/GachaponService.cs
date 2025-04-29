@@ -7,7 +7,9 @@ namespace the_enigma_casino_server.Application.Services;
 public class GachaponService : BaseService
 {
 
-    UserService _userService;
+    private readonly UserService _userService;
+
+    private readonly RandomService _randomService;
 
     private List<(int prize, double probability)> awards = new List<(int prize, double probability)>
     {
@@ -22,9 +24,10 @@ public class GachaponService : BaseService
     private const int GrandPrize = 10000;
 
 
-    public GachaponService(UserService userService, UnitOfWork unitOfWork) : base(unitOfWork)
+    public GachaponService(UserService userService, RandomService randomService, UnitOfWork unitOfWork) : base(unitOfWork)
     {
         _userService = userService;
+        _randomService = randomService;
     }
 
     public int GetGachaponPrice()
@@ -43,7 +46,7 @@ public class GachaponService : BaseService
 
         int benefit = awards[0].prize;
 
-        double randomValue = new Random().NextDouble();
+        double randomValue = _randomService.NextDouble();
         double cumulativeProbability = 0.0;
 
         foreach (var (prize, probability) in awards)

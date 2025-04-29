@@ -58,6 +58,9 @@ public class Program
         builder.Services.AddScoped<MyDbContext>();
         builder.Services.AddScoped<UnitOfWork>();
 
+        // --- Random generador ---
+        builder.Services.AddSingleton<RandomService>();
+
         // --- Servicios ---
         builder.Services.AddScoped<BaseService>();
         builder.Services.AddScoped<SmartSearchService>();

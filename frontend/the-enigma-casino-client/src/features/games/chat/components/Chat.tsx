@@ -9,6 +9,8 @@ import { $chatMessages, resetMessages } from "../stores/chatStore";
 import { $userId } from "../../../auth/store/authStore";
 import { messageSent } from "../stores/chatStore";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
+import { sendLeaveTableMessage } from "../../../gameTables/store/tablesEvents";
+import { navigateTo } from "../../shared/router/navigateFx";
 
 
 interface ChatProps {
@@ -30,11 +32,17 @@ export const Chat = ({ gameType }: ChatProps) => {
   }, [chatMessages]);
 
   const [showInfo, setShowInfo] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  // const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleSend = (text: string) => {
     console.log("[Chat] Mensaje enviado:", text);
     messageSent({ tableId, text });
+  };
+
+  const handleLogout = () => {
+    console.log("[Chat] Logout confirmado");
+    sendLeaveTableMessage();
+    navigateTo("/");
   };
 
   return (
@@ -76,7 +84,7 @@ export const Chat = ({ gameType }: ChatProps) => {
 
           <button
             className={styles.iconButton}
-            onClick={() => setShowLogoutConfirm(true)}
+            onClick={() => handleLogout()}
           >
             <img
               src="/svg/logout_icon.svg"

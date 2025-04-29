@@ -81,28 +81,28 @@ const GachaponMachine = () => {
 
   useEffect(() => {
     if (!hasEggBeenClicked || result === null) return;
-  
+
     const { benefit } = result;
-  
-    const isGold = benefit === 10000;
-  
+
+    const isGold = benefit === 10000 || benefit === 666;
+
     if (isGold) {
       setTimeout(() => {
         setCurrentColor("#FFD700");
-      }, 200); 
+      }, 200);
     }
-  
+
     const delay = isGold ? 800 : 0;
-  
+
     const timeout = setTimeout(() => {
       setIsEggActive(false);
       setIsMaskActive(true);
       setHasEggBeenClicked(false);
     }, delay);
-  
+
     return () => clearTimeout(timeout);
   }, [result, hasEggBeenClicked]);
-  
+
 
   return (
     <>

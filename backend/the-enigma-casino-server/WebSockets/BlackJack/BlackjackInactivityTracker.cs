@@ -7,7 +7,7 @@ namespace the_enigma_casino_server.WebSockets.BlackJack
 {
     public class BlackjackInactivityTracker : IGameInactivityTracker
     {
-        private readonly ConcurrentDictionary<int, int> _inactivityCounts = new();
+        private static readonly ConcurrentDictionary<int, int> _inactivityCounts = new();
 
         private const int MaxAllowedInactivity = 2;
 
@@ -15,9 +15,6 @@ namespace the_enigma_casino_server.WebSockets.BlackJack
 
         public void RegisterInactivity(Player player)
         {
-            if (player.PlayerState != PlayerState.Playing && player.PlayerState != PlayerState.Blackjack)
-                return;
-
             _inactivityCounts.AddOrUpdate(player.UserId, 1, (_, current) => current + 1);
             Console.WriteLine($"🚨 [BlackjackInactivityTracker] Jugador {player.User.NickName} suma una falta de inactividad. Total: {_inactivityCounts[player.UserId]}");
         }

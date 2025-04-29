@@ -122,11 +122,15 @@ public class Program
         builder.Services.AddScoped<BlackjackTurnService>();
         builder.Services.AddScoped<BlackjackExitRuleHandler>();
         builder.Services.AddScoped<BlackjackJoinHelper>();
+        builder.Services.AddScoped<BlackjackInactivityTracker>();
+
 
         builder.Services.AddScoped<IGameBetInfoProvider, BlackjackBetInfoProvider>();
         builder.Services.AddScoped<IGameTurnService, BlackjackTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, BlackjackSessionCleaner>();
         builder.Services.AddScoped<IGameJoinHelper, BlackjackJoinHelper>();
+        builder.Services.AddScoped<IGameInactivityTracker, BlackjackInactivityTracker>();
+
 
         // --- Servicios concretos de Poker ---
         builder.Services.AddScoped<PokerBetInfoProvider>();

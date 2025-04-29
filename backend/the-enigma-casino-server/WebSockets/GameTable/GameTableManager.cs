@@ -2,8 +2,10 @@
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
+using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable.Models;
+using the_enigma_casino_server.WebSockets.GameTable.Store;
 
 namespace the_enigma_casino_server.WebSockets.GameTable;
 
@@ -11,6 +13,13 @@ public class GameTableManager
 {
     private readonly ConcurrentDictionary<int, DateTime> _lastJoinTimestamps = new();
     private const int JoinCooldownSeconds = 15;
+
+    private readonly IServiceProvider _serviceProvider;
+
+    public GameTableManager(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
 
     public bool CanJoinTable(int userId)
     {
@@ -30,7 +39,23 @@ public class GameTableManager
         {
             removedPlayer.JoinedAt = null;
             table.Players.Remove(removedPlayer);
+
+            if (table.Players.Count == 0)
+            {
+                table.TableState = TableState.Waiting;
+
+                using var scope = _serviceProvider.CreateScope();
+                var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+                uow.GameTableRepository.Update(table);
+                uow.SaveAsync().GetAwaiter().GetResult();
+
+                ActiveGameSessionStore.Remove(table.Id);
+                ActiveGameMatchStore.Remove(table.Id);
+            }
+
             return true;
+
         }
 
         return false;

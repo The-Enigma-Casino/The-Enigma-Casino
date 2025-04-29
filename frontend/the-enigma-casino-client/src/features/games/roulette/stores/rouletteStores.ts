@@ -8,6 +8,7 @@ import {
   resetSpinResult,
   countdownTick,
   rouletteStopedReceived,
+  matchReadyReceived,
 } from "./rouletteEvents";
 
 export const rouletteGameState$ = createStore<any>(null).on(
@@ -30,10 +31,13 @@ export const spinResult$ = createStore<any>(null)
   .on(betsOpenedReceived, () => null)
   .reset(resetSpinResult);
 
-  export const lastResults$ = createStore<{ number: number; color: string }[]>([])
+export const lastResults$ = createStore<{ number: number; color: string }[]>([])
   .on(spinResultReceived, (state, payload) => {
     if (!payload?.result) return state;
-    const newResult = { number: payload.result.number, color: payload.result.color };
+    const newResult = {
+      number: payload.result.number,
+      color: payload.result.color,
+    };
     const updated = [...state, newResult];
     if (updated.length > 6) {
       return updated.slice(1);

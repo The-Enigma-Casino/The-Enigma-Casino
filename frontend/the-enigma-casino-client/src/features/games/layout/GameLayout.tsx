@@ -3,6 +3,7 @@ import { Chat } from "../chat/components/Chat";
 import { BlackjackGamePage } from "../blackjack/pages/BlackjackGamePage";
 import RouletteGamePage from "../roulette/pages/RouleteGamePage";
 import PokerGamePage from "../pocker/pages/PokerGamePage";
+import { NavigationInit } from "../shared/router/NavigationInit";
 
 export const GameLayout = () => {
   const { tableId } = useParams<{ tableId: string }>();
@@ -18,6 +19,7 @@ export const GameLayout = () => {
 
   return (
     <>
+    <NavigationInit />
       <div className="flex flex-row h-screen w-screen">
         <div className="w-[15%] h-full p-4 bg-Background-Overlay text-white">
           <Chat gameType={gameType} />

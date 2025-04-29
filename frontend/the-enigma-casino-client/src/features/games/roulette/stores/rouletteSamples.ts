@@ -1,7 +1,8 @@
 import { sample } from "effector";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { messageSent } from "../../../../websocket/store/wsIndex";
-import { playerPlaceBet, requestGameState } from "./rouletteEvents";
+import { matchReadyReceived, playerPlaceBet, requestGameState } from "./rouletteEvents";
+import { navigateTo } from "../../shared/router/navigateFx";
 
 sample({
   clock: playerPlaceBet,

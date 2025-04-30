@@ -281,6 +281,26 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
             if (table.GameType == GameType.Poker)
             {
+                Console.WriteLine("📋 [PostMatch] Estado de jugadores:");
+                foreach (var p in table.Players)
+                {
+                    Console.WriteLine($" - {p.User.NickName}: HasAbandoned={p.HasAbandoned}, State={p.PlayerState}");
+                }
+
+                var inactivityTracker = betScope.ServiceProvider.GetRequiredService<GameInactivityTrackerResolver>().Resolve(GameType.Poker);
+                if (inactivityTracker is PokerInactivityTracker pokerTracker)
+                {
+                    foreach (var p in table.Players.Where(p => !p.HasAbandoned).ToList())
+                    {
+                        if (pokerTracker.HasMissedFirstTurn(p))
+                        {
+                            p.HasAbandoned = true;
+                            pokerTracker.RemovePlayer(p);
+                            Console.WriteLine($"🚪 [PostMatch] {p.User.NickName} forzado como abandonado por inactividad acumulada sin turno.");
+                        }
+                    }
+                }
+
                 foreach (Player p in table.Players.Where(p => p.HasAbandoned).ToList())
                 {
                     Console.WriteLine($"🧹 [PostMatch] Eliminando jugador abandonado: {p.User.NickName}");

@@ -4,6 +4,7 @@ import {
   countdownTicked,
   joinTableClicked,
   leaveTableClicked,
+  markLeftTable,
   setGameType,
 } from "./tablesIndex";
 import { GameTable } from "../models/GameTable.interface";
@@ -64,3 +65,7 @@ export const $countdowns = createStore<{ [tableId: number]: number }>({})
     }
     return newState;
   });
+
+export const $hasLeftTable = createStore(false)
+  .on(markLeftTable, () => true)
+  .reset([joinTableClicked, leaveTableClicked]);

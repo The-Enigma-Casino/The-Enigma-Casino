@@ -8,8 +8,8 @@ import { GameInfoModal } from "../../shared/components/modals/GameInfoModal";
 import { $chatMessages, resetMessages } from "../stores/chatStore";
 import { $userId } from "../../../auth/store/authStore";
 import { messageSent } from "../stores/chatStore";
-import { $currentTableId } from "../../../gameTables/store/tablesStores";
-import { sendLeaveTableMessage } from "../../../gameTables/store/tablesEvents";
+import { $currentTableId, $hasLeftTable } from "../../../gameTables/store/tablesStores";
+import { markLeftTable, sendLeaveTableMessage } from "../../../gameTables/store/tablesEvents";
 import { navigateTo } from "../../shared/router/navigateFx";
 
 
@@ -21,6 +21,7 @@ export const Chat = ({ gameType }: ChatProps) => {
   const coins = useUnit($coins);
   const userId = useUnit($userId);
   const tableId = useUnit($currentTableId);
+  const hasLeft = useUnit($hasLeftTable);
 
   const chatMessages = useUnit($chatMessages);
 
@@ -40,10 +41,14 @@ export const Chat = ({ gameType }: ChatProps) => {
   };
 
   const handleLogout = () => {
-    console.log("[Chat] Logout confirmado");
-    sendLeaveTableMessage();
+    if (!hasLeft) {
+      sendLeaveTableMessage();
+      markLeftTable();
+    }
+
     navigateTo("/");
   };
+
 
   return (
     <div className={styles.wrapper}>

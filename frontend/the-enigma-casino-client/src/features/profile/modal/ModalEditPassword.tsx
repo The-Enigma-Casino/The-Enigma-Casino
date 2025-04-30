@@ -3,6 +3,7 @@ import Input from "../../../components/ui/input/CustomInput";
 import Button from "../../../components/ui/button/Button";
 import { isValidPassword } from "../../../utils/validatorsUser";
 import toast from "react-hot-toast";
+import { updatePasswordFx } from "../store/editProfile/editProfile";
 
 interface Props {
   onCancel: () => void;
@@ -13,7 +14,7 @@ const ModalEditPassword: React.FC<Props> = ({ onCancel, onConfirm }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (password !== confirmPassword) {
       toast.error("Las contraseñas no coinciden.");
       return;
@@ -24,8 +25,21 @@ const ModalEditPassword: React.FC<Props> = ({ onCancel, onConfirm }) => {
       return;
     }
 
-    onConfirm(password);
-    toast.success("Contraseña modificada correctamente.");
+    try {
+      await toast.promise(
+        updatePasswordFx({ password, confirmPassword }),
+        {
+          loading: "Actualizando contraseña...",
+          success: () => {
+            onConfirm(password);
+            return <b>Contraseña modificada correctamente.</b>;
+          },
+          error: (err) => <b>{err || "Error al actualizar la contraseña."}</b>,
+        }
+      );
+    } catch (err) {
+      console.error("Error al actualizar la contraseña", err);
+    }
   };
 
   return (

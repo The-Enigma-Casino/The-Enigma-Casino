@@ -1,6 +1,8 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { isValidEmail, isValidName, nicknameValidator } from "../../../utils/validatorsUser";
+import { updateUserFx } from "../store/editProfile/editProfile";
+import { userUpdated } from "../store/editProfile/editEvent";
 
 interface FormData {
   nickName: string;
@@ -46,7 +48,7 @@ export function useEditForm(onSuccess: () => void) {
     try {
       const { ...formDataToSend } = formData;
 
-      await toast.promise(registerFx(formDataToSend), {//Añadir endpoint
+      await toast.promise(updateUserFx(formDataToSend), {
         loading: "Modificando datos...",
         success: () => {
           setTimeout(() => {
@@ -60,7 +62,7 @@ export function useEditForm(onSuccess: () => void) {
             toast.dismiss();
             onSuccess();
           }, 2000);
-
+          userUpdated();
           return <b>Cambios realizados exitosamente.</b>;
         },
         error: (err) => <b>{err || "Ocurrió un error inesperado."}</b>,

@@ -11,4 +11,9 @@ public class HashHelper
         byte[] inputHash = SHA256.HashData(inputBytes);
         return Encoding.UTF8.GetString(inputHash);
     }
+
+    public static bool Verify(string plainText, string hashed)
+    {
+        return Hash(plainText) == hashed;
+    }
 }

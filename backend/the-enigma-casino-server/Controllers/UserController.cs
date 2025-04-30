@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Nethereum.Contracts.QueryHandlers.MultiCall;
 using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Services;
@@ -96,6 +97,26 @@ public class UserController : BaseController
         }
     }
 
+    [HttpPut("profile/image/default")]
+    public async Task<ActionResult> SetDefaultProfileImage()
+    {
+        try
+        {
+            int userId = GetUserId();
+            await _userService.SetDefaultProfileImageAsync(userId);
+
+            return Ok("Imagen de perfil restablecida correctamente.");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error al restablecer la imagen: {ex.Message}");
+        }
+    }
+
     [HttpPut("auto-ban")]
     public async Task<ActionResult> AutoBan()
     {
@@ -113,6 +134,52 @@ public class UserController : BaseController
         catch (Exception ex)
         {
             return StatusCode(500, $"Error interno: {ex.Message}");
+        }
+    }
+
+    [HttpPut("update-user")]
+    public async Task<ActionResult> UpdateUser([FromBody] UpdateUserReq updateUserReq)
+    {
+        try
+        {
+            int userId = GetUserId();
+            string result = await _userService.UpdateUserAsync(userId, updateUserReq);
+
+            if (!string.IsNullOrEmpty(result))
+                return BadRequest(new { error = result });
+
+            return Ok("Usuario actualizado correctamente.");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "Ocurrió un error inesperado.");
+        }
+    }
+
+    [HttpPut("set-password")]
+    public async Task<ActionResult> SetNewPassword([FromBody] UpdatePasswordReq request)
+    {
+        try
+        {
+            int userId = GetUserId();
+            string result = await _userService.SetNewPasswordAsync(userId, request);
+
+            if (!string.IsNullOrEmpty(result))
+                return BadRequest(new { error = result });
+
+            return Ok("Contraseña actualizada correctamente.");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "Ocurrió un error inesperado.");
         }
     }
 }

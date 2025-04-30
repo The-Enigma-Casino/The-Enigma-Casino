@@ -7,3 +7,4 @@ export const sendLeaveTableMessage = createEvent();
 export const countdownCleared = createEvent<number>();
 export const countdownTicked = createEvent();
 export const messageSent = createEvent<string>();
+export const markLeftTable = createEvent();

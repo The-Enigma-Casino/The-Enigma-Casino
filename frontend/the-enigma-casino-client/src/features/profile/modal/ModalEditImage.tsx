@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import Button from "../../../components/ui/button/Button";
-import { updateUserImageFx } from "../store/editProfile/editProfile";
+import { updateUserImageFx, UpdateUserImageDefaultFx } from "../store/editProfile/editProfile";
 import { IMAGE_PROFILE_URL } from "../../../config";
 import { imageUpdated } from "../store/editProfile/editEvent";
-
+import toast from "react-hot-toast";
 
 interface Props {
   image: string;
@@ -18,6 +18,7 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, onFileSelect, im
   const [isDefaultSelected, setIsDefaultSelected] = useState(false);
   const DEFAULT_IMAGE_PATH = "/img/user_default.png";
 
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -29,17 +30,22 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, onFileSelect, im
 
   const handleConfirm = async () => {
     try {
-      let finalImage: File | null = imageFile;
-
-      if (isDefaultSelected) {
-        const response = await fetch(DEFAULT_IMAGE_PATH);
-        const blob = await response.blob();
-        finalImage = new File([blob], "user_default.png", { type: blob.type });
-      }
-
-      await updateUserImageFx(finalImage);
-      imageUpdated();
-      onConfirm();
+      await toast.promise(
+        isDefaultSelected
+          ? UpdateUserImageDefaultFx()
+          : imageFile
+            ? updateUserImageFx(imageFile)
+            : Promise.reject("No se seleccionó ninguna imagen."),
+        {
+          loading: "Actualizando imagen...",
+          success: () => {
+            imageUpdated();
+            onConfirm();
+            return <b>Imagen actualizada correctamente.</b>;
+          },
+          error: (err) => <b>{err || "Error al actualizar la imagen"}</b>,
+        }
+      );
     } catch (error) {
       console.error("Error al actualizar la imagen", error);
     }
@@ -47,10 +53,9 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, onFileSelect, im
 
   const handleSetDefaultImage = () => {
     setImageFile(null);
-    setImageURL(DEFAULT_IMAGE_PATH);
+    setImageURL(DEFAULT_IMAGE_PATH); // Simula el cambio de imagen en front
     setIsDefaultSelected(true);
   };
-
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 px-2">

@@ -1,6 +1,7 @@
 import { formatDate, payModes } from "../helpers/helpers";
 import Pagination from "../ui/Pagination";
 import { BASE_URL } from "../../../config";
+import { convertCentsToEuros } from "../../../utils/priceUtils";
 interface Order {
   id: number;
   paidDate: string;
@@ -38,7 +39,11 @@ const UserOrders: React.FC<OrdersTableProps> = ({ orders, page, totalPages, onPa
         </div>
 
         {/* Filas */}
-        {orders.map(order => {
+        {orders.length === 0 ? (
+          <div className="text-center text-white text-2xl py-10">
+            No hay pedidos disponibles.
+          </div>
+        ) : orders.map(order => {
           const isWithdrawal = order.orderType === 1;
 
           const imageSrc = order.image
@@ -77,10 +82,10 @@ const UserOrders: React.FC<OrdersTableProps> = ({ orders, page, totalPages, onPa
 
                 <span>
                   {isWithdrawal
-                    ? `${order.ethereumPrice.toFixed(3)}`
+                    ? `${order.ethereumPrice.toFixed(5).replace('.', ',')}`
                     : order.payMode === 1
-                      ? `${order.price}`
-                      : `${order.ethereumPrice.toFixed(3)}`}
+                      ? convertCentsToEuros(order.price)
+                      : `${order.ethereumPrice.toFixed(5).replace('.', ',')}`}
                 </span>
                 <img
                   src={order.payMode === 1 ? "/svg/euro.svg" : "/svg/ethereum.svg"}

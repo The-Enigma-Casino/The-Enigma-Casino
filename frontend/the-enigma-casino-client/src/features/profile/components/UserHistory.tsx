@@ -33,7 +33,11 @@ const UserHistory: React.FC<UserHistoryProps> = ({ games, page, totalPages, onPa
         </div>
 
         {/* Filas */}
-        {games.map((game) => {
+        {games.length === 0 ? (
+          <div className="text-center text-white text-2xl py-10">
+            No hay partidas disponibles.
+          </div>
+        ) : games.map((game) => {
           const info = gameTypeMap[game.gameType];
 
           return (

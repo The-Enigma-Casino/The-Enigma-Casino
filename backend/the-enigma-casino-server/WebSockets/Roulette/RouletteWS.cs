@@ -407,20 +407,13 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             canPlaceBets = rouletteGame.CanAcceptBets, 
             players = match.Players.Select(p => new
             {
-                userId = p.UserId,
                 nickName = p.User.NickName,
-                remainingCoins = p.User.Coins,
                 bets = rouletteGame.GetBetsForPlayer(p.UserId).Select(b => new
                 {
                     bet = b.ToString(),
                     amount = b.Amount
                 }).ToList()
             }),
-            lastResults = rouletteGame.LastResults.Select(r => new 
-            {
-                number = r.Number,
-                color = r.Color
-            }).ToList()
         };
 
         foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Playing))

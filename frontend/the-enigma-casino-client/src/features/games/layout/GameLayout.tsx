@@ -4,7 +4,7 @@ import { BlackjackGamePage } from "../blackjack/pages/BlackjackGamePage";
 import RouletteGamePage from "../roulette/pages/RouleteGamePage";
 import PokerGamePage from "../pocker/pages/PokerGamePage";
 import { NavigationInit } from "../shared/router/NavigationInit";
-import { useLeaveTableOnUnload } from "../hooks/useLeaveTableOnUnload"; // 👈 NUEVO
+import { useLeaveTableOnUnload } from "../hooks/useLeaveTableOnUnload";
 
 export const GameLayout = () => {
   const { tableId } = useParams<{ tableId: string }>();

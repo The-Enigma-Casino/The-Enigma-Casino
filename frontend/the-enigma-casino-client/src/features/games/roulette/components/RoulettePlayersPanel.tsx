@@ -2,24 +2,27 @@ import { useEffect } from "react";
 import { useUnit } from "effector-react";
 import { roulettePlayers$ } from "../stores/rouletteStores";
 import { $playerAvatars } from "../../stores/gamesStore";
-import { $allCountries, countriesFx } from "../../../countries/actions/countriesActions";
-import { getFlagUrlByCca3 } from "../../../../utils/flagUtils";
+import { $countryCache, requestCountry } from "../../../countries/stores/countriesStore";
 import { IMAGE_PROFILE_URL } from "../../../../config";
 
 export const RoulettePlayersPanel = () => {
   const players = useUnit(roulettePlayers$);
   const avatars = useUnit($playerAvatars);
-  const countries = useUnit($allCountries);
-
-  useEffect(() => {
-    countriesFx();
-  }, []);
+  const countryCache = useUnit($countryCache);
 
   const getAvatar = (nickName: string) => {
     return avatars.find((a) => a.nickName === nickName);
   };
 
-  if (players.length === 0 || countries.length === 0) return null;
+  useEffect(() => {
+    avatars.forEach((a) => {
+      if (a.country) {
+        requestCountry(a.country);
+      }
+    });
+  }, [avatars]);
+
+  if (players.length === 0) return null;
 
   return (
     <div className="bg-black/40 rounded-xl p-4 h-[calc(100vh-48px)] overflow-y-auto flex flex-col">
@@ -32,9 +35,8 @@ export const RoulettePlayersPanel = () => {
           const avatar = getAvatar(player.nickName);
           if (!avatar) return null;
 
-          const flagUrl = avatar.country
-            ? getFlagUrlByCca3(avatar.country, countries)
-            : null;
+          const country = countryCache[avatar.country ?? ""];
+          const flagUrl = country?.flags?.png;
 
           return (
             <div
@@ -54,7 +56,7 @@ export const RoulettePlayersPanel = () => {
                 {flagUrl && (
                   <img
                     src={flagUrl}
-                    alt={`Bandera de ${avatar.country}`}
+                    alt={`Bandera de ${country.name.common}`}
                     className="w-8 h-6 object-cover rounded shadow"
                     style={{ marginRight: "4px", marginTop: "4px" }}
                   />

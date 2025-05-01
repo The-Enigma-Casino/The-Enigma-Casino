@@ -9,11 +9,11 @@ import {
   betConfirmed,
   betsOpenedReceived,
   betsClosedReceived,
-  roulettePausedReceived,
   placeRouletteBet,
   countdownTick,
   rouletteStopedReceived,
   matchReadyReceived,
+  playerKickedReceived,
 } from "./rouletteEvents";
 
 socketMessageReceived.watch((data) => {
@@ -45,23 +45,26 @@ socketMessageReceived.watch((data) => {
       betsClosedReceived();
       break;
     case "roulette_paused":
-      roulettePausedReceived();
       break;
     case "roulette_stoped":
       rouletteStopedReceived();
       break;
-      case "match_ready": {
-        const tableId = $currentTableId.getState();
+    case "match_ready": {
+      const tableId = $currentTableId.getState();
 
-        console.log(tableId);
+      console.log(tableId);
 
-        if (tableId !== null) {
-          matchReadyReceived(tableId);
-        } else {
-          console.warn('⚠️ No se encontró una mesa activa en el store.');
-        }
-        break;
+      if (tableId !== null) {
+        matchReadyReceived(tableId);
+      } else {
+        console.warn("⚠️ No se encontró una mesa activa en el store.");
       }
+      break;
+    }
+    case "round_cancelled":
+    case "player_kicked":
+      playerKickedReceived(data);
+      break;
     default:
       console.warn("[Ruleta] Acción desconocida:", data.action);
   }

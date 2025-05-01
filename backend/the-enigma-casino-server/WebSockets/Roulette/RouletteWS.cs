@@ -175,6 +175,14 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 {
                     tableManager.RemovePlayerFromTable(table, player.UserId, out _);
 
+                    await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), new
+                    {
+                        type = Type,
+                        action = "round_cancelled",
+                        tableId,
+                        message = "La ronda fue cancelada porque ningún jugador apostó. Has sido removido de la mesa."
+                    });
+
                     var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(player.UserId, tableId);
                     if (history != null && history.LeftAt == null)
                     {

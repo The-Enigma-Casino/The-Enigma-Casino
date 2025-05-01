@@ -4,6 +4,7 @@ import { RoulettePlayer } from "../types/roulettePlayer.type";
 import { $name } from "../../../auth/store/authStore";
 import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
 import { loadCoins } from "../../../coins/store/coinsStore";
+import toast from "react-hot-toast";
 
 export const gameStateReceived = createEvent<{
   tableId: number;
@@ -106,4 +107,16 @@ sample({
 sample({
   clock: gameStateReceived,
   target: loadCoins
+});
+
+
+export const playerKickedReceived = createEvent<{ message: string }>();
+
+sample({
+  source: playerKickedReceived,
+  fn: () => {
+    toast.error("Has sido expulsado de la mesa por inactividad.");
+    return "/";
+  },
+  target: navigateTo
 });

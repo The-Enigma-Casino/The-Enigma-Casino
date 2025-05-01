@@ -4,7 +4,6 @@ import {
   $countdowns,
   $currentTableId,
   $tables,
-  joinTableClicked,
   leaveTableClicked,
   sendLeaveTableMessage,
   tryJoinTable,
@@ -15,7 +14,6 @@ import { fetchTables } from "../actions/tableActions";
 
 import "../../games/roulette/stores/rouletteHandler";
 import "../../games/match/matchHandler";
-
 
 function GameTablePage() {
   const navigate = useNavigate();

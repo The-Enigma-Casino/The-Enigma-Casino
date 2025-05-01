@@ -397,6 +397,8 @@ public class UserService : BaseService
     public async Task<string> UpdateUserAsync(int userId, UpdateUserReq updateUserReq)
     {
         User user = await GetUserById(userId);
+        if (user == null)
+            throw new KeyNotFoundException("Usuario no encontrado");
 
         string validatorError = ValidateUpdateRequest(updateUserReq);
         if (!string.IsNullOrEmpty(validatorError))
@@ -417,6 +419,22 @@ public class UserService : BaseService
         return string.Empty;
     }
 
+    public async Task<UpdateUserReq> GetUpdateUser(int userId)
+    {
+        User user = await GetUserById(userId);
+        if (user == null)
+            throw new KeyNotFoundException("Usuario no encontrado");
+
+        return new UpdateUserReq
+        {
+            NickName = user.NickName,
+            FullName = user.FullName,
+            Email = user.Email,
+            Address = user.Address,
+            Country = user.Country,
+        };
+    }
+
 
     private string ValidateNewPassword(UpdatePasswordReq request)
     {
@@ -431,7 +449,9 @@ public class UserService : BaseService
 
     public async Task<string> SetNewPasswordAsync(int userId, UpdatePasswordReq request)
     {
-        var user = await GetUserById(userId);
+        User user = await GetUserById(userId);
+        if (user == null)
+            throw new KeyNotFoundException("Usuario no encontrado");
 
         var validation = ValidateNewPassword(request);
         if (!string.IsNullOrEmpty(validation))

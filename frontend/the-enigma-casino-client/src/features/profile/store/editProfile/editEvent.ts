@@ -3,9 +3,8 @@ import { loadUserProfile } from "../profile/profileEvents";
 
 export const imageUpdated = createEvent();
 export const userUpdated = createEvent();
-
+export const getUserProfile = createEvent();
 export const $imageEdit = createStore(0).on(imageUpdated, (state) => state + 1);
-
 
 sample({
   clock: imageUpdated,
@@ -16,5 +15,4 @@ sample({
   clock: userUpdated,
   target: loadUserProfile,
 });
-
 

@@ -1,8 +1,8 @@
-import { createEffect } from "effector";
+import { createEffect, createStore, sample } from "effector";
 import axios from "axios";
 import { getAuthHeaders } from "../../../auth/utils/authHeaders";
-import { USER_IMAGE_UPDATE, USER_DEFAULT_IMAGE_UPDATE, USER_UPDATE, USER_UPDATE_PASSWORD } from "../../../../config";
-import { imageUpdated } from "./editEvent";
+import { USER_IMAGE_UPDATE, USER_DEFAULT_IMAGE_UPDATE, USER_UPDATE, USER_UPDATE_PASSWORD, USER_GET_PROFILE } from "../../../../config";
+import { getUserProfile, imageUpdated } from "./editEvent";
 import { UpdateUserPayload, UpdatePasswordPayload } from "./type";
 
 
@@ -80,3 +80,26 @@ export const updatePasswordFx = createEffect<UpdatePasswordPayload, any, string>
     }
   }
 );
+
+// Get Profile
+export const getProfileFx = createEffect(async () => {
+  try {
+    const res = await axios.get(USER_GET_PROFILE, {
+      headers: {
+        ...getAuthHeaders(),
+        "Content-Type": "application/json",
+      },
+    });
+    return res.data;
+  } catch (error: any) {
+    throw error?.response?.data?.error || "Error al obtener el perfil";
+  }
+});
+
+export const $userProfile = createStore<UpdateUserPayload | null>(null)
+  .on(getProfileFx.doneData, (_, payload) => payload);
+
+sample({
+  clock: getUserProfile,
+  target: getProfileFx,
+});

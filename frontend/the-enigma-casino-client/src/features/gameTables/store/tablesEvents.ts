@@ -8,3 +8,4 @@ export const countdownCleared = createEvent<number>();
 export const countdownTicked = createEvent();
 export const messageSent = createEvent<string>();
 export const markLeftTable = createEvent();
+export const tryJoinTable = createEvent<number>();

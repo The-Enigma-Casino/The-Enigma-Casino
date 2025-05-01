@@ -7,6 +7,7 @@ import {
   joinTableClicked,
   leaveTableClicked,
   sendLeaveTableMessage,
+  tryJoinTable,
 } from "../store/tablesIndex";
 import { GameTable, Player } from "../models/GameTable.interface";
 import { JSX, useEffect } from "react";
@@ -35,7 +36,7 @@ function GameTablePage() {
 
   const handleJoinTable = (tableId: number) => {
     console.log("🟢 joinTableClicked lanzado para:", tableId);
-    joinTableClicked(tableId);
+    tryJoinTable(tableId);
   };
 
   const renderPlayerAvatars = (

@@ -10,10 +10,13 @@ import { $userId } from "../../../auth/store/authStore";
 import { PlayerHUD } from "../../shared/components/PlayerHUD";
 import { CardStack } from "../../shared/components/GameCardStack";
 import { calculateHandTotal } from "../../shared/utils/gameHand.utils";
-import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand, resetRoundResults } from "../store/bjEvents";
+import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand } from "../store/bjEvents";
 import { CardRank, Suit } from "../../shared/types/gameCard.type";
 import { ChipStack } from "../../shared/components/ChipStack";
 import { loadCoins } from "../../../coins/store/coinsStore";
+
+import "../../match/matchHandler";
+
 export const BlackjackGamePage = () => {
 
 

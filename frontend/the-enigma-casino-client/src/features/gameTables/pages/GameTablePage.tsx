@@ -13,6 +13,7 @@ import { JSX, useEffect } from "react";
 import { fetchTables } from "../actions/tableActions";
 
 import "../../games/roulette/stores/rouletteHandler";
+import "../../games/match/matchHandler";
 
 
 function GameTablePage() {

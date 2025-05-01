@@ -27,6 +27,8 @@ import { RoulettePlayersPanel } from "../components/RoulettePlayersPanel";
 import { LocalBet } from "../types/localBet.type";
 import { buildBetPayload } from "../utils/buildBetPayload";
 
+import "../../match/matchHandler";
+
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
   const isBetsClosed = useUnit(betsClosed$);

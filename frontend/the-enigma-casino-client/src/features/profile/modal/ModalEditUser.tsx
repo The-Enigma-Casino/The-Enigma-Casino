@@ -30,6 +30,7 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({ onCancel, onSave }) => {
               placeholder="Nombre de usuario"
               value={formData.nickName}
               onChange={handleChange}
+              paddingLeft="20px"
             />
           </label>
 
@@ -39,8 +40,9 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({ onCancel, onSave }) => {
               name="fullname"
               id="fullname"
               placeholder="Nombre completo"
-              value={formData.fullname}
+              value={formData.fullName}
               onChange={handleChange}
+              paddingLeft="20px"
             />
           </label>
 
@@ -52,6 +54,8 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({ onCancel, onSave }) => {
               placeholder="Correo electrónico"
               value={formData.email}
               onChange={handleChange}
+              paddingLeft="20px"
+
             />
           </label>
 
@@ -63,6 +67,7 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({ onCancel, onSave }) => {
               placeholder="Dirección"
               value={formData.address}
               onChange={handleChange}
+              paddingLeft="20px"
             />
           </label>
 
@@ -70,7 +75,10 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({ onCancel, onSave }) => {
             <strong>Nacionalidad:</strong>
             <InputDebounce
               placeholder="Nacionalidad"
+              countryCode={formData.country}
               onSelect={handleCountrySelect}
+              inputPaddingLeft="55px"
+              flagLeft="20px"
             />
           </label>
 

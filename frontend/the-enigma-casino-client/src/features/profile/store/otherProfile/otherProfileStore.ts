@@ -1,4 +1,4 @@
-import { createStore } from "effector";
+import { createStore, sample } from "effector";
 import { loadOtherUserProfile, loadOtherUserHistory } from "./otherProfileEvents";
 import { loadOtherUserProfileFx, getOtherUserHistoryFx } from "./otherProfileEffects";
 import type { HistoryResponse, OtherUserProfile } from "../history/types";
@@ -34,4 +34,9 @@ loadOtherUserProfile.watch((userId) => {
 
 loadOtherUserHistory.watch(({ userId, page }) => {
   getOtherUserHistoryFx({ userId, page });
+});
+
+sample({
+  clock: loadOtherUserProfile,
+  target: loadOtherUserProfileFx,
 });

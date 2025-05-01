@@ -1,6 +1,6 @@
 import Button from "../../../components/ui/button/Button";
 import ModalEditUser from "../modal/ModalEditUser";
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ModalEditImage from "../modal/ModalEditImage";
@@ -8,7 +8,7 @@ import { IMAGE_PROFILE_URL } from "../../../config";
 import ModalEditPassword from "../modal/ModalEditPassword";
 import { useUnit } from "effector-react";
 import { getFlagUrlByCca3 } from "../../../utils/flagUtils";
-import { $allCountries } from "../../countries/actions/countriesActions";
+import { $allCountries, countriesFx } from "../../countries/actions/countriesActions";
 
 interface UserData {
   name?: string;
@@ -43,7 +43,11 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
   const isSelf = relations === "self";
   const isFriend = relations === "friend";
   const isStranger = relations === "stranger";
-
+  useEffect(() => {
+    if (countries.length === 0) {
+      countriesFx();
+    }
+  }, []);
   return (
     <>
       <div className="bg-Background-Page px-4 pt-40 sm:pt-44 md:pt-48 pb-10 flex flex-col items-center">
@@ -94,10 +98,20 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
                 {isSelf && "Nickname: "}
                 <strong>{nickname}</strong>
               </p>
-              {(isSelf) && country && <p>Nacionalidad: <strong>{country}</strong></p>}
+
               {isSelf && name && <p>Nombre de Usuario: <strong>{name}</strong></p>}
               {isSelf && email && <p>Correo electrónico: <strong>{email}</strong></p>}
               {isSelf && address && <p>Dirección: <strong>{address}</strong></p>}
+              {(isSelf) && country && flagUrl && (
+                <div className="flex items-center gap-3">
+                  <p>Nacionalidad:</p>
+                  <img
+                    src={flagUrl}
+                    alt={`Bandera de ${user.country}`}
+                    className="w-10 h-7 object-cover rounded"
+                  />
+                </div>
+              )}
               {isSelf && role && <p>Rol: <strong>{role}</strong></p>}
             </div>
 

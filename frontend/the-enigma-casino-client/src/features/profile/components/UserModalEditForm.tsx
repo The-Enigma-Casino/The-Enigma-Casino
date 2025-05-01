@@ -1,26 +1,44 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { isValidEmail, isValidName, nicknameValidator } from "../../../utils/validatorsUser";
-import { updateUserFx } from "../store/editProfile/editProfile";
-import { userUpdated } from "../store/editProfile/editEvent";
+import { updateUserFx, $userProfile } from "../store/editProfile/editProfile";
+import { getUserProfile, userUpdated } from "../store/editProfile/editEvent";
+import { useUnit } from "effector-react";
 
-interface FormData {
+export interface FormData {
   nickName: string;
-  fullname: string;
+  fullName: string;
   email: string;
   address: string;
   country: string;
 }
 
 export function useEditForm(onSuccess: () => void) {
-
+  const profile = useUnit($userProfile);
   const [formData, setFormData] = useState<FormData>({
     nickName: "",
-    fullname: "",
+    fullName: "",
     email: "",
     address: "",
     country: "",
   });
+
+  useEffect(() => {
+    getUserProfile();
+  }, []);
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        nickName: profile.nickName,
+        fullName: profile.fullName,
+        email: profile.email,
+        address: profile.address,
+        country: profile.country,
+      });
+      console.log("profile", profile);
+    }
+  }, [profile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -43,7 +61,7 @@ export function useEditForm(onSuccess: () => void) {
 
     if (!isValidEmail(formData.email)) return toast.error("Correo no válido.");
     if (!nicknameValidator(formData.nickName)) return toast.error("Nombre de usuario inválido.");
-    if (!isValidName(formData.fullname)) return toast.error("Nombre completo inválido.");
+    if (!isValidName(formData.fullName)) return toast.error("Nombre completo inválido.");
 
     try {
       const { ...formDataToSend } = formData;
@@ -54,7 +72,7 @@ export function useEditForm(onSuccess: () => void) {
           setTimeout(() => {
             setFormData({
               nickName: "",
-              fullname: "",
+              fullName: "",
               email: "",
               address: "",
               country: "",

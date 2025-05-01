@@ -4,6 +4,7 @@ using Nethereum.Contracts.QueryHandlers.MultiCall;
 using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Controllers;
 
@@ -60,15 +61,15 @@ public class UserController : BaseController
     }
 
 
-    [HttpGet("profile/{idOtherUser}")]
-    public async Task<ActionResult<OtherUserDto>> GetOtherProfile(int idOtherUser)
+    [HttpGet("profile/{encodedId}")]
+    public async Task<ActionResult<OtherUserDto>> GetOtherProfile(string encodedId)
     {
         try
         {
             int currentUserId = GetUserId();
+            int profileUserId = SqidHelper.Decode(encodedId);
 
-            OtherUserDto otherUserDto = await _userService.GetOtherProfile(currentUserId, idOtherUser);
-
+            OtherUserDto otherUserDto = await _userService.GetOtherProfile(currentUserId, profileUserId);
             return Ok(otherUserDto);
         }
         catch (KeyNotFoundException ex)
@@ -159,6 +160,28 @@ public class UserController : BaseController
             return StatusCode(500, "Ocurrió un error inesperado.");
         }
     }
+
+
+    [HttpGet("get-profile")]
+    public async Task<ActionResult<UpdateUserReq>> GetMyProfile()
+    {
+        try
+        {
+            int userId = GetUserId();
+            UpdateUserReq updateUserReq = await _userService.GetUpdateUser(userId);
+            return Ok(updateUserReq);
+
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "Error al obtener los datos del perfil.");
+        }
+    }
+
 
     [HttpPut("set-password")]
     public async Task<ActionResult> SetNewPassword([FromBody] UpdatePasswordReq request)

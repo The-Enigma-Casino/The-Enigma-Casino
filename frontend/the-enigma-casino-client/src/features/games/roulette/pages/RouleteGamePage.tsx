@@ -36,7 +36,6 @@ function RouletteGamePage() {
   const lastResults = useUnit(lastResults$);
   const isStopped = useUnit(isStopped$);
 
-
   const decrement = useUnit(countdownDecrement);
 
   const [betAmount, setBetAmount] = useState(0);
@@ -102,9 +101,25 @@ function RouletteGamePage() {
     loadCoins();
   };
 
-  function didWin(spinResult: any): boolean {
-    if (!spinResult || !Array.isArray(spinResult.bets)) return false;
-    return spinResult.bets.some((b: any) => b.isWinner === true);
+  function getResultMessage(spinResult: any): {
+    message: string;
+    colorClass: string;
+  } {
+    if (
+      !spinResult ||
+      !Array.isArray(spinResult.bets) ||
+      spinResult.bets.length === 0
+    ) {
+      return {
+        message: "No realizaste ninguna apuesta esta ronda.",
+        colorClass: "text-red-400",
+      };
+    }
+
+    const won = spinResult.bets.some((b: any) => b.isWinner === true);
+    return won
+      ? { message: "¡Ganaste una apuesta! 🎉", colorClass: "text-green-400" }
+      : { message: "No acertaste esta vez. 😞", colorClass: "text-red-400" };
   }
 
   const getColorClass = (color: string) => {
@@ -137,16 +152,12 @@ function RouletteGamePage() {
               </h2>
 
               {spinResult && (
-                <h2 className="text-xl mb-4 font-bold">
-                  {didWin(spinResult) ? (
-                    <span className="text-green-400">
-                      ¡Ganaste una apuesta! 🎉
-                    </span>
-                  ) : (
-                    <span className="text-red-400">
-                      No acertaste esta vez. 😞
-                    </span>
-                  )}
+                <h2
+                  className={`text-xl mb-4 font-bold ${
+                    getResultMessage(spinResult).colorClass
+                  }`}
+                >
+                  {getResultMessage(spinResult).message}
                 </h2>
               )}
 
@@ -221,4 +232,3 @@ function RouletteGamePage() {
 }
 
 export default RouletteGamePage;
-

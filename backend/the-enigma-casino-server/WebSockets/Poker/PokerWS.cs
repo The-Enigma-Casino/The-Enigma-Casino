@@ -94,7 +94,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (firstPlayer != null)
         {
-            await notifier.NotifyPlayerTurnAsync(match, firstPlayer);
+            await NotifyPlayerTurnWithTimerAsync(match, "preflop", firstPlayer);
         }
     }
 
@@ -114,6 +114,11 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
+        if (ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            session.CancelTurnTimer();
+        }
+
         if (!message.TryGetProperty("move", out var moveProp))
         {
             await SendErrorAsync(userId, "Falta la acción (move).");
@@ -126,7 +131,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         string phase = pokerGame.GetCurrentPhase();
 
         bool shouldAdvance = false;
-        bool phaseAdvanced = false; 
+        bool phaseAdvanced = false;
 
         try
         {
@@ -167,7 +172,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
                     if (nextPlayer != null && !PokerActionTracker.HasPlayerActed(tableId, nextPlayer.UserId, phase))
                     {
-                        await notifier.NotifyPlayerTurnAsync(match, nextPlayer);
+                        await NotifyPlayerTurnWithTimerAsync(match, phase, nextPlayer);
                     }
                 }
             }
@@ -296,6 +301,12 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         PokerActionTracker.Clear(tableId, phase);
 
         Console.WriteLine($"🃏 [{phase.ToUpper()}] Repartido en mesa {tableId}. Acción: {actionName}");
+
+        Player? nextPlayer = match.Players.FirstOrDefault(p => p.UserId == pokerGame.CurrentTurnUserId);
+        if (nextPlayer != null)
+        {
+            await NotifyPlayerTurnWithTimerAsync(match, phase, nextPlayer);
+        }
     }
 
 
@@ -457,8 +468,12 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             var gameMatchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
             await gameMatchWS.FinalizeMatchAsync(tableId);
+            var tracker = scope.ServiceProvider.GetRequiredService<PokerInactivityTracker>();
+            CleanupInactivePlayers(match, tracker);
             PokerBetTracker.ResetContributions(tableId);
         }
+
+
 
         Console.WriteLine($"✅ Match de la mesa {tableId} cerrado inmediatamente tras el showdown.");
 
@@ -531,28 +546,94 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
     private bool TryGetPokerGame(int tableId, string? userId, out PokerGame pokerGame)
         => TryGetWithError(ActivePokerGameStore.TryGetNullable, tableId, out pokerGame, "partida de Poker", userId);
 
-    private async Task NotifyNextTurnAsync(int tableId, PokerGame pokerGame, Match match, string phase, PokerNotifier notifier)
+    private async Task NotifyPlayerTurnWithTimerAsync(Match match, string phase, Player player)
     {
-        Console.WriteLine($"🔁 Llamando a AdvanceTurn() desde fase {phase}");
-        bool hasNextTurn = pokerGame.AdvanceTurn();
+        int tableId = match.GameTableId;
+        var notifier = _serviceProvider.GetRequiredService<PokerNotifier>();
+        await notifier.NotifyPlayerTurnAsync(match, player);
 
-        if (!hasNextTurn)
+        await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), new
         {
-            Console.WriteLine($"✅ Todos actuaron en fase {phase}. Avanzando fase.");
-            await HandlePhaseAdvanceAsync(tableId, phase);
-            return;
-        }
+            type = "poker",
+            action = "turn_timer",
+            tableId,
+            userId = player.UserId,
+            phase,
+            time = 20
+        });
 
-        int nextUserId = pokerGame.CurrentTurnUserId;
-        Player? nextPlayer = match.Players.FirstOrDefault(p => p.UserId == nextUserId);
-
-        if (nextPlayer == null) return;
-
-        if (!PokerActionTracker.HasPlayerActed(tableId, nextPlayer.UserId, phase))
+        if (ActiveGameSessionStore.TryGet(tableId, out var session))
         {
-            await notifier.NotifyPlayerTurnAsync(match, nextPlayer);
+            session.StartTurnTimer(20_000, () => HandlePlayerTimeoutAsync(match, phase, player));
         }
     }
+
+    private async Task HandlePlayerTimeoutAsync(Match match, string phase, Player player)
+    {
+        int tableId = match.GameTableId;
+        Console.WriteLine($"⏰ Turno expirado para {player.User.NickName} en fase {phase}");
+
+        using var scope = _serviceProvider.CreateScope();
+        var tracker = scope.ServiceProvider.GetRequiredService<PokerInactivityTracker>();
+        var turnService = scope.ServiceProvider.GetRequiredService<PokerTurnService>();
+
+        tracker.RegisterInactivity(player);
+
+        if (tracker.GetInactivityCount(player) >= 2)
+        {
+            player.HasAbandoned = true;
+            Console.WriteLine($"🚪 {player.User.NickName} ha sido marcado como abandonado por 2 faltas acumuladas.");
+            tracker.RemovePlayer(player);
+        }
+
+        player.PlayerState = PlayerState.Fold;
+        await turnService.ForceAdvanceTurnAsync(tableId, player.UserId);
+
+        if (ActivePokerGameStore.TryGet(tableId, out var pokerGame))
+        {
+            if (pokerGame.CurrentTurnUserId == player.UserId)
+            {
+                bool hasAdvanced = pokerGame.AdvanceTurn();
+                Console.WriteLine($"🔁 Turno forzado tras Fold automático. ¿Avanzó?: {hasAdvanced}");
+            }
+
+            int remaining = match.Players.Count(p => p.PlayerState is PlayerState.Playing or PlayerState.AllIn);
+
+            if (remaining == 1)
+            {
+                var gameMatchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
+                await gameMatchWS.FinalizeMatchAsync(tableId);
+                CleanupInactivePlayers(match, tracker);
+
+                if (ActiveGameSessionStore.TryGet(tableId, out var session))
+                {
+                    session.StartPostMatchTimer(20_000, async () =>
+                    {
+                        using var postScope = _serviceProvider.CreateScope();
+                        var gmws = postScope.ServiceProvider.GetRequiredService<GameMatchWS>();
+                        await gmws.EvaluatePostMatchAsync(tableId);
+                    });
+                }
+                return;
+            }
+
+            Player? nextPlayer = match.Players.FirstOrDefault(p => p.UserId == pokerGame.CurrentTurnUserId);
+
+            if (nextPlayer != null &&
+                nextPlayer.PlayerState == PlayerState.Playing &&
+                !nextPlayer.HasAbandoned &&
+                !PokerActionTracker.HasPlayerActed(tableId, nextPlayer.UserId, phase))
+            {
+                await NotifyPlayerTurnWithTimerAsync(match, phase, nextPlayer);
+            }
+            else
+            {
+                await PokerManager.MaybeAdvancePhaseAsync(
+                    tableId, match, phase, HandlePhaseAdvanceAsync);
+            }
+        }
+    }
+
 
     public async Task HandlePlayerDisconnectedAsync(int tableId, int userId)
     {
@@ -585,7 +666,16 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (!PokerActionTracker.HasPlayerActed(tableId, nextPlayer.UserId, phase))
         {
-            await notifier.NotifyPlayerTurnAsync(match, nextPlayer);
+            await NotifyPlayerTurnWithTimerAsync(match, phase, nextPlayer);
+        }
+    }
+
+    private void CleanupInactivePlayers(Match match, PokerInactivityTracker tracker)
+    {
+        foreach (var p in match.Players.Where(p => p.HasAbandoned || p.PlayerState == PlayerState.Left))
+        {
+            tracker.RemovePlayer(p);
+            Console.WriteLine($"🧹 [PokerWS] Inactividad limpiada para {p.User.NickName} tras su salida del match.");
         }
     }
 }

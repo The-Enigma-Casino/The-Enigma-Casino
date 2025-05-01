@@ -142,6 +142,8 @@ public class Program
         builder.Services.AddScoped<PokerTurnService>();
         builder.Services.AddScoped<PokerExitRuleHandler>();
         builder.Services.AddScoped<PokerJoinHelper>();
+        builder.Services.AddScoped<PokerInactivityTracker>();
+
 
         builder.Services.AddSingleton<PokerNotifier>(provider =>
         {
@@ -153,6 +155,8 @@ public class Program
         builder.Services.AddScoped<IGameTurnService, PokerTurnService>();
         builder.Services.AddScoped<IGameSessionCleaner, PokerSessionCleaner>();
         builder.Services.AddScoped<IGameJoinHelper, PokerJoinHelper>();
+        builder.Services.AddScoped<IGameInactivityTracker, PokerInactivityTracker>();
+
 
         // --- Servicios concretos de Ruleta ---
         builder.Services.AddScoped<RouletteBetInfoProvider>();

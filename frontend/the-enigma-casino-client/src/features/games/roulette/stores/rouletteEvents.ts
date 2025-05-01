@@ -1,7 +1,19 @@
 import { createEvent, sample } from "effector";
 import { navigateTo } from "../../shared/router/navigateFx";
+import { RoulettePlayer } from "../types/roulettePlayer.type";
+import { $name } from "../../../auth/store/authStore";
+import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
+import { loadCoins } from "../../../coins/store/coinsStore";
+import toast from "react-hot-toast";
 
-export const gameStateReceived = createEvent<any>();
+export const gameStateReceived = createEvent<{
+  tableId: number;
+  canPlaceBets: boolean;
+  players: {
+    nickName: string;
+    bets: { bet: string; amount: number }[];
+  }[];
+}>();
 export const spinResultReceived = createEvent<any>();
 export const betConfirmed = createEvent<any>();
 
@@ -60,4 +72,51 @@ sample({
     return path;
   },
   target: navigateTo,
+});
+
+
+export const setRoulettePlayers = createEvent<RoulettePlayer[]>();
+
+export const resetRoulettePlayers = createEvent();
+
+
+sample({
+  clock: gameStateReceived,
+  source: $name,
+  fn: (currentName, payload): RoulettePlayer[] => {
+    console.log("[✅ DEBUG sample] Payload:", payload);
+    if (!payload?.players) return [];
+
+    if (!currentName) return payload.players;
+
+    return payload.players.filter(
+      (p) => p.nickName.toLowerCase() !== currentName.toLowerCase()
+    );
+  },
+  target: setRoulettePlayers,
+});
+
+
+
+sample({
+  clock: setRoulettePlayers,
+  fn: (players) => players.map((p) => p.nickName),
+  target: getPlayerAvatarsFx,
+});
+
+sample({
+  clock: gameStateReceived,
+  target: loadCoins
+});
+
+
+export const playerKickedReceived = createEvent<{ message: string }>();
+
+sample({
+  source: playerKickedReceived,
+  fn: () => {
+    toast.error("Has sido expulsado de la mesa por inactividad.");
+    return "/";
+  },
+  target: navigateTo
 });

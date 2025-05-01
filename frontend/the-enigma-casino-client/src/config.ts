@@ -76,3 +76,6 @@ export const BAN_USER_ADMIN = `${API_BASE_URL}AdminUser/ban-user`;
 export const PACKS_ADMIN = `${API_BASE_URL}AdminCoinsPack/coins-packs`;
 export const PACKS_ADMIN_ID = `${API_BASE_URL}AdminCoinsPack/coins-pack`;
 export const UPDATE_PACK_ADMIN = `${API_BASE_URL}AdminCoinsPack/coins-pack`;
+
+/* ENDPOINTS DE GAMES */
+export const PLAYER_AVATARS = `${API_BASE_URL}Games/player-avatars`;

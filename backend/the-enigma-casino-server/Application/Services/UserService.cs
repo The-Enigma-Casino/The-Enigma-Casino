@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SixLabors.ImageSharp.Formats.Webp;
@@ -23,6 +24,8 @@ public class UserService : BaseService
     private readonly UserMapper _userMapper;
     private readonly UserFriendService _userFriendService;
     private readonly SmartSearchService _smartSearchService;
+    private const string DefaultProfileImage = "user_default.webp";
+
 
     public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper, UserFriendService userFriendService, SmartSearchService smartSearchService) : base(unitOfWork)
     {
@@ -311,6 +314,17 @@ public class UserService : BaseService
         await _unitOfWork.SaveAsync();
     }
 
+    public async Task SetDefaultProfileImageAsync(int userId)
+    {
+        User user = await GetUserById(userId);
+
+        user.Image = DefaultProfileImage;
+
+        _unitOfWork.UserRepository.Update(user);
+        await _unitOfWork.SaveAsync();
+    }
+
+
     public async Task<User> SetRoleByUser(User user, Role role)
     {
         if (user == null)
@@ -359,5 +373,75 @@ public class UserService : BaseService
 
         _unitOfWork.UserRepository.Update(user);
         await _unitOfWork.SaveAsync();
+    }
+
+    private string ValidateUpdateRequest(UpdateUserReq request)
+    {
+        if (string.IsNullOrWhiteSpace(request.NickName) ||
+            string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Address) ||
+            string.IsNullOrWhiteSpace(request.Country))
+        {
+            return "Los campos obligatorios no pueden estar vacíos.";
+        }
+
+        if (!_validation.IsValidEmail(request.Email))
+            return "El email ingresado no es válido.";
+
+        if (!_validation.IsValidName(request.NickName))
+            return "El nombre de usuario contiene palabras no permitidas.";
+
+        return string.Empty;
+    }
+
+    public async Task<string> UpdateUserAsync(int userId, UpdateUserReq updateUserReq)
+    {
+        User user = await GetUserById(userId);
+
+        string validatorError = ValidateUpdateRequest(updateUserReq);
+        if (!string.IsNullOrEmpty(validatorError))
+        {
+            return validatorError;
+        }
+
+        user.NickName = updateUserReq.NickName;
+        user.FullName = updateUserReq.FullName;
+        user.Email = updateUserReq.Email;
+        user.Address = updateUserReq.Address;
+        user.Country = updateUserReq.Country;
+
+
+        _unitOfWork.UserRepository.Update(user);
+        await _unitOfWork.SaveAsync();
+
+        return string.Empty;
+    }
+
+
+    private string ValidateNewPassword(UpdatePasswordReq request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.ConfirmPassword))
+            return "Debes ingresar y confirmar la contraseña.";
+
+        if (request.Password != request.ConfirmPassword)
+            return "Las contraseñas no coinciden.";
+
+        return string.Empty;
+    }
+
+    public async Task<string> SetNewPasswordAsync(int userId, UpdatePasswordReq request)
+    {
+        var user = await GetUserById(userId);
+
+        var validation = ValidateNewPassword(request);
+        if (!string.IsNullOrEmpty(validation))
+            return validation;
+
+        user.HashPassword = HashHelper.Hash(request.Password);
+
+        _unitOfWork.UserRepository.Update(user);
+        await _unitOfWork.SaveAsync();
+
+        return string.Empty;
     }
 }

@@ -47,15 +47,20 @@ export const GACHAPON_PRICE = `${API_BASE_URL}Gachapon/price`;
 /* ENDPOINTS DE PROFILE */
 export const USER_PROFILE = `${API_BASE_URL}User/profile`;
 export const OTHER_USER_PROFILE = `${API_BASE_URL}User/profile/`;
+
+/* ENDPOINTS DE PROFILE UPDATE*/
 export const USER_IMAGE_UPDATE = `${API_BASE_URL}User/profile/image`;
-export const USER_HISTORY_BY_ID = `${API_BASE_URL}History/by-user-id`;
+export const USER_DEFAULT_IMAGE_UPDATE = `${API_BASE_URL}User/profile/image/default`;
+export const USER_UPDATE = `${API_BASE_URL}User/update-user`;
+export const USER_UPDATE_PASSWORD = `${API_BASE_URL}User/set-password`;
 
 
 /* ENDPOINTS PARA LAS IMAGENES */
 export const USER_IMAGES = `${BASE_URL}images/profile`;
 
-/* ENDPOINTS DE HISTORY GAMES */
+/* ENDPOINTS DE HISTORY USER */
 export const USER_HISTORY = `${API_BASE_URL}History`;
+export const USER_HISTORY_BY_ID = `${API_BASE_URL}History/by-user-id`;
 
 /* ENDPOINTS DE HISTORY GAMES */
 export const USER_HISTORY_ORDERS = `${API_BASE_URL}Order/orders`;
@@ -70,3 +75,6 @@ export const BAN_USER_ADMIN = `${API_BASE_URL}AdminUser/ban-user`;
 export const PACKS_ADMIN = `${API_BASE_URL}AdminCoinsPack/coins-packs`;
 export const PACKS_ADMIN_ID = `${API_BASE_URL}AdminCoinsPack/coins-pack`;
 export const UPDATE_PACK_ADMIN = `${API_BASE_URL}AdminCoinsPack/coins-pack`;
+
+/* ENDPOINTS DE GAMES */
+export const PLAYER_AVATARS = `${API_BASE_URL}Games/player-avatars`;

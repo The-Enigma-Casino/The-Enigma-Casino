@@ -8,7 +8,9 @@ import { GameInfoModal } from "../../shared/components/modals/GameInfoModal";
 import { $chatMessages, resetMessages } from "../stores/chatStore";
 import { $userId } from "../../../auth/store/authStore";
 import { messageSent } from "../stores/chatStore";
-import { $currentTableId } from "../../../gameTables/store/tablesStores";
+import { $currentTableId, $hasLeftTable } from "../../../gameTables/store/tablesStores";
+import { markLeftTable, sendLeaveTableMessage } from "../../../gameTables/store/tablesEvents";
+import { navigateTo } from "../../shared/router/navigateFx";
 
 
 interface ChatProps {
@@ -19,23 +21,34 @@ export const Chat = ({ gameType }: ChatProps) => {
   const coins = useUnit($coins);
   const userId = useUnit($userId);
   const tableId = useUnit($currentTableId);
+  const hasLeft = useUnit($hasLeftTable);
 
   const chatMessages = useUnit($chatMessages);
 
   useEffect(() => {
-    console.log("[Chat] Mensajes recibidos:", chatMessages);
-    return () => {
-      resetMessages();
-    }
+    console.log("[Chat] UseEffect Mensajes recibidos:", chatMessages);
+    // return () => {
+    //   resetMessages();
+    // }
   }, [chatMessages]);
 
   const [showInfo, setShowInfo] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  // const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleSend = (text: string) => {
     console.log("[Chat] Mensaje enviado:", text);
     messageSent({ tableId, text });
   };
+
+  const handleLogout = () => {
+    if (!hasLeft) {
+      sendLeaveTableMessage();
+      markLeftTable();
+    }
+
+    navigateTo("/");
+  };
+
 
   return (
     <div className={styles.wrapper}>
@@ -76,7 +89,7 @@ export const Chat = ({ gameType }: ChatProps) => {
 
           <button
             className={styles.iconButton}
-            onClick={() => setShowLogoutConfirm(true)}
+            onClick={() => handleLogout()}
           >
             <img
               src="/svg/logout_icon.svg"

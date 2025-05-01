@@ -108,5 +108,4 @@ public class UserRepository : Repository<User, int>
             .Where(u => nickNames.Contains(u.NickName))
             .ToListAsync();
     }
-
 }

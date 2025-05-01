@@ -8,8 +8,10 @@ import {
   resetSpinResult,
   countdownTick,
   rouletteStopedReceived,
-  matchReadyReceived,
+  setRoulettePlayers,
+  resetRoulettePlayers,
 } from "./rouletteEvents";
+import { RoulettePlayer } from "../types/roulettePlayer.type";
 
 export const rouletteGameState$ = createStore<any>(null).on(
   gameStateReceived,
@@ -63,3 +65,9 @@ export const countdown$ = createStore<number>(0).on(
 export const isStopped$ = createStore<boolean>(false)
   .on(rouletteStopedReceived, () => true)
   .on(betsOpenedReceived, () => false);
+
+
+  export const roulettePlayers$ = createStore<RoulettePlayer[]>([])
+  .on(setRoulettePlayers, (_, players) => players);
+
+  roulettePlayers$.reset(resetRoulettePlayers);

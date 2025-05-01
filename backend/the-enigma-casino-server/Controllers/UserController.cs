@@ -4,6 +4,7 @@ using Nethereum.Contracts.QueryHandlers.MultiCall;
 using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Controllers;
 
@@ -60,15 +61,15 @@ public class UserController : BaseController
     }
 
 
-    [HttpGet("profile/{idOtherUser}")]
-    public async Task<ActionResult<OtherUserDto>> GetOtherProfile(int idOtherUser)
+    [HttpGet("profile/{encodedId}")]
+    public async Task<ActionResult<OtherUserDto>> GetOtherProfile(string encodedId)
     {
         try
         {
             int currentUserId = GetUserId();
+            int profileUserId = SqidHelper.Decode(encodedId);
 
-            OtherUserDto otherUserDto = await _userService.GetOtherProfile(currentUserId, idOtherUser);
-
+            OtherUserDto otherUserDto = await _userService.GetOtherProfile(currentUserId, profileUserId);
             return Ok(otherUserDto);
         }
         catch (KeyNotFoundException ex)

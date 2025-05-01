@@ -5,12 +5,8 @@ import { getAuthHeaders } from "../../../auth/utils/authHeaders";
 import type { OtherUserProfile, HistoryResponse } from "../history/types";
 
 export const loadOtherUserProfileFx = createEffect(async (userId: string): Promise<OtherUserProfile> => {
-  const response = await axios.get(`${OTHER_USER_PROFILE}${userId}`, {
-    headers: getAuthHeaders(),
-  });
-
+  const response = await axios.get(`${OTHER_USER_PROFILE}${userId}`, { headers: getAuthHeaders() });
   const data = response.data;
-
   return {
     nickname: data.nickName,
     country: data.country,

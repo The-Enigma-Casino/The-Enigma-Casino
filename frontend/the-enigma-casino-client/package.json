@@ -27,6 +27,7 @@
     "react-hot-toast": "^2.5.2",
     "react-multi-carousel": "^2.8.5",
     "react-router-dom": "^7.1.5",
+    "sqids": "^0.3.0",
     "the-enigma-casino-client": "file:",
     "use-debounce": "^10.0.4",
     "web3": "^4.16.0"

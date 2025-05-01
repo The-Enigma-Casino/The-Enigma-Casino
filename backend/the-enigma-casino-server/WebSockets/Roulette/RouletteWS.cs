@@ -159,35 +159,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             var gameMatchWS = finalizeScope.ServiceProvider.GetRequiredService<GameMatchWS>();
             await gameMatchWS.FinalizeAndEvaluateMatchAsync(tableId);
 
-            if (ActiveGameSessionStore.TryGet(tableId, out var session))
-            {
-
-                session.CancelCountdown();
-                session.CancelBettingTimer();
-                session.CancelPostMatchTimer();
-
-                var table = session.Table;
-                var tableManager = finalizeScope.ServiceProvider.GetRequiredService<GameTableManager>();
-                var unitOfWork = finalizeScope.ServiceProvider.GetRequiredService<UnitOfWork>();
-
-                foreach (var player in table.Players.ToList())
-                {
-                    tableManager.RemovePlayerFromTable(table, player.UserId, out _);
-
-                    var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(player.UserId, tableId);
-                    if (history != null && history.LeftAt == null)
-                    {
-                        history.LeftAt = DateTime.Now;
-                        unitOfWork.GameHistoryRepository.Update(history);
-                    }
-                }
-
-                table.TableState = TableState.Waiting;
-                unitOfWork.GameTableRepository.Update(table);
-                await unitOfWork.SaveAsync();
-
-                Console.WriteLine($"[RouletteWS] Todos los jugadores eliminados de la mesa {tableId} tras ronda sin apuestas.");
-            }
+            await CleanupTableAfterNoBetsAsync(tableId, finalizeScope);
 
             ActiveRouletteGameStore.Remove(tableId);
         }
@@ -206,10 +178,19 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         var table = session.Table;
         var tableManager = finalizeScope.ServiceProvider.GetRequiredService<GameTableManager>();
         var unitOfWork = finalizeScope.ServiceProvider.GetRequiredService<UnitOfWork>();
+        var sender = finalizeScope.ServiceProvider.GetRequiredService<IWebSocketSender>();
 
         foreach (var player in table.Players.ToList())
         {
             tableManager.RemovePlayerFromTable(table, player.UserId, out _);
+
+            await sender.SendToUserAsync(player.UserId.ToString(), new
+            {
+                type = Type,
+                action = "round_cancelled",
+                tableId,
+                message = "La ronda fue cancelada porque ningún jugador apostó. Has sido removido de la mesa."
+            });
 
             var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(player.UserId, tableId);
             if (history != null && history.LeftAt == null)
@@ -225,6 +206,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         Console.WriteLine($"[RouletteWS] Todos los jugadores eliminados y mesa reseteada en mesa {tableId} tras ronda sin apuestas.");
     }
+
 
 
     public async Task HandleSpinAsync(string userId, JsonElement message, bool stopAfterSpin = false)
@@ -350,7 +332,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
-        foreach (Player player in match.Players.Where(p => p.PlayerState == PlayerState.Win || p.PlayerState == PlayerState.Lose))
+        foreach (Player player in match.Players.Where(p => p.PlayerState != PlayerState.Left && p.PlayerState != PlayerState.Spectating))
         {
             var spinResults = allResults.GetValueOrDefault(player.UserId) ?? new List<RouletteSpinResult>();
 

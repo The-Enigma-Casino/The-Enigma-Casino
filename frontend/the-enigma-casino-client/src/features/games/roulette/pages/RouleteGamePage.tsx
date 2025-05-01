@@ -28,6 +28,7 @@ import { LocalBet } from "../types/localBet.type";
 import { buildBetPayload } from "../utils/buildBetPayload";
 
 import "../../match/matchHandler";
+import { BetChipsPanel } from "../../shared/components/betChipsPanel/BetChipsPanel";
 
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
@@ -178,41 +179,12 @@ function RouletteGamePage() {
 
               <CountdownBar countdown={countdown} />
 
-              <div className="bg-black/30 p-4 rounded-xl mb-6 w-full max-w-md text-white">
-                <h3 className="text-xl mb-2 font-bold text-center">
-                  Selecciona tu apuesta
-                </h3>
-                <div className="flex gap-3 justify-center">
-                  {[5, 10, 25, 50, 100].map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => handleIncrement(val)}
-                      className="px-4 py-2 bg-Coins hover:bg-yellow-500 text-black font-bold rounded shadow"
-                    >
-                      +{val}
-                    </button>
-                  ))}
-                  <button
-                    onClick={handleReset}
-                    className="text-sm text-Color-Cancel hover:underline ml-2"
-                  >
-                    Reset
-                  </button>
-                </div>
-
-                <p className="text-center mt-4 text-lg">
-                  Apuesta actual:{" "}
-                  <span className="text-green-400 font-bold">
-                    {betAmount} fichas
-                  </span>
-                </p>
-
-                {betAmount > coins && (
-                  <p className="text-center text-red-400 text-sm mt-2">
-                    No tienes suficientes fichas 💸
-                  </p>
-                )}
-              </div>
+              <BetChipsPanel
+                onIncrement={handleIncrement}
+                onReset={handleReset}
+                betAmount={betAmount}
+                coins={coins}
+              />
 
               <RouletteBetBoard
                 disabled={isBetsClosed || betAmount <= 0 || betAmount > coins}

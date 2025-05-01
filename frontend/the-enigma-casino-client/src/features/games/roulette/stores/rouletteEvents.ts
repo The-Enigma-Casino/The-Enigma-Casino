@@ -3,6 +3,7 @@ import { navigateTo } from "../../shared/router/navigateFx";
 import { RoulettePlayer } from "../types/roulettePlayer.type";
 import { $name } from "../../../auth/store/authStore";
 import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
+import { loadCoins } from "../../../coins/store/coinsStore";
 
 export const gameStateReceived = createEvent<{
   tableId: number;
@@ -100,4 +101,9 @@ sample({
   clock: setRoulettePlayers,
   fn: (players) => players.map((p) => p.nickName),
   target: getPlayerAvatarsFx,
+});
+
+sample({
+  clock: gameStateReceived,
+  target: loadCoins
 });

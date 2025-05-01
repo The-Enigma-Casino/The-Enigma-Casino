@@ -109,6 +109,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             rouletteGame.RegisterBet(player, bet);
 
             UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out var scope);
+            unitOfWork.UserRepository.Update(player.User);
             await unitOfWork.SaveAsync();
         }
         catch (Exception ex)

@@ -39,3 +39,26 @@ export function buildBetPayload(
   console.warn("[Ruleta] Sector no reconocido:", key);
   return undefined;
 }
+
+
+export function mapBetLabelToKey(label: string): string {
+  if (label.startsWith("Pleno al ")) {
+    const num = label.replace("Pleno al ", "").trim();
+    return `number_${num}`;
+  }
+  const map = {
+    "Color: red": "sector_9",
+    "Color: black": "sector_10",
+    "Par/Impar: Even": "sector_8",
+    "Par/Impar: Odd": "sector_11",
+    "Alta/Baja: Low": "sector_7",
+    "Alta/Baja: High": "sector_12",
+    "Docena: 1": "sector_4",
+    "Docena: 2": "sector_5",
+    "Docena: 3": "sector_6",
+    "Columna: 1": "sector_1",
+    "Columna: 2": "sector_2",
+    "Columna: 3": "sector_3",
+  };
+  return map[label as keyof typeof map] ?? label;
+}

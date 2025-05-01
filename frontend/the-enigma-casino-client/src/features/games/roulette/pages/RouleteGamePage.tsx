@@ -26,12 +26,7 @@ import { countdownDecrement, syncedCountdown$ } from "../stores/rouletteClock";
 import { RouletteHistory } from "../components/RouletteHistory";
 import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar";
 import { RoulettePlayersPanel } from "../components/RoulettePlayersPanel";
-
-type LocalBet = {
-  key: string;
-  label: string;
-  amount: number;
-};
+import { LocalBet } from "../types/localBet.type";
 
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
@@ -42,6 +37,7 @@ function RouletteGamePage() {
   const coins = useUnit($coins);
   const lastResults = useUnit(lastResults$);
   const isStopped = useUnit(isStopped$);
+
 
   const decrement = useUnit(countdownDecrement);
 
@@ -224,7 +220,9 @@ function RouletteGamePage() {
           )}
         </div>
 
-        <RoulettePlayersPanel />
+        <div className="flex flex-col h-full max-h-screen">
+          <RoulettePlayersPanel />
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   $countdowns,
   $currentTableId,
+  $isInLobby,
   $tables,
+  exitLobbyPage,
   leaveTableClicked,
   sendLeaveTableMessage,
   tryJoinTable,
@@ -22,12 +24,19 @@ function GameTablePage() {
   const tables = useUnit($tables) as GameTable[];
   const countdowns = useUnit($countdowns);
   const currentTableId = useUnit($currentTableId);
+  const isInLobby = useUnit($isInLobby);
 
   useEffect(() => {
     if (gameType) {
       fetchTables(Number(gameType));
     }
   }, [gameType]);
+
+  useEffect(() => {
+    return () => {
+      exitLobbyPage();
+    };
+  }, []);
 
   const gameNames = ["Blackjack", "Poker", "Ruleta"];
   const gameName = gameNames[parseInt(gameType ?? "")] || "Desconocido";
@@ -87,7 +96,7 @@ function GameTablePage() {
               key={table.id}
               className="bg-gray-800 text-white text-4xl p-6 rounded-2xl shadow-custom-white hover:shadow-custom-gray transition-all relative overflow-hidden h-full flex flex-col justify-center items-center"
             >
-              {currentTableId === table.id && (
+              {currentTableId === table.id && isInLobby && (
                 <button
                   className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl z-20 text-base"
                   onClick={() => {

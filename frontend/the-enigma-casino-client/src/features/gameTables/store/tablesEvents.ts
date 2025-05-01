@@ -9,3 +9,6 @@ export const countdownTicked = createEvent();
 export const messageSent = createEvent<string>();
 export const markLeftTable = createEvent();
 export const tryJoinTable = createEvent<number>();
+export const  resetTableId = createEvent();
+export const matchStarted = createEvent<number>()
+export const exitLobbyPage = createEvent();

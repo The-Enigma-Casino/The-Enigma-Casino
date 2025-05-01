@@ -11,12 +11,11 @@ const errorMessageMap: Record<string, string> = {
 socketMessageReceived.watch((data) => {
   if (data.type !== "game_table" && data.type !== "error") return;
 
-  console.log("🧩 GameTable handler activado");
-
   const rawMessage = data.message;
   const userMessage = errorMessageMap[rawMessage] || "No se pudo procesar tu solicitud.";
 
   if (data.type === "game_table" || data.type === "error") {
     toast.error(userMessage);
   }
+
 });

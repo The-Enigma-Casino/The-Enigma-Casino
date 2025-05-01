@@ -1,4 +1,4 @@
-import { createStore } from "effector";
+import { createEvent, createStore } from "effector";
 import {
   gameStateReceived,
   spinResultReceived,
@@ -67,7 +67,10 @@ export const isStopped$ = createStore<boolean>(false)
   .on(betsOpenedReceived, () => false);
 
 
-  export const roulettePlayers$ = createStore<RoulettePlayer[]>([])
-  .on(setRoulettePlayers, (_, players) => players);
+  // export const roulettePlayers$ = createStore<RoulettePlayer[]>([])
+  // .on(setRoulettePlayers, (_, players) => players);
 
-  roulettePlayers$.reset(resetRoulettePlayers);
+  export const roulettePlayers$ = createStore<RoulettePlayer[]>([])
+  .on(gameStateReceived, (_, payload: { players: RoulettePlayer[] }) => payload.players)
+  .reset(resetRoulettePlayers);
+

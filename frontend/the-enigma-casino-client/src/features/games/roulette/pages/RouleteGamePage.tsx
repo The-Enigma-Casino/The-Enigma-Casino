@@ -56,7 +56,6 @@ function RouletteGamePage() {
     const interval = setInterval(() => {
       decrement();
     }, 1000);
-
     return () => clearInterval(interval);
   }, [decrement]);
 
@@ -105,11 +104,7 @@ function RouletteGamePage() {
     message: string;
     colorClass: string;
   } {
-    if (
-      !spinResult ||
-      !Array.isArray(spinResult.bets) ||
-      spinResult.bets.length === 0
-    ) {
+    if (!spinResult?.bets?.length) {
       return {
         message: "No realizaste ninguna apuesta esta ronda.",
         colorClass: "text-red-400",
@@ -144,19 +139,13 @@ function RouletteGamePage() {
             </h2>
           ) : (
             <>
-              <h2 className={`text-5xl mb-4 font-bold ${getColorClass(color)}`}>
-                {number}
-              </h2>
+              <h2 className={`text-5xl mb-4 font-bold ${getColorClass(color)}`}>{number}</h2>
               <h2 className={`text-2xl mb-6 font-bold ${getColorClass(color)}`}>
                 {color.toUpperCase()}
               </h2>
 
               {spinResult && (
-                <h2
-                  className={`text-xl mb-4 font-bold ${
-                    getResultMessage(spinResult).colorClass
-                  }`}
-                >
+                <h2 className={`text-xl mb-4 font-bold ${getResultMessage(spinResult).colorClass}`}>
                   {getResultMessage(spinResult).message}
                 </h2>
               )}
@@ -170,9 +159,7 @@ function RouletteGamePage() {
               <CountdownBar countdown={countdown} />
 
               <div className="bg-black/30 p-4 rounded-xl mb-6 w-full max-w-md text-white">
-                <h3 className="text-xl mb-2 font-bold text-center">
-                  Selecciona tu apuesta
-                </h3>
+                <h3 className="text-xl mb-2 font-bold text-center">Selecciona tu apuesta</h3>
                 <div className="flex gap-3 justify-center">
                   {[5, 10, 25, 50, 100].map((val) => (
                     <button
@@ -193,9 +180,7 @@ function RouletteGamePage() {
 
                 <p className="text-center mt-4 text-lg">
                   Apuesta actual:{" "}
-                  <span className="text-green-400 font-bold">
-                    {betAmount} fichas
-                  </span>
+                  <span className="text-green-400 font-bold">{betAmount} fichas</span>
                 </p>
 
                 {betAmount > coins && (
@@ -213,9 +198,7 @@ function RouletteGamePage() {
 
               {lastResults.length > 0 && (
                 <div className="mb-6 text-center">
-                  <h3 className="text-xl font-bold mb-2">
-                    Últimos resultados:
-                  </h3>
+                  <h3 className="text-xl font-bold mb-2">Últimos resultados:</h3>
                   <RouletteHistory results={lastResults} />
                 </div>
               )}

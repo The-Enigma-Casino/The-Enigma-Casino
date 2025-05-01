@@ -292,11 +292,13 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 {
                     foreach (var p in table.Players.Where(p => !p.HasAbandoned).ToList())
                     {
-                        if (pokerTracker.HasMissedFirstTurn(p))
+                        int count = pokerTracker.GetInactivityCount(p);
+
+                        if (count >= 2)
                         {
                             p.HasAbandoned = true;
                             pokerTracker.RemovePlayer(p);
-                            Console.WriteLine($"🚪 [PostMatch] {p.User.NickName} forzado como abandonado por inactividad acumulada sin turno.");
+                            Console.WriteLine($"🚪 [PostMatch] {p.User.NickName} marcado como abandonado por {count} faltas acumuladas.");
                         }
                     }
                 }

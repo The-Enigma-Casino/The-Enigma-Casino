@@ -36,13 +36,8 @@ public class PokerInactivityTracker : IGameInactivityTracker
         _missedFirstTurn.TryRemove(player.UserId, out _);
     }
 
-    public void MarkFirstTurnMissed(Player player)
+    public int GetInactivityCount(Player player)
     {
-        _missedFirstTurn[player.UserId] = true;
-    }
-
-    public bool HasMissedFirstTurn(Player player)
-    {
-        return _missedFirstTurn.TryGetValue(player.UserId, out var missed) && missed;
+        return _inactivityCounts.TryGetValue(player.UserId, out var count) ? count : 0;
     }
 }

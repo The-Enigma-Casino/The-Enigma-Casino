@@ -49,9 +49,12 @@ function RouletteGamePage() {
   const [betAmount, setBetAmount] = useState(0);
   const [bets, setBets] = useState<LocalBet[]>([]);
 
+  const [delayedSpinResult, setDelayedSpinResult] = useState<any>(null);
+  const [delayedHistory, setDelayedHistory] = useState<any[]>([]);
+
   useEffect(() => {
     if (tableId) {
-      requestGameState(tableId); 
+      requestGameState(tableId);
       requestWheelState(tableId);
     }
     loadCoins();
@@ -93,8 +96,33 @@ function RouletteGamePage() {
     console.log("🎯 Bets actuales:", bets);
   }, [bets]);
 
-  const number = spinResult?.number ?? "-";
-  const color = spinResult?.color ?? "-";
+  useEffect(() => {
+    if (spinResult) {
+      const timeout = setTimeout(() => {
+        setDelayedSpinResult(spinResult);
+      }, 6000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [spinResult]);
+
+  useEffect(() => {
+    if (lastResults.length > 0) {
+      const timeout = setTimeout(() => {
+        setDelayedHistory(lastResults);
+      }, 6000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [lastResults]);
+
+  useEffect(() => {
+    const unsub = betsOpenedReceived.watch(() => {
+      setBets([]);
+      setDelayedSpinResult(null);
+    });
+    return () => unsub();
+  }, []);
 
   const handleIncrement = (amount: number) => {
     setBetAmount((prev) => Math.min(prev + amount, coins));
@@ -138,13 +166,6 @@ function RouletteGamePage() {
       : { message: "No acertaste esta vez. 😞", colorClass: "text-red-400" };
   }
 
-  const getColorClass = (color: string) => {
-    if (color === "red") return "text-red-500";
-    if (color === "black") return "text-gray-300";
-    if (color === "green") return "text-green-400";
-    return "text-white";
-  };
-
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
@@ -161,20 +182,13 @@ function RouletteGamePage() {
             <>
               <Roulette />
 
-              <h2 className={`text-5xl mb-4 font-bold ${getColorClass(color)}`}>
-                {number}
-              </h2>
-              <h2 className={`text-2xl mb-6 font-bold ${getColorClass(color)}`}>
-                {color.toUpperCase()}
-              </h2>
-
-              {spinResult && (
+              {delayedSpinResult && (
                 <h2
                   className={`text-xl mb-4 font-bold ${
-                    getResultMessage(spinResult).colorClass
+                    getResultMessage(delayedSpinResult).colorClass
                   }`}
                 >
-                  {getResultMessage(spinResult).message}
+                  {getResultMessage(delayedSpinResult).message}
                 </h2>
               )}
 
@@ -199,12 +213,12 @@ function RouletteGamePage() {
                 bets={bets}
               />
 
-              {lastResults.length > 0 && (
+              {delayedHistory.length > 0 && (
                 <div className="mb-6 text-center">
                   <h3 className="text-xl font-bold mb-2">
                     Últimos resultados:
                   </h3>
-                  <RouletteHistory results={lastResults} />
+                  <RouletteHistory results={delayedHistory} />
                 </div>
               )}
             </>

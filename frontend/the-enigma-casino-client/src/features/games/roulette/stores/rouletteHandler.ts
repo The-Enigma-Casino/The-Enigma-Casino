@@ -65,6 +65,16 @@ socketMessageReceived.watch((data) => {
     case "player_kicked":
       playerKickedReceived(data);
       break;
+
+    case "wheel_state":
+      gameStateReceived({
+        tableId: data.tableId,
+        canPlaceBets: false,
+        wheelRotation: data.wheelRotation,
+        players: [],
+      });
+      break;
+
     default:
       console.warn("[Ruleta] Acción desconocida:", data.action);
   }

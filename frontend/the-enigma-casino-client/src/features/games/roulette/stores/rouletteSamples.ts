@@ -1,7 +1,9 @@
 import { sample } from "effector";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { messageSent } from "../../../../websocket/store/wsIndex";
-import { playerPlaceBet, requestGameState } from "./rouletteEvents";
+import { playerPlaceBet, requestGameState, requestWheelState } from "./rouletteEvents";
+
+
 
 sample({
   clock: playerPlaceBet,
@@ -27,3 +29,13 @@ sample({
   target: messageSent,
 });
 
+sample({
+  clock: requestWheelState,
+  fn: tableId =>
+    JSON.stringify({
+      type: "roulette",
+      action: "wheel_state",
+      tableId: String(tableId)
+    }),
+  target: messageSent
+});

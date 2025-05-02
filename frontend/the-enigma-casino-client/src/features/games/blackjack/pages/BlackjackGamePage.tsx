@@ -4,19 +4,19 @@ import "../store/bjGameStateMapper";
 import { useUnit } from "effector-react";
 import {
   $players, $croupier, $gameState, $currentTurnUserId, resetPlayers, resetCroupier, resetGameState, resetCroupierTotal, playerHit, playerStand, doubleDown,
-  $roundResults, $croupierRoundHand, $croupierTotal
+  $roundResults, $croupierRoundHand, $croupierTotal, $gamePhase, setGamePhase, $turnCountdown, $countdown
 } from "../store/bjIndex";
 import { $userId } from "../../../auth/store/authStore";
 import { PlayerHUD } from "../../shared/components/PlayerHUD";
 import { CardStack } from "../../shared/components/GameCardStack";
 import { calculateHandTotal } from "../../shared/utils/gameHand.utils";
-import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand } from "../store/bjEvents";
+import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand, resetRoundResults, decrementTurnCountdown } from "../store/bjEvents";
 import { CardRank, Suit } from "../../shared/types/gameCard.type";
 import { ChipStack } from "../../shared/components/ChipStack";
 import { loadCoins } from "../../../coins/store/coinsStore";
-
-import "../../match/matchHandler";
-
+import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar";
+import { $playerAvatars } from "../../stores/gamesStore";
+import { $countryCache } from "../../../countries/stores/countriesStore";
 export const BlackjackGamePage = () => {
 
 
@@ -25,6 +25,8 @@ export const BlackjackGamePage = () => {
   const gameState = useUnit($gameState);
   const currentTurnUserId = useUnit($currentTurnUserId);
   // const currentTableId = useUnit($currentTableId);
+  const gamePhase = useUnit($gamePhase);
+
 
   const roundResults = useUnit($roundResults);
   const croupierRoundHand = useUnit($croupierRoundHand);
@@ -39,6 +41,9 @@ export const BlackjackGamePage = () => {
   const playerHitFn = useUnit(playerHit);
   const playerStandFn = useUnit(playerStand);
   const doubleDownFn = useUnit(doubleDown);
+  const countdown = useUnit($countdown);
+  const turnCountdown = useUnit($turnCountdown);
+
 
   const userId = useUnit($userId);
 
@@ -46,35 +51,60 @@ export const BlackjackGamePage = () => {
   const handleHit = () => playerHitFn();
   const handleStand = () => playerStandFn();
   const handleDouble = () => doubleDownFn();
-
+  const isLocalTurn = currentTurnUserId === Number(userId);
+  const [showTurnCountdown, setShowTurnCountdown] = useState(false);
   useEffect(() => {
     getGameStateRequested();
     loadCoins();
-  }, []);
+  }, [gamePhase]);
 
   useEffect(() => {
-    const allWaiting = players.every(
-      (p) => p.state === "Waiting" && p.hand.length === 0 && p.bet === 0
-    );
-
-    if (allWaiting && gameState === "InProgress" && roundResults.length > 0) {
-      resetCroupierRoundHand();
+    if (gamePhase === "betting") {
       resetPlayersFn();
       resetCroupierFn();
       resetGameStateFn();
       resetCroupierTotalFn();
-      resetCroupierTotal();
+      resetCroupierRoundHand();
+      resetRoundResults();
+      loadCoins();
+    } else {
+      loadCoins();
     }
-    loadCoins();
-  }, [players, gameState, roundResults]);
+  }, [gamePhase]);
+
+  useEffect(() => {
+    if (gamePhase === "playing" && isLocalTurn && turnCountdown === 20) {
+      const fallback = setInterval(() => {
+        decrementTurnCountdown();
+      }, 1000);
+
+      return () => clearInterval(fallback);
+    }
+  }, [gamePhase, isLocalTurn, turnCountdown]);
+
+
 
   return (
-    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">
+    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white ">
       <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">♠️ Blackjack</h1>
 
       <p className="text-center mb-4 text-3xl">
-        Estado del juego: <span className="font-bold text-yellow-300">{gameState}</span>
+        Fase: <span className="font-bold text-green-300">{gamePhase}</span>
       </p>
+      {gamePhase === "betting" && (
+        <CountdownBar countdown={countdown} total={30} />
+      )}
+
+      {gamePhase === "playing" && currentTurnUserId === Number(userId) && (
+        <CountdownBar countdown={turnCountdown} total={20} />
+      )}
+      {showTurnCountdown && (
+        <CountdownBar countdown={turnCountdown} total={20} />
+      )}
+
+
+
+
 
       {/* Marcador jugadas */}
       {roundResults.length > 0 && (
@@ -158,7 +188,7 @@ export const BlackjackGamePage = () => {
         Jugadores apostando: <span className="text-yellow-300">{players.length}</span>
       </h2>
 
-      {gameState === "Waiting" &&
+      {gamePhase === "betting" &&
         (
           players.find((p) => p.id === Number(userId))?.bet === 0 ||
           !players.some((p) => p.id === Number(userId))
@@ -209,6 +239,7 @@ export const BlackjackGamePage = () => {
             </button>
           </div>
         )}
+
 
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
         {players.map((player) => {

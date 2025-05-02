@@ -314,6 +314,29 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         {
             blackjackGame.SetCurrentPlayer(firstTurnPlayer.UserId);
             Console.WriteLine($"🎯 Turno inicial asignado a {firstTurnPlayer.User.NickName} (UserId: {firstTurnPlayer.UserId})");
+
+            var connectedUserIds = match.Players
+                .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.Blackjack)
+                .Select(p => p.UserId.ToString())
+                .ToList();
+
+            await ((IWebSocketSender)this).BroadcastToUsersAsync(connectedUserIds, new
+            {
+                type = "blackjack",
+                action = "turn_started",
+                tableId,
+                currentTurnUserId = firstTurnPlayer.UserId,
+                turnDuration = 20
+            });
+
+            if (ActiveGameSessionStore.TryGet(tableId, out var session))
+            {
+                session.StartTurnTimer(20_000, async () =>
+                {
+                    Console.WriteLine($"[BlackjackWS] Tiempo agotado para jugador {firstTurnPlayer.UserId}, forzando Stand automático.");
+                    await ForceStandAndAdvanceTurnAsync(firstTurnPlayer.UserId, tableId);
+                });
+            }
         }
 
         ActiveBlackjackGameStore.Set(tableId, blackjackGame);
@@ -374,17 +397,6 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
 
         Console.WriteLine("✅ Estado inicial de la partida enviado a todos los jugadores.");
         Console.WriteLine(new string('-', 60));
-
-        // Iniciar TurnTimer manualmente para el primer turno de la ronda
-        if (ActiveGameSessionStore.TryGet(tableId, out var session))
-        {
-            session.StartTurnTimer(20_000, async () =>
-            {
-                Console.WriteLine($"⏰ [BlackjackWS] Tiempo agotado para jugador {firstTurnPlayer.UserId}, forzando Stand automático.");
-                await ForceStandAndAdvanceTurnAsync(firstTurnPlayer.UserId, tableId);
-            });
-        }
-
     }
 
 

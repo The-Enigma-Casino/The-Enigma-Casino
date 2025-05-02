@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import styles from "./RouletteWheel.module.css";
 import { useUnit } from "effector-react";
-import { betsOpenedReceived, spinResult$, wheelRotation$ } from "../stores/rouletteIndex";
+import { spinResult$, wheelRotation$ } from "../stores/rouletteStores";
+import { betsOpenedReceived } from "../stores/rouletteEvents";
 
 const RouletteWheel = () => {
   const rouletteRef = useRef<HTMLDivElement>(null);

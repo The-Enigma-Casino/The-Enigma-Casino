@@ -13,14 +13,18 @@ export const CountdownBar = ({ countdown, total = 30 }: CountdownBarProps) => {
   };
 
   return (
-    <div className="w-full max-w-md h-6 rounded-full overflow-hidden bg-Background-Overlay mb-6">
-      <div
-        className={`${getBarColor()} h-full`}
-        style={{
-          width: `${percentage}%`,
-          transition: "width 0.95s linear",
-        }}
-      />
+    <div className="flex flex-col items-center mb-6 w-full max-w-md">
+      <p className="text-white text-lg font-bold mb-1">
+        Tiempo restante: <span className="text-yellow-300">{countdown}s</span>
+      </p>
+      <div className="w-full h-6 rounded-full overflow-hidden bg-black/30">
+        <div
+          className={`${getBarColor()} h-full transition-all duration-1000`}
+          style={{
+            width: `${percentage}%`,
+          }}
+        />
+      </div>
     </div>
   );
 };

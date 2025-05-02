@@ -221,6 +221,8 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         // Realiza el spin
         rouletteGame.SpinWheel();
         var result = rouletteGame.GetResult();
+        var (wheelRotation, ballRotation) = RouletteWheel.GenerateSpinAnimationData(result.Number);
+
         Console.WriteLine($"Resultado: {result.Number} - {result.Color}");
 
         var activePlayers = match.Players.Where(p => p.PlayerState != PlayerState.Left).ToList();
@@ -237,7 +239,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
 
         HandleInactivityTracking(tableId, match, rouletteGame);
-        await SendSpinResultsAsync(tableId, allResults);
+        await SendSpinResultsAsync(tableId, allResults, wheelRotation, ballRotation);
         await SendToAllPlayersAsync(tableId, new
         {
             type = Type,
@@ -319,7 +321,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         return bet;
     }
     
-    private async Task SendSpinResultsAsync(int tableId, Dictionary<int, List<RouletteSpinResult>> allResults)
+    private async Task SendSpinResultsAsync(int tableId, Dictionary<int, List<RouletteSpinResult>> allResults, double wheelRotation, double ballRotation)
     {
         if (!TryGetMatch(tableId, "SYSTEM", out var match))
         {
@@ -344,14 +346,15 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 result = new
                 {
                     number = rouletteGame.LastNumber,
-                    color = rouletteGame.LastColor
+                    color = rouletteGame.LastColor,
+                    wheelRotation,
+                    ballRotation
                 },
                 results = spinResults.Select(r => new
                 {
                     bet = r.Bet.ToString(),
                     isWinner = r.Won,
                     payout = r.Payout,
-                    remainingCoins = r.RemainingCoins
                 }).ToList()
             };
 

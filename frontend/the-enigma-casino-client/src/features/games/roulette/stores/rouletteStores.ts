@@ -24,6 +24,8 @@ export const spinResult$ = createStore<any>(null)
       return {
         number: payload.result.number,
         color: payload.result.color,
+        wheelRotation: payload.result.wheelRotation,
+        ballRotation: payload.result.ballRotation,
         bets: payload.results ?? [],
       };
     }

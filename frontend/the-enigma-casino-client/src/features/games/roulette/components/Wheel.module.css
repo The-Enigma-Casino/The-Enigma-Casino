@@ -16,8 +16,12 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -163px);
+  transform: translate(-50%, -163px); /* distancia desde el centro */
+  transform-origin: center 163px;     /* ⚠️ punto de rotación */
+  pointer-events: none;               /* opcional: evitar que bloquee clics */
 }
+
+
 
 .ball {
   width: 14px;

@@ -25,6 +25,8 @@ import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar"
 import { RoulettePlayersPanel } from "../components/RoulettePlayersPanel";
 import { LocalBet } from "../types/localBet.type";
 import { buildBetPayload } from "../utils/buildBetPayload";
+import Wheel from "../components/Wheel";
+import Roulette from "../components/Roulette";
 
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
@@ -35,7 +37,6 @@ function RouletteGamePage() {
   const coins = useUnit($coins);
   const lastResults = useUnit(lastResults$);
   const isStopped = useUnit(isStopped$);
-
 
   const decrement = useUnit(countdownDecrement);
 
@@ -129,6 +130,8 @@ function RouletteGamePage() {
             </h2>
           ) : (
             <>
+             <Roulette/>
+
               <h2 className={`text-5xl mb-4 font-bold ${getColorClass(color)}`}>
                 {number}
               </h2>
@@ -221,4 +224,3 @@ function RouletteGamePage() {
 }
 
 export default RouletteGamePage;
-

@@ -148,68 +148,61 @@ function RouletteGamePage() {
       ? { message: "¡Ganaste una apuesta! 🎉", colorClass: "text-green-400" }
       : { message: "No acertaste esta vez. 😞", colorClass: "text-red-400" };
   };
-
   return (
-    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
-        <div className="flex flex-col items-center">
+    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono flex flex-col gap-6">
 
-          {isPaused ? (
-            <h2 className="text-3xl font-bold text-red-500 mb-6">
-              Ruleta pausada por inactividad
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-8 flex-grow">
+        <div className="flex flex-col items-center gap-6">
+          <Roulette />
+
+          {statusMessage && (
+            <h2 className="text-2xl font-bold text-yellow-300 animate-pulse">
+              {statusMessage}
             </h2>
-          ) : (
-            <>
-              <Roulette />
+          )}
 
-              {statusMessage && (
-                <h2 className="text-2xl font-bold mb-2 text-yellow-300 animate-pulse">
-                  {statusMessage}
-                </h2>
-              )}
+          {delayedSpinResult && (
+            <h2 className={`text-xl font-bold ${getResultMessage(delayedSpinResult).colorClass}`}>
+              {getResultMessage(delayedSpinResult).message}
+            </h2>
+          )}
 
-              {delayedSpinResult && (
-                <h2
-                  className={`text-xl mb-4 font-bold ${
-                    getResultMessage(delayedSpinResult).colorClass
-                  }`}
-                >
-                  {getResultMessage(delayedSpinResult).message}
-                </h2>
-              )}
+          {isStopped && (
+            <h2 className="text-3xl font-bold text-red-500">Ruleta detenida por inactividad</h2>
+          )}
 
-              {isStopped && (
-                <h2 className="text-3xl font-bold text-red-500 mb-6">
-                  Ruleta detenida por inactividad prolongada
-                </h2>
-              )}
+          <CountdownBar countdown={countdown} />
 
-              <CountdownBar countdown={countdown} />
-
-              <BetChipsPanel
-                onIncrement={handleIncrement}
-                onReset={handleReset}
-                betAmount={betAmount}
-                coins={coins}
-              />
-
-              <RouletteBetBoard
-                disabled={isBetsClosed || betAmount <= 0 || betAmount > coins}
-                onBet={handleBetClick}
-                bets={bets}
-              />
-
-              {delayedHistory.length > 0 && (
-                <div className="mb-6 text-center">
-                  <h3 className="text-xl font-bold mb-2">Últimos resultados:</h3>
-                  <RouletteHistory results={delayedHistory} />
-                </div>
-              )}
-            </>
+          {delayedHistory.length > 0 && (
+            <div className="text-center">
+              <h3 className="text-xl font-bold mb-2">Últimos resultados:</h3>
+              <RouletteHistory results={delayedHistory} />
+            </div>
           )}
         </div>
 
-        <div className="flex flex-col h-full max-h-screen">
+        <div className="flex flex-col gap-6 h-full overflow-hidden">
+          <div className="flex justify-center overflow-auto">
+            <RouletteBetBoard
+              disabled={isBetsClosed || betAmount <= 0 || betAmount > coins}
+              onBet={handleBetClick}
+              bets={bets}
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <BetChipsPanel
+              onIncrement={handleIncrement}
+              onReset={handleReset}
+              betAmount={betAmount}
+              coins={coins}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full overflow-x-auto py-4 px-2">
+        <div className="flex gap-4 min-w-fit">
           <RoulettePlayersPanel />
         </div>
       </div>

@@ -25,12 +25,8 @@ export const RoulettePlayersPanel = () => {
   if (players.length === 0) return null;
 
   return (
-    <div className="bg-black/40 rounded-xl p-4 h-[calc(100vh-48px)] overflow-y-auto flex flex-col">
-      <h2 className="text-xl font-bold text-white mb-4 text-center">
-        Jugadores en la partida
-      </h2>
-
-      <div className="grid grid-cols-1 gap-y-6">
+    <div className="w-full overflow-x-auto py-4 px-2 bg-black/30 rounded-t-xl">
+      <div className="flex gap-4 min-w-fit">
         {players.map((player) => {
           const avatar = getAvatar(player.nickName);
           if (!avatar) return null;
@@ -41,24 +37,23 @@ export const RoulettePlayersPanel = () => {
           return (
             <div
               key={player.nickName}
-              className="bg-black/30 p-4 rounded-xl text-white shadow-md relative"
+              className="bg-black/40 p-4 rounded-xl text-white shadow-md min-w-[250px] max-w-[250px] flex-shrink-0"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <img
                     src={`${IMAGE_PROFILE_URL}${avatar.image}`}
                     alt={player.nickName}
-                    className="w-14 h-14 rounded-full border border-white object-cover"
+                    className="w-12 h-12 rounded-full border border-white object-cover"
                   />
-                  <p className="text-xl font-extrabold">{player.nickName}</p>
+                  <p className="text-lg font-bold">{player.nickName}</p>
                 </div>
 
                 {flagUrl && (
                   <img
                     src={flagUrl}
                     alt={`Bandera de ${country.name.common}`}
-                    className="w-8 h-6 object-cover rounded shadow"
-                    style={{ marginRight: "4px", marginTop: "4px" }}
+                    className="w-6 h-4 object-cover rounded shadow"
                   />
                 )}
               </div>

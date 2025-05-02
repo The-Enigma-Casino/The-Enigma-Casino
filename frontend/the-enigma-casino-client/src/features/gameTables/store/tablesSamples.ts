@@ -1,9 +1,11 @@
 import { sample } from "effector";
-import { $currentTableId, countdownCleared, joinTableClicked, sendLeaveTableMessage } from "./tablesIndex";
+import { $currentTableId, countdownCleared, joinTableClicked, sendLeaveTableMessage, tryJoinTable } from "./tablesIndex";
 import { messageSent } from "../../../websocket/store/wsIndex";
 import { $userId } from "../../auth/store/authStore";
 import { gameStarted } from "../models/GameTable.handlers";
 import { navigateTo } from "../../games/shared/router/navigateFx";
+import { $coins } from "../../coins/store/coinsStore";
+import toast from "react-hot-toast";
 
 
 const getGamePathByTableId = (tableId: number): string => {
@@ -55,9 +57,25 @@ sample({
   clock: gameStarted,
   fn: ({ tableId }) => {
     const path = `/game/${getGamePathByTableId(tableId)}/${tableId}`;
-    console.log("🔁 Redirigiendo a:", path); // <-- esto lo deberías ver ya
+    console.log("🔁 Redirigiendo a:", path);
     return path;
   },
   target: navigateTo,
 });
 
+sample({
+  source: $coins,
+  clock: tryJoinTable,
+  filter: (coins) => coins > 0,
+  fn: (_, tableId) => tableId,
+  target: joinTableClicked,
+});
+
+sample({
+  source: $coins,
+  clock: tryJoinTable,
+  filter: (coins) => coins <= 0,
+  fn: () => {
+    toast.error("No tienes suficientes fichas para unirte a una mesa.");
+  },
+});

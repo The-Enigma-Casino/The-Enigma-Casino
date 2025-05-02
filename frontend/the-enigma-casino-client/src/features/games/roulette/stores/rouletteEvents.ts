@@ -5,6 +5,8 @@ import { $name } from "../../../auth/store/authStore";
 import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
 import { loadCoins } from "../../../coins/store/coinsStore";
 import toast from "react-hot-toast";
+import { LocalBet } from "../types/localBet.type";
+import { $myInitialBets } from "./rouletteStores";
 
 export const gameStateReceived = createEvent<{
   tableId: number;
@@ -84,7 +86,6 @@ sample({
   clock: gameStateReceived,
   source: $name,
   fn: (currentName, payload): RoulettePlayer[] => {
-    console.log("[✅ DEBUG sample] Payload:", payload);
     if (!payload?.players) return [];
 
     if (!currentName) return payload.players;

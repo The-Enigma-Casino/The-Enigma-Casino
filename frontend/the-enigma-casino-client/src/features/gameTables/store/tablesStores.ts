@@ -2,9 +2,12 @@ import { createStore } from "effector";
 import {
   countdownCleared,
   countdownTicked,
+  exitLobbyPage,
   joinTableClicked,
   leaveTableClicked,
   markLeftTable,
+  matchStarted,
+  resetTableId,
   setGameType,
 } from "./tablesIndex";
 import { GameTable } from "../models/GameTable.interface";
@@ -23,7 +26,8 @@ export const $gameType = createStore<number>(0).on(
 
 export const $currentTableId = createStore<number | null>(null)
   .on(joinTableClicked, (_, tableId) => tableId)
-  .on(leaveTableClicked, () => null);
+  .on(leaveTableClicked, () => null)
+  .reset(resetTableId);
 
 export const $tables = createStore<GameTable[]>([])
   .on(fetchTables.doneData, (_, tables) => tables)
@@ -69,3 +73,11 @@ export const $countdowns = createStore<{ [tableId: number]: number }>({})
 export const $hasLeftTable = createStore(false)
   .on(markLeftTable, () => true)
   .reset([joinTableClicked, leaveTableClicked]);
+
+
+  export const $isInLobby = createStore(false)
+  .on(joinTableClicked, () => true)
+  .on(matchStarted, () => false)
+  .on(leaveTableClicked, () => false)
+  .on(resetTableId, () => false)
+  .on(exitLobbyPage, () => false);

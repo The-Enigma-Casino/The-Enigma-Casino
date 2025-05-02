@@ -17,21 +17,21 @@
 }
 
 .layer2 {
-  background-image: url('img/roulette/roulette_2.png');
+  background-image: url('img/roulette/roulette_2.webp');
   will-change: transform;
 }
 
 .layer3 {
-  background-image: url('img/roulette/roulette_3.png');
+  background-image: url('img/roulette/roulette_3.webp');
 }
 
 .layer4 {
-  background-image: url('img/roulette/roulette_4.png');
+  background-image: url('img/roulette/roulette_4.webp');
   will-change: transform;
 }
 
 .layer5 {
-  background-image: url('img/roulette/roulette_5.png');
+  background-image: url('img/roulette/roulette_5.webp');
 }
 
 .ballContainer {

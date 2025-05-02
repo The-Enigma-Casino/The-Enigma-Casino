@@ -15,6 +15,7 @@ import {
   placeRouletteBet,
   betsOpenedReceived,
   resetSpinResult,
+  requestWheelState,
 } from "../stores/rouletteEvents";
 import { RouletteBetBoard } from "../components/RouletteBetBoard";
 
@@ -25,8 +26,7 @@ import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar"
 import { RoulettePlayersPanel } from "../components/RoulettePlayersPanel";
 import { LocalBet } from "../types/localBet.type";
 import { buildBetPayload } from "../utils/buildBetPayload";
-import Wheel from "../components/Wheel";
-import Roulette from "../components/Roulette";
+import Roulette from "../components/RouletteWheel";
 
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
@@ -44,7 +44,10 @@ function RouletteGamePage() {
   const [bets, setBets] = useState<LocalBet[]>([]);
 
   useEffect(() => {
-    if (tableId) requestGameState(tableId);
+    if (tableId) {
+      requestGameState(tableId); 
+      requestWheelState(tableId);
+    }
     loadCoins();
   }, [tableId]);
 
@@ -130,7 +133,7 @@ function RouletteGamePage() {
             </h2>
           ) : (
             <>
-             <Roulette/>
+              <Roulette />
 
               <h2 className={`text-5xl mb-4 font-bold ${getColorClass(color)}`}>
                 {number}

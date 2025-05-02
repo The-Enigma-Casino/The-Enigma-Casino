@@ -7,6 +7,7 @@ public static class RouletteMessageType
     public const string GameState = "game_state";
     public const string SpinResult = "spin_result"; // Resultado de tirar ruleta
     public const string RequestGameState = "request_game_state"; // Extra *** devuelve game_state, implementar para hacer reconexion de usuario
+    public const string WheelState = "wheel_state";
 
     // Implementar contador en front alerta
     public const string BetsOpened = "bets_opened"; // Apuestas abiertas

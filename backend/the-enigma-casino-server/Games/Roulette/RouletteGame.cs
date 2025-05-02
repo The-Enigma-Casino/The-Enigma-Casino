@@ -11,6 +11,10 @@ public class RouletteGame
 
     public int LastNumber { get; private set; }
     public string LastColor { get; private set; }
+    public double? LastWheelRotation { get; set; }
+    public double? LastBallRotation { get; private set; }
+    public double AccumulatedRotation { get; private set; } = 0;
+
 
     private readonly List<RouletteResult> _lastResults = new();
     public IReadOnlyList<RouletteResult> LastResults => _lastResults;
@@ -51,12 +55,23 @@ public class RouletteGame
         LastNumber = _wheel.Spin();
         LastColor = RouletteWheel.GetColor(LastNumber);
 
-        var result = new RouletteResult(LastNumber, LastColor);
+        var (wheelRotation, ballRotation) =
+            RouletteWheel.GenerateSpinAnimationData(LastNumber, AccumulatedRotation);
 
+        LastWheelRotation = wheelRotation;
+        LastBallRotation = ballRotation;
+        AccumulatedRotation = wheelRotation;
+
+        Console.WriteLine($"[WS] Wheel saved: {LastWheelRotation}");
+
+        var result = new RouletteResult(LastNumber, LastColor);
         _lastResults.Add(result);
+
         if (_lastResults.Count > 5)
             _lastResults.RemoveAt(0);
     }
+
+
 
     public Dictionary<int, List<RouletteSpinResult>> EvaluateAll(List<Player> players)
     {

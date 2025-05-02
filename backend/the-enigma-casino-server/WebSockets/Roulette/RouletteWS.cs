@@ -11,6 +11,7 @@ using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Interfaces;
+using the_enigma_casino_server.WebSockets.Roulette;
 
 namespace the_enigma_casino_server.Websockets.Roulette;
 
@@ -31,6 +32,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 RouletteMessageType.PlaceBet => HandlePlaceBetAsync(userId, message),
                 RouletteMessageType.Spin => HandleSpinAsync(userId, message),
                 RouletteMessageType.RequestGameState => HandleRequestGameStateAsync(userId, message),
+                RouletteMessageType.WheelState => HandleRequestWheelStateAsync(userId, message),
                 _ => Task.CompletedTask
             });
 
@@ -38,7 +40,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
     }
 
     public async Task StartRound(Match match)
-    {
+        {
         if (match.MatchState != MatchState.InProgress)
         {
             Console.WriteLine($"⚠️ [StartRound] El Match no está InProgress ({match.MatchState}). Cancelando inicio de ronda.");
@@ -46,6 +48,8 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
 
         var rouletteGame = new RouletteGame();
+
+
         ActiveRouletteGameStore.Set(match.GameTableId, rouletteGame);
         Console.WriteLine($"[StartRound] Nueva partida de ruleta creada para mesa {match.GameTableId}.");
 
@@ -163,6 +167,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             await CleanupTableAfterNoBetsAsync(tableId, finalizeScope);
 
             ActiveRouletteGameStore.Remove(tableId);
+            RouletteRotationCache.Clear(tableId);
         }
     }
 
@@ -218,12 +223,14 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!TryGetMatch(tableId, userId, out var match)) return;
         if (!TryGetRouletteGame(tableId, userId, out var rouletteGame)) return;
 
-        // Realiza el spin
         rouletteGame.SpinWheel();
-        var result = rouletteGame.GetResult();
-        var (wheelRotation, ballRotation) = RouletteWheel.GenerateSpinAnimationData(result.Number);
 
-        Console.WriteLine($"Resultado: {result.Number} - {result.Color}");
+        var result = rouletteGame.GetResult();
+        var wheelRotation = rouletteGame.LastWheelRotation ?? 0;
+        RouletteRotationCache.SaveRotation(tableId, wheelRotation);
+
+        var ballRotation = rouletteGame.LastBallRotation ?? 0;
+
 
         var activePlayers = match.Players.Where(p => p.PlayerState != PlayerState.Left).ToList();
         var allResults = rouletteGame.EvaluateAll(activePlayers);
@@ -543,5 +550,24 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), payload);
         }
+    }
+
+    private async Task HandleRequestWheelStateAsync(string userId, JsonElement message)
+    {
+        if (!TryGetTableId(message, out int tableId)) return;
+        if (!TryGetRouletteGame(tableId, userId, out var rouletteGame)) return;
+
+
+        double rotation = RouletteRotationCache.GetRotation(tableId);
+        Console.WriteLine($"[WS] Enviando wheel_state: {rotation}");
+
+        await ((IWebSocketSender)this).SendToUserAsync(userId, new
+        {
+            type = Type,
+            action = RouletteMessageType.WheelState,
+            tableId,
+            wheelRotation = rotation
+        });
+
     }
 }

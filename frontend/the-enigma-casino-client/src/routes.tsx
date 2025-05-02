@@ -14,7 +14,6 @@ import LandingPage from "./features/landingPage/pages/LandingPage";
 import GameTable from "./features/gameTables/pages/GameTablePage";
 import Withdrawal from "./features/withdraw/pages/Withdrawal";
 import routeProfile from "./features/profile/routes";
-import { TestingPage } from "./features/testing/TestingPage";
 import routeAdmin from "./features/admin/routes";
 
 const router = createBrowserRouter([
@@ -34,7 +33,6 @@ const router = createBrowserRouter([
       { path: "withdraw-confirmation", element: <WithdrawalConfirmation /> },
       { path: "catalog", element: <Catalog /> },
       { path: "/tables/:gameType", element: <GameTable /> },
-      { path: "testing", element: <TestingPage />}
     ],
   },
   ...routeAuth,

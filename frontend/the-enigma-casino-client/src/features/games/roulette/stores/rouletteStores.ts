@@ -68,8 +68,14 @@ export const isStopped$ = createStore<boolean>(false)
   .on(rouletteStopedReceived, () => true)
   .on(betsOpenedReceived, () => false);
 
+export const roulettePlayers$ = createStore<RoulettePlayer[]>([]).on(
+  setRoulettePlayers,
+  (_, players) => players
+);
 
-  export const roulettePlayers$ = createStore<RoulettePlayer[]>([])
-  .on(setRoulettePlayers, (_, players) => players);
+export const wheelRotation$ = createStore<number>(0).on(
+  gameStateReceived,
+  (_, payload) => payload?.wheelRotation ?? 0
+);
 
-  roulettePlayers$.reset(resetRoulettePlayers);
+roulettePlayers$.reset(resetRoulettePlayers);

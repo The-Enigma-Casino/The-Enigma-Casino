@@ -1,11 +1,8 @@
 import { sample } from "effector";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { messageSent } from "../../../../websocket/store/wsIndex";
-import { gameStateReceived, matchReadyReceived, playerPlaceBet, requestGameState, setRoulettePlayers } from "./rouletteEvents";
-import { navigateTo } from "../../shared/router/navigateFx";
-import { RoulettePlayer } from "../types/roulettePlayer.type";
-import { $name } from "../../../auth/store/authStore";
-import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
+import { playerPlaceBet, requestGameState, requestWheelState } from "./rouletteIndex";
+
 
 sample({
   clock: playerPlaceBet,
@@ -31,3 +28,13 @@ sample({
   target: messageSent,
 });
 
+sample({
+  clock: requestWheelState,
+  fn: tableId =>
+    JSON.stringify({
+      type: "roulette",
+      action: "wheel_state",
+      tableId: String(tableId)
+    }),
+  target: messageSent
+});

@@ -53,6 +53,7 @@ export const USER_IMAGE_UPDATE = `${API_BASE_URL}User/profile/image`;
 export const USER_DEFAULT_IMAGE_UPDATE = `${API_BASE_URL}User/profile/image/default`;
 export const USER_UPDATE = `${API_BASE_URL}User/update-user`;
 export const USER_UPDATE_PASSWORD = `${API_BASE_URL}User/set-password`;
+export const USER_GET_PROFILE = `${API_BASE_URL}User/get-profile`;
 
 
 /* ENDPOINTS PARA LAS IMAGENES */

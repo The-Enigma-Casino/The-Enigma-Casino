@@ -1,17 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import classes from "./InputDebounce.module.css";
 import { Country } from "../../../countries/models/country.interface";
-import { searchCountryByName } from "../../../countries/actions/countriesActions";
+import { searchByAlphaCodeFx, searchCountryByName } from "../../../countries/actions/countriesActions";
 
 type SearchInputProps = {
   placeholder: string;
   onSelect: (countryCode: string) => void;
+  countryCode?: string;
+  inputPaddingLeft?: string;
+  flagLeft?: string;
 };
 
-const InputDebounce = ({ placeholder, onSelect }: SearchInputProps) => {
+const InputDebounce = ({ placeholder, onSelect, countryCode, inputPaddingLeft, flagLeft }: SearchInputProps) => {
   const [results, setResults] = useState<Country[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+
+  useEffect(() => {
+    if (countryCode) {
+      (async () => {
+        const country = await searchByAlphaCodeFx(countryCode);
+        if (country) {
+          setSelectedCountry(country);
+          setSearchTerm(country.name.common);
+        }
+      })();
+    }
+  }, [countryCode]);
 
   const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -41,6 +56,7 @@ const InputDebounce = ({ placeholder, onSelect }: SearchInputProps) => {
             className={classes.flagIcon}
             src={selectedCountry.flags.svg}
             alt={`Bandera de ${selectedCountry.name.common}`}
+            style={{ left: flagLeft || "40px" }}
           />
         )}
         <input
@@ -49,6 +65,7 @@ const InputDebounce = ({ placeholder, onSelect }: SearchInputProps) => {
           placeholder={placeholder}
           value={searchTerm}
           onChange={handleSearch}
+          style={{ paddingLeft: inputPaddingLeft || (selectedCountry ? "80px" : "40px") }}
         />
       </div>
 

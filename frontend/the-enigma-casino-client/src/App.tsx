@@ -4,6 +4,8 @@ import "./App.css";
 import router from "./routes";
 import { RouterProvider } from "react-router-dom";
 
+import "./features/gameTables/store/tableHandler";
+
 function App() {
   return (
     <>

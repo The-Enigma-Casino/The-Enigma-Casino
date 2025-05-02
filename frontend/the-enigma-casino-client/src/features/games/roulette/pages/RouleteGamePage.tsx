@@ -6,6 +6,7 @@ import {
   betsClosed$,
   lastResults$,
   isStopped$,
+  $myInitialBets,
 } from "../stores/rouletteStores";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
@@ -28,6 +29,9 @@ import { LocalBet } from "../types/localBet.type";
 import { buildBetPayload } from "../utils/buildBetPayload";
 import Roulette from "../components/RouletteWheel";
 
+import "../../match/matchHandler";
+import { BetChipsPanel } from "../../shared/components/betChipsPanel/BetChipsPanel";
+
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
   const isBetsClosed = useUnit(betsClosed$);
@@ -39,6 +43,8 @@ function RouletteGamePage() {
   const isStopped = useUnit(isStopped$);
 
   const decrement = useUnit(countdownDecrement);
+
+  const initialBets = useUnit($myInitialBets);
 
   const [betAmount, setBetAmount] = useState(0);
   const [bets, setBets] = useState<LocalBet[]>([]);
@@ -61,7 +67,6 @@ function RouletteGamePage() {
     const interval = setInterval(() => {
       decrement();
     }, 1000);
-
     return () => clearInterval(interval);
   }, [decrement]);
 
@@ -77,6 +82,16 @@ function RouletteGamePage() {
       resetSpinResult();
     };
   }, []);
+
+  useEffect(() => {
+    if (bets.length === 0 && initialBets.length > 0) {
+      setBets(initialBets);
+    }
+  }, [initialBets]);
+
+  useEffect(() => {
+    console.log("🎯 Bets actuales:", bets);
+  }, [bets]);
 
   const number = spinResult?.number ?? "-";
   const color = spinResult?.color ?? "-";
@@ -106,9 +121,21 @@ function RouletteGamePage() {
     loadCoins();
   };
 
-  function didWin(spinResult: any): boolean {
-    if (!spinResult || !Array.isArray(spinResult.bets)) return false;
-    return spinResult.bets.some((b: any) => b.isWinner === true);
+  function getResultMessage(spinResult: any): {
+    message: string;
+    colorClass: string;
+  } {
+    if (!spinResult?.bets?.length) {
+      return {
+        message: "No realizaste ninguna apuesta esta ronda.",
+        colorClass: "text-red-400",
+      };
+    }
+
+    const won = spinResult.bets.some((b: any) => b.isWinner === true);
+    return won
+      ? { message: "¡Ganaste una apuesta! 🎉", colorClass: "text-green-400" }
+      : { message: "No acertaste esta vez. 😞", colorClass: "text-red-400" };
   }
 
   const getColorClass = (color: string) => {
@@ -121,7 +148,6 @@ function RouletteGamePage() {
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono">
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
-        {/* 🎮 Zona de juego */}
         <div className="flex flex-col items-center">
           <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">
             ♠️ Ruleta
@@ -143,16 +169,12 @@ function RouletteGamePage() {
               </h2>
 
               {spinResult && (
-                <h2 className="text-xl mb-4 font-bold">
-                  {didWin(spinResult) ? (
-                    <span className="text-green-400">
-                      ¡Ganaste una apuesta! 🎉
-                    </span>
-                  ) : (
-                    <span className="text-red-400">
-                      No acertaste esta vez. 😞
-                    </span>
-                  )}
+                <h2
+                  className={`text-xl mb-4 font-bold ${
+                    getResultMessage(spinResult).colorClass
+                  }`}
+                >
+                  {getResultMessage(spinResult).message}
                 </h2>
               )}
 
@@ -164,41 +186,12 @@ function RouletteGamePage() {
 
               <CountdownBar countdown={countdown} />
 
-              <div className="bg-black/30 p-4 rounded-xl mb-6 w-full max-w-md text-white">
-                <h3 className="text-xl mb-2 font-bold text-center">
-                  Selecciona tu apuesta
-                </h3>
-                <div className="flex gap-3 justify-center">
-                  {[5, 10, 25, 50, 100].map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => handleIncrement(val)}
-                      className="px-4 py-2 bg-Coins hover:bg-yellow-500 text-black font-bold rounded shadow"
-                    >
-                      +{val}
-                    </button>
-                  ))}
-                  <button
-                    onClick={handleReset}
-                    className="text-sm text-Color-Cancel hover:underline ml-2"
-                  >
-                    Reset
-                  </button>
-                </div>
-
-                <p className="text-center mt-4 text-lg">
-                  Apuesta actual:{" "}
-                  <span className="text-green-400 font-bold">
-                    {betAmount} fichas
-                  </span>
-                </p>
-
-                {betAmount > coins && (
-                  <p className="text-center text-red-400 text-sm mt-2">
-                    No tienes suficientes fichas 💸
-                  </p>
-                )}
-              </div>
+              <BetChipsPanel
+                onIncrement={handleIncrement}
+                onReset={handleReset}
+                betAmount={betAmount}
+                coins={coins}
+              />
 
               <RouletteBetBoard
                 disabled={isBetsClosed || betAmount <= 0 || betAmount > coins}

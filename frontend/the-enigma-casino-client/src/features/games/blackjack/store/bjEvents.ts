@@ -1,4 +1,4 @@
-import { createEvent } from "effector";
+import { createEvent, sample } from "effector";
 import { Player, Croupier, GameState } from "../../shared/types";
 interface MatchStartedPayload {
   tableId: number;
@@ -45,6 +45,17 @@ export const setCroupierRoundHand = createEvent<{
   value: number;
 }[]>();
 export const resetCroupierTotal = createEvent();
+export const betsOpened = createEvent<{
+  tableId: number;
+  bettingDuration: number;
+}>();
+export const matchCancelled = createEvent<{
+  tableId: number;
+  reason: string;
+}>();
+export const setGamePhase = createEvent<
+  "waiting" | "countdown" | "betting" | "playing" | "results"
+>();
 
 // Acciones enviadas al backend
 export const playerHit = createEvent();
@@ -57,3 +68,25 @@ export const gameStateReceived = createEvent<any>();
 export const betConfirmed = createEvent<any>();
 export const errorReceived = createEvent<string>();
 
+// Contador
+export const countdownStarted = createEvent<number>();
+export const decrementCountdown = createEvent();
+export const resetCountdown = createEvent();
+export const turnCountdownTicked = createEvent<{
+  userId: number;
+  localUserId: string;
+  duration: number;
+}>();
+
+// Turn started
+export const turnStarted = createEvent<{ userId: number; duration: number }>();
+export const turnCountdownStarted = createEvent<number>();
+export const decrementTurnCountdown = createEvent();
+export const resetTurnCountdown = createEvent();
+
+
+// Inactividad
+export const playerKickedReceived = createEvent<{ message: string }>();
+
+// Redirrecion a pagina de juego
+export const matchReadyReceived = createEvent<number>();

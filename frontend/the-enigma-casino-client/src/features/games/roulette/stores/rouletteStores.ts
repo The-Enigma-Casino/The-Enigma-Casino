@@ -1,4 +1,4 @@
-import { createStore } from "effector";
+import { createStore, sample } from "effector";
 import {
   gameStateReceived,
   spinResultReceived,
@@ -8,10 +8,12 @@ import {
   resetSpinResult,
   countdownTick,
   rouletteStopedReceived,
-  setRoulettePlayers,
   resetRoulettePlayers,
 } from "./rouletteEvents";
 import { RoulettePlayer } from "../types/roulettePlayer.type";
+import { LocalBet } from "../types/localBet.type";
+import { $name } from "../../../auth/store/authStore";
+import { mapBetLabelToKey } from "../utils/buildBetPayload";
 
 export const rouletteGameState$ = createStore<any>(null).on(
   gameStateReceived,
@@ -68,14 +70,33 @@ export const isStopped$ = createStore<boolean>(false)
   .on(rouletteStopedReceived, () => true)
   .on(betsOpenedReceived, () => false);
 
-export const roulettePlayers$ = createStore<RoulettePlayer[]>([]).on(
-  setRoulettePlayers,
-  (_, players) => players
-);
+export const roulettePlayers$ = createStore<RoulettePlayer[]>([])
+  .on(
+    gameStateReceived,
+    (_, payload: { players: RoulettePlayer[] }) => payload.players
+  )
+  .reset(resetRoulettePlayers);
+
+export const $myInitialBets = createStore<LocalBet[]>([]);
+
+sample({
+  clock: gameStateReceived,
+  source: $name,
+  fn: (currentName, payload): LocalBet[] => {
+    const current = payload.players.find(
+      (p) => p.nickName.toLowerCase() === currentName?.toLowerCase()
+    );
+    if (!current) return [];
+    return current.bets.map((b) => ({
+      key: mapBetLabelToKey(b.bet),
+      label: b.bet,
+      amount: b.amount,
+    }));
+  },
+  target: $myInitialBets,
+});
 
 export const wheelRotation$ = createStore<number>(0).on(
   gameStateReceived,
   (_, payload) => payload?.wheelRotation ?? 0
 );
-
-roulettePlayers$.reset(resetRoulettePlayers);

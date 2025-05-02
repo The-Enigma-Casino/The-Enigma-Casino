@@ -1,6 +1,6 @@
 export interface UpdateUserPayload {
   nickName: string;
-  fullname: string;
+  fullName: string;
   email: string;
   address: string;
   country: string;

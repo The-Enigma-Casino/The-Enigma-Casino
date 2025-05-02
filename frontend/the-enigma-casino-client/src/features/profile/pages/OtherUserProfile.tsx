@@ -9,6 +9,7 @@ import { $allCountries } from "../../countries/actions/countriesActions";
 
 import { $otherUserProfile, $otherUserHistory, $otherUserHistoryPage, $otherUserHistoryTotalPages } from "../store/otherProfile/otherProfileStore";
 import { countriesFx } from "../../countries/actions/countriesActions";
+import { decodeId } from "../../../utils/sqidUtils";
 
 const OtherUserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -19,7 +20,6 @@ const OtherUserProfile = () => {
   const userIdToken = useUnit($userId);
   const countries = useUnit($allCountries);
   const navigate = useNavigate();
-  console.log(userIdToken, userId);
 
   useEffect(() => {
     if (countries.length === 0) {
@@ -27,17 +27,22 @@ const OtherUserProfile = () => {
     }
   });
 
-
   useEffect(() => {
     if (!userId) return;
-    console.log("userId", userId);
-    if (Number(userId) === Number(userIdToken)) {
-      navigate("/profile", { replace: true });
-      return;
-    }
 
-    loadOtherUserProfile(userId);
-    loadOtherUserHistory({ userId, page: 1 });
+    try {
+      const decodedId = decodeId(userId); // solo para comparar
+
+      if (decodedId === Number(userIdToken)) {
+        navigate("/profile", { replace: true });
+        return;
+      }
+      loadOtherUserProfile(userId);
+      loadOtherUserHistory({ userId: String(decodedId), page: 1 });
+    } catch (err) {
+      console.error("Error decoding userId", err);
+      navigate("/profile", { replace: true });
+    }
   }, [userId, userIdToken, navigate]);
 
   if (!profile) {
@@ -47,7 +52,6 @@ const OtherUserProfile = () => {
       </div>
     );
   }
-
   return (
     <div className="bg-Background-Page">
       <UserInfo user={profile} relations={profile.relation} />

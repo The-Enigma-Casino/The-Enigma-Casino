@@ -29,6 +29,8 @@ import { buildBetPayload } from "../utils/buildBetPayload";
 import Roulette from "../components/RouletteWheel";
 import { BetChipsPanel } from "../../shared/components/betChipsPanel/BetChipsPanel";
 
+import styles from "./RouleteGamePage.module.css";
+
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
   const isBetsClosed = useUnit(betsClosed$);
@@ -189,12 +191,16 @@ function RouletteGamePage() {
         </div>
 
         <div className="flex flex-col gap-6 h-full overflow-hidden">
-          <div className="flex justify-center overflow-auto">
-            <RouletteBetBoard
-              disabled={isBetsClosed || betAmount <= 0 || betAmount > coins}
-              onBet={handleBetClick}
-              bets={bets}
-            />
+          <div className="w-full overflow-auto">
+            <div className="min-w-max flex justify-center">
+              <div className={styles.rouletteScaleWrapper}>
+                <RouletteBetBoard
+                  disabled={isBetsClosed || betAmount <= 0 || betAmount > coins}
+                  onBet={handleBetClick}
+                  bets={bets}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-center">

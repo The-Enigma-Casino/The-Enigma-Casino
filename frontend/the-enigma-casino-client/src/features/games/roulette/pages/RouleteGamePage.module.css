@@ -1,0 +1,28 @@
+.rouletteScaleWrapper {
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+@media (max-width: 1024px) {
+  .rouletteScaleWrapper {
+    zoom: 0.95;
+  }
+}
+
+@media (max-width: 768px) {
+  .rouletteScaleWrapper {
+    zoom: 0.85;
+  }
+}
+
+@media (max-width: 600px) {
+  .rouletteScaleWrapper {
+    zoom: 0.75;
+  }
+}
+
+@media (max-width: 480px) {
+  .rouletteScaleWrapper {
+    zoom: 0.65;
+  }
+}

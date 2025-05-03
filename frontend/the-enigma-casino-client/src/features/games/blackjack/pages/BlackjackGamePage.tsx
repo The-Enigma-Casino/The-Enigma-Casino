@@ -209,12 +209,12 @@ export const BlackjackGamePage = () => {
                     >
                       <div
                         className={`w-14 h-14 rounded-full border-4 border-black flex items-center justify-center text-sm font-bold text-white ${{
-                            5: "bg-white text-black",
-                            10: "bg-lime-400 text-black",
-                            25: "bg-orange-500",
-                            50: "bg-red-500",
-                            100: "bg-purple-500",
-                          }[chip]
+                          5: "bg-white text-black",
+                          10: "bg-lime-400 text-black",
+                          25: "bg-orange-500",
+                          50: "bg-red-500",
+                          100: "bg-purple-500",
+                        }[chip]
                           }`}
                       >
                         {chip}
@@ -244,36 +244,32 @@ export const BlackjackGamePage = () => {
 
           {/* Jugador local */}
           {localPlayer && (
-            <div className="w-full flex justify-center my-8">
-              <LocalPlayerCard
-                player={{
-                  id: localPlayer.id,
-                  nickName: localPlayer.name,
-                  hand: localPlayer.hand,
-                  total: calculateHandTotal(localPlayer.hand),
-                  bets: localPlayer.bet > 0 ? [{ bet: "Blackjack", amount: localPlayer.bet }] : [],
-                  isTurn: localPlayer.id === currentTurnUserId,
-                  coins: betAmount,
-                  state: localPlayer.state,
-                }}
-                gameType="Blackjack"
-                gameState={gameState}
-                onHit={handleHit}
-                onStand={handleStand}
-                onDouble={handleDouble}
-              />
-            </div>
+            <LocalPlayerCard
+              player={{
+                id: localPlayer.id,
+                nickName: localPlayer.name,
+                hand: localPlayer.hand,
+                total: calculateHandTotal(localPlayer.hand),
+                bets: localPlayer.bet > 0 ? [{ bet: "Blackjack", amount: localPlayer.bet }] : [],
+                isTurn: localPlayer.id === currentTurnUserId,
+                coins: betAmount,
+                state: localPlayer.state,
+              }}
+              gameType="Blackjack"
+              gameState={gameState}
+              onHit={handleHit}
+              onStand={handleStand}
+              onDouble={handleDouble}
+            />
           )}
         </div>
 
         {/* Lista de jugadores en la mesa */}
-        <div className="w-[300px]">
-          <GamePlayerCardList
-            players={otherPlayers}
-            coins={betAmount}
-            gameType="Blackjack"
-          />
-        </div>
+        <GamePlayerCardList
+          players={otherPlayers}
+          coins={betAmount}
+          gameType="Blackjack"
+        />
       </div>
     </div>
   );

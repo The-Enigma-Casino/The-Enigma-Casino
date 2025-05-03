@@ -4,6 +4,7 @@ import { $playerAvatars } from "../../stores/gamesStore";
 import { $countryCache, requestCountry } from "../../../countries/stores/countriesStore";
 import { IMAGE_PROFILE_URL } from "../../../../config";
 import { CardStack } from "../../shared/components/GameCardStack";
+import { ActionButton } from "../../shared/components/buttonActions/ActionButton";
 
 type GamePlayer = {
   id: number;
@@ -25,14 +26,7 @@ type Props = {
   onDouble: () => void;
 };
 
-export const LocalPlayerCard = ({
-  player,
-  gameType,
-  gameState,
-  onHit,
-  onStand,
-  onDouble,
-}: Props) => {
+export const LocalPlayerCard = ({ player, gameType, gameState, onHit, onStand, onDouble }: Props) => {
   const avatars = useUnit($playerAvatars);
   const countryCache = useUnit($countryCache);
 
@@ -56,112 +50,98 @@ export const LocalPlayerCard = ({
   const total = typeof player.total === "number" ? player.total : "-";
 
   return (
-    <div
-      className={`relative bg-black/30 p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3 ${player.isTurn ? "animate-pulseGlow" : ""
-        }`}
-    >
-      {/* Header: avatar + nombre + bandera */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <img
-            src={`${IMAGE_PROFILE_URL}${avatar.image}`}
-            alt={player.nickName}
-            className="w-16 h-16 rounded-full border border-white object-cover"
-          />
-          <p className="text-white font-semibold text-2xl">
-            {player.nickName}
+    <div className="bg-black/40 rounded-xl p-4 w-[300px] flex flex-col">
+
+      <div
+        className={`relative bg-black/30 p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3
+          }`}
+      >
+        {/* Header: avatar + nombre + bandera */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <img
+              src={`${IMAGE_PROFILE_URL}${avatar.image}`}
+              alt={player.nickName}
+              className="w-16 h-16 rounded-full border border-white object-cover"
+            />
+            <p className="text-white font-semibold text-2xl">
+              {player.nickName}
+            </p>
+          </div>
+
+          {flagUrl && (
+            <img
+              src={flagUrl}
+              alt={`Bandera de ${country?.name.common}`}
+              className="w-10 h-8 rounded shadow"
+            />
+          )}
+        </div>
+
+        {/* Apuestas */}
+        <div className="flex gap-2">
+          <p className="text-xl font-bold text-white">Apuesta:</p>
+          {player.coins === 0 ? (
+            <p className="text-xl text-Coins">Sin apuestas activas</p>
+          ) : (
+            <p className="text-xl text-Coins">{player.coins}</p>
+          )}
+        </div>
+
+        {/* Cartas */}
+        <div className="overflow-hidden">
+          <div className="flex justify-center w-full">
+            <div
+              className="transition-transform origin-center inline-flex"
+              style={{
+                transform: `scale(${visibleCards.length <= 2
+                  ? 1.
+                  : visibleCards.length <= 4
+                    ? 1
+                    : visibleCards.length === 5
+                      ? 0.8
+                      : 0.7
+                  })`,
+              }}
+            >
+              <CardStack cards={visibleCards} />
+            </div>
+          </div>
+        </div>
+
+        {/* Total */}
+        {gameType === "Blackjack" && (
+          <p className="text-2xl font-bold text-yellow-300 text-center">
+            Total: {total}
           </p>
-        </div>
-
-        {flagUrl && (
-          <img
-            src={flagUrl}
-            alt={`Bandera de ${country?.name.common}`}
-            className="w-10 h-8 rounded shadow"
-          />
         )}
-      </div>
 
-      {/* Apuestas */}
-      <div className="flex gap-2">
-        <p className="text-xl font-bold text-white">Apuesta:</p>
-        {player.coins === 0 ? (
-          <p className="text-xl text-Coins">Sin apuestas activas</p>
-        ) : (
-          <p className="text-xl text-Coins">{player.coins}</p>
+        {/* Turno */}
+        {player.isTurn && (
+          <p className="text-xl text-Principal font-semibold text-center">
+            Turno de {player.nickName}
+          </p>
         )}
-      </div>
 
-      {/* Cartas */}
-      <div className="overflow-hidden">
-        <div className="flex justify-center w-full">
-          <div
-            className="transition-transform origin-center inline-flex"
-            style={{
-              transform: `scale(${visibleCards.length <= 2
-                ? 1.0
-                : visibleCards.length <= 4
-                  ? 1
-                  : visibleCards.length === 5
-                    ? 0.8
-                    : 0.7
-                })`,
-            }}
-          >
-            <CardStack cards={visibleCards} />
-          </div>
-        </div>
-      </div>
-
-      {/* Total */}
-      {gameType === "Blackjack" && (
-        <p className="text-2xl font-bold text-yellow-300 text-center">
-          Total: {total}
-        </p>
-      )}
-
-      {/* Turno */}
-      {player.isTurn && (
-        <p className="text-xl text-Principal font-semibold text-center">
-          Turno de {player.nickName}
-        </p>
-      )}
-
-      {/* Botones de acción */}
-      {player.isTurn &&
-        gameState === "InProgress" &&
-        player.state === "Playing" && (
+        {/* Botones de acción */}
+        {player.isTurn && gameState === "InProgress" && player.state === "Playing" && (
           <div className="flex gap-2 mt-2 justify-center">
-            <button
-              onClick={onHit}
-              className="px-4 py-2 bg-green-500 border-2 border-black text-black font-bold rounded hover:bg-green-600 shadow"
-            >
-              HIT
-            </button>
-            <button
-              onClick={onStand}
-              className="px-4 py-2 bg-yellow-300 border-2 border-black text-black font-bold rounded hover:bg-yellow-400 shadow"
-            >
-              STAND
-            </button>
-            <button
-              onClick={onDouble}
-              className="px-4 py-2 bg-purple-600 border-2 border-black text-white font-bold rounded hover:bg-purple-700 shadow"
-            >
-              DOUBLE
-            </button>
+            <ActionButton label="HIT" onClick={onHit} color="green" />
+            <ActionButton label="STAND" onClick={onStand} color="yellow" />
+            <ActionButton label="DOUBLE" onClick={onDouble} color="purple" />
           </div>
         )}
 
-      {/* Estado textual */}
-      {gameState === "InProgress" && player.state !== "Playing" && (
-        <p className="text-sm italic text-white/70 mt-2 text-center">
-          {player.state === "Bust" && "💥 Te pasaste de 21!"}
-          {player.state === "Stand" && "🧍 Te plantaste. Esperando..."}
-          {player.state === "Lose" && "❌ Has perdido esta ronda."}
-          {player.state === "Win" && "🏆 ¡Victoria!"}
-        </p>
-      )}
+        {/* Estado textual */}
+        {gameState === "InProgress" && player.state !== "Playing" && (
+          <p className="text-2xl italic text-white/70 mt-2 text-center">
+            {player.state === "Bust" && "💥 Te pasaste de 21!"}
+            {player.state === "Stand" && "🧍 Te plantaste. Esperando..."}
+            {player.state === "Lose" && "❌ Has perdido esta ronda."}
+            {player.state === "Win" && "🏆 ¡Victoria!"}
+          </p>
+        )}
+      </div>
     </div>
   );
 };

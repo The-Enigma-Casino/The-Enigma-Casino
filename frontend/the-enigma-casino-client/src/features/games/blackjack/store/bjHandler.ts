@@ -51,6 +51,7 @@ socketMessageReceived.watch((data) => {
       break;
     }
     case "kick_notice":
+    case "player_kicked":
       playerKickedReceived(data);
       break;
     case "error":

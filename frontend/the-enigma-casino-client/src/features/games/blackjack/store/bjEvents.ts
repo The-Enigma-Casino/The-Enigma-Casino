@@ -1,5 +1,6 @@
 import { createEvent, sample } from "effector";
 import { Player, Croupier, GameState } from "../../shared/types";
+import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
 interface MatchStartedPayload {
   tableId: number;
   matchId: number;
@@ -90,3 +91,10 @@ export const playerKickedReceived = createEvent<{ message: string }>();
 
 // Redirrecion a pagina de juego
 export const matchReadyReceived = createEvent<number>();
+
+// Actualiza jugadores en la partida(usado en GamePlayerCardList.tsx)
+sample({
+  clock: setPlayers,
+  fn: (players) => players.map((p) => p.name),
+  target: getPlayerAvatarsFx,
+});

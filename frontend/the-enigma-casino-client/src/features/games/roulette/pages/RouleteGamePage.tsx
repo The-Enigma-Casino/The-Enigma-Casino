@@ -34,7 +34,6 @@ import styles from "./RouleteGamePage.module.css";
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);
   const isBetsClosed = useUnit(betsClosed$);
-  const isPaused = false;
   const tableId = useUnit($currentTableId);
   const countdown = useUnit(syncedCountdown$);
   const coins = useUnit($coins);
@@ -56,11 +55,8 @@ function RouletteGamePage() {
       requestWheelState(tableId);
     }
     loadCoins();
+    resetSpinResult();
   }, [tableId]);
-
-  useEffect(() => {
-    if (spinResult) loadCoins();
-  }, [spinResult]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -73,12 +69,11 @@ function RouletteGamePage() {
     const unsub = betsOpenedReceived.watch(() => {
       setBets([]);
       setDelayedSpinResult(null);
+      setDelayedHistory([]);
       setStatusMessage("Hagan sus apuestas");
     });
     return () => unsub();
   }, []);
-
-  useEffect(() => resetSpinResult, []);
 
   useEffect(() => {
     if (bets.length === 0 && initialBets.length > 0) {
@@ -87,35 +82,25 @@ function RouletteGamePage() {
   }, [initialBets]);
 
   useEffect(() => {
-    if (spinResult) {
-      setStatusMessage("La bola está en juego");
-      const timeout = setTimeout(() => {
-        setDelayedSpinResult(spinResult);
-      }, 6000);
-      return () => clearTimeout(timeout);
-    }
-  }, [spinResult]);
+    if (!spinResult) return;
 
-  useEffect(() => {
-    if (lastResults.length > 0) {
-      const timeout = setTimeout(() => {
-        setDelayedHistory(lastResults);
-      }, 6000);
-      return () => clearTimeout(timeout);
-    }
-  }, [lastResults]);
+    setStatusMessage("La bola está en juego");
+
+    const timeout = setTimeout(() => {
+      setDelayedSpinResult(spinResult);
+      setDelayedHistory(lastResults);
+      loadCoins();
+      setStatusMessage(null);
+    }, 6000);
+
+    return () => clearTimeout(timeout);
+  }, [spinResult, lastResults]);
 
   useEffect(() => {
     if (isBetsClosed) {
       setStatusMessage("¡No va más!");
     }
   }, [isBetsClosed]);
-
-  useEffect(() => {
-    if (delayedSpinResult) {
-      setStatusMessage(null);
-    }
-  }, [delayedSpinResult]);
 
   const handleIncrement = (amount: number) => {
     setBetAmount((prev) => Math.min(prev + amount, coins));
@@ -152,6 +137,7 @@ function RouletteGamePage() {
       ? { message: "¡Ganaste una apuesta! 🎉", colorClass: "text-green-400" }
       : { message: "No acertaste esta vez. 😞", colorClass: "text-red-400" };
   };
+
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono flex flex-col gap-6">
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-8 flex-grow">

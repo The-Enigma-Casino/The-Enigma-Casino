@@ -1,0 +1,143 @@
+import { useEffect } from "react";
+import { useUnit } from "effector-react";
+import { $playerAvatars } from "../../../stores/gamesStore";
+import { $countryCache, requestCountry } from "../../../../countries/stores/countriesStore";
+import { IMAGE_PROFILE_URL } from "../../../../../config";
+import { CardStack } from "../GameCardStack";
+
+type GamePlayer = {
+  id: number;
+  nickName: string;
+  hand: Card[];
+  total?: number;
+  bets: { bet: string; amount: number }[];
+  isTurn?: boolean;
+  coins: number;
+};
+
+
+type Props = {
+  players: GamePlayer[];
+  gameType: "Blackjack" | "Poker";
+  coins: number;
+};
+
+export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
+  const avatars = useUnit($playerAvatars);
+  const countryCache = useUnit($countryCache);
+
+  const getAvatar = (nickName: string) => {
+    return avatars.find((a) => a.nickName === nickName);
+  };
+
+  useEffect(() => {
+    avatars.forEach((avatar) => {
+      const code = avatar.country?.toUpperCase();
+      if (code && !countryCache[code]) {
+        requestCountry(code);
+      }
+    });
+  }, [avatars, countryCache]);
+
+  if (players.length === 0) return null;
+
+  return (
+    <div className="bg-black/40 rounded-xl p-4 w-[300px] flex flex-col">
+      <h2 className="text-3xl font-bold text-white mb-4 text-center shadow-xl-white">
+        Jugadores en la partida
+      </h2>
+
+      <div className="grid grid-cols-1 gap-y-6">
+        {players.map((player) => {
+          const avatar = getAvatar(player.nickName);
+          if (!avatar) return null;
+
+          const country = avatar.country ? countryCache[avatar.country] : undefined;
+          const flagUrl = country?.flags?.png;
+
+          const visibleCards = (
+            gameType === "Poker" ? player.hand.slice(0, 2) : player.hand
+          ).map((card) => ({ ...card, gameType }));
+
+          const total = typeof player.total === "number" ? player.total : "-";
+
+          return (
+            <div
+              key={player.id}
+              className={`relative bg-black/30 p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3 ${player.isTurn ? "animate-pulseGlow" : ""
+                }`}
+            >
+              {/* Header: avatar + nombre + bandera */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={`${IMAGE_PROFILE_URL}${avatar.image}`}
+                    alt={player.nickName}
+                    className="w-16 h-16 rounded-full border border-white object-cover"
+                  />
+                  <p className="text-white font-semibold text-2xl">
+                    {player.nickName}
+                  </p>
+                </div>
+
+                {flagUrl && (
+                  <img
+                    src={flagUrl}
+                    alt={`Bandera de ${country?.name.common}`}
+                    className="w-10 h-8 rounded shadow"
+                    style={{ marginRight: "4px", marginTop: "4px" }}
+                  />
+                )}
+              </div>
+
+              {/* Apuestas */}
+              <div className="flex gap-2 ">
+                <p className="text-xl font-bold text-white">Apuesta:</p>
+                {coins === 0 ? (
+                  <p className="text-xl text-Coins">Sin apuestas activas</p>
+                ) : (
+                  <p className="text-xl text-Coins ">{coins}</p>
+                )}
+              </div>
+
+              {/* Cartas */}
+              <div className="overflow-hidden">
+                <div className="flex justify-center w-full">
+                  <div
+                    className="transition-transform origin-center inline-flex"
+                    style={{
+                      transform: `scale(${visibleCards.length <= 2
+                        ? 1.0
+                        : visibleCards.length <= 4
+                          ? 1
+                          : visibleCards.length === 5
+                            ? 0.8
+                            : 0.7
+                        })`,
+                    }}
+                  >
+                    <CardStack cards={visibleCards} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Total */}
+              {gameType === "Blackjack" && (
+                <p className="text-2xl font-bold text-yellow-300 text-center">
+                  Total: {total}
+                </p>
+              )}
+
+              {/* Turno */}
+              {player.isTurn && (
+                <p className="text-xl text-Principal font-semibold text-center">
+                  Turno de {player.nickName}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};

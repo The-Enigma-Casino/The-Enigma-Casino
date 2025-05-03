@@ -8,15 +8,19 @@ import toast from "react-hot-toast";
 import { LocalBet } from "../types/localBet.type";
 import { $myInitialBets } from "./rouletteStores";
 
+export const requestWheelState = createEvent<number>();  
+
 export const gameStateReceived = createEvent<{
   tableId: number;
   canPlaceBets: boolean;
+  wheelRotation?: number;
   players: {
     nickName: string;
     bets: { bet: string; amount: number }[];
   }[];
 }>();
 export const spinResultReceived = createEvent<any>();
+
 export const betConfirmed = createEvent<any>();
 
 export const betsOpenedReceived = createEvent();

@@ -1,10 +1,11 @@
 .roulette {
   margin: 40px;
   padding: 40px;
-  background: #14532d;
+  background: var(--Roulette-green);
   display: table;
   position: relative;
   width: 775px;
+  color: white;
 }
 
 .roulette table {
@@ -33,7 +34,7 @@
   transform: none;
   text-align: center;
   font-size: 20px;
-  line-height: 46px; /* Centrado vertical */
+  line-height: 46px;
 }
 
 
@@ -47,23 +48,19 @@
 }
 
 .green {
-  background: #14532d;
-  color: #8EB891;
+  background: var(--Roulette-green);
 }
 
-.red {
-  background: #A91607;
-  color: #8EB891;
+td.red {
+  background: var(--Roulette-red);
 }
 
-.black {
-  background: #0E3811;
-  color: #8EB891;
+td.black {
+  background: var(--Roulette-black);
 }
 
 .sector {
-  background: #14532d;
-  color: #8EB891;
+  background: var(--Roulette-green);
 }
 
 .sector .vt {

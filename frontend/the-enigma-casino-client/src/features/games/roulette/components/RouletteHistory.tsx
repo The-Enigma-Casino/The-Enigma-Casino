@@ -4,10 +4,11 @@ interface RouletteHistoryProps {
 
 export const RouletteHistory = ({ results }: RouletteHistoryProps) => {
   const getColorClass = (color: string) => {
-    if (color === "red") return "bg-red-500 text-white";
-    if (color === "black") return "bg-gray-800 text-white";
-    if (color === "green") return "bg-green-500 text-white";
-    return "bg-gray-400 text-white";
+    const base = "text-white border-2 border-Coins";
+    if (color === "red") return `bg-Roulette-red ${base}`;
+    if (color === "black") return `bg-Roulette-black ${base}`;
+    if (color === "green") return `bg-Roulette-green ${base}`;
+    return `bg-gray-400 ${base}`;
   };
 
   return (

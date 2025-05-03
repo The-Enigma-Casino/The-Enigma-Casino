@@ -17,6 +17,9 @@ export default {
         'Black-color': '#000814',
         'Grey-color': '#505050',
         'Background-nav': '#1c1c1c',
+        'Roulette-green': ' #14532d',
+        'Roulette-red': '#A91607',
+        'Roulette-black': '#0E3811',
       },
       fontFamily: {
         reddit: ['Reddit Sans', 'sans-serif'],

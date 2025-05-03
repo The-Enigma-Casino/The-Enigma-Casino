@@ -1,4 +1,4 @@
-import React from "react";
+// import { Chip } from "../chip/Chip";
 
 type Props = {
   onIncrement: (amount: number) => void;
@@ -58,6 +58,8 @@ export const BetChipsPanel: React.FC<Props> = ({
           No tienes suficientes fichas 💸
         </p>
       )}
+
+      {/* <Chip>100</Chip> */}
     </div>
   );
 };

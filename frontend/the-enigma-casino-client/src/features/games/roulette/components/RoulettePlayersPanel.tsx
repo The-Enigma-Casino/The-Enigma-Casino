@@ -28,11 +28,11 @@ export const RoulettePlayersPanel = () => {
   if (players.length === 0) return null;
 
   return (
-    <div className="w-full overflow-x-auto py-4 px-2 bg-black/30 rounded-t-xl">
+    <div className="mx-auto px-4 py-4 bg-black/30 rounded-xl w-full max-w-[900px]">
       <h2 className="text-3xl font-bold text-white mb-4 text-center shadow-xl-white">
         Jugadores en la partida
       </h2>
-      <div className="flex gap-4 min-w-fit">
+      <div className="flex gap-4 flex-col sm:flex-row sm:flex-wrap justify-center items-start">
         {players.map((player) => {
           const avatar = getAvatar(player.nickName);
           if (!avatar) return null;

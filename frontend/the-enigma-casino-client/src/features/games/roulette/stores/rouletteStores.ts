@@ -9,6 +9,8 @@ import {
   countdownTick,
   rouletteStopedReceived,
   resetRoulettePlayers,
+  countdownStart,
+  countdownDecrement,
 } from "./rouletteEvents";
 import { RoulettePlayer } from "../types/roulettePlayer.type";
 import { LocalBet } from "../types/localBet.type";
@@ -99,3 +101,7 @@ export const wheelRotation$ = createStore<number>(0).on(
   gameStateReceived,
   (_, payload) => payload?.wheelRotation ?? 0
 );
+
+export const syncedCountdown$ = createStore(0)
+  .on(countdownStart, (_, seconds) => seconds)
+  .on(countdownDecrement, (state) => Math.max(state - 1, 0));

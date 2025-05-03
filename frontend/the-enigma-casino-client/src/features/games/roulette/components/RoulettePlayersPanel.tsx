@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useUnit } from "effector-react";
-import { roulettePlayers$ } from "../stores/rouletteStores";
+import { roulettePlayers$ } from "../stores";
 import { $playerAvatars } from "../../stores/gamesStore";
 import {
   $countryCache,

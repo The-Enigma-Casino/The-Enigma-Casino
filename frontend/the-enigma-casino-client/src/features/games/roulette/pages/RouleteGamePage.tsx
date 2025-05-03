@@ -1,26 +1,10 @@
 import { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
 
-import {
-  spinResult$,
-  betsClosed$,
-  lastResults$,
-  isStopped$,
-  $myInitialBets,
-  roulettePlayers$,
-} from "../stores/rouletteStores";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
 
-import {
-  requestGameState,
-  placeRouletteBet,
-  betsOpenedReceived,
-  resetSpinResult,
-  requestWheelState,
-} from "../stores/rouletteEvents";
 import { RouletteBetBoard } from "../components/RouletteBetBoard";
-import { countdownDecrement, syncedCountdown$ } from "../stores/rouletteClock";
 import { RouletteHistory } from "../components/RouletteHistory";
 import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar";
 import { RoulettePlayersPanel } from "../components/RoulettePlayersPanel";
@@ -30,6 +14,21 @@ import Roulette from "../components/RouletteWheel";
 import { BetChipsPanel } from "../../shared/components/betChipsPanel/BetChipsPanel";
 
 import styles from "./RouleteGamePage.module.css";
+import {
+  $myInitialBets,
+  betsClosed$,
+  betsOpenedReceived,
+  countdownDecrement,
+  isStopped$,
+  lastResults$,
+  placeRouletteBet,
+  requestGameState,
+  requestWheelState,
+  resetSpinResult,
+  roulettePlayers$,
+  spinResult$,
+  syncedCountdown$,
+} from "../stores";
 
 function RouletteGamePage() {
   const spinResult = useUnit(spinResult$);

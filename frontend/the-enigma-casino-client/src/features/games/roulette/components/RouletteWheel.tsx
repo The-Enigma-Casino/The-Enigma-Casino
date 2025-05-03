@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import styles from "./RouletteWheel.module.css";
 import { useUnit } from "effector-react";
-import { spinResult$, wheelRotation$ } from "../stores/rouletteStores";
-import { betsOpenedReceived } from "../stores/rouletteEvents";
+import { spinResult$, wheelRotation$, betsOpenedReceived  } from "../stores";
 
 const RouletteWheel = () => {
   const rouletteRef = useRef<HTMLDivElement>(null);
@@ -63,19 +62,19 @@ const RouletteWheel = () => {
 
   const animateBallExit = () => {
     if (!ballContainerRef.current) return;
-  
+
     gsap.to(ballContainerRef.current, {
       y: -30,
       opacity: 0,
       duration: 0.6,
       ease: "power2.in",
       onComplete: () => {
-        setShowBall(false); 
+        setShowBall(false);
         gsap.set(ballContainerRef.current, { y: 0, opacity: 1 })
       },
     });
   };
-  
+
   useEffect(() => {
     if (
       rouletteRef.current &&

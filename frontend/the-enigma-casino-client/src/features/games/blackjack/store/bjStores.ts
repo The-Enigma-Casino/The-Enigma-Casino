@@ -12,7 +12,8 @@ import {
   turnStarted,
   turnCountdownTicked,
   playerKickedReceived,
-  matchReadyReceived
+  matchReadyReceived,
+  localBetPlaced
 } from "../store/bjEvents";
 import { navigateTo } from "../../shared/router/navigateFx";
 import { Player, Croupier, GameState } from "../../shared/types";
@@ -40,6 +41,12 @@ $gamePhase.on(setGamePhase, (_, phase) => phase);
 
 export const $currentTurnUserId = createStore<number | null>(null)
   .on(setCurrentTurnUserId, (_, id) => id);
+
+$players.on(localBetPlaced, (players, amount) => {
+  return players.map(p =>
+    p.id === Number($userId.getState()) ? { ...p, bet: amount } : p
+  );
+});
 
 export const $roundResults = createStore<{
   userId: number;

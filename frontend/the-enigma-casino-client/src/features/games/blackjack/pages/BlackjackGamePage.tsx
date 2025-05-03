@@ -10,15 +10,23 @@ import { $userId } from "../../../auth/store/authStore";
 import { PlayerHUD } from "../../shared/components/PlayerHUD";
 import { CardStack } from "../../shared/components/GameCardStack";
 import { calculateHandTotal } from "../../shared/utils/gameHand.utils";
-import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand, resetRoundResults, decrementTurnCountdown } from "../store/bjEvents";
+import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand, resetRoundResults, decrementTurnCountdown, localBetPlaced } from "../store/bjEvents";
 import { CardRank, Suit } from "../../shared/types/gameCard.type";
 import { ChipStack } from "../../shared/components/ChipStack";
-import { loadCoins } from "../../../coins/store/coinsStore";
+import { $coins, loadCoins } from "../../../coins/store/coinsStore";
 import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar";
 import { GamePlayerCardList } from "../../shared/components/playerCards/GameCardPlayerList";
 import { LocalPlayerCard } from "../components/LocalPlayerCard";
+import { BetChipsPanel } from "../../shared/components/betChipsPanel/BetChipsPanel";
+import { ActionButton } from "../../shared/components/buttonActions/ActionButton";
+import toast from "react-hot-toast";
 export const BlackjackGamePage = () => {
 
+  const gamePhaseLabels: Record<string, string> = {
+    betting: "Apuestas abiertas",
+    playing: "Ronda en curso",
+    results: "Resultados",
+  };
 
   const players = useUnit($players);
   const croupier = useUnit($croupier);
@@ -26,7 +34,7 @@ export const BlackjackGamePage = () => {
   const currentTurnUserId = useUnit($currentTurnUserId);
   // const currentTableId = useUnit($currentTableId);
   const gamePhase = useUnit($gamePhase);
-
+  const totalCoinsUser = useUnit($coins);
 
   const roundResults = useUnit($roundResults);
   const croupierRoundHand = useUnit($croupierRoundHand);
@@ -54,6 +62,9 @@ export const BlackjackGamePage = () => {
   const handleDouble = () => doubleDownFn();
   const isLocalTurn = currentTurnUserId === Number(userId);
   const [showTurnCountdown, setShowTurnCountdown] = useState(false);
+  const [betSubmitted, setBetSubmitted] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const currentPhaseLabel = gamePhaseLabels[gamePhase] ?? gamePhase;
   useEffect(() => {
     getGameStateRequested();
     loadCoins();
@@ -68,6 +79,8 @@ export const BlackjackGamePage = () => {
       resetCroupierRoundHand();
       resetRoundResults();
       loadCoins();
+      setBetSubmitted(false);
+      setShowConfirmation(false);
     } else {
       loadCoins();
     }
@@ -95,9 +108,17 @@ export const BlackjackGamePage = () => {
       isTurn: p.id === currentTurnUserId,
     }));
 
+  const handlePlaceBet = () => {
+    playerPlaceBet(betAmount);
+    localBetPlaced(betAmount);
+    setBetSubmitted(true);
+    setShowConfirmation(true);
+    toast.success("¡Apuesta registrada correctamente!");
+  };
+
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">
-      <div className="max-w-screen-2xl mx-auto flex flex-row gap-6">
+      <div className="max-w-screen-2xl mx-auto flex flex-row gap-6 items-start">
         {/* Columna central: contenido principal */}
         <div className="flex-1 flex flex-col items-center">
           <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">
@@ -105,7 +126,7 @@ export const BlackjackGamePage = () => {
           </h1>
 
           <p className="text-center mb-4 text-3xl">
-            Fase: <span className="font-bold text-green-300">{gamePhase}</span>
+            <span className="font-bold text-green-300">{currentPhaseLabel}</span>
           </p>
 
           {gamePhase === "betting" && <CountdownBar countdown={countdown} total={30} />}
@@ -159,88 +180,33 @@ export const BlackjackGamePage = () => {
             ) : null}
           </div>
 
-          {/* Resultados */}
-          {roundResults.length > 0 && (
-            <div className="bg-black/70 text-white rounded-lg shadow p-4 my-8 mx-auto max-w-md">
-              <h2 className="text-2xl font-bold mb-4 text-center">Resultados de la ronda</h2>
-              <ul className="space-y-3">
-                {roundResults.map((res) => (
-                  <li
-                    key={res.userId}
-                    className="flex justify-between items-center border-b border-white/10 pb-2"
-                  >
-                    <span className="font-semibold">{res.nickname}</span>
-                    <span>
-                      {res.result === "win" && "🟢 Ganó"}
-                      {res.result === "lose" && "🔴 Perdió"}
-                      {res.result === "draw" && "🟡 Empate"}
-                      {res.result === "blackjack" && "🃏 Blackjack!"}
-                    </span>
-                    <span className="text-3xl text-gray-300">Total: {res.finalTotal}</span>
-                    <span className="font-bold text-green-400">
-                      {res.coinsChange > 0 ? `+${res.coinsChange}` : `${res.coinsChange}`} fichas
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           {/* Apuestas */}
           <h2 className="text-2xl font-bold text-center mt-10 mb-6">
             Jugadores apostando: <span className="text-yellow-300">{players.length}</span>
           </h2>
 
-          {gamePhase === "betting" &&
-            (
-              players.find((p) => p.id === Number(userId))?.bet === 0 ||
-              !players.some((p) => p.id === Number(userId))
-            ) && (
-              <div className="flex flex-col items-center gap-4 mb-10">
-                <p className="text-gray-200 text-center text-xl">
-                  Introduce una apuesta para comenzar la partida.
-                </p>
-                <div className="flex gap-3 justify-center">
-                  {[5, 10, 25, 50, 100].map((chip) => (
-                    <button
-                      key={chip}
-                      onClick={() => setBetAmount(betAmount + chip)}
-                      className="transform hover:scale-110 transition"
-                    >
-                      <div
-                        className={`w-14 h-14 rounded-full border-4 border-black flex items-center justify-center text-sm font-bold text-white ${{
-                          5: "bg-white text-black",
-                          10: "bg-lime-400 text-black",
-                          25: "bg-orange-500",
-                          50: "bg-red-500",
-                          100: "bg-purple-500",
-                        }[chip]
-                          }`}
-                      >
-                        {chip}
-                      </div>
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setBetAmount(0)}
-                    className="text-sm text-red-300 hover:underline ml-2"
-                  >
-                    Reset
-                  </button>
+          {gamePhase === "betting" && (
+            <>
+              {!betSubmitted && (
+                <div className="flex flex-col items-center">
+                  <BetChipsPanel
+                    onIncrement={(val) => setBetAmount((prev) => prev + val)}
+                    onReset={() => setBetAmount(0)}
+                    betAmount={betAmount}
+                    coins={totalCoinsUser}
+                  />
+
+                  <ActionButton
+                    onClick={handlePlaceBet}
+                    disabled={betAmount < 50 || betAmount > 5000}
+                    label="Apostar"
+                    color="purple"
+                    className="w-full max-w-[150px] text-xl py-4"
+                  />
                 </div>
-                <p className="text-lg">
-                  Apuesta actual:{" "}
-                  <span className="font-extrabold text-green-300">${betAmount}</span>
-                </p>
-                <button
-                  onClick={() => playerPlaceBet(betAmount)}
-                  disabled={betAmount < 50 || betAmount > 5000}
-                  className="px-6 py-2 rounded bg-indigo-600 hover:bg-indigo-700 font-bold text-white disabled:opacity-50"
-                >
-                  Apostar
-                </button>
-              </div>
-            )}
+              )}
+            </>
+          )}
 
           {/* Jugador local */}
           {localPlayer && (

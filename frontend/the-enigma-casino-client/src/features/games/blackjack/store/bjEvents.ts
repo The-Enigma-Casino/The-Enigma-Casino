@@ -63,6 +63,7 @@ export const playerHit = createEvent();
 export const playerStand = createEvent();
 export const doubleDown = createEvent();
 export const playerPlaceBet = createEvent<number>();
+export const localBetPlaced = createEvent<number>(); // Actualiza jugador local
 
 // Mensajes entrantes del backend
 export const gameStateReceived = createEvent<any>();

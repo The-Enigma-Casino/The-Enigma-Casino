@@ -42,7 +42,9 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
   if (players.length === 0) return null;
 
   return (
-    <div className="bg-black/40 rounded-xl p-4 w-[300px] flex flex-col">
+    <div className="bg-black/40 rounded-xl p-4 w-[300px] flex flex-col gap-12">
+
+
       <h2 className="text-3xl font-bold text-white mb-4 text-center shadow-xl-white">
         Jugadores en la partida
       </h2>
@@ -130,7 +132,7 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
 
               {/* Turno */}
               {player.isTurn && (
-                <p className="text-xl text-Principal font-semibold text-center">
+                <p className={`text-xl font-semibold text-center h-6 ${player.isTurn ? "text-Principal" : "text-transparent"}`}>
                   Turno de {player.nickName}
                 </p>
               )}

@@ -14,7 +14,7 @@ type GamePlayer = {
   bets: { bet: string; amount: number }[];
   isTurn?: boolean;
   coins: number;
-  state?: "Playing" | "Bust" | "Stand" | "Lose" | "Win";
+  state?: "Playing" | "Bust" | "Stand" | "Lose" | "Win" | "Draw";
 };
 
 type Props = {
@@ -118,7 +118,7 @@ export const LocalPlayerCard = ({ player, gameType, gameState, onHit, onStand, o
 
         {/* Turno */}
         {player.isTurn && (
-          <p className="text-xl text-Principal font-semibold text-center">
+          <p className={`text-xl font-semibold text-center h-6 ${player.isTurn ? "text-Principal" : "text-transparent"}`}>
             Turno de {player.nickName}
           </p>
         )}
@@ -137,6 +137,7 @@ export const LocalPlayerCard = ({ player, gameType, gameState, onHit, onStand, o
           <p className="text-2xl italic text-white/70 mt-2 text-center">
             {player.state === "Bust" && "💥 Te pasaste de 21!"}
             {player.state === "Stand" && "🧍 Te plantaste. Esperando..."}
+            {player.state === "Draw" && "🤝 Empate"}
             {player.state === "Lose" && "❌ Has perdido esta ronda."}
             {player.state === "Win" && "🏆 ¡Victoria!"}
           </p>

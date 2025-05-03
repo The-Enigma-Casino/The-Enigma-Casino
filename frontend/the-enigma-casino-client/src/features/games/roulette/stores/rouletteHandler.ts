@@ -19,8 +19,6 @@ import {
 socketMessageReceived.watch((data) => {
   if (data.type !== "roulette") return;
 
-  console.log("[🎰 Ruleta] Mensaje recibido:", data);
-
   switch (data.action) {
     case "game_state":
       gameStateReceived(data);
@@ -30,7 +28,6 @@ socketMessageReceived.watch((data) => {
       break;
     case "spin_result":
       spinResultReceived(data);
-      console.log("🔍 SPIN RESULT LLEGÓ:", data);
       break;
     case "bet_confirmed":
       betConfirmed(data);
@@ -56,8 +53,6 @@ socketMessageReceived.watch((data) => {
 
       if (tableId !== null) {
         matchReadyReceived(tableId);
-      } else {
-        console.warn("⚠️ No se encontró una mesa activa en el store.");
       }
       break;
     }
@@ -76,7 +71,6 @@ socketMessageReceived.watch((data) => {
       break;
 
     default:
-      console.warn("[Ruleta] Acción desconocida:", data.action);
   }
 });
 
@@ -87,6 +81,5 @@ placeRouletteBet.watch((payload) => {
     ...payload,
   };
 
-  console.log("[🎰 Ruleta] Enviando apuesta:", message);
   messageSent(JSON.stringify(message));
 });

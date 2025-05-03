@@ -31,7 +31,6 @@ export const spinResult$ = createStore<any>(null)
         bets: payload.results ?? [],
       };
     }
-    console.warn("⚠️ spinResult inválido recibido:", payload);
     return null;
   })
   .on(betsOpenedReceived, () => null)

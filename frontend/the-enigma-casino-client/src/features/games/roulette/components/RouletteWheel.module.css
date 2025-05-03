@@ -53,7 +53,7 @@
   box-shadow: 1px 1px 4px #000;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -104px); /* bola en el borde superior */
+  transform: translate(-50%, -104px);
 }
 
 

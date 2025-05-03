@@ -7,6 +7,7 @@ import {
   lastResults$,
   isStopped$,
   $myInitialBets,
+  roulettePlayers$,
 } from "../stores/rouletteStores";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
@@ -39,6 +40,7 @@ function RouletteGamePage() {
   const isStopped = useUnit(isStopped$);
   const initialBets = useUnit($myInitialBets);
   const decrement = useUnit(countdownDecrement);
+  const players = useUnit(roulettePlayers$);
 
   const [betAmount, setBetAmount] = useState(0);
   const [bets, setBets] = useState<LocalBet[]>([]);
@@ -150,7 +152,6 @@ function RouletteGamePage() {
   };
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono flex flex-col gap-6">
-
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-8 flex-grow">
         <div className="flex flex-col items-center gap-6">
           <Roulette />
@@ -162,13 +163,19 @@ function RouletteGamePage() {
           )}
 
           {delayedSpinResult && (
-            <h2 className={`text-xl font-bold ${getResultMessage(delayedSpinResult).colorClass}`}>
+            <h2
+              className={`text-xl font-bold ${
+                getResultMessage(delayedSpinResult).colorClass
+              }`}
+            >
               {getResultMessage(delayedSpinResult).message}
             </h2>
           )}
 
           {isStopped && (
-            <h2 className="text-3xl font-bold text-red-500">Ruleta detenida por inactividad</h2>
+            <h2 className="text-3xl font-bold text-red-500">
+              Ruleta detenida por inactividad
+            </h2>
           )}
 
           <CountdownBar countdown={countdown} />
@@ -201,11 +208,13 @@ function RouletteGamePage() {
         </div>
       </div>
 
-      <div className="w-full overflow-x-auto py-4 px-2">
-        <div className="flex gap-4 min-w-fit">
-          <RoulettePlayersPanel />
+      {players.length > 1 && (
+        <div className="w-full overflow-x-auto py-4 px-2">
+          <div className="flex gap-4 min-w-fit">
+            <RoulettePlayersPanel />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

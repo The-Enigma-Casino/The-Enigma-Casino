@@ -124,16 +124,19 @@ td.black {
   filter: brightness(1.2);
 }
 
-
 .ficha {
   position: absolute;
   bottom: 4px;
   right: 4px;
-  background-color: gold;
-  color: black;
+  background-color: var(--Coins);
+  color: var(--Black-color);
   font-weight: bold;
   font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 50%;
-  box-shadow: 0 0 4px #000;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

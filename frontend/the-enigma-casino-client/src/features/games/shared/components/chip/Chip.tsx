@@ -2,7 +2,7 @@ import React from "react";
 
 interface ChipProps {
   value: number | string;
-  size?: "small" | "medium" | "large";
+  size?: "xsmall" | "small" | "medium" | "large";
   color?: "red" | "blue" | "green" | "orange" | "yellow";
   mode?: "static" | "button";
   onClick?: () => void;
@@ -21,6 +21,7 @@ const SIZE_MAP: Record<string, number> = {
   small: 40,
   medium: 56,
   large: 72,
+  xsmall: 30,
 };
 
 function darkenColor(hex: string, factor = 0.7): string {

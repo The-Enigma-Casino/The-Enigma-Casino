@@ -1,22 +1,21 @@
 import { createStore } from "effector";
 import {
   countdownCleared,
+  countdownStarted,
+  countdownStopped,
   countdownTicked,
   exitLobbyPage,
+  gameStarted,
   joinTableClicked,
   leaveTableClicked,
   markLeftTable,
   matchStarted,
   resetTableId,
   setGameType,
-} from "./tablesIndex";
-import { GameTable } from "../models/GameTable.interface";
-import {
-  countdownStarted,
-  countdownStopped,
-  gameStarted,
   tableUpdated,
-} from "../models/GameTable.handlers";
+} from "./tablesEvents";
+import { GameTable } from "../models/GameTable.interface";
+
 import { fetchTables } from "../actions/tableActions";
 
 export const $gameType = createStore<number>(0).on(

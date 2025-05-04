@@ -1,11 +1,11 @@
 import { sample } from "effector";
-import { $currentTableId, countdownCleared, joinTableClicked, sendLeaveTableMessage, tryJoinTable } from "./tablesIndex";
+import { countdownCleared, gameStarted, joinTableClicked, sendLeaveTableMessage, tryJoinTable } from "./tablesEvents";
 import { messageSent } from "../../../websocket/store/wsIndex";
 import { $userId } from "../../auth/store/authStore";
-import { gameStarted } from "../models/GameTable.handlers";
 import { navigateTo } from "../../games/shared/router/navigateFx";
 import { $coins } from "../../coins/store/coinsStore";
 import toast from "react-hot-toast";
+import { $currentTableId } from "./tablesStores";
 
 
 const getGamePathByTableId = (tableId: number): string => {
@@ -24,8 +24,6 @@ sample({
       action: "join_table",
       tableId: String(tableId),
     });
-    console.log("⚡ SAMPLE ejecutado para join_table con:", tableId);
-    console.log("🧾 Enviando mensaje WS:", msg);
     return msg;
   },
   target: messageSent,

@@ -20,15 +20,38 @@ import {
 // 🧑‍🤝‍🧑 Jugadores
 export const $pokerPlayers = createStore<PlayerPoker[]>([])
   .on(matchPlayersInitialized, (_, players) => players)
+
   .on(blindsAssigned, (players, { dealer, smallBlind, bigBlind }) =>
     players.map((p) => {
       let role: PlayerPoker["role"] = null;
-      if (p.id === dealer.userId) role = "dealer";
-      if (p.id === smallBlind.userId) role = "sb";
-      if (p.id === bigBlind.userId) role = "bb";
-      return { ...p, role };
+      let currentBet = p.currentBet ?? 0;
+      let totalBet = p.totalBet ?? 0;
+
+      if (p.id === dealer.userId) {
+        role = "dealer";
+      }
+
+      if (p.id === smallBlind.userId) {
+        role = "sb";
+        currentBet = smallBlind.amount;
+        totalBet = smallBlind.amount;
+      }
+
+      if (p.id === bigBlind.userId) {
+        role = "bb";
+        currentBet = bigBlind.amount;
+        totalBet = bigBlind.amount;
+      }
+
+      return {
+        ...p,
+        role,
+        currentBet,
+        totalBet,
+      };
     })
   )
+
   .on(betConfirmedReceived, (players, { userId, bet, totalBet }) =>
     players.map((p) =>
       p.id === userId ? { ...p, currentBet: bet, totalBet } : p
@@ -81,3 +104,4 @@ export const $maxRaise = createStore<number>(0, { skipVoid: false }).on(
 export const $turnCountdown = createStore<number>(20)
   .on(turnCountdownSet, (_, value) => value)
   .on(decrementTurnCountdown, (time) => Math.max(time - 1, 0));
+

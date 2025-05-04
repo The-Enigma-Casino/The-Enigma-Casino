@@ -43,7 +43,6 @@ function GameTablePage() {
   const gameName = gameNames[parseInt(gameType ?? "")] || "Desconocido";
 
   const handleJoinTable = (tableId: number) => {
-    console.log("🟢 joinTableClicked lanzado para:", tableId);
     tryJoinTable(tableId);
   };
 

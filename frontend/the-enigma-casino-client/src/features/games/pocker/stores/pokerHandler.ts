@@ -11,6 +11,8 @@ import {
   myTurnStarted,
   blindsAssigned,
   betConfirmedReceived,
+  matchPlayersInitialized,
+  turnCountdownStart,
 } from "../stores/pokerIndex";
 
 socketMessageReceived.watch((data) => {
@@ -18,8 +20,17 @@ socketMessageReceived.watch((data) => {
 
   switch (data.action) {
     case "match_ready": {
-      // Este mensaje es solo informativo y ya se maneja en el backend marcando el jugador como 'Playing'.
       console.log("🎯 match_ready recibido");
+      break;
+    }
+
+    case "players_initialized": {
+      const players = data.players.map((p: any) => ({
+        id: p.id,
+        nickname: p.nickname,
+        coins: p.coins,
+      }));
+      matchPlayersInitialized(players);
       break;
     }
 
@@ -56,7 +67,7 @@ socketMessageReceived.watch((data) => {
     }
 
     case "turn_timer": {
-      turnCountdownSet(data.time);
+      turnCountdownStart(data.time);
       break;
     }
 

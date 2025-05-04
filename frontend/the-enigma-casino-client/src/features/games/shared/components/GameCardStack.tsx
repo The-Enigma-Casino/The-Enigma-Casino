@@ -5,6 +5,7 @@ type Props = {
   cards: GameCard[];
   total?: number;
   hidden?: boolean;
+  hideAll?: boolean;
 };
 
 const getCardImageUrl = (card: GameCard) => {
@@ -15,7 +16,7 @@ const getCardBackImage = (version: number) => {
   return `${CARD_IMAGE_BACK}/${version}`;
 };
 
-export const CardStack = ({ cards, total, hidden = false }: Props) => {
+export const CardStack = ({ cards, total, hidden = false, hideAll = false }: Props) => {
   return (
     <div className="w-full overflow-x-auto">
       <div className="flex justify-center items-end gap-2 min-w-fit px-2">
@@ -28,7 +29,7 @@ export const CardStack = ({ cards, total, hidden = false }: Props) => {
               key={index}
               className="w-20 h-28 bg-white border border-gray-600 rounded-md flex items-center justify-center text-lg font-bold shadow flex-shrink-0"
             >
-              {hidden && index === 0 ? (
+              {hideAll || hidden && index === 0 ? (
                 <img src={backImageUrl} alt="card-back" className="w-full h-full" />
               ) : (
                 <img

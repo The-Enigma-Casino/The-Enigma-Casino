@@ -1,4 +1,5 @@
 import { FC, useState } from "react";
+import { ActionButton } from "../../shared/components/buttonActions/ActionButton";
 
 interface Props {
   validMoves: string[];
@@ -15,21 +16,22 @@ export const ActionControls: FC<Props> = ({
 }) => {
   const [raiseAmount, setRaiseAmount] = useState(0);
 
-  const buttonClass =
-    "px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow disabled:opacity-50";
-
   return (
     <div className="flex flex-col items-center gap-4 mt-6">
       <div className="flex flex-wrap justify-center gap-2">
         {validMoves.includes("check") && (
-          <button onClick={() => onAction("check")} className={buttonClass}>
-            Check
-          </button>
+          <ActionButton
+            onClick={() => onAction("check")}
+            label="Check"
+            color="green"
+          />
         )}
         {validMoves.includes("call") && (
-          <button onClick={() => onAction("call", callAmount)} className={buttonClass}>
-            Call {callAmount}
-          </button>
+          <ActionButton
+            onClick={() => onAction("call", callAmount)}
+            label={`Call ${callAmount}`}
+            color="purple"
+          />
         )}
         {validMoves.includes("raise") && (
           <div className="flex gap-2 items-center">
@@ -41,24 +43,27 @@ export const ActionControls: FC<Props> = ({
               value={raiseAmount}
               onChange={(e) => setRaiseAmount(Number(e.target.value))}
             />
-            <button
+            <ActionButton
               onClick={() => onAction("raise", raiseAmount)}
+              label="Raise"
+              color="yellow"
               disabled={raiseAmount <= 0 || raiseAmount > maxRaise}
-              className={buttonClass}
-            >
-              Raise
-            </button>
+            />
           </div>
         )}
         {validMoves.includes("all-in") && (
-          <button onClick={() => onAction("all-in")} className={buttonClass}>
-            All-in
-          </button>
+          <ActionButton
+            onClick={() => onAction("all-in")}
+            label="All-In"
+            color="yellow"
+          />
         )}
         {validMoves.includes("fold") && (
-          <button onClick={() => onAction("fold")} className={buttonClass}>
-            Fold
-          </button>
+          <ActionButton
+            onClick={() => onAction("fold")}
+            label="Fold"
+            color="gray"
+          />
         )}
       </div>
     </div>

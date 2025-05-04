@@ -1,6 +1,6 @@
 import { sample } from "effector";
 import { $currentTableId } from "../../../gameTables/store/tablesIndex";
-import { sendPokerAction } from "./pokerIndex";
+import { turnCountdownSet, turnCountdownSet as countdownStart, decrementTurnCountdown as countdownDecrement, sendPokerAction } from "./pokerEvents";
 import { messageSent } from "../../../../websocket/store/wsIndex";
 
 sample({
@@ -25,5 +25,10 @@ sample({
   target: messageSent,
 });
 
+
+sample({
+  clock: turnCountdownSet,
+  target: countdownStart,
+});
 
 

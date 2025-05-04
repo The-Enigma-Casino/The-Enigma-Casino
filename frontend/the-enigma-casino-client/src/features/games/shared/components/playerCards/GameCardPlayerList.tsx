@@ -1,20 +1,26 @@
 import { useEffect } from "react";
 import { useUnit } from "effector-react";
 import { $playerAvatars } from "../../../stores/gamesStore";
-import { $countryCache, requestCountry } from "../../../../countries/stores/countriesStore";
+import {
+  $countryCache,
+  requestCountry,
+} from "../../../../countries/stores/countriesStore";
 import { IMAGE_PROFILE_URL } from "../../../../../config";
 import { CardStack } from "../GameCardStack";
+import { RoleChip } from "../../../pocker/components/RoleChip";
 
 type GamePlayer = {
   id: number;
   nickName: string;
   hand: Card[];
   total?: number;
-  bets: { bet: string; amount: number }[];
+  bets?: { bet: string; amount: number }[];
   isTurn?: boolean;
   coins: number;
+  currentBet?: number;
+  totalBet?: number;
+  role?: "dealer" | "sb" | "bb";
 };
-
 
 type Props = {
   players: GamePlayer[];
@@ -43,8 +49,6 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
 
   return (
     <div className="bg-black/40 rounded-xl p-4 w-[300px] flex flex-col gap-12">
-
-
       <h2 className="text-3xl font-bold text-white mb-4 text-center shadow-xl-white">
         Jugadores en la partida
       </h2>
@@ -54,7 +58,9 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
           const avatar = getAvatar(player.nickName);
           if (!avatar) return null;
 
-          const country = avatar.country ? countryCache[avatar.country] : undefined;
+          const country = avatar.country
+            ? countryCache[avatar.country]
+            : undefined;
           const flagUrl = country?.flags?.png;
 
           const visibleCards = (
@@ -66,8 +72,9 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
           return (
             <div
               key={player.id}
-              className={`relative bg-black/30 p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3 ${player.isTurn ? "animate-pulseGlow" : ""
-                }`}
+              className={`relative bg-black/30 p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3 ${
+                player.isTurn ? "animate-pulseGlow" : ""
+              }`}
             >
               {/* Header: avatar + nombre + bandera */}
               <div className="flex items-center justify-between mb-3">
@@ -77,9 +84,12 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
                     alt={player.nickName}
                     className="w-16 h-16 rounded-full border border-white object-cover"
                   />
-                  <p className="text-white font-semibold text-2xl">
-                    {player.nickName}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-white font-semibold text-2xl">
+                      {player.nickName}
+                    </p>
+                    {player.role && <RoleChip role={player.role} />}
+                  </div>
                 </div>
 
                 {flagUrl && (
@@ -93,12 +103,32 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
               </div>
 
               {/* Apuestas */}
-              <div className="flex gap-2 ">
-                <p className="text-xl font-bold text-white">Apuesta:</p>
-                {coins === 0 ? (
-                  <p className="text-xl text-Coins">Sin apuestas activas</p>
-                ) : (
-                  <p className="text-xl text-Coins ">{coins}</p>
+              <div className="flex flex-col gap-1">
+                <div className="flex gap-2 items-baseline">
+                  <p className="text-xl font-bold text-white">Apuesta:</p>
+                  {player.coins === 0 ? (
+                    <p className="text-xl text-Coins">Sin apuestas activas</p>
+                  ) : (
+                    <p className="text-xl text-Coins">{player.coins}</p>
+                  )}
+                </div>
+
+                {player.currentBet !== undefined && (
+                  <p className="text-sm text-white/80">
+                    Apuesta actual:{" "}
+                    <span className="font-semibold text-yellow-300">
+                      {player.currentBet}
+                    </span>
+                  </p>
+                )}
+
+                {player.totalBet !== undefined && (
+                  <p className="text-sm text-white/80">
+                    Total apostado:{" "}
+                    <span className="font-semibold text-yellow-300">
+                      {player.totalBet}
+                    </span>
+                  </p>
                 )}
               </div>
 
@@ -108,17 +138,18 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
                   <div
                     className="transition-transform origin-center inline-flex"
                     style={{
-                      transform: `scale(${visibleCards.length <= 2
-                        ? 1.0
-                        : visibleCards.length <= 4
+                      transform: `scale(${
+                        visibleCards.length <= 2
+                          ? 1.0
+                          : visibleCards.length <= 4
                           ? 1
                           : visibleCards.length === 5
-                            ? 0.8
-                            : 0.7
-                        })`,
+                          ? 0.8
+                          : 0.7
+                      })`,
                     }}
                   >
-                    <CardStack cards={visibleCards} />
+                    <CardStack cards={visibleCards} hideAll={gameType === "Poker"} />
                   </div>
                 </div>
               </div>
@@ -132,7 +163,11 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
 
               {/* Turno */}
               {player.isTurn && (
-                <p className={`text-xl font-semibold text-center h-6 ${player.isTurn ? "text-Principal" : "text-transparent"}`}>
+                <p
+                  className={`text-xl font-semibold text-center h-6 ${
+                    player.isTurn ? "text-Principal" : "text-transparent"
+                  }`}
+                >
                   Turno de {player.nickName}
                 </p>
               )}

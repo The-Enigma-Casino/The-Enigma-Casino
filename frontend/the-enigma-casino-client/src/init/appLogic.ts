@@ -1,5 +1,5 @@
 // Game logic handlers (escuchan mensajes WS)
-import "../features/gameTables/models/GameTable.handlers";
+import "../features/gameTables/store/tablesStores";
 
 // Game tables logic
 import "../features/gameTables/store/tablesSamples"; // sample(joinTableClicked, ...)

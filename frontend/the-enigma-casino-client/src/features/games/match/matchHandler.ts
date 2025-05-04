@@ -26,7 +26,3 @@ socketMessageReceived.watch((data) => {
       console.warn("[🧩 GameMatch] Acción desconocida:", data.action);
   }
 });
-
-matchPlayersInitialized.watch((players) => {
-  console.log("🎲 Jugadores inicializados:", players);
-});

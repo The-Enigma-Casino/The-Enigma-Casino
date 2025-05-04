@@ -19,15 +19,31 @@ import {
   $validMoves,
   sendPokerAction,
 } from "../stores/pokerIndex";
-import { RoleChip } from "../components/RoleChip";
+import { $userId } from "../../../auth/store/authStore";
+import { GamePlayerCardList } from "../../shared/components/playerCards/GameCardPlayerList";
+import { PlayerPokerCard } from "../components/PlayerPokerCard";
+import { $playerAvatars } from "../../stores/gamesStore";
+import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
 
 export const PokerGamePage = () => {
   const pokerPhase = useUnit($pokerPhase);
+
   const players = useUnit($pokerPlayers);
-  console.log("👥 Renderizando jugadores:", players);
+  const userId = useUnit($userId);
+
+  const me = players.find((p) => String(p.id) === userId);
+  const otherPlayers = players.filter((p) => p.id !== Number(userId));
+
+  const avatars = useUnit($playerAvatars);
+  const otherPlayersWithAvatar = otherPlayers.filter((p) =>
+    avatars.some((a) => a.nickName === p.nickname)
+  );
+
   const communityCards = useUnit($communityCards);
   const currentTurnUserId = useUnit($currentTurnUserId);
-  const myHand = useUnit($myHand);
+
+  const hand = useUnit($myHand);
+  
   const turnCountdown = useUnit($turnCountdown);
 
   const validMoves = useUnit($validMoves);
@@ -44,15 +60,11 @@ export const PokerGamePage = () => {
   };
 
   useEffect(() => {
-    // Aquí iría requestGameState o similar si tienes
-  }, []);
-
-  console.log("🧪 Render ActionControls con:", {
-    validMoves,
-    callAmount,
-    maxRaise,
-    isMyTurn,
-  });
+    if (players.length > 0) {
+      const nicknames = players.map((p) => p.nickname);
+      getPlayerAvatarsFx(nicknames);
+    }
+  }, [players]);
 
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">
@@ -85,23 +97,19 @@ export const PokerGamePage = () => {
         )}
       </div>
 
-      {/* Tu mano */}
-      <div className="flex flex-col items-center mb-8">
-        <h2 className="text-2xl font-bold mb-2">Tus cartas</h2>
-        {myHand.length > 0 ? (
-          <CardStack
-            cards={myHand.map((card) => ({
-              rank: card.rank as CardRank,
-              suit: card.suit as Suit,
-              value: card.value,
-              gameType: "Poker",
-            }))}
-            hidden={false}
+      {/* Mano del jugador */}
+      {me && (
+        <div className="flex justify-center mb-10">
+          <PlayerPokerCard
+            player={{
+              ...me,
+              hand,
+              currentBet: me.currentBet ?? 0,
+              totalBet: me.totalBet ?? 0,
+            }}
           />
-        ) : (
-          <p className="text-white/60">Esperando tus cartas...</p>
-        )}
-      </div>
+        </div>
+      )}
 
       {isMyTurn && (
         <ActionControls
@@ -115,33 +123,24 @@ export const PokerGamePage = () => {
       {/* Jugadores visibles */}
       <h2 className="text-2xl font-bold text-center mt-6 mb-4">Jugadores</h2>
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
-        {players.map((player) => (
-          <div
-            key={player.id}
-            className="relative flex flex-col items-center gap-3 p-4 bg-black/20 rounded-xl shadow-md w-[260px]"
-          >
-            {player.role && (
-              <div className="absolute top-2 left-2">
-                <RoleChip role={player.role} />
-              </div>
-            )}
-
-            <p className="text-xl font-bold">{player.nickname}</p>
-            <p className="text-white/70">Fichas: {player.coins}</p>
-            <p className="text-white/70">Apuesta actual: {player.currentBet}</p>
-            <p className="text-white/70">Apuesta total: {player.totalBet}</p>
-
-            {player.state === "Fold" && (
-              <span className="text-red-400 font-semibold">Se ha retirado</span>
-            )}
-            {player.state === "AllIn" && (
-              <span className="text-yellow-300 font-semibold">All-In</span>
-            )}
-            {player.id === currentTurnUserId && (
-              <span className="text-green-300 font-semibold">Turno actual</span>
-            )}
-          </div>
-        ))}
+        <GamePlayerCardList
+          players={otherPlayersWithAvatar.map((p) => ({
+            id: p.id,
+            nickName: p.nickname,
+            hand: p.hand?.length ? p.hand : [{ rank: "X", suit: "X", value: 0 }, { rank: "X", suit: "X", value: 0 }],
+            bets: [],
+            isTurn: p.id === currentTurnUserId,
+            coins: p.coins,
+            currentBet: p.currentBet,
+            totalBet: p.totalBet,
+            role:
+              p.role === "dealer" || p.role === "sb" || p.role === "bb"
+                ? p.role
+                : undefined,
+          }))}
+          gameType="Poker"
+          coins={0}
+        />
       </div>
     </div>
   );

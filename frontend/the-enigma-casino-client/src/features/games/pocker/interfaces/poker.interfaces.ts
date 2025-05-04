@@ -5,12 +5,13 @@ export type PlayerRole = "dealer" | "sb" | "bb" | null;
 export interface PlayerPoker {
   id: number;
   nickname: string;
-  hand: Card[];
-  currentBet: number;
-  totalBet: number;
   coins: number;
-  state: PlayerState;
-  role: PlayerRole; 
+
+  hand?: Card[];              
+  currentBet?: number;        
+  totalBet?: number;          
+  state?: PlayerState;        
+  role?: PlayerRole;          
 }
 
 export interface RoundSummary {

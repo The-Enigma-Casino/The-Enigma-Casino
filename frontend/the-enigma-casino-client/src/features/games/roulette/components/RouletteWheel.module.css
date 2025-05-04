@@ -55,16 +55,3 @@
   left: 50%;
   transform: translate(-50%, -104px); /* bola en el borde superior */
 }
-
-
-.spinButton {
-  font-size: 18px;
-  padding: 10px 20px;
-  background-color: red;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 40px;
-  display: inline-block;
-}

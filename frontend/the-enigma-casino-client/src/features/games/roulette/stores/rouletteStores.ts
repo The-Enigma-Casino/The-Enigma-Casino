@@ -9,6 +9,8 @@ import {
   countdownTick,
   rouletteStopedReceived,
   resetRoulettePlayers,
+  countdownStart,
+  countdownDecrement,
 } from "./rouletteEvents";
 import { RoulettePlayer } from "../types/roulettePlayer.type";
 import { LocalBet } from "../types/localBet.type";
@@ -31,7 +33,6 @@ export const spinResult$ = createStore<any>(null)
         bets: payload.results ?? [],
       };
     }
-    console.warn("⚠️ spinResult inválido recibido:", payload);
     return null;
   })
   .on(betsOpenedReceived, () => null)
@@ -100,3 +101,7 @@ export const wheelRotation$ = createStore<number>(0).on(
   gameStateReceived,
   (_, payload) => payload?.wheelRotation ?? 0
 );
+
+export const syncedCountdown$ = createStore(0)
+  .on(countdownStart, (_, seconds) => seconds)
+  .on(countdownDecrement, (state) => Math.max(state - 1, 0));

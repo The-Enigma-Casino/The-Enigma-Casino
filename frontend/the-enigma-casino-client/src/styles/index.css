@@ -22,6 +22,15 @@
 
   /* Chat Colors */
   --Chat-Background: #D4EDB5;
+
+  /* Roulette Colors */
+  --Roulette-green: #14532d;
+  --Roulette-red: #A91607;
+  --Roulette-black: #0E3811;
+  --Chip-Orange: #ea580c;
+  --Chip-Green: #15803d;
+  --Chip-Yellow: #facc15;
+
 }
 
 * {

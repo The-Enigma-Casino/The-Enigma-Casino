@@ -76,17 +76,26 @@ public class PokerNotifier : IPokerNotifier
         await _sender.BroadcastToUsersAsync(playerIds, message);
     }
 
-    public async Task NotifyPlayerTurnAsync(Match match, Player player)
+    public async Task NotifyPlayerTurnAsync(Match match, Player player, PokerGame pokerGame)
     {
-        int currentMaxBet = match.Players
-            .Where(p => p.PlayerState == PlayerState.Playing)
-            .Max(p => PokerBetTracker.GetTotalBet(p.GameTableId, p.UserId));
 
-        int playerBet = PokerBetTracker.GetTotalBet(player.GameTableId, player.UserId);
+        Console.WriteLine("📊 [DEBUG] Estado actual de apuestas:");
+
+        foreach (var (p, bet) in pokerGame.GetAllCurrentBets())
+        {
+            Console.WriteLine($" - {p.User.NickName} | CurrentBet: {bet}, Coins: {p.User.Coins}, State: {p.PlayerState}");
+        }
+
+
+        int currentMaxBet = pokerGame.GetHighestCurrentBet();
+        int playerBet = pokerGame.GetCurrentBetForPlayer(player.UserId);
+
         int toCall = currentMaxBet - playerBet;
 
 
         List<string> validMoves = new List<string>();
+
+        Console.WriteLine($"🧮 [toCall Debug] currentMaxBet: {currentMaxBet}, playerBet: {playerBet}, toCall: {toCall}, coins: {player.User.Coins}");
 
         if (toCall <= 0)
             validMoves.Add("check");
@@ -154,4 +163,28 @@ public class PokerNotifier : IPokerNotifier
 
         await _sender.SendToUserAsync(player.UserId.ToString(), response);
     }
+
+    public async Task NotifyPlayersInitializedAsync(Match match)
+    {
+        var message = new
+        {
+            type = "poker",
+            action = "players_initialized",
+            players = match.Players.Select(p => new
+            {
+                id = p.UserId,
+                nickname = p.User.NickName,
+                coins = p.User.Coins
+            }).ToList()
+        };
+
+        var userIds = match.Players
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
+            .Select(p => p.UserId.ToString())
+            .ToList();
+
+        await _sender.BroadcastToUsersAsync(userIds, message);
+    }
 }
+
+

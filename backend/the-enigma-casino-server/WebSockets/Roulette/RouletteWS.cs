@@ -96,14 +96,14 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             if (!rouletteGame.CanAcceptBets)
             {
                 Console.WriteLine($"[❌ Apuesta fuera de tiempo] {player.User.NickName}");
-                await SendErrorAsync(userId, "No se pueden hacer apuestas en este momento.");
+                await SendErrorAsync(userId, "No se pueden hacer apuestas en este momento.", Type);
                 return;
             }
 
             if (player.PlayerState != PlayerState.Playing)
             {
                 Console.WriteLine($"[❌ Apuesta denegada] {player.User.NickName} no está en estado 'Playing' (actual: {player.PlayerState})");
-                await SendErrorAsync(userId, "Solo los jugadores activos pueden apostar.");
+                await SendErrorAsync(userId, "Solo los jugadores activos pueden apostar.", Type);
                 return;
             }
 
@@ -119,7 +119,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error en apuesta: {ex.Message}");
-            await SendErrorAsync(userId, ex.Message);
+            await SendErrorAsync(userId, ex.Message, Type);
         }
         finally
         {
@@ -472,7 +472,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!ActiveGameMatchStore.TryGet(tableId, out match))
         {
             Console.WriteLine($"No se encontró Match en la mesa {tableId}");
-            _ = SendErrorAsync(userId, "No hay un match activo en esta mesa.");
+            _ = SendErrorAsync(userId, "No hay un match activo en esta mesa.", Type);
             return false;
         }
         return true;
@@ -484,7 +484,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (player == null)
         {
             Console.WriteLine($"Jugador {userId} no encontrado en Match.");
-            _ = SendErrorAsync(userId, "Jugador no encontrado en la mesa.");
+            _ = SendErrorAsync(userId, "Jugador no encontrado en la mesa.", Type);
             return false;
         }
         return true;
@@ -495,7 +495,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!ActiveRouletteGameStore.TryGet(tableId, out rouletteGame))
         {
             Console.WriteLine($"No hay partida activa de ruleta en mesa {tableId}");
-            _ = SendErrorAsync(userId, "No hay partida activa de ruleta en esta mesa.");
+            _ = SendErrorAsync(userId, "No hay partida activa de ruleta en esta mesa.", Type);
             return false;
         }
         return true;

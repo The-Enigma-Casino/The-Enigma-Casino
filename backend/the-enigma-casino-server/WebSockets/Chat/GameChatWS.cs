@@ -44,13 +44,13 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!message.TryGetProperty("tableId", out var tableIdProp) ||
             !int.TryParse(tableIdProp.GetString(), out int tableId))
         {
-            await SendErrorAsync(userId, "Invalid tableId.");
+            await SendErrorAsync(userId, "TableId inválido", Type);
             return;
         }
 
         if (!message.TryGetProperty("text", out var textProp))
         {
-            await SendErrorAsync(userId, "Missing message text.");
+            await SendErrorAsync(userId, "Falta el mensaje.", Type);
             return;
         }
 
@@ -58,20 +58,20 @@ public class GameChatWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (string.IsNullOrWhiteSpace(rawText))
         {
-            await SendErrorAsync(userId, "Message is empty.");
+            await SendErrorAsync(userId, "Mensaje vacío.", Type);
             return;
         }
 
         if (!ActiveGameSessionStore.TryGet(tableId, out var session))
         {
-            await SendErrorAsync(userId, "No active session for this table.");
+            await SendErrorAsync(userId, "No hay sesión active para esta mesa.", Type);
             return;
         }
 
         Player player = session.Table.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
         if (player == null)
         {
-            await SendErrorAsync(userId, "You are not part of the table.");
+            await SendErrorAsync(userId, "No estás en la mesa.", Type);
             return;
         }
 

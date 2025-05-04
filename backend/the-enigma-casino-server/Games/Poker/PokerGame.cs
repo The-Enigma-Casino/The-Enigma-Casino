@@ -528,4 +528,21 @@ public class PokerGame
             }
         }
     }
+
+    public int GetHighestCurrentBet()
+    {
+        return _players
+            .Where(p => p.PlayerState is PlayerState.Playing or PlayerState.AllIn)
+            .Max(p => p.CurrentBet);
+    }
+
+    public int GetCurrentBetForPlayer(int userId)
+    {
+        return _players.FirstOrDefault(p => p.UserId == userId)?.CurrentBet ?? 0;
+    }
+
+    public IEnumerable<(Player, int)> GetAllCurrentBets()
+    {
+        return _players.Select(p => (p, p.CurrentBet));
+    }
 }

@@ -8,7 +8,8 @@ public interface IPokerNotifier
     Task NotifyBlindsAsync(Match match, PokerGame game);
     Task SendInitialHandsAsync(Match match);
     Task NotifyStartBettingAsync(Match match);
-    Task NotifyPlayerTurnAsync(Match match, Player player);
+    Task NotifyPlayerTurnAsync(Match match, Player player, PokerGame pokerGame);
     Task NotifyPlayerActionAsync(Player player, string move);
     Task NotifyBetConfirmedAsync(Player player);
+    Task NotifyPlayersInitializedAsync(Match match);
 }

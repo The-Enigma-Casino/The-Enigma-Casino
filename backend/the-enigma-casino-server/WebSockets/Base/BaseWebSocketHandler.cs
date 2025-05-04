@@ -61,11 +61,12 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
     }
 
     // ❌ Enviar error
-    public async Task SendErrorAsync(string userId, string errorMessage)
+    public async Task SendErrorAsync(string userId, string errorMessage, string contextType)
     {
         var error = new
         {
-            type = "error",
+            type = contextType,
+            action = "error",
             message = errorMessage
         };
 
@@ -91,7 +92,8 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         int tableId,
         out T result,
         string entityName,
-        string? userId = null)
+        string? userId = null,
+        string? contextType = null)
     {
         result = getter(tableId)!;
 
@@ -99,7 +101,7 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         {
             Console.WriteLine($"❌ No se encontró {entityName} para mesa {tableId}");
             if (userId != null)
-                _ = SendErrorAsync(userId, $"No se encontró {entityName} en esta mesa.");
+                _ = SendErrorAsync(userId, $"No se encontró {entityName} en esta mesa.", contextType);
             return false;
         }
 
@@ -110,7 +112,8 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         Func<T?> getter,
         out T result,
         string entityName,
-        string? userId = null)
+        string? userId = null,
+        string? contextType = null)
     {
         result = getter()!;
 
@@ -118,7 +121,7 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         {
             Console.WriteLine($"❌ No se encontró {entityName}");
             if (userId != null)
-                _ = SendErrorAsync(userId, $"No se encontró {entityName}.");
+                _ = SendErrorAsync(userId, $"No se encontró {entityName}.", contextType);
             return false;
         }
 

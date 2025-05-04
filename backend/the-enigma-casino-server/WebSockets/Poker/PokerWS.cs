@@ -67,6 +67,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         PokerNotifier notifier = _serviceProvider.GetRequiredService<PokerNotifier>();
 
+        await notifier.NotifyPlayersInitializedAsync(match);
+
         PokerGame pokerGame = PokerManager.StartNewRound(match);
 
         await notifier.NotifyBlindsAsync(match, pokerGame);
@@ -110,7 +112,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (pokerGame.CurrentTurnUserId != player.UserId)
         {
-            await SendErrorAsync(userId, "No es tu turno.");
+            await SendErrorAsync(userId, "No es tu turno.", Type);
             return;
         }
 
@@ -121,7 +123,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (!message.TryGetProperty("move", out var moveProp))
         {
-            await SendErrorAsync(userId, "Falta la acción (move).");
+            await SendErrorAsync(userId, "Falta la acción (move).", Type);
             return;
         }
 
@@ -180,7 +182,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error en acción de jugador: {ex.Message}");
-            await SendErrorAsync(userId, ex.Message);
+            await SendErrorAsync(userId, ex.Message, Type);
             return;
         }
 
@@ -211,14 +213,14 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!message.TryGetProperty("amount", out var amountProp) || !amountProp.TryGetInt32(out int amount))
         {
             Console.WriteLine($"❌ Apuesta inválida recibida.");
-            await SendErrorAsync(userId, "Monto de apuesta inválido.");
+            await SendErrorAsync(userId, "Monto de apuesta inválido.", Type);
             return;
         }
 
         if (!message.TryGetProperty("phase", out var phaseProp))
         {
             Console.WriteLine("❌ Fase no especificada en el mensaje.");
-            await SendErrorAsync(userId, "Fase no especificada.");
+            await SendErrorAsync(userId, "Fase no especificada.", Type);
             return;
         }
 
@@ -232,7 +234,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error al procesar la apuesta: {ex.Message}");
-            await SendErrorAsync(userId, ex.Message);
+            await SendErrorAsync(userId, ex.Message, Type);
             return;
         }
 
@@ -558,8 +560,12 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
     private async Task NotifyPlayerTurnWithTimerAsync(Match match, string phase, Player player)
     {
         int tableId = match.GameTableId;
+
+        if (!ActivePokerGameStore.TryGet(tableId, out var pokerGame))
+            return;
+
         var notifier = _serviceProvider.GetRequiredService<PokerNotifier>();
-        await notifier.NotifyPlayerTurnAsync(match, player);
+        await notifier.NotifyPlayerTurnAsync(match, player, pokerGame);
 
         await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), new
         {

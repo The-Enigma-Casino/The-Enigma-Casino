@@ -72,7 +72,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         if (!match.Players.Any(p => p.UserId == int.Parse(userId)))
         {
             Console.WriteLine($"❌ [WebSocket] Jugador {userId} no está en el Match actual. No puede apostar.");
-            await SendErrorAsync(userId, "No puedes apostar hasta que comience la siguiente ronda.");
+            await SendErrorAsync(userId, "No puedes apostar hasta que comience la siguiente ronda.", Type);
             return;
         }
 
@@ -81,14 +81,14 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         if (player.CurrentBet > 0)
         {
             Console.WriteLine($"El jugador ya ha apostado. No se permite apostar varias veces.");
-            await SendErrorAsync(userId, "Ya has apostado en esta ronda.");
+            await SendErrorAsync(userId, "Ya has apostado en esta ronda.", Type);
             return;
         }
 
         if (player.PlayerState == PlayerState.Spectating)
         {
             Console.WriteLine($"❌ [BlackjackWS] Jugador {player.User.NickName} intentó apostar como espectador.");
-            await SendErrorAsync(userId, "La ronda ya ha comenzado. Espera a la siguiente para poder jugar.");
+            await SendErrorAsync(userId, "La ronda ya ha comenzado. Espera a la siguiente para poder jugar.", Type);
             return;
         }
 
@@ -102,7 +102,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         if (amount > 5000 || amount < minimumBet)
         {
             Console.WriteLine($"❌ Apuesta inválida. Debe ser mayor o igual a {minimumBet} y menor o igual a 5000. 🪙");
-            await SendErrorAsync(userId, $"La apuesta debe ser mayor o igual a {minimumBet} y menor o igual a 5000.");
+            await SendErrorAsync(userId, $"La apuesta debe ser mayor o igual a {minimumBet} y menor o igual a 5000.", Type);
             return;
         }
 
@@ -122,7 +122,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error al apostar: {ex.Message}");
-            await SendErrorAsync(userId, ex.Message);
+            await SendErrorAsync(userId, ex.Message, Type);
             return;
         }
 
@@ -692,7 +692,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         if (!ActiveBlackjackGameStore.TryGet(tableId, out blackjackGame))
         {
             Console.WriteLine($"No hay BlackjackGame activo para mesa {tableId}");
-            _ = SendErrorAsync(userId, "No hay partida activa de Blackjack en esta mesa.");
+            _ = SendErrorAsync(userId, "No hay partida activa de Blackjack en esta mesa.", Type);
             return false;
         }
         return true;
@@ -703,7 +703,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         if (game.CurrentPlayerTurnId != player.UserId)
         {
             Console.WriteLine($"Acción no permitida: No es el turno de {player.User.NickName}");
-            await SendErrorAsync(userId, "No es tu turno.");
+            await SendErrorAsync(userId, "No es tu turno.", Type);
             return false;
         }
         return true;

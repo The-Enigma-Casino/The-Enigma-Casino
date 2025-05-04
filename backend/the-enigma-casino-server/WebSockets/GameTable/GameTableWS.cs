@@ -77,7 +77,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             await ((IWebSocketSender)this).SendToUserAsync(userId, new
             {
-                type = "error",
+                type = Type, 
+                action = "error",
                 message = "No puedes unirte a otra mesa mientras participas en una partida activa."
             });
             return;
@@ -126,7 +127,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     Console.WriteLine($"❌ {user.NickName} tiene {user.Coins} monedas, pero se requieren al menos {minimumCoins} para unirse a esta mesa.");
                     await ((IWebSocketSender)this).SendToUserAsync(userId, new
                     {
-                        type = "error",
+                        type = Type,
+                        action = "error",
                         message = $"Necesitas al menos {minimumCoins} monedas para unirte a esta mesa."
                     });
                     return;
@@ -148,7 +150,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 {
                     await ((IWebSocketSender)this).SendToUserAsync(userId, new
                     {
-                        type = "table_closed",
+                        type = Type,
+                        action = "table_closed",
                         tableId = table.Id,
                         message = "Esta mesa está en mantenimiento y no se puede acceder por el momento."
                     });
@@ -157,7 +160,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 {
                     await ((IWebSocketSender)this).SendToUserAsync(userId, new
                     {
-                        type = "error",
+                        type = Type,
+                        action = "error",
                         message = errorType
                     });
                 }
@@ -169,7 +173,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 session.GetConnectedUserIds(),
                 new
                 {
-                    type = GameTableMessageTypes.TableUpdate,
+                    type = Type,
+                    action = GameTableMessageTypes.TableUpdate,
                     tableId = session.Table.Id,
                     players = session.GetPlayerNames(),
                     state = session.Table.TableState.ToString()
@@ -179,7 +184,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             {
                 await ((IWebSocketSender)this).SendToUserAsync(userId, new
                 {
-                    type = GameTableMessageTypes.WaitingNextMatch,
+                    type = "game_match",
+                    action = GameTableMessageTypes.WaitingNextMatch,
                     tableId = table.Id,
                     message = "Una partida está en curso. Te unirás automáticamente a la siguiente ronda."
                 });
@@ -212,7 +218,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     session.GetConnectedUserIds(),
                     new
                     {
-                        type = GameTableMessageTypes.CountdownStarted,
+                        type = Type,
+                        action = GameTableMessageTypes.CountdownStarted,
                         tableId = table.Id,
                         countdown = 30
                     });
@@ -280,7 +287,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
-                type = GameTableMessageTypes.GameStart,
+                type = Type,
+                action = GameTableMessageTypes.GameStart,
                 tableId = table.Id
             });
 
@@ -395,7 +403,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         return ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
         {
-            type = GameTableMessageTypes.TableUpdate,
+            type = Type,
+            action = GameTableMessageTypes.TableUpdate,
             tableId = table.Id,
             players = playerNames,
             state = table.TableState.ToString()
@@ -406,7 +415,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         return ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
         {
-            type = GameTableMessageTypes.CountdownStopped,
+            type = Type,
+            action = GameTableMessageTypes.CountdownStopped,
             tableId
         });
     }

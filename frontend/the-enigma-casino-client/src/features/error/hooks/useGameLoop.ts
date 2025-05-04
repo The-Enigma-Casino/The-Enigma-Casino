@@ -8,7 +8,7 @@ interface GameLoopOptions {
 
 export const useGameLoop = ({ update, draw, canvasRef }: GameLoopOptions) => {
   const requestRef = useRef<number>(0);
-  const previousTimeRef = useRef<number | undefined>(undefined); // ✅ ahora acepta undefined
+  const previousTimeRef = useRef<number | undefined>(undefined);
   const isRunningRef = useRef(false);
 
   const start = useCallback(() => {
@@ -31,14 +31,14 @@ export const useGameLoop = ({ update, draw, canvasRef }: GameLoopOptions) => {
       previousTimeRef.current = undefined;
       requestRef.current = requestAnimationFrame(loop);
     }
-  }, [update, draw, canvasRef]); // ✅ dependencias correctas
+  }, [update, draw, canvasRef]);
 
   const stop = useCallback(() => {
     isRunningRef.current = false;
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
   }, []);
 
-  useEffect(() => stop, [stop]); // ✅ incluye stop en dependencias
+  useEffect(() => stop, [stop]);
 
   return { start, stop, isRunning: isRunningRef };
 };

@@ -30,6 +30,7 @@ export const GameCanvas = () => {
   const [achievedHighScore, setAchievedHighScore] = useState(false);
   const [deathMessage, setDeathMessage] = useState("");
   const [scoreRank, setScoreRank] = useState("");
+  const rainbowRef = useRef<HTMLImageElement | null>(null);
 
   const lossMessages = [
     "💥 Te estampaste como un trébol distraído.",
@@ -40,6 +41,7 @@ export const GameCanvas = () => {
     "💍 Es mío, solo mío... mi tesoro.",
     "💨 Te volaste como un trébol en el viento.",
     "🪙 Por poco pillas la olla de oro... por poco.",
+    "⚡ La inteligencia te persigue, pero tú eres más rápido.",
     "🍀 El trébol dorado se escapó de tus manos.",
     "🪙 El oro se escurrió entre tus dedos.",
     "🍀 Eso tuvo que doler.",
@@ -52,6 +54,7 @@ export const GameCanvas = () => {
     "🧙‍♂️ El hechizo del trébol no fue suficiente.",
     "🧚‍♂️ El hada de la suerte no estaba de tu lado.",
     "🎩 No eres un mago, Harry.",
+    "💡 La inteligencia te abandonó en el último segundo.",
     "🧢 Ah sh*t, here we go again...",
   ];
 
@@ -105,7 +108,25 @@ export const GameCanvas = () => {
       }
     },
     draw: (ctx) => {
-      ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+      ctx.fillStyle = "#B5F3F5";
+      ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+      const rainbow = rainbowRef.current;
+      if (rainbow) {
+        const rainbowWidth = 300;
+        const rainbowHeight = 100;
+        ctx.drawImage(
+          rainbow,
+          GAME_WIDTH / 2 - rainbowWidth / 2,
+          GAME_HEIGHT - 30 - rainbowHeight,
+          rainbowWidth,
+          rainbowHeight
+        );
+      }
+
+      ctx.fillStyle = "#7A9965";
+      ctx.fillRect(0, GAME_HEIGHT - 30, GAME_WIDTH, 30);
+
       drawPlayer(ctx);
       drawObstacle(ctx);
     },
@@ -129,6 +150,12 @@ export const GameCanvas = () => {
   useEffect(() => {
     initPlayer();
     initObstacle();
+
+    const img = new Image();
+    img.src = "/img/rainbow.webp";
+    img.onload = () => {
+      rainbowRef.current = img;
+    };
   }, []);
 
   return (

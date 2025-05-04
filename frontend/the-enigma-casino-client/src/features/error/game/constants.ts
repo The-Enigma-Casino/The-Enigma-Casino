@@ -1,17 +1,18 @@
 export const GAME_WIDTH = 600;
-export const GAME_HEIGHT = 200;
+export const GAME_HEIGHT = 300;
 
 export const PLAYER = {
-  width: 30,
-  height: 30,
   x: 50,
-  ground: GAME_HEIGHT - 30,
-  jumpStrength: 8,
-  gravity: 0.4,
+  width: 70,
+  height: 90,
+  ground: 210,
+  jumpStrength: 14,
+  gravity: 0.8,
 };
+
 
 export const OBSTACLE = {
   width: 20,
-  height: 40,
-  speed: 4,
+  height: 60,
+  speed: 6,
 };

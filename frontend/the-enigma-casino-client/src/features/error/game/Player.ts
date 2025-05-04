@@ -4,6 +4,11 @@ let y = PLAYER.ground;
 let vy = 0;
 let isJumping = false;
 
+const duende = new Image();
+const duendeJump = new Image();
+duende.src = "/img/elf.webp";
+duendeJump.src = "/img/jumping-elf.webp";
+
 export function initPlayer() {
   y = PLAYER.ground;
   vy = 0;
@@ -12,16 +17,19 @@ export function initPlayer() {
   window.addEventListener("keydown", (e) => {
     if (e.code === "Space") {
       e.preventDefault();
-      jump();
+      if (!isJumping) {
+        vy = -PLAYER.jumpStrength;
+        isJumping = true;
+      }
     }
   });
-}
 
-export function jump() {
-  if (!isJumping) {
-    vy = -PLAYER.jumpStrength;
-    isJumping = true;
-  }
+  window.addEventListener("touchstart", () => {
+    if (!isJumping) {
+      vy = -PLAYER.jumpStrength;
+      isJumping = true;
+    }
+  });
 }
 
 export function updatePlayer() {
@@ -36,16 +44,28 @@ export function updatePlayer() {
 }
 
 export function drawPlayer(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "lime";
-  ctx.fillRect(PLAYER.x, y, PLAYER.width, PLAYER.height);
+  const image = isJumping ? duendeJump : duende;
+  ctx.drawImage(image, PLAYER.x, y, PLAYER.width, PLAYER.height);
 }
 
 export function getPlayerRect() {
-  return { x: PLAYER.x, y, w: PLAYER.width, h: PLAYER.height };
+  return {
+    x: PLAYER.x,
+    y,
+    w: PLAYER.width,
+    h: PLAYER.height,
+  };
 }
 
 export function resetPlayer() {
   y = PLAYER.ground;
   vy = 0;
   isJumping = false;
+}
+
+export function jump() {
+  if (!isJumping) {
+    vy = -PLAYER.jumpStrength;
+    isJumping = true;
+  }
 }

@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { Chat } from "../chat/components/Chat";
 import { BlackjackGamePage } from "../blackjack/pages/BlackjackGamePage";
 import RouletteGamePage from "../roulette/pages/RouleteGamePage";
-import PokerGamePage from "../pocker/pages/PokerGamePage";
+import { PokerGamePage } from "../pocker/pages/PokerGamePage";
 import { NavigationInit } from "../shared/router/NavigationInit";
 import { useLeaveTableOnUnload } from "../hooks/useLeaveTableOnUnload";
 

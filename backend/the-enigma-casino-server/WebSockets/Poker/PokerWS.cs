@@ -286,10 +286,11 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             action = actionName,
             cards = communityCards.Select(c => new
             {
-                suit = (int)c.Suit,
-                rank = (int)c.Rank
+                suit = c.Suit.ToString().ToLowerInvariant(),
+                rank = c.Rank.ToString().ToLowerInvariant(),
             }).ToList()
         };
+
 
         List<string> userIds = match.Players
             .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
@@ -347,7 +348,11 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = "flop_dealt",
-            cards = pokerGame.GetCommunityCards().Select(c => new { c.Suit, c.Rank }).ToList()
+            cards = pokerGame.GetCommunityCards().Select(c => new {
+                suit = c.Suit.ToString(),
+                rank = c.Rank.ToString(),
+            })
+            .ToList()
         };
 
         List<string> userIds = match.Players
@@ -380,11 +385,11 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = "turn_dealt",
-            cards = communityCards.Select(c => new
-            {
-                suit = (int)c.Suit,
-                rank = (int)c.Rank
-            }).ToList()
+            cards = pokerGame.GetCommunityCards().Select(c => new {
+                suit = c.Suit.ToString(),
+                rank = c.Rank.ToString(),
+            })
+            .ToList()
         };
 
         List<string> userIds = match.Players
@@ -414,7 +419,11 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = "river_dealt",
-            cards = communityCards.Select(c => new { c.Suit, c.Rank }).ToList()
+            cards = pokerGame.GetCommunityCards().Select(c => new {
+                suit = c.Suit.ToString(),
+                rank = c.Rank.ToString(),
+            })
+            .ToList()
         };
 
         List<string> playerIds = match.Players

@@ -15,6 +15,7 @@ import { JSX, useEffect } from "react";
 import { fetchTables } from "../actions/tableActions";
 
 import "../../games/roulette/stores/rouletteHandler";
+import "../../games/pocker/stores/pokerHandler";
 import "../../games/match/matchHandler";
 
 function GameTablePage() {

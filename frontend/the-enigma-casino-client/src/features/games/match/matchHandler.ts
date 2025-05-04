@@ -1,5 +1,6 @@
 import { socketMessageReceived } from "../../../websocket/store/wsEvents";
 import { matchStarted } from "../../gameTables/store/tablesIndex";
+import { matchPlayersInitialized } from "../pocker/stores/pokerIndex";
 import { eliminatedNoCoinsReceived } from "./matchRemoval";
 
 socketMessageReceived.watch((data) => {
@@ -8,6 +9,7 @@ socketMessageReceived.watch((data) => {
   switch (data.action) {
     case "match_started":
       matchStarted(data.tableId);
+      matchPlayersInitialized(data.players);
       break;
 
     case "match_ended":
@@ -23,4 +25,8 @@ socketMessageReceived.watch((data) => {
     default:
       console.warn("[🧩 GameMatch] Acción desconocida:", data.action);
   }
+});
+
+matchPlayersInitialized.watch((players) => {
+  console.log("🎲 Jugadores inicializados:", players);
 });

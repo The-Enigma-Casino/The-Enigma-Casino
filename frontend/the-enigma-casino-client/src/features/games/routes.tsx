@@ -3,7 +3,7 @@ import Error from "../error/pages/Error";
 import { BlackjackGamePage } from "./blackjack/pages/BlackjackGamePage";
 import { GameLayout } from "./layout/GameLayout";
 import RouletteGamePage from "./roulette/pages/RouleteGamePage";
-import PokerGamePage from "./pocker/pages/PokerGamePage";
+import { PokerGamePage } from "./pocker/pages/PokerGamePage";
 
 const routeGames: RouteObject[] = [
   {

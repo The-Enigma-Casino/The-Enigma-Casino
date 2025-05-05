@@ -132,8 +132,12 @@ function RouletteGamePage() {
       };
     }
     const won = spinResult.bets.some((b: any) => b.isWinner === true);
+    const totalWon = spinResult.totalWon ?? 0;
     return won
-      ? { message: "¡Ganaste una apuesta! 🎉", colorClass: "text-green-400" }
+      ? {
+          message: `¡Ganaste ${totalWon} fichas! 🎉`,
+          colorClass: "text-green-400",
+        }
       : { message: "No acertaste esta vez. 😞", colorClass: "text-red-400" };
   };
 

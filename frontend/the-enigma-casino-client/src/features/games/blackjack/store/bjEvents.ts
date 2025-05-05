@@ -57,6 +57,7 @@ export const matchCancelled = createEvent<{
 export const setGamePhase = createEvent<
   "waiting" | "countdown" | "betting" | "playing" | "results"
 >();
+export const resetBets = createEvent();
 
 // Acciones enviadas al backend
 export const playerHit = createEvent();

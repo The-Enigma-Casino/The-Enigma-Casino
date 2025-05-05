@@ -14,15 +14,19 @@ export interface PlayerPoker {
   role?: PlayerRole;          
 }
 
-export interface RoundSummary {
-  winners: {
-    userId: number;
-    nickname: string;
-    amountWon: number;
-    handDescription: string;
+export interface PotResult {
+  potType: string;
+  userId: number;
+  nickname: string;
+  amount: number;
+  description: string;
+  hand: {
+    suit: string;
+    rank: string;
+    value: number;
   }[];
-  pot: number;
 }
+
 
 export interface Card {
   rank: string;

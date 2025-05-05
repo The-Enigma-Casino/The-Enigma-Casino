@@ -15,8 +15,11 @@ import {
   $myHand,
   $pokerPhase,
   $pokerPlayers,
+  $roundSummary,
   $turnCountdown,
+  $turnCountdownTotal,
   $validMoves,
+  decrementTurnCountdown,
   sendPokerAction,
 } from "../stores/pokerIndex";
 import { $userId } from "../../../auth/store/authStore";
@@ -24,6 +27,7 @@ import { GamePlayerCardList } from "../../shared/components/playerCards/GameCard
 import { PlayerPokerCard } from "../components/PlayerPokerCard";
 import { $playerAvatars } from "../../stores/gamesStore";
 import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
+import { RoundResult } from "../components/RoundResult";
 
 export const PokerGamePage = () => {
   const pokerPhase = useUnit($pokerPhase);
@@ -43,14 +47,18 @@ export const PokerGamePage = () => {
   const currentTurnUserId = useUnit($currentTurnUserId);
 
   const hand = useUnit($myHand);
-  
-  const turnCountdown = useUnit($turnCountdown);
+
+  const countdown = useUnit($turnCountdown);
+  const total = useUnit($turnCountdownTotal);
+  const decrement = useUnit(decrementTurnCountdown);
 
   const validMoves = useUnit($validMoves);
   const callAmount = useUnit($callAmount);
   const maxRaise = useUnit($maxRaise);
 
   const isMyTurn = useUnit($isMyTurn);
+
+  const roundSummary = useUnit($roundSummary);
 
   const handleAction = (
     move: "fold" | "call" | "check" | "raise" | "all-in",
@@ -66,6 +74,13 @@ export const PokerGamePage = () => {
     }
   }, [players]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      decrement();
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [decrement]);
+
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">
       <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">
@@ -76,7 +91,17 @@ export const PokerGamePage = () => {
         Fase: <span className="font-bold text-green-300">{pokerPhase}</span>
       </p>
 
-      {isMyTurn && <CountdownBar countdown={turnCountdown} total={20} />}
+      {roundSummary && (
+        <div className="animate-fade-in">
+          <RoundResult summary={roundSummary} />
+        </div>
+      )}
+
+      {isMyTurn && (
+        <div className="w-full flex justify-center mb-4">
+          <CountdownBar countdown={countdown} total={total} />
+        </div>
+      )}
 
       {/* Cartas comunitarias */}
       <div className="flex justify-center gap-4 mb-8">
@@ -127,7 +152,12 @@ export const PokerGamePage = () => {
           players={otherPlayersWithAvatar.map((p) => ({
             id: p.id,
             nickName: p.nickname,
-            hand: p.hand?.length ? p.hand : [{ rank: "X", suit: "X", value: 0 }, { rank: "X", suit: "X", value: 0 }],
+            hand: p.hand?.length
+              ? p.hand
+              : [
+                  { rank: "X", suit: "X", value: 0 },
+                  { rank: "X", suit: "X", value: 0 },
+                ],
             bets: [],
             isTurn: p.id === currentTurnUserId,
             coins: p.coins,

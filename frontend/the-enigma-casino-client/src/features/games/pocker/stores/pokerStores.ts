@@ -1,5 +1,9 @@
 import { createStore } from "effector";
-import { Card, PlayerPoker } from "../interfaces/poker.interfaces";
+import {
+  Card,
+  PlayerPoker,
+  PotResult,
+} from "../interfaces/poker.interfaces";
 import {
   betConfirmedReceived,
   blindsAssigned,
@@ -13,7 +17,10 @@ import {
   myTurnEnded,
   myTurnStarted,
   pokerPhaseChanged,
+  resetPokerGame,
+  roundResultReceived,
   turnCountdownSet,
+  turnCountdownTotalSet,
   validMovesUpdated,
 } from "./pokerEvents";
 
@@ -56,52 +63,58 @@ export const $pokerPlayers = createStore<PlayerPoker[]>([])
     players.map((p) =>
       p.id === userId ? { ...p, currentBet: bet, totalBet } : p
     )
-  );
+  )
+  .reset(resetPokerGame);
 
 // 🎮 Fase del juego
 export const $pokerPhase = createStore<
   "preflop" | "flop" | "turn" | "river" | "showdown"
->("preflop").on(pokerPhaseChanged, (_, phase) => phase);
+>("preflop")
+  .on(pokerPhaseChanged, (_, phase) => phase)
+  .reset(resetPokerGame);
 
 // 🃏 Cartas
-export const $communityCards = createStore<Card[]>([]).on(
-  communityCardsUpdated,
-  (_, cards) => cards
-);
+export const $communityCards = createStore<Card[]>([])
+  .on(communityCardsUpdated, (_, cards) => cards)
+  .reset(resetPokerGame);
 
-export const $myHand = createStore<Card[]>([]).on(
-  myHandUpdated,
-  (_, cards) => cards
-);
+export const $myHand = createStore<Card[]>([])
+  .on(myHandUpdated, (_, cards) => cards)
+  .reset(resetPokerGame);
 
 // ⏱️ Turno actual
-export const $currentTurnUserId = createStore<number | null>(null).on(
-  currentTurnChanged,
-  (_, id) => id
-);
+export const $currentTurnUserId = createStore<number | null>(null)
+  .on(currentTurnChanged, (_, id) => id)
+  .reset(resetPokerGame);
 
 export const $isMyTurn = createStore<boolean>(false)
   .on(myTurnStarted, () => true)
-  .on(myTurnEnded, () => false);
+  .on(myTurnEnded, () => false)
+  .reset(resetPokerGame);
 
 // 🎯 Opciones y límites de movimiento
-export const $validMoves = createStore<string[]>([]).on(
-  validMovesUpdated,
-  (_, moves) => moves
-);
+export const $validMoves = createStore<string[]>([])
+  .on(validMovesUpdated, (_, moves) => moves)
+  .reset(resetPokerGame);
 
-export const $callAmount = createStore<number>(0, { skipVoid: false }).on(
-  callAmountUpdated,
-  (_, amount) => amount ?? 0
-);
+export const $callAmount = createStore<number>(0, { skipVoid: false })
+  .on(callAmountUpdated, (_, amount) => amount ?? 0)
+  .reset(resetPokerGame);
 
-export const $maxRaise = createStore<number>(0, { skipVoid: false }).on(
-  maxRaiseUpdated,
-  (_, amount) => amount ?? 0
-);
+export const $maxRaise = createStore<number>(0, { skipVoid: false })
+  .on(maxRaiseUpdated, (_, amount) => amount ?? 0)
+  .reset(resetPokerGame);
+
+export const $roundSummary = createStore<PotResult[] | null>(null)
+  .on(roundResultReceived, (_, { summary }) => summary)
+  .reset(resetPokerGame);
 
 // ⏱️ Temporizador de turno
 export const $turnCountdown = createStore<number>(20)
   .on(turnCountdownSet, (_, value) => value)
-  .on(decrementTurnCountdown, (time) => Math.max(time - 1, 0));
+  .on(decrementTurnCountdown, (time) => Math.max(time - 1, 0))
+  .reset(resetPokerGame);
 
+export const $turnCountdownTotal = createStore<number>(20)
+  .on(turnCountdownTotalSet, (_, value) => value)
+  .reset(resetPokerGame);

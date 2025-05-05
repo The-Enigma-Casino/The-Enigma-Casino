@@ -1,9 +1,9 @@
 import { socketMessageReceived } from "../../../../websocket/store/wsIndex";
+import { loadCoins } from "../../../coins/store/coinsStore";
 import {
   pokerPhaseChanged,
   communityCardsUpdated,
   validMovesUpdated,
-  turnCountdownSet,
   myHandUpdated,
   callAmountUpdated,
   maxRaiseUpdated,
@@ -12,7 +12,10 @@ import {
   blindsAssigned,
   betConfirmedReceived,
   matchPlayersInitialized,
-  turnCountdownStart,
+  turnCountdownSet,
+  turnCountdownTotalSet,
+  resetPokerGame,
+  roundResultReceived,
 } from "../stores/pokerIndex";
 
 socketMessageReceived.watch((data) => {
@@ -25,6 +28,7 @@ socketMessageReceived.watch((data) => {
     }
 
     case "players_initialized": {
+      resetPokerGame();
       const players = data.players.map((p: any) => ({
         id: p.id,
         nickname: p.nickname,
@@ -44,7 +48,7 @@ socketMessageReceived.watch((data) => {
       myHandUpdated(cards);
       break;
     }
-    
+
     case "blinds_assigned":
       blindsAssigned({
         dealer: data.dealer,
@@ -67,7 +71,8 @@ socketMessageReceived.watch((data) => {
     }
 
     case "turn_timer": {
-      turnCountdownStart(data.time);
+      turnCountdownSet(data.time);
+      turnCountdownTotalSet(data.time);
       break;
     }
 
@@ -77,10 +82,12 @@ socketMessageReceived.watch((data) => {
         bet: data.bet,
         totalBet: data.totalBet,
       });
+      loadCoins();
       break;
-      
+
     case "player_action":
     case "round_result":
+      roundResultReceived({ summary: data.summary });
       myTurnEnded();
       break;
 
@@ -102,4 +109,3 @@ socketMessageReceived.watch((data) => {
       break;
   }
 });
-

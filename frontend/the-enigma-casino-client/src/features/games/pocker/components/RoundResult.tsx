@@ -1,22 +1,25 @@
 import { FC } from "react";
-import { RoundSummary } from "../interfaces/poker.interfaces";
-
+import { PotResult } from "../interfaces/poker.interfaces";
 
 interface Props {
-  summary: RoundSummary;
+  summary: PotResult[];
 }
 
 export const RoundResult: FC<Props> = ({ summary }) => {
+  if (!Array.isArray(summary) || summary.length === 0) return null;
+
   return (
     <div className="bg-black/60 rounded-lg p-4 mt-6 shadow-md max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold text-center text-yellow-300 mb-4">Resultado de la ronda</h2>
-      <p className="text-center text-white mb-2">Bote total: <span className="font-bold">{summary.pot} fichas</span></p>
+      <h2 className="text-2xl font-bold text-center text-yellow-300 mb-4">
+        Resultado de la ronda
+      </h2>
       <ul className="divide-y divide-white/10">
-        {summary.winners.map((w) => (
-          <li key={w.userId} className="py-2 text-white flex justify-between items-center">
-            <span className="font-bold text-green-300">{w.nickname}</span>
-            <span className="italic">{w.handDescription}</span>
-            <span className="font-bold text-green-400">+{w.amountWon} fichas</span>
+        {summary.map((result, index) => (
+          <li key={`${result.potType}-${index}`} className="py-2 text-white flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+            <span className="text-sm text-white/60">{result.potType}</span>
+            <span className="font-bold text-green-300">{result.nickname}</span>
+            <span className="italic">{result.description}</span>
+            <span className="font-bold text-green-400">+{result.amount} fichas</span>
           </li>
         ))}
       </ul>

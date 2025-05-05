@@ -31,6 +31,7 @@ export const spinResult$ = createStore<any>(null)
         wheelRotation: payload.result.wheelRotation,
         ballRotation: payload.result.ballRotation,
         bets: payload.results ?? [],
+        totalWon: payload.totalWon ?? 0,
       };
     }
     return null;

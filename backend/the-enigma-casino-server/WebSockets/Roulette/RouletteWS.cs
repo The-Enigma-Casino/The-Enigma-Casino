@@ -344,7 +344,9 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         foreach (Player player in match.Players.Where(p => p.PlayerState != PlayerState.Left && p.PlayerState != PlayerState.Spectating))
         {
-            var spinResults = allResults.GetValueOrDefault(player.UserId) ?? new List<RouletteSpinResult>();
+            List<RouletteSpinResult> spinResults = allResults.GetValueOrDefault(player.UserId) ?? new List<RouletteSpinResult>();
+
+            int totalWon = spinResults.Where(r => r.Won).Sum(r => r.Payout);
 
             var payload = new
             {
@@ -362,7 +364,8 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     bet = r.Bet.ToString(),
                     isWinner = r.Won,
                     payout = r.Payout,
-                }).ToList()
+                }).ToList(),
+                totalWon
             };
 
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), payload);

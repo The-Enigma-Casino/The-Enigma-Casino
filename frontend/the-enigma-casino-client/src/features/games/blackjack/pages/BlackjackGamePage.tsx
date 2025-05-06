@@ -4,22 +4,20 @@ import "../store/bjGameStateMapper";
 import { useUnit } from "effector-react";
 import {
   $players, $croupier, $gameState, $currentTurnUserId, resetPlayers, resetCroupier, resetGameState, resetCroupierTotal, playerHit, playerStand, doubleDown,
-  $roundResults, $croupierRoundHand, $croupierTotal, $gamePhase, setGamePhase, $turnCountdown, $countdown
+  $roundResults, $croupierRoundHand, $croupierTotal, $gamePhase, setGamePhase, $turnCountdown, $countdown,
+  $persistedBets
 } from "../store/bjIndex";
 import { $userId } from "../../../auth/store/authStore";
-import { PlayerHUD } from "../../shared/components/PlayerHUD";
 import { CardStack } from "../../shared/components/GameCardStack";
 import { calculateHandTotal } from "../../shared/utils/gameHand.utils";
 import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand, resetRoundResults, decrementTurnCountdown, localBetPlaced } from "../store/bjEvents";
 import { CardRank, Suit } from "../../shared/types/gameCard.type";
-import { ChipStack } from "../../shared/components/ChipStack";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
 import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar";
 import { GamePlayerCardList } from "../../shared/components/playerCards/GameCardPlayerList";
 import { LocalPlayerCard } from "../components/LocalPlayerCard";
 import { BetChipsPanel } from "../../shared/components/betChipsPanel/BetChipsPanel";
 import { ActionButton } from "../../shared/components/buttonActions/ActionButton";
-import toast from "react-hot-toast";
 export const BlackjackGamePage = () => {
 
   const gamePhaseLabels: Record<string, string> = {
@@ -51,7 +49,7 @@ export const BlackjackGamePage = () => {
   const doubleDownFn = useUnit(doubleDown);
   const countdown = useUnit($countdown);
   const turnCountdown = useUnit($turnCountdown);
-
+  const persistedBets = useUnit($persistedBets);
 
   const userId = useUnit($userId);
   const localPlayer = players.find((p) => p.id === Number(userId));
@@ -59,12 +57,17 @@ export const BlackjackGamePage = () => {
   const [betAmount, setBetAmount] = useState(200);
   const handleHit = () => playerHitFn();
   const handleStand = () => playerStandFn();
-  const handleDouble = () => doubleDownFn();
+  const handleDouble = () => {
+    doubleDown();
+    setBetAmount((prev) => prev * 2);
+  };
   const isLocalTurn = currentTurnUserId === Number(userId);
   const [showTurnCountdown, setShowTurnCountdown] = useState(false);
   const [betSubmitted, setBetSubmitted] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const currentPhaseLabel = gamePhaseLabels[gamePhase] ?? gamePhase;
+  const [showShuffling, setShowShuffling] = useState(false);
+
   useEffect(() => {
     getGameStateRequested();
     loadCoins();
@@ -79,6 +82,7 @@ export const BlackjackGamePage = () => {
       resetCroupierRoundHand();
       resetRoundResults();
       loadCoins();
+      setBetAmount(0);
       setBetSubmitted(false);
       setShowConfirmation(false);
     } else {
@@ -96,25 +100,42 @@ export const BlackjackGamePage = () => {
     }
   }, [gamePhase, isLocalTurn, turnCountdown]);
 
+  useEffect(() => {
+    if (gamePhase === "results") {
+      const delay = setTimeout(() => {
+        setShowShuffling(true);
+      }, 3000);
+
+      return () => clearTimeout(delay);
+    } else {
+      setShowShuffling(false);
+    }
+  }, [gamePhase]);
+
 
   const otherPlayers = players
-    .filter((p) => p.id !== Number(userId))
-    .map((p) => ({
+  .filter((p) => p.id !== Number(userId))
+  .map((p) => {
+    const bet = p.bet > 0 ? p.bet : persistedBets[p.id] ?? 0;
+    return {
       id: p.id,
       nickName: p.name,
       hand: p.hand,
       total: calculateHandTotal(p.hand),
-      bets: p.bet > 0 ? [{ bet: "Blackjack", amount: p.bet }] : [],
+      bets: bet > 0 ? [{ bet: "Blackjack", amount: bet }] : [],
       isTurn: p.id === currentTurnUserId,
-    }));
+      coins: bet,
+    };
+  });
+
 
   const handlePlaceBet = () => {
     playerPlaceBet(betAmount);
-    localBetPlaced(betAmount);
+    localBetPlaced(betAmount);    
     setBetSubmitted(true);
     setShowConfirmation(true);
-    toast.success("¡Apuesta registrada correctamente!");
   };
+
 
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">
@@ -134,60 +155,70 @@ export const BlackjackGamePage = () => {
           {showTurnCountdown && <CountdownBar countdown={turnCountdown} total={20} />}
 
           {/* Croupier */}
-          <h2 className="text-2xl font-bold text-center mt-6 mb-2">Croupier</h2>
-          <div className="flex justify-center items-center flex-col gap-2">
-            {roundResults.length > 0 && (
-              <CardStack
-                cards={croupierRoundHand.map((card) => ({
-                  rank: card.rank as CardRank,
-                  suit: card.suit as Suit,
-                  value: card.value,
-                  gameType: "BlackJack",
-                }))}
-                hidden={false}
-              />
-            )}
+          {(roundResults.length > 0 || (gameState === "InProgress" && croupier.hand.length === 1)) && (
+            <>
+              <h2 className="text-2xl font-bold text-center mt-6 mb-2">Croupier</h2>
+              <div className="flex justify-center items-center flex-col gap-2">
+                {roundResults.length > 0 && (
+                  <CardStack
+                    cards={croupierRoundHand.map((card) => ({
+                      rank: card.rank as CardRank,
+                      suit: card.suit as Suit,
+                      value: card.value,
+                      gameType: "BlackJack",
+                    }))}
+                    hidden={false}
+                  />
+                )}
 
-            {gameState === "InProgress" && croupier.hand.length === 1 && (
-              <CardStack
-                cards={[
-                  {
-                    rank: "Ace",
-                    suit: "Spades",
-                    value: 0,
-                    gameType: "BlackJack",
-                  },
-                  {
-                    ...croupier.hand[0],
-                    gameType: "BlackJack",
-                  },
-                ]}
-                hidden={true}
-              />
-            )}
+                {gameState === "InProgress" && croupier.hand.length === 1 && (
+                  <CardStack
+                    cards={[
+                      {
+                        rank: "Ace",
+                        suit: "Spades",
+                        value: 0,
+                        gameType: "BlackJack",
+                      },
+                      {
+                        ...croupier.hand[0],
+                        gameType: "BlackJack",
+                      },
+                    ]}
+                    hidden={true}
+                  />
+                )}
 
-            {roundResults.length > 0 && croupierTotal > 0 ? (
-              <p className="text-xl font-bold text-white mt-2">
-                Total: <span className="text-yellow-300">{croupierTotal}</span>
-              </p>
-            ) : croupier.hand.length === 1 ? (
-              <p className="text-xl font-semibold text-white mt-2">
-                Total:{" "}
-                <span className="text-yellow-300">
-                  {croupier.hand[0]?.value ?? "-"}
-                </span>
-              </p>
-            ) : null}
-          </div>
+                {roundResults.length > 0 && croupierTotal > 0 ? (
+                  <p className="text-xl font-bold text-white mt-2">
+                    Total: <span className="text-Coins">{croupierTotal}</span>
+                  </p>
+                ) : croupier.hand.length === 1 ? (
+                  <p className="text-xl font-semibold text-white mt-2">
+                    Total: <span className="text-Coins">{croupier.hand[0]?.value ?? "-"}</span>
+                  </p>
+                ) : null}
+
+                {showShuffling && (
+                  <div className="mt-4 text-3xl text-Coins font-bold animate-pulse">
+                    🃏 Barajando cartas para la próxima ronda...
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
           {/* Apuestas */}
-          <h2 className="text-2xl font-bold text-center mt-10 mb-6">
-            Jugadores apostando: <span className="text-yellow-300">{players.length}</span>
-          </h2>
+          {players.length > 0 && (
+            <h2 className="text-2xl font-bold text-center mt-10 mb-6">
+              Jugadores apostando: <span className="text-Coins">{players.length}</span>
+            </h2>
+
+          )}
 
           {gamePhase === "betting" && (
             <>
-              {!betSubmitted && (
+              {!betSubmitted ? (
                 <div className="flex flex-col items-center">
                   <BetChipsPanel
                     onIncrement={(val) => setBetAmount((prev) => prev + val)}
@@ -204,6 +235,12 @@ export const BlackjackGamePage = () => {
                     className="w-full max-w-[150px] text-xl py-4"
                   />
                 </div>
+              ) : (
+                showConfirmation && !localPlayer && players.length >= 0 && (
+                  <div className="text-center mt-4 bg-green-700 px-6 py-3 rounded-lg shadow-md text-2xl font-bold text-white">
+                    ¡Apuesta realizada correctamente! Esperando a los demás jugadores...
+                  </div>
+                )
               )}
             </>
           )}
@@ -233,7 +270,6 @@ export const BlackjackGamePage = () => {
         {/* Lista de jugadores en la mesa */}
         <GamePlayerCardList
           players={otherPlayers}
-          coins={betAmount}
           gameType="Blackjack"
         />
       </div>

@@ -25,10 +25,9 @@ type GamePlayer = {
 type Props = {
   players: GamePlayer[];
   gameType: "Blackjack" | "Poker";
-  coins: number;
 };
 
-export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
+export const GamePlayerCardList = ({ players, gameType }: Props) => {
   const avatars = useUnit($playerAvatars);
   const countryCache = useUnit($countryCache);
 
@@ -106,10 +105,10 @@ export const GamePlayerCardList = ({ players, gameType, coins }: Props) => {
               <div className="flex flex-col gap-1">
                 <div className="flex gap-2 items-baseline">
                   <p className="text-xl font-bold text-white">Apuesta:</p>
-                  {player.coins === 0 ? (
+                  {player.coins === 0 || !player.bets?.length ? (
                     <p className="text-xl text-Coins">Sin apuestas activas</p>
                   ) : (
-                    <p className="text-xl text-Coins">{player.coins}</p>
+                    <p className="text-xl text-Coins">{player.bets[0].amount}</p>
                   )}
                 </div>
 

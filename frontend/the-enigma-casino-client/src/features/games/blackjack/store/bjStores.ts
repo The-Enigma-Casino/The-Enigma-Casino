@@ -13,16 +13,46 @@ import {
   turnCountdownTicked,
   playerKickedReceived,
   matchReadyReceived,
-  localBetPlaced
+  localBetPlaced,
+  resetBets,
+  gameStateReceived
 } from "../store/bjEvents";
 import { navigateTo } from "../../shared/router/navigateFx";
 import { Player, Croupier, GameState } from "../../shared/types";
 import { $userId } from "../../../auth/store/authStore";
 import toast from "react-hot-toast";
 
+
 export const $players = createStore<Player[]>([])
-  .on(setPlayers, (_, players) => players)
-  .on(resetPlayers, () => []);
+  .on(setPlayers, (prevPlayers, newPlayers) =>
+    newPlayers.map((newP) => {
+      const prev = prevPlayers.find((p) => p.id === newP.id);
+      return {
+        ...newP,
+        bet: newP.bet !== undefined ? newP.bet : prev?.bet ?? 0,
+      };
+    })
+  )
+  .on(gameStateReceived, (_, data) =>
+    data.players.map((p) => ({
+      id: p.userId,
+      name: p.nickname,
+      hand: p.hand,
+      total: p.total,
+      state: p.state,
+      bet: p.bet ?? 0,
+    }))
+  )
+  .on(resetPlayers, () => [])
+  .on(localBetPlaced, (players, amount) =>
+    players.map((p) =>
+      p.id === Number($userId.getState()) ? { ...p, bet: amount } : p
+    )
+  )
+  .on(resetBets, (players) =>
+    players.map((p) => ({ ...p, bet: 0 }))
+  );
+
 
 export const $croupier = createStore<Croupier>({ hand: [] })
   .on(setCroupier, (_, croupier) => croupier)
@@ -193,3 +223,24 @@ sample({
   },
   target: navigateTo,
 });
+
+// Reinicio apuesta
+betsOpened.watch(() => {
+  resetBets();
+  setGamePhase("betting");
+});
+
+// Guarda apuesta ronda result
+export const $persistedBets = createStore<Record<number, number>>({})
+  .on(localBetPlaced, (state, amount) => ({
+    ...state,
+    [Number($userId.getState())]: amount,
+  }))
+  .on(setPlayers, (state, players) => {
+    const updated = { ...state };
+    for (const p of players) {
+      if (p.bet > 0) updated[p.id] = p.bet;
+    }
+    return updated;
+  })
+  .on(resetPlayers, () => ({}));

@@ -5,6 +5,7 @@ import { $countryCache, requestCountry } from "../../../countries/stores/countri
 import { IMAGE_PROFILE_URL } from "../../../../config";
 import { CardStack } from "../../shared/components/GameCardStack";
 import { ActionButton } from "../../shared/components/buttonActions/ActionButton";
+import { loadCoins } from "../../../coins/store/coinsStore";
 
 type GamePlayer = {
   id: number;
@@ -39,6 +40,10 @@ export const LocalPlayerCard = ({ player, gameType, gameState, onHit, onStand, o
       requestCountry(countryCode);
     }
   }, [countryCode, countryCache]);
+  
+  useEffect(() => {
+    loadCoins();
+  },[]);
 
   if (!avatar) return null;
 

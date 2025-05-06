@@ -377,7 +377,8 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
                     suit = c.Suit.ToString(),
                     value = c.Value
                 }),
-                total = p.Hand.GetTotal()
+                total = p.Hand.GetTotal(),
+                bet = p.CurrentBet,
             }),
             croupier = new
             {
@@ -676,6 +677,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
                     value = c.Value
                 }),
                 total = p.Hand.GetTotal(),
+                bet = p.CurrentBet,
                 state = p.PlayerState.ToString()
             }),
             croupier = croupierPayload

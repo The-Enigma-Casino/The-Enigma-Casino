@@ -113,10 +113,16 @@ function RouletteGamePage() {
     const key = typeof bet === "number" ? `number_${bet}` : bet;
     const label = typeof bet === "number" ? `${bet}` : bet.toUpperCase();
 
-    const alreadyBet = bets.find((b) => b.key === key);
-    if (alreadyBet) return;
-
-    setBets((prev) => [...prev, { key, label, amount: betAmount }]);
+    setBets((prev) => {
+      const existing = prev.find((b) => b.key === key);
+      if (existing) {
+        return prev.map((b) =>
+          b.key === key ? { ...b, amount: b.amount + betAmount } : b
+        );
+      } else {
+        return [...prev, { key, label, amount: betAmount }];
+      }
+    });
 
     const payload = buildBetPayload(tableId.toString(), key, betAmount);
     if (payload) placeRouletteBet(payload);

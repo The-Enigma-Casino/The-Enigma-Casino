@@ -130,6 +130,21 @@ function RouletteGamePage() {
     loadCoins();
   };
 
+  const handleRemoveBet = (bet: string | number) => {
+    if (!tableId) return;
+
+    const key = typeof bet === "number" ? `number_${bet}` : bet;
+    const existing = bets.find((b) => b.key === key);
+    if (!existing) return;
+
+    const payload = buildBetPayload(tableId.toString(), key, -existing.amount);
+    if (payload) placeRouletteBet(payload);
+
+    setBets((prev) => prev.filter((b) => b.key !== key));
+    loadCoins();
+  };
+
+
   const getResultMessage = (spinResult: any) => {
     if (!spinResult?.bets?.length) {
       return {
@@ -192,6 +207,7 @@ function RouletteGamePage() {
                 <RouletteBetBoard
                   disabled={isBetsClosed || betAmount <= 0 || betAmount > coins}
                   onBet={handleBetClick}
+                  onRemove={handleRemoveBet}
                   bets={bets}
                 />
               </div>

@@ -93,29 +93,6 @@ function Header() {
                   isAdminMenuOpen ? classes.rotatingOpen : classes.rotatingClose
                 }`}
               />
-              {isAdminMenuOpen && (
-                <div className={classes.adminMenu}>
-                  <p className={classes.adminTitle}>ADMIN</p>
-                  <button
-                    className={classes.adminMenuItem}
-                    onClick={() => {
-                      navigate("/admin/users");
-                      setIsAdminMenuOpen(false);
-                    }}
-                  >
-                    Panel Usuarios
-                  </button>
-                  <button
-                    className={classes.adminMenuItem}
-                    onClick={() => {
-                      navigate("/admin/coins");
-                      setIsAdminMenuOpen(false);
-                    }}
-                  >
-                    Panel Fichas
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
@@ -149,6 +126,32 @@ function Header() {
           )}
         </div>
       </header>
+
+      {isAdminMenuOpen && (
+        <div className="absolute top-[5.6rem] right-[6.2rem] z-50">
+          <div className={classes.adminMenu}>
+            <p className={classes.adminTitle}>ADMIN</p>
+            <button
+              className={classes.adminMenuItem}
+              onClick={() => {
+                navigate("/admin/users");
+                setIsAdminMenuOpen(false);
+              }}
+            >
+              Panel Usuarios
+            </button>
+            <button
+              className={classes.adminMenuItem}
+              onClick={() => {
+                navigate("/admin/coins");
+                setIsAdminMenuOpen(false);
+              }}
+            >
+              Panel Fichas
+            </button>
+          </div>
+        </div>
+      )}
 
       {isGachaponModalOpen && (
         <div className="fixed inset-0 z-30 flex justify-center items-center">

@@ -11,7 +11,8 @@ export function initObstacle() {
 }
 
 export function updateObstacle(score: number) {
-  const difficultyMultiplier = Math.min(1 + score / 2600, 1.0);
+  const difficultyMultiplier = Math.min(1 + score / 2600, 3);
+  console.log(difficultyMultiplier)
   x -= speed * difficultyMultiplier;
 
   if (x + OBSTACLE.width < 0) {

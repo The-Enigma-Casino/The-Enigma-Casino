@@ -116,7 +116,8 @@ public class UserService : BaseService
                 HashPassword = HashHelper.Hash(request.Password),
                 DateOfBirth = request.DateOfBirth,
                 Country = request.Country,
-                Address = request.Address
+                Address = request.Address,
+                Coins = 1000
             };
 
             await _unitOfWork.UserRepository.InsertAsync(user);

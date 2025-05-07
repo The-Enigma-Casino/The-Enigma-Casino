@@ -156,7 +156,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 return;
             }
 
-            if (shouldAdvance && move != "fold")
+            if (shouldAdvance || move == "fold")
             {
                 Console.WriteLine("🔁 Avanzando turno después de acción del jugador...");
                 bool hasNextTurn = pokerGame.AdvanceTurn();

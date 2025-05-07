@@ -39,8 +39,17 @@ public class RouletteGame
         if (!bet.IsValid())
             throw new InvalidOperationException("La apuesta no es válida.");
 
-        if (HasAlreadyPlacedSameBet(player, bet))
-            throw new InvalidOperationException("Ya hiciste esta misma apuesta en esta ronda.");
+        if (_betsByPlayer.TryGetValue(player.UserId, out var existingBets))
+        {
+            var existing = existingBets.FirstOrDefault(b => IsSameTarget(b, bet));
+            if (existing != null)
+            {
+                existing.Amount += bet.Amount;
+                player.User.Coins -= bet.Amount;
+                return;
+            }
+        }
+
 
         player.User.Coins -= bet.Amount;
 
@@ -171,4 +180,41 @@ public class RouletteGame
     }
 
     public record RouletteResult(int Number, string Color);
+
+    public void RemoveOrReduceBet(Player player, RouletteBet incomingBet)
+    {
+        if (!_betsByPlayer.TryGetValue(player.UserId, out var playerBets))
+            return;
+
+        RouletteBet existingBet = playerBets.FirstOrDefault(b => IsSameTarget(b, incomingBet));
+
+        if (existingBet == null)
+            return;
+
+        int toSubtract = Math.Abs(incomingBet.Amount);
+
+        if (toSubtract >= existingBet.Amount)
+        {
+            player.User.Coins += existingBet.Amount;
+            playerBets.Remove(existingBet);
+        }
+        else
+        {
+            existingBet.Amount -= toSubtract;
+            player.User.Coins += toSubtract;
+        }
+    }
+
+
+    private bool IsSameTarget(RouletteBet a, RouletteBet b)
+    {
+        return a.BetType == b.BetType &&
+               a.Number == b.Number &&
+               string.Equals(a.Color, b.Color, StringComparison.OrdinalIgnoreCase) &&
+               a.EvenOdd == b.EvenOdd &&
+               a.Dozen == b.Dozen &&
+               a.Column == b.Column &&
+               a.HighLow == b.HighLow;
+    }
+
 }

@@ -113,16 +113,37 @@ function RouletteGamePage() {
     const key = typeof bet === "number" ? `number_${bet}` : bet;
     const label = typeof bet === "number" ? `${bet}` : bet.toUpperCase();
 
-    const alreadyBet = bets.find((b) => b.key === key);
-    if (alreadyBet) return;
-
-    setBets((prev) => [...prev, { key, label, amount: betAmount }]);
+    setBets((prev) => {
+      const existing = prev.find((b) => b.key === key);
+      if (existing) {
+        return prev.map((b) =>
+          b.key === key ? { ...b, amount: b.amount + betAmount } : b
+        );
+      } else {
+        return [...prev, { key, label, amount: betAmount }];
+      }
+    });
 
     const payload = buildBetPayload(tableId.toString(), key, betAmount);
     if (payload) placeRouletteBet(payload);
 
     loadCoins();
   };
+
+  const handleRemoveBet = (bet: string | number) => {
+    if (!tableId) return;
+
+    const key = typeof bet === "number" ? `number_${bet}` : bet;
+    const existing = bets.find((b) => b.key === key);
+    if (!existing) return;
+
+    const payload = buildBetPayload(tableId.toString(), key, -existing.amount);
+    if (payload) placeRouletteBet(payload);
+
+    setBets((prev) => prev.filter((b) => b.key !== key));
+    loadCoins();
+  };
+
 
   const getResultMessage = (spinResult: any) => {
     if (!spinResult?.bets?.length) {
@@ -186,6 +207,7 @@ function RouletteGamePage() {
                 <RouletteBetBoard
                   disabled={isBetsClosed || betAmount <= 0 || betAmount > coins}
                   onBet={handleBetClick}
+                  onRemove={handleRemoveBet}
                   bets={bets}
                 />
               </div>

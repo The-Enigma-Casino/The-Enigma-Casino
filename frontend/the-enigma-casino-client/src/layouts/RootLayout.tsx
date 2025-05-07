@@ -1,7 +1,6 @@
 import Footer from "../components/layouts/footer/Footer";
 import Header from "../components/layouts/header/Header";
 import { NavigationInit } from "../features/games/shared/router/NavigationInit";
-import styles from "./RootLayout.module.css";
 import { Outlet, useLocation } from "react-router-dom";
 
 function RootLayout() {
@@ -11,12 +10,22 @@ function RootLayout() {
   return (
     <>
       <NavigationInit />
-      <div className={styles.rootLayout}>
-        {!isGameRoute && <Header />}
-        <main className={styles.rootContent}>
+      <div className="grid grid-rows-[auto_1fr_auto] min-h-screen w-full max-w-full overflow-x-clip">
+        {!isGameRoute && (
+          <div className="row-start-1 row-end-2">
+            <Header />
+          </div>
+        )}
+
+        <main className="w-full max-w-full overflow-x-clip">
           <Outlet />
         </main>
-        {!isGameRoute && <Footer />}
+
+        {!isGameRoute && (
+          <div className="row-start-3 row-end-4">
+            <Footer />
+          </div>
+        )}
       </div>
     </>
   );

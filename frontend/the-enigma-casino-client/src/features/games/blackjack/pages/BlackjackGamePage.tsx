@@ -139,7 +139,7 @@ export const BlackjackGamePage = () => {
 
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">
-      <div className="max-w-screen-2xl mx-auto flex flex-row gap-6 items-start">
+      <div className="max-w-full-2xl mx-auto flex flex-row gap-6 items-start">
         {/* Columna central: contenido principal */}
         <div className="flex-1 flex flex-col items-center">
           <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">

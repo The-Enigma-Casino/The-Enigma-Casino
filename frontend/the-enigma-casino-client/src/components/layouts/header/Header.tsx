@@ -6,10 +6,7 @@ import {
   $token,
   loadRole,
 } from "../../../features/auth/store/authStore";
-import {
-  $coins,
-  loadCoins,
-} from "../../../features/coins/store/coinsStore";
+import { $coins, loadCoins } from "../../../features/coins/store/coinsStore";
 
 import Button from "../../ui/button/Button";
 import classes from "./Header.module.css";
@@ -52,37 +49,40 @@ function Header() {
 
   return (
     <>
-      <header className={classes.header}>
+      <header className="w-full max-w-full overflow-x-clip h-[10rem] flex items-center justify-between bg-[var(--Background-Nav)] text-white p-4">
         {isGachaponModalOpen && (
-          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-20" />
+          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-20 overflow-x-clip" />
         )}
 
-        <div className={classes.leftHeader}>
+        <div className="flex flex-wrap items-center justify-center gap-[30px] min-w-0 max-w-full overflow-x-clip">
           <img
-            className={classes.imgLogo}
+            className="w-32 max-h-32 cursor-pointer"
             src="/img/icono.webp"
             alt="Logo"
             onClick={() => navigate("/")}
           />
-          <div className={classes.gachapon}>
+
+          <div className="flex flex-col items-center gap-[1px] text-[1.2rem]">
             <img
               src="/svg/gachapon.svg"
               alt="Gacha"
+              className="w-16 max-h-16 cursor-pointer"
               onClick={openGachaponModal}
             />
             <p className={classes.text}>Gachapón</p>
             <p className={classes.text}>de la suerte</p>
           </div>
+
           {role && (
             <img
-              src={`/svg/notification-bell.svg`}
+              src="/svg/notification-bell.svg"
               alt="Notificaciones"
               onClick={() => navigate("/")}
             />
           )}
         </div>
 
-        <div className={classes.rightHeader}>
+        <div className="flex flex-wrap items-center justify-center gap-[30px] min-w-0 max-w-full overflow-x-clip">
           {role?.toLowerCase() === "admin" && (
             <div className={classes.adminContainer}>
               <img
@@ -123,7 +123,7 @@ function Header() {
             role?.toLowerCase() === "admin") && (
             <>
               <button
-                className={classes.coinsButton}
+                className="cursor-pointer text-[var(--Coins)] text-[2.4rem] font-bold inline-flex items-center gap-2 truncate max-w-[12ch]"
                 onClick={() => navigate("/catalog")}
               >
                 {coins} <img src="/svg/coins.svg" alt="Fichas" />
@@ -131,6 +131,7 @@ function Header() {
               <img
                 src="/svg/exit.svg"
                 alt="Cerrar sesión"
+                className="cursor-pointer"
                 onClick={() => setIsLogoutModalOpen(true)}
               />
             </>

@@ -1,58 +1,7 @@
-.header {
-  height: 10rem;
-  display: flex;
-  background-color: var(--Background-Nav);
-  color: white;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  box-sizing: border-box;
-}
-
-.leftHeader {
-  display: flex;
-  gap: 30px;
-  justify-content: center;
-  align-items: center;
-}
-
-.imgLogo {
-  width: 8rem;
-  max-height: 8rem;
-  cursor: pointer;
-}
-
-.gachapon {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  font-size: 1.2rem;
-}
-
 .gachapon img {
   width: 4rem;
   max-height: 4rem;
   cursor: pointer;
-}
-
-.rightHeader {
-  display: flex;
-  gap: 30px;
-  justify-content: center;
-  align-items: center;
-}
-
-.coinsButton {
-  all: unset;
-  cursor: pointer;
-  color: var(--Coins);
-  text-decoration: none;
-  font-size: 2.4rem;
-  font-weight: bold;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .modalText {

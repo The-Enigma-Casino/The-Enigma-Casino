@@ -21,6 +21,9 @@ public class UserFriendRepository : Repository<UserFriend, int>
             .Select(friend => friend.FriendId)
             .ToListAsync();
 
+        if (!friendIds.Any())
+            return new List<User>();
+
         return await Context.Set<User>()
             .Where(user => friendIds.Contains(user.Id))
             .ToListAsync();
@@ -41,6 +44,21 @@ public class UserFriendRepository : Repository<UserFriend, int>
                 (f.UserId == friendId && f.FriendId == userId))
             .ToListAsync();
 
+        if (!friendships.Any())
+            return;
+
         Context.Set<UserFriend>().RemoveRange(friendships);
+        await Context.SaveChangesAsync();
+    }
+
+    public async Task<List<User>> GetOnlineFriendsAsync(int userId, List<int> onlineUserIds)
+    {
+        return await Context.Set<UserFriend>()
+            .Where(uf => uf.UserId == userId && onlineUserIds.Contains(uf.FriendId))
+            .Join(Context.Users,
+                  uf => uf.FriendId,
+                  u => u.Id,
+                  (uf, u) => u)
+            .ToListAsync();
     }
 }

@@ -1,5 +1,4 @@
 ﻿using the_enigma_casino_server.Core.Entities;
-using the_enigma_casino_server.Infrastructure.Database.Repositories;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Core.Entities.Enum;
 
@@ -7,23 +6,16 @@ namespace the_enigma_casino_server.Application.Services.Friendship;
 
 public class FriendRequestService
 {
-    private readonly FriendRequestRepository _friendRequestRepository;
-    private readonly UserFriendRepository _userFriendRepository;
     private readonly UnitOfWork _unitOfWork;
 
-    public FriendRequestService(
-        FriendRequestRepository friendRequestRepository,
-        UserFriendRepository userFriendRepository,
-        UnitOfWork unitOfWork)
+    public FriendRequestService(UnitOfWork unitOfWork)
     {
-        _friendRequestRepository = friendRequestRepository;
-        _userFriendRepository = userFriendRepository;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<List<FriendRequest>> GetReceivedRequestsAsync(int userId)
     {
-        return await _friendRequestRepository.GetReceivedRequestsAsync(userId);
+        return await _unitOfWork.FriendRequestRepository.GetReceivedRequestsAsync(userId);
     }
 
     public async Task<bool> CanSendRequestAsync(int senderId, int receiverId)
@@ -31,11 +23,11 @@ public class FriendRequestService
         if (senderId == receiverId)
             return false;
 
-        FriendRequest pendingRequest = await _friendRequestRepository.GetPendingRequestAsync(senderId, receiverId);
+        FriendRequest pendingRequest = await _unitOfWork.FriendRequestRepository.GetPendingRequestAsync(senderId, receiverId);
         if (pendingRequest != null)
             return false;
 
-        bool alreadyFriends = await _userFriendRepository.AreFriendsAsync(senderId, receiverId);
+        bool alreadyFriends = await _unitOfWork.UserFriendRepository.AreFriendsAsync(senderId, receiverId);
         if (alreadyFriends)
             return false;
 
@@ -44,12 +36,12 @@ public class FriendRequestService
 
     public async Task AcceptFriendRequestAsync(int senderId, int receiverId)
     {
-        FriendRequest? request = await _friendRequestRepository.GetPendingRequestAsync(senderId, receiverId);
+        FriendRequest? request = await _unitOfWork.FriendRequestRepository.GetPendingRequestAsync(senderId, receiverId);
         if (request == null)
             throw new InvalidOperationException("La solicitud no existe o ya ha sido procesada.");
 
         request.Status = FriendRequestStatus.Accepted;
-        _friendRequestRepository.Update(request);
+        _unitOfWork.FriendRequestRepository.Update(request);
 
         UserFriend friendship1 = new UserFriend
         {
@@ -63,8 +55,8 @@ public class FriendRequestService
             FriendId = senderId
         };
 
-        await _userFriendRepository.InsertAsync(friendship1);
-        await _userFriendRepository.InsertAsync(friendship2);
+        await _unitOfWork.UserFriendRepository.InsertAsync(friendship1);
+        await _unitOfWork.UserFriendRepository.InsertAsync(friendship2);
 
         await _unitOfWork.SaveAsync();
     }
@@ -82,16 +74,16 @@ public class FriendRequestService
             ReceiverId = receiverId
         };
 
-        await _friendRequestRepository.InsertAsync(newRequest);
+        await _unitOfWork.FriendRequestRepository.InsertAsync(newRequest);
         await _unitOfWork.SaveAsync();
     }
 
     public async Task CancelFriendRequestAsync(int senderId, int receiverId)
     {
-        FriendRequest existingRequest = await _friendRequestRepository.GetPendingRequestAsync(senderId, receiverId);
+        FriendRequest existingRequest = await _unitOfWork.FriendRequestRepository.GetPendingRequestAsync(senderId, receiverId);
         if (existingRequest != null)
         {
-            _friendRequestRepository.Delete(existingRequest);
+            _unitOfWork.FriendRequestRepository.Delete(existingRequest);
             await _unitOfWork.SaveAsync();
         }
     }

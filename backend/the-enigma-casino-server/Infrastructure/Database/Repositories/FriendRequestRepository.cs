@@ -31,4 +31,16 @@ public class FriendRequestRepository : Repository<FriendRequest, int>
             .Where(r => r.SenderId == userId && r.Status == FriendRequestStatus.Pending)
             .ToListAsync();
     }
+
+    public async Task AddAsync(FriendRequest request)
+    {
+        await Context.Set<FriendRequest>().AddAsync(request);
+    }
+
+    public async Task<bool> ExistsBetweenUsersAsync(int userId1, int userId2)
+    {
+        return await Context.Set<FriendRequest>().AnyAsync(r =>
+            (r.SenderId == userId1 && r.ReceiverId == userId2) ||
+            (r.SenderId == userId2 && r.ReceiverId == userId1));
+    }
 }

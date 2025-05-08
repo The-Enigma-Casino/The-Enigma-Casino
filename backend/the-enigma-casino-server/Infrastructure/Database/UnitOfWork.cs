@@ -16,11 +16,11 @@ public class UnitOfWork
     private CoinsPackRepository _coinsPackRepository;
     private OrderRepository _orderRepository;
     private UserFriendRepository _userFriendRepository;
+    private FriendRequestRepository _friendRequestRepository;
 
     public UserRepository UserRepository => _userRepository ??= new UserRepository(_context);
     public CoinsPackRepository CoinsPackRepository => _coinsPackRepository ??= new CoinsPackRepository(_context);
     public OrderRepository OrderRepository => _orderRepository ??= new OrderRepository(_context);
-    public UserFriendRepository UserFriendRepository => _userFriendRepository ??= new UserFriendRepository(_context);
 
 
     // GAME
@@ -29,6 +29,11 @@ public class UnitOfWork
 
     public GameTableRepository GameTableRepository => _gameTableRepository ??= new GameTableRepository(_context);
     public GameHistoryRepository GameHistoryRepository => _gameHistoryRepository ??= new GameHistoryRepository(_context);
+
+
+    // FRIENDS
+    public FriendRequestRepository FriendRequestRepository => _friendRequestRepository ??= new FriendRequestRepository(_context);
+    public UserFriendRepository UserFriendRepository => _userFriendRepository ??= new UserFriendRepository(_context);
 
     public UnitOfWork(MyDbContext myDbContext)
     {

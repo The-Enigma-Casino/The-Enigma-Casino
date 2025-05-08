@@ -2,7 +2,7 @@ import axios from "axios";
 import { createEffect } from "effector";
 
 import { getAuthHeaders } from "../../../auth/utils/authHeaders";
-import { OTHER_USER_PROFILE, USER_PROFILE } from "../../../../config";
+import { OTHER_USER_PROFILE, USER_GET_IMAGE, USER_PROFILE } from "../../../../config";
 import { loadOtherUserProfile, loadUserProfile } from "./profileEvents";
 
 
@@ -15,6 +15,14 @@ export const getUserProfileFx = createEffect(async () => {
 
 export const getOtherUserProfileFx = createEffect(async (userId: number) => {
   const response = await axios.get(`${OTHER_USER_PROFILE}${userId}`, {
+    headers: getAuthHeaders(),
+  });
+
+  return response.data;
+});
+
+export const getUserImageFx = createEffect(async () => {
+  const response = await axios.get(USER_GET_IMAGE, {
     headers: getAuthHeaders(),
   });
   return response.data;

@@ -15,6 +15,7 @@ import { DecodedToken } from "../models/DecodedToken.interface";
 import { SessionCheckResult } from "../models/SessionCheckResult.type";
 
 import { toast } from "react-hot-toast";
+import { getUserImageFx } from "../../profile/store/profile/profileEffects";
 
 const storedToken: string =
   getVarLS("token") || getVarSessionStorage("token") || "";
@@ -95,7 +96,6 @@ sample({
   fn: (token) => {
     try {
       const decoded: DecodedToken = jwtDecode(token);
-      console.log("name: ", decoded?.name);
       return decoded?.name || "";
     } catch {
       return "";
@@ -178,6 +178,12 @@ sample({
   filter: (result) => !result.valid,
   fn: (result) => result.reason ?? "Desconocido",
   target: logoutWithReason,
+});
+
+sample({
+  clock: $token,
+  filter: (token) => Boolean(token),
+  target: getUserImageFx,
 });
 
 $token.on(logout, () => "");

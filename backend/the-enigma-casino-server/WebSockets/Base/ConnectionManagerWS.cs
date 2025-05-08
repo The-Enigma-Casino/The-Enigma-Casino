@@ -10,6 +10,7 @@ public class ConnectionManagerWS
     private readonly ConcurrentDictionary<string, WebSocket> _connections = new();
 
     public event Action<string> OnUserDisconnected;
+    public event Action<string> OnUserConnected; //User connected friendsOnline
 
     public void AddConnection(string userId, WebSocket webSocket)
     {
@@ -32,6 +33,7 @@ public class ConnectionManagerWS
 
         _connections[userId] = webSocket;
         Console.WriteLine($"✅ Conexión WebSocket activa para {userId}");
+        OnUserConnected?.Invoke(userId); //User connected friendsOnline
 
         if (int.TryParse(userId, out int id))
         {
@@ -89,5 +91,14 @@ public class ConnectionManagerWS
     {
         return _connections.TryGetValue(userId, out var socket)
                && socket.State == WebSocketState.Open;
+    }
+
+    public List<int> GetAllConnectedUserIds()
+    {
+        return _connections.Keys
+            .Select(key => int.TryParse(key, out int id) ? id : (int?)null)
+            .Where(id => id.HasValue)
+            .Select(id => id.Value)
+            .ToList();
     }
 }

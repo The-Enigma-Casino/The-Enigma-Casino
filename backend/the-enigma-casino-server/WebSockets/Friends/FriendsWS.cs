@@ -33,6 +33,7 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             FriendsMessageType.Cancel => HandleCancelAsync(userId, message),
             FriendsMessageType.Remove => HandleRemoveAsync(userId, message),
             FriendsMessageType.GetOnlineFriends => HandleGetOnlineFriendsAsync(userId),
+            FriendsMessageType.InviteFriendToGame => HandleInviteFriendToGameAsync(userId, message),
             _ => Task.CompletedTask
         });
     }
@@ -228,4 +229,25 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
     }
 
+    private async Task HandleInviteFriendToGameAsync(int userId, JsonElement message)
+    {
+        if (!message.TryGetProperty("friendId", out var friendIdProp) ||
+            !message.TryGetProperty("tableId", out var tableIdProp))
+            return;
+
+        int friendId = friendIdProp.GetInt32();
+        int tableId = tableIdProp.GetInt32();
+
+        var senderUser = await GetUserById(userId);
+
+        await ((IWebSocketSender)this).SendToUserAsync(friendId.ToString(), new
+        {
+            type = Type,
+            action = FriendsMessageType.FriendInvitedToGame,
+            inviterId = senderUser.Id,
+            nickname = senderUser.NickName,
+            image = senderUser.Image,
+            tableId = tableId
+        });
+    }
 }

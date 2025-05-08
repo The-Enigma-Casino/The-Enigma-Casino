@@ -252,29 +252,6 @@ public class UserService : BaseService
         }
     }
 
-    //public async Task<OtherUserDto> GetOtherProfile(int currentUserId, int profileUserId) // NO BORRAR
-    //{
-    //    User user = await GetUserById(profileUserId);
-
-    //    if (user == null)
-    //        throw new KeyNotFoundException("Usuario no encontrado");
-
-    //    string relation;
-
-    //    if (currentUserId == profileUserId)
-    //    {
-    //        relation = "self";
-    //    }
-    //    else
-    //    {
-    //        bool isFriend = await _userFriendService.AreFriendsAsync(currentUserId, profileUserId); // DEJA DE FUNCIONAR
-    //        relation = isFriend ? "friend" : "stranger";
-    //    }
-
-    //    return new OtherUserDto(user.NickName, user.Country, user.Image, relation);
-
-    //}
-
     public async Task UpdateUserImageAsync(int userId, IFormFile imageFile)
     {
         if (imageFile == null || imageFile.Length == 0)

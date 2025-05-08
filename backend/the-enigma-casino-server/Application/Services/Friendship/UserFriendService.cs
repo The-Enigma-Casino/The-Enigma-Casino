@@ -1,16 +1,16 @@
-﻿using the_enigma_casino_server.Core.Entities;
+﻿using the_enigma_casino_server.Application.Dtos.Request;
+using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Infrastructure.Database.Repositories;
 
 namespace the_enigma_casino_server.Application.Services.Friendship;
 
-public class UserFriendService
+public class UserFriendService : BaseService
 {
-    private readonly UnitOfWork _unitOfWork;
 
-    public UserFriendService(UnitOfWork unitOfWork)
+    public UserFriendService(UnitOfWork unitOfWork) : base(unitOfWork)
     {
-        _unitOfWork = unitOfWork;
+
     }
 
     public async Task<List<User>> GetFriendsAsync(int userId)
@@ -42,4 +42,26 @@ public class UserFriendService
         return await _unitOfWork.UserFriendRepository.GetFriendIdsAsync(userId);
     }
 
+    public async Task<OtherUserDto> GetOtherProfile(int currentUserId, int profileUserId)
+    {
+        User user = await GetUserById(profileUserId);
+
+        if (user == null)
+            throw new KeyNotFoundException("Usuario no encontrado");
+
+        string relation;
+
+        if (currentUserId == profileUserId)
+        {
+            relation = "self";
+        }
+        else
+        {
+            bool isFriend = await AreFriendsAsync(currentUserId, profileUserId);
+            relation = isFriend ? "friend" : "stranger";
+        }
+
+        return new OtherUserDto(user.NickName, user.Country, user.Image, relation);
+
+    }
 }

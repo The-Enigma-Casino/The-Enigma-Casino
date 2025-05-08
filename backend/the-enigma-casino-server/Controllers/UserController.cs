@@ -4,6 +4,7 @@ using Nethereum.Contracts.QueryHandlers.MultiCall;
 using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Application.Services.Friendship;
 using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Controllers;
@@ -14,9 +15,11 @@ namespace the_enigma_casino_server.Controllers;
 public class UserController : BaseController
 {
     public UserService _userService;
-    public UserController(UserService userService)
+    public UserFriendService _userFriendService;
+    public UserController(UserService userService, UserFriendService userFriendService)
     {
         _userService = userService;
+        _userFriendService = userFriendService;
     }
 
     [HttpGet("coins")]
@@ -60,27 +63,26 @@ public class UserController : BaseController
         }
     }
 
+    [HttpGet("profile/{encodedId}")] //TIENE SQID DECODE
+    public async Task<ActionResult<OtherUserDto>> GetOtherProfile(string encodedId)
+    {
+        try
+        {
+            int currentUserId = GetUserId();
+            int profileUserId = SqidHelper.Decode(encodedId);
 
-    //[HttpGet("profile/{encodedId}")] // NO BORRAR
-    //public async Task<ActionResult<OtherUserDto>> GetOtherProfile(string encodedId)
-    //{
-    //    try
-    //    {
-    //        int currentUserId = GetUserId();
-    //        int profileUserId = SqidHelper.Decode(encodedId);
-
-    //        OtherUserDto otherUserDto = await _userService.GetOtherProfile(currentUserId, profileUserId);
-    //        return Ok(otherUserDto);
-    //    }
-    //    catch (KeyNotFoundException ex)
-    //    {
-    //        return NotFound(ex.Message);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        return StatusCode(500, $"Error interno: {ex.Message}");
-    //    }
-    //}
+            OtherUserDto otherUserDto = await _userFriendService.GetOtherProfile(currentUserId, profileUserId);
+            return Ok(otherUserDto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno: {ex.Message}");
+        }
+    }
 
     [HttpPut("profile/image")]
     public async Task<ActionResult> UpdateProfileImage([FromForm] UpdateProfileImageDto dto)

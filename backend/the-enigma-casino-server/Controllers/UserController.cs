@@ -61,26 +61,26 @@ public class UserController : BaseController
     }
 
 
-    [HttpGet("profile/{encodedId}")]
-    public async Task<ActionResult<OtherUserDto>> GetOtherProfile(string encodedId)
-    {
-        try
-        {
-            int currentUserId = GetUserId();
-            int profileUserId = SqidHelper.Decode(encodedId);
+    //[HttpGet("profile/{encodedId}")] // NO BORRAR
+    //public async Task<ActionResult<OtherUserDto>> GetOtherProfile(string encodedId)
+    //{
+    //    try
+    //    {
+    //        int currentUserId = GetUserId();
+    //        int profileUserId = SqidHelper.Decode(encodedId);
 
-            OtherUserDto otherUserDto = await _userService.GetOtherProfile(currentUserId, profileUserId);
-            return Ok(otherUserDto);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error interno: {ex.Message}");
-        }
-    }
+    //        OtherUserDto otherUserDto = await _userService.GetOtherProfile(currentUserId, profileUserId);
+    //        return Ok(otherUserDto);
+    //    }
+    //    catch (KeyNotFoundException ex)
+    //    {
+    //        return NotFound(ex.Message);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return StatusCode(500, $"Error interno: {ex.Message}");
+    //    }
+    //}
 
     [HttpPut("profile/image")]
     public async Task<ActionResult> UpdateProfileImage([FromForm] UpdateProfileImageDto dto)

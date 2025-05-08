@@ -81,9 +81,9 @@ function HeaderMobile() {
         <div className="absolute top-[6rem] left-0 w-1/2 bg-[var(--Background-Nav)] shadow-lg z-50 flex flex-col items-start px-6 py-6 gap-6 text-white text-xl font-medium rounded-r-xl">
           {!token && (
             <Button
-              variant="large"
+              variant="md"
               color="green"
-              font="bold"
+              font="smallBold"
               onClick={() => {
                 navigate("/auth/login");
                 setIsMenuOpen(false);
@@ -142,7 +142,7 @@ function HeaderMobile() {
                 }}
               >
                 <img
-                  src="/svg/search-user.svg"
+                  src="/svg/friend.svg"
                   alt="Amigos"
                   className="w-12 h-12"
                 />
@@ -181,7 +181,7 @@ function HeaderMobile() {
                     }}
                   >
                     <img
-                      src="/svg/coins.svg"
+                      src="/svg/coins_admin.svg"
                       alt="Fichas"
                       className="w-12 h-12"
                     />

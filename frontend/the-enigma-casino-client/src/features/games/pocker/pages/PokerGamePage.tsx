@@ -92,7 +92,7 @@ export const PokerGamePage = () => {
       </p>
 
       {roundSummary && (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in mb-6">
           <RoundResult summary={roundSummary} />
         </div>
       )}

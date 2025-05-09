@@ -103,31 +103,64 @@ export const GamePlayerCardList = ({ players, gameType }: Props) => {
 
               {/* Apuestas */}
               <div className="flex flex-col gap-1">
-                <div className="flex gap-2 items-baseline">
-                  <p className="text-xl font-bold text-white">Apuesta:</p>
-                  {player.coins === 0 || !player.bets?.length ? (
-                    <p className="text-xl text-Coins">Sin apuestas activas</p>
-                  ) : (
-                    <p className="text-xl text-Coins">{player.bets[0].amount}</p>
-                  )}
-                </div>
+                {gameType === "Poker" ? (
+                  <>
+                    <p className="text-sm text-white/80">
+                      Fichas disponibles:{" "}
+                      <span className="font-semibold text-Coins">
+                        {player.coins}
+                      </span>
+                    </p>
+                    {player.currentBet !== undefined && (
+                      <p className="text-sm text-white/80">
+                        Apuesta actual:{" "}
+                        <span className="font-semibold text-yellow-300">
+                          {player.currentBet}
+                        </span>
+                      </p>
+                    )}
+                    {player.totalBet !== undefined && (
+                      <p className="text-sm text-white/80">
+                        Total apostado:{" "}
+                        <span className="font-semibold text-yellow-300">
+                          {player.totalBet}
+                        </span>
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex gap-2 items-baseline">
+                      <p className="text-xl font-bold text-white">Apuesta:</p>
+                      {player.coins === 0 || !player.bets?.length ? (
+                        <p className="text-xl text-Coins">
+                          Sin apuestas activas
+                        </p>
+                      ) : (
+                        <p className="text-xl text-Coins">
+                          {player.bets[0].amount}
+                        </p>
+                      )}
+                    </div>
 
-                {player.currentBet !== undefined && (
-                  <p className="text-sm text-white/80">
-                    Apuesta actual:{" "}
-                    <span className="font-semibold text-yellow-300">
-                      {player.currentBet}
-                    </span>
-                  </p>
-                )}
+                    {player.currentBet !== undefined && (
+                      <p className="text-sm text-white/80">
+                        Apuesta actual:{" "}
+                        <span className="font-semibold text-yellow-300">
+                          {player.currentBet}
+                        </span>
+                      </p>
+                    )}
 
-                {player.totalBet !== undefined && (
-                  <p className="text-sm text-white/80">
-                    Total apostado:{" "}
-                    <span className="font-semibold text-yellow-300">
-                      {player.totalBet}
-                    </span>
-                  </p>
+                    {player.totalBet !== undefined && (
+                      <p className="text-sm text-white/80">
+                        Total apostado:{" "}
+                        <span className="font-semibold text-yellow-300">
+                          {player.totalBet}
+                        </span>
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -148,7 +181,10 @@ export const GamePlayerCardList = ({ players, gameType }: Props) => {
                       })`,
                     }}
                   >
-                    <CardStack cards={visibleCards} hideAll={gameType === "Poker"} />
+                    <CardStack
+                      cards={visibleCards}
+                      hideAll={gameType === "Poker"}
+                    />
                   </div>
                 </div>
               </div>

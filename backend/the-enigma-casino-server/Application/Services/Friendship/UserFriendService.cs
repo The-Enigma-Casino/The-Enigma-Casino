@@ -1,4 +1,5 @@
-﻿using the_enigma_casino_server.Application.Dtos.Request;
+﻿using the_enigma_casino_server.Application.Dtos;
+using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Infrastructure.Database.Repositories;
@@ -13,7 +14,7 @@ public class UserFriendService : BaseService
 
     }
 
-    public async Task<List<User>> GetFriendsAsync(int userId)
+    public async Task<List<FriendDto>> GetFriendsAsync(int userId)
     {
         return await _unitOfWork.UserFriendRepository.GetFriendsAsync(userId);
     }

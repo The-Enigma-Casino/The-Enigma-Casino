@@ -25,3 +25,5 @@ export const decrementTurnCountdown = createEvent();
 export const turnCountdownTotalSet = createEvent<number>();
 
 export const resetPokerGame = createEvent();
+
+export const removedByInactivity = createEvent();

@@ -1,7 +1,9 @@
 import { sample } from "effector";
 import { $currentTableId } from "../../../gameTables/store/tablesIndex";
 import { messageSent } from "../../../../websocket/store/wsIndex";
-import { sendPokerAction } from "./pokerIndex";
+import { removedByInactivity, sendPokerAction } from "./pokerIndex";
+import toast from "react-hot-toast";
+import { navigateTo } from "../../shared/router/navigateFx";
 
 
 sample({
@@ -24,4 +26,13 @@ sample({
     return message;
   },
   target: messageSent,
+});
+
+sample({
+  source: removedByInactivity,
+  fn: () => {
+    toast.error("Has sido expulsado de la mesa por inactividad.");
+    return "/";
+  },
+  target: navigateTo
 });

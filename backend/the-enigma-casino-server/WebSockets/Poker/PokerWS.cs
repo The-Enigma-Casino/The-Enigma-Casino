@@ -619,7 +619,17 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             player.HasAbandoned = true;
             Console.WriteLine($"🚪 {player.User.NickName} ha sido marcado como abandonado por 2 faltas acumuladas.");
             tracker.RemovePlayer(player);
+
+            await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), new
+            {
+                type = "poker",
+                action = "removed_by_inactivity",
+                message = "Has sido eliminado de la partida de poker por inactividad."
+            });
+
+            Console.WriteLine($"📨 [WS] Mensaje 'poker/removed_by_inactivity' enviado a {player.User.NickName} (UserId: {player.UserId})");
         }
+
 
         player.PlayerState = PlayerState.Fold;
         await turnService.ForceAdvanceTurnAsync(tableId, player.UserId);

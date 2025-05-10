@@ -25,9 +25,17 @@ type GamePlayer = {
 type Props = {
   players: GamePlayer[];
   gameType: "Blackjack" | "Poker";
+  revealedHands?: {
+    userId: number;
+    cards: { rank: number; suit: number }[];
+  }[];
 };
 
-export const GamePlayerCardList = ({ players, gameType }: Props) => {
+export const GamePlayerCardList = ({
+  players,
+  gameType,
+  revealedHands,
+}: Props) => {
   const avatars = useUnit($playerAvatars);
   const countryCache = useUnit($countryCache);
 
@@ -62,9 +70,52 @@ export const GamePlayerCardList = ({ players, gameType }: Props) => {
             : undefined;
           const flagUrl = country?.flags?.png;
 
-          const visibleCards = (
-            gameType === "Poker" ? player.hand.slice(0, 2) : player.hand
-          ).map((card) => ({ ...card, gameType }));
+          let visibleCards;
+
+          if (gameType === "Poker") {
+            const revealed = revealedHands?.find((h) => h.userId === player.id);
+
+            if (revealed) {
+              const suitNames = [
+                "spades",
+                "hearts",
+                "clubs",
+                "diamonds",
+              ] as const;
+              const rankNames = [
+                "two",
+                "three",
+                "four",
+                "five",
+                "six",
+                "seven",
+                "eight",
+                "nine",
+                "ten",
+                "jack",
+                "queen",
+                "king",
+                "ace",
+              ] as const;
+
+              visibleCards = revealed.cards.map((card) => ({
+                suit: suitNames[card.suit],
+                rank: rankNames[card.rank - 2],
+                value: 0,
+                gameType: "Poker",
+              }));
+            } else {
+              visibleCards = player.hand.slice(0, 2).map((card) => ({
+                ...card,
+                gameType: "Poker",
+              }));
+            }
+          } else {
+            visibleCards = player.hand.map((card) => ({
+              ...card,
+              gameType,
+            }));
+          }
 
           const total = typeof player.total === "number" ? player.total : "-";
 
@@ -183,7 +234,10 @@ export const GamePlayerCardList = ({ players, gameType }: Props) => {
                   >
                     <CardStack
                       cards={visibleCards}
-                      hideAll={gameType === "Poker"}
+                      hideAll={
+                        gameType === "Poker" &&
+                        !revealedHands?.some((h) => h.userId === player.id)
+                      }
                     />
                   </div>
                 </div>

@@ -2,7 +2,7 @@ import { createStore } from "effector";
 import {
   Card,
   PlayerPoker,
-  PotResult,
+  RoundResultPayload,
 } from "../interfaces/poker.interfaces";
 import {
   betConfirmedReceived,
@@ -105,9 +105,10 @@ export const $maxRaise = createStore<number>(0, { skipVoid: false })
   .on(maxRaiseUpdated, (_, amount) => amount ?? 0)
   .reset(resetPokerGame);
 
-export const $roundSummary = createStore<PotResult[] | null>(null)
-  .on(roundResultReceived, (_, { summary }) => summary)
+export const $roundSummary = createStore<RoundResultPayload | null>(null)
+  .on(roundResultReceived, (_, payload) => payload)
   .reset(resetPokerGame);
+
 
 // ⏱️ Temporizador de turno
 export const $turnCountdown = createStore<number>(20)

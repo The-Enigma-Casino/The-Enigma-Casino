@@ -90,7 +90,10 @@ socketMessageReceived.watch((data) => {
       break;
     case "round_result":
       pokerPhaseChanged("showdown");
-      roundResultReceived({ summary: data.summary });
+      roundResultReceived({
+        summary: data.summary,
+        revealedHands: data.revealedHands,
+      });
       loadCoins();
       myTurnEnded();
       break;

@@ -350,7 +350,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = "flop_dealt",
-            cards = pokerGame.GetCommunityCards().Select(c => new {
+            cards = pokerGame.GetCommunityCards().Select(c => new
+            {
                 suit = c.Suit.ToString(),
                 rank = c.Rank.ToString(),
             })
@@ -387,7 +388,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = "turn_dealt",
-            cards = pokerGame.GetCommunityCards().Select(c => new {
+            cards = pokerGame.GetCommunityCards().Select(c => new
+            {
                 suit = c.Suit.ToString(),
                 rank = c.Rank.ToString(),
             })
@@ -421,7 +423,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = "river_dealt",
-            cards = pokerGame.GetCommunityCards().Select(c => new {
+            cards = pokerGame.GetCommunityCards().Select(c => new
+            {
                 suit = c.Suit.ToString(),
                 rank = c.Rank.ToString(),
             })
@@ -460,12 +463,29 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
         }
 
+        var revealedHands = match.Players
+            .Where(p =>
+                p.PlayerState != PlayerState.Fold &&
+                p.PlayerState != PlayerState.Spectating &&
+                !p.HasAbandoned)
+            .Select(p => new
+            {
+                userId = p.UserId,
+                cards = p.Hand.Cards.Select(c => new
+                {
+                    rank = (int)c.Rank,
+                    suit = (int)c.Suit
+                }).ToList()
+            }).ToList();
+
+
         var summary = pokerGame.GetShowdownSummary();
         var response = new
         {
             type = Type,
             action = "round_result",
-            summary
+            summary,
+            revealedHands
         };
 
         List<string> userIds = match.Players

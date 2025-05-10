@@ -93,7 +93,7 @@ export const PokerGamePage = () => {
 
       {roundSummary && (
         <div className="animate-fade-in mb-6">
-          <RoundResult summary={roundSummary} />
+          <RoundResult summary={roundSummary?.summary ?? []} />
         </div>
       )}
 
@@ -170,6 +170,7 @@ export const PokerGamePage = () => {
           }))}
           gameType="Poker"
           coins={0}
+          revealedHands={roundSummary?.revealedHands}
         />
       </div>
     </div>

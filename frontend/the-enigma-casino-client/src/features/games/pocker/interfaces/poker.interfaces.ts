@@ -7,11 +7,11 @@ export interface PlayerPoker {
   nickname: string;
   coins: number;
 
-  hand?: Card[];              
-  currentBet?: number;        
-  totalBet?: number;          
-  state?: PlayerState;        
-  role?: PlayerRole;          
+  hand?: Card[];
+  currentBet?: number;
+  totalBet?: number;
+  state?: PlayerState;
+  role?: PlayerRole;
 }
 
 export interface PotResult {
@@ -32,4 +32,14 @@ export interface Card {
   rank: string;
   suit: string;
   value: number;
+}
+
+export interface RevealedHand {
+  userId: number;
+  cards: { rank: number; suit: number }[];
+}
+
+export interface RoundResultPayload {
+  summary: PotResult[];
+  revealedHands?: RevealedHand[];
 }

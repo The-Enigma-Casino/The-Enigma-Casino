@@ -1,5 +1,9 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
+using the_enigma_casino_server.Application.Services;
 using the_enigma_casino_server.Application.Services.Friendship;
+using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.Interfaces;
 
@@ -8,6 +12,9 @@ namespace the_enigma_casino_server.WebSockets.Friends;
 public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
 {
     public string Type => "friend";
+    private static readonly ConcurrentDictionary<int, (int inviterId, int tableId, DateTime expiresAt)> _pendingInvitations = new();
+    private static readonly TimeSpan InvitationTimeout = TimeSpan.FromSeconds(20);
+
 
     public FriendsWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
         : base(connectionManager, serviceProvider)
@@ -15,6 +22,8 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
         connectionManager.OnUserConnected += HandleUserStatusChanged;
         connectionManager.OnUserDisconnected += HandleUserStatusChanged;
     }
+
+
 
     public async Task HandleAsync(string userIdStr, JsonElement message)
     {
@@ -33,7 +42,11 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             FriendsMessageType.Cancel => HandleCancelAsync(userId, message),
             FriendsMessageType.Remove => HandleRemoveAsync(userId, message),
             FriendsMessageType.GetOnlineFriends => HandleGetOnlineFriendsAsync(userId),
-            FriendsMessageType.InviteFriendToGame => HandleInviteFriendToGameAsync(userId, message),
+            FriendsMessageType.InviteFromTable => HandleInviteFromTableAsync(userId, message), // Invitacion individual dentro de mesa
+            FriendsMessageType.InviteFromFriendsList => HandleInviteFromFriendsListAsync(userId, message), // Invitacion para ambos
+            FriendsMessageType.AcceptGameInvite => HandleAcceptGameInviteAsync(userId, message),  // Acepta ambos
+            FriendsMessageType.AcceptTableInvite => HandleAcceptTableInviteAsync(userId, message), // Acepta individualmente
+            FriendsMessageType.RejectGameInvite => HandleRejectGameInviteAsync(userId, message),
             _ => Task.CompletedTask
         });
     }
@@ -214,7 +227,7 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
 
         IServiceScope scope;
-        var userFriendService = GetScopedService<UserFriendService>(out scope);
+        UserFriendService userFriendService = GetScopedService<UserFriendService>(out scope);
         using (scope)
         {
             var friendIds = await userFriendService.GetFriendIdsAsync(userId);
@@ -229,7 +242,8 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
     }
 
-    private async Task HandleInviteFriendToGameAsync(int userId, JsonElement message)
+    // Invitacion desde mesa
+    private async Task HandleInviteFromTableAsync(int inviterId, JsonElement message)
     {
         if (!message.TryGetProperty("friendId", out var friendIdProp) ||
             !message.TryGetProperty("tableId", out var tableIdProp))
@@ -238,16 +252,224 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
         int friendId = friendIdProp.GetInt32();
         int tableId = tableIdProp.GetInt32();
 
-        var senderUser = await GetUserById(userId);
+        if (_pendingInvitations.ContainsKey(friendId))
+        {
+            await SendErrorAsync(inviterId.ToString(), "Ya has enviado una invitación a este amigo.", Type);
+            return;
+        }
+
+        _pendingInvitations[friendId] = (inviterId, tableId, DateTime.UtcNow.Add(InvitationTimeout));
+        var inviterUser = await GetUserById(inviterId);
 
         await ((IWebSocketSender)this).SendToUserAsync(friendId.ToString(), new
         {
             type = Type,
             action = FriendsMessageType.FriendInvitedToGame,
-            inviterId = senderUser.Id,
-            nickname = senderUser.NickName,
-            image = senderUser.Image,
-            tableId = tableId
+            inviterId = inviterUser.Id,
+            nickname = inviterUser.NickName,
+            image = inviterUser.Image,
+            tableId = tableId.ToString(),
+            expiresIn = (int)InvitationTimeout.TotalSeconds
+        });
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(InvitationTimeout);
+            if (_pendingInvitations.TryRemove(friendId, out var info) &&
+                info.expiresAt <= DateTime.UtcNow)
+            {
+                await ((IWebSocketSender)this).SendToUserAsync(info.inviterId.ToString(), new
+                {
+                    type = Type,
+                    action = "inviteExpired",
+                    friendId = friendId
+                });
+
+                await ((IWebSocketSender)this).SendToUserAsync(friendId.ToString(), new
+                {
+                    type = Type,
+                    action = "inviteExpired",
+                    inviterId = info.inviterId
+                });
+            }
+        });
+    }
+
+    // Invitacion desde amigos
+    private async Task HandleInviteFromFriendsListAsync(int inviterId, JsonElement message)
+    {
+        if (!message.TryGetProperty("friendId", out var friendIdProp) ||
+            !message.TryGetProperty("gameType", out var gameTypeProp))
+            return;
+
+        int friendId = friendIdProp.GetInt32();
+        if (!Enum.TryParse<GameType>(gameTypeProp.GetString(), out var gameType))
+        {
+            await SendErrorAsync(inviterId.ToString(), "Tipo de juego inválido.", Type);
+            return;
+        }
+
+        if (_pendingInvitations.ContainsKey(friendId))
+        {
+            await SendErrorAsync(inviterId.ToString(), "Ya has enviado una invitación a este amigo.", Type);
+            return;
+        }
+
+        using var scope = _serviceProvider.CreateScope();
+        TableService tableService = scope.ServiceProvider.GetRequiredService<TableService>();
+        var availableTables = await tableService.GetAvailableTablesByTypeAsync(gameType);
+
+        Table table = availableTables
+            .Where(t => t.Players.Count <= t.MaxPlayer - 2)
+            .OrderBy(t => t.Players.Count)
+            .FirstOrDefault();
+
+        if (table == null)
+        {
+            await SendErrorAsync(inviterId.ToString(), "No hay mesas disponibles con espacio suficiente.", Type);
+            return;
+        }
+
+        int tableId = table.Id;
+
+        if (!_connectionManager.IsUserConnected(friendId.ToString()))
+        {
+            Console.WriteLine($"[Invite] Usuario {friendId} no está conectado, no se envió la invitación.");
+            return;
+        }
+
+        _pendingInvitations[friendId] = (inviterId, tableId, DateTime.UtcNow.Add(InvitationTimeout));
+        var inviterUser = await GetUserById(inviterId);
+
+        await ((IWebSocketSender)this).SendToUserAsync(friendId.ToString(), new
+        {
+            type = Type,
+            action = FriendsMessageType.FriendInvitedToGame,
+            inviterId = inviterUser.Id,
+            nickname = inviterUser.NickName,
+            image = inviterUser.Image,
+            tableId = tableId,
+            expiresIn = (int)InvitationTimeout.TotalSeconds
+        });
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(InvitationTimeout);
+            if (_pendingInvitations.TryRemove(friendId, out var info) &&
+                info.expiresAt <= DateTime.UtcNow)
+            {
+                await ((IWebSocketSender)this).SendToUserAsync(info.inviterId.ToString(), new
+                {
+                    type = Type,
+                    action = "inviteExpired",
+                    friendId = friendId
+                });
+
+                await ((IWebSocketSender)this).SendToUserAsync(friendId.ToString(), new
+                {
+                    type = Type,
+                    action = "inviteExpired",
+                    inviterId = info.inviterId
+                });
+            }
+        });
+    }
+
+
+    private async Task HandleAcceptGameInviteAsync(int userId, JsonElement message)
+    {
+        if (!message.TryGetProperty("inviterId", out var inviterIdProp) ||
+            !message.TryGetProperty("tableId", out var tableIdProp))
+            return;
+
+        int inviterId = inviterIdProp.GetInt32();
+        int tableId = tableIdProp.GetInt32();
+
+        if (!_pendingInvitations.TryGetValue(userId, out var info) || info.expiresAt <= DateTime.UtcNow)
+        {
+            await SendErrorAsync(userId.ToString(), "La invitación ha expirado.", Type);
+            return;
+        }
+
+        _pendingInvitations.TryRemove(userId, out _);
+
+
+        await ((IWebSocketSender)this).SendToUserAsync(inviterId.ToString(), new
+        {
+            type = Type,
+            action = FriendsMessageType.GameInviteAccepted,
+            friendId = userId,
+            tableId = tableId.ToString()
+        });
+
+        foreach (int id in new[] { userId, inviterId })
+        {
+            await ((IWebSocketSender)this).SendToUserAsync(id.ToString(), new
+            {
+                type = "game_table",
+                action = "join_table",
+                tableId = tableId.ToString()
+            });
+        }
+    }
+    
+    private async Task HandleRejectGameInviteAsync(int userId, JsonElement message)
+    {
+        if (!message.TryGetProperty("inviterId", out var inviterIdProp))
+            return;
+
+        int inviterId = inviterIdProp.GetInt32();
+
+        _pendingInvitations.TryRemove(userId, out _);
+
+        await ((IWebSocketSender)this).SendToUserAsync(inviterId.ToString(), new
+        {
+            type = Type,
+            action = FriendsMessageType.GameInviteRejected,
+            friendId = userId
+        });
+    }
+
+    private async Task HandleAcceptTableInviteAsync(int userId, JsonElement message)
+    {
+        if (!message.TryGetProperty("inviterId", out var inviterIdProp) ||
+            !message.TryGetProperty("tableId", out var tableIdProp))
+            return;
+
+        int inviterId = inviterIdProp.GetInt32();
+        int tableId = tableIdProp.GetInt32();
+
+
+        using var scope = _serviceProvider.CreateScope();
+        var tableService = scope.ServiceProvider.GetRequiredService<TableService>();
+        var table = await tableService.GetTableByIdAsync(tableId);
+
+        if (table == null)
+        {
+            await SendErrorAsync(userId.ToString(), "La mesa ya no existe.", Type);
+            return;
+        }
+
+        if (table.Players.Count >= table.MaxPlayer)
+        {
+            await SendErrorAsync(userId.ToString(), "La mesa está llena.", Type);
+            return;
+        }
+
+        await ((IWebSocketSender)this).SendToUserAsync(userId.ToString(), new
+        {
+            type = "game_table",
+            action = "join_table",
+            tableId = tableId.ToString()
+        });
+
+
+        await ((IWebSocketSender)this).SendToUserAsync(inviterId.ToString(), new
+        {
+            type = Type,
+            action = FriendsMessageType.GameInviteAccepted,
+            friendId = userId,
+            tableId = tableId.ToString()
         });
     }
 }

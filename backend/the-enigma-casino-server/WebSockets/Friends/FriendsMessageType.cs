@@ -7,7 +7,7 @@ public static class FriendsMessageType
     public const string Accept = "accept";
     public const string Cancel = "cancel";
     public const string Remove = "remove";
-    public const string InviteFriendToGame = "inviteFriendToGame";
+
 
     // Server to client
     public const string FriendRequestReceived = "friendRequestReceived";
@@ -26,4 +26,14 @@ public static class FriendsMessageType
     public const string GetOnlineFriends = "getOnlineFriends";
     public const string OnlineFriends = "onlineFriends";
 
+    // Invitaciones partida
+    public const string InviteFromTable = "inviteFromTable";
+    public const string InviteFromFriendsList = "inviteFromFriendsList";
+
+    public const string AcceptGameInvite = "acceptGameInvite";
+    public const string RejectGameInvite = "rejectGameInvite";
+    public const string AcceptTableInvite = "acceptTableInvite";
+
+    public const string GameInviteAccepted = "gameInviteAccepted";
+    public const string GameInviteRejected = "gameInviteRejected";
 }

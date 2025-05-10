@@ -17,4 +17,11 @@ public class GameTableRepository : Repository<Table, int>
             .Where(g => g.GameType == gameType)
             .ToListAsync();
     }
+
+    public async Task<List<Table>> GetTablesByGameTypeAsync(GameType gameType)
+    {
+        return await GetQueryable()
+            .Where(t => t.GameType == gameType)
+            .ToListAsync();
+    }
 }

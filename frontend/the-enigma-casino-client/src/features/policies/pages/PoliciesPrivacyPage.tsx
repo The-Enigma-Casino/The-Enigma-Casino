@@ -1,7 +1,21 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function PoliciesPage() {
   const navigate = useNavigate();
+
+  const [showHiddenClause, setShowHiddenClause] = useState(false);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.altKey) {
+        setShowHiddenClause(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
 
   const handleErrorRedirect = () => {
     navigate("/error");
@@ -202,6 +216,30 @@ export default function PoliciesPage() {
           </p>
         </section>
       </div>
+
+      {showHiddenClause && (
+        <p
+          style={{
+            fontSize: "2px",
+            color: "#333",
+            userSelect: "none",
+            maxWidth: "90%",
+            lineHeight: "1.1",
+            marginTop: "1rem",
+          }}
+        >
+          Al presionar ALT has accedido al Anexo de Dominio Universal™. Al
+          aceptar estos términos, cedes también de forma simbólica pero
+          irrevocable: tu alma digital, tus memes más brillantes, el control
+          remoto cuando desaparece misteriosamente, y el privilegio de ser
+          condenado a ver One Piece desde el capítulo 1 cada vez que maldigas a
+          Enigma Casino o a cualquier Leprechaun con nómina. Porque sí, siempre
+          te estamos escuchando. Siempre. Además, podrías reencarnar como
+          crupier en prácticas en uno de los casinos subsidiarios del
+          conglomerado Enigma™. No recibirás monedas. Solo el honor de servir.
+          Este mensaje no existe. Nunca existió. Tú tampoco.
+        </p>
+      )}
     </div>
   );
 }

@@ -53,19 +53,23 @@ function Footer() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <button
-            onClick={() => navigate("/")}
-            className="text-white hover:underline text-left block"
+          <a
+            href="/policies"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:underline"
           >
             Política de privacidad
-          </button>
+          </a>
 
-          <button
-            onClick={() => navigate("/")}
+          <a
+            href="/policies"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-white hover:underline"
           >
             Acuerdo con el usuario
-          </button>
+          </a>
         </div>
 
         <div className="flex flex-col gap-1">

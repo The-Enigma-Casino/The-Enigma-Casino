@@ -5,7 +5,6 @@ import {
   updatePlayer,
   drawPlayer,
   resetPlayer,
-  jump,
 } from "../game/Player";
 import {
   initObstacle,
@@ -15,7 +14,13 @@ import {
   isTreasureObstacle,
 } from "../game/Obstacle";
 import { checkCollision } from "../game/utils";
-import { GAME_WIDTH, GAME_HEIGHT, PLAYER, LOSS_MESSAGES, SCORE_RANKS } from "../game/constants";
+import {
+  GAME_WIDTH,
+  GAME_HEIGHT,
+  PLAYER,
+  LOSS_MESSAGES,
+  SCORE_RANKS,
+} from "../game/constants";
 import { GameButton } from "./GameButton";
 
 export const GameCanvas = () => {
@@ -39,13 +44,7 @@ export const GameCanvas = () => {
 
     const rainbow = rainbowRef.current;
     if (rainbow) {
-      ctx.drawImage(
-        rainbow,
-        GAME_WIDTH / 2 - 150,
-        GAME_HEIGHT - 130,
-        300,
-        100
-      );
+      ctx.drawImage(rainbow, GAME_WIDTH / 2 - 150, GAME_HEIGHT - 130, 300, 100);
     }
 
     ctx.fillStyle = "#7A9965";
@@ -97,8 +96,7 @@ export const GameCanvas = () => {
         const random = Math.floor(Math.random() * LOSS_MESSAGES.length);
         setDeathMessage(LOSS_MESSAGES[random]);
 
-        const matchedRank = SCORE_RANKS
-          .slice()
+        const matchedRank = SCORE_RANKS.slice()
           .reverse()
           .find((r) => displayedScore >= r.score);
         setScoreRank(matchedRank?.label || "");
@@ -150,7 +148,8 @@ export const GameCanvas = () => {
   return (
     <div className="flex flex-col items-center justify-start py-10 px-4 bg-Background-Page text-white font-reddit w-full max-w-3xl min-h-[560px]">
       <p className="text-2xl md:text-3xl font-semibold mb-2">
-        Puntuación: <span className="font-extrabold text-Green-lines">{score}</span>
+        Puntuación:{" "}
+        <span className="font-extrabold text-Green-lines">{score}</span>
       </p>
       <p className="text-lg md:text-xl font-medium mb-6">
         Récord: <span className="font-bold text-Coins">{bestScore}</span>
@@ -177,11 +176,6 @@ export const GameCanvas = () => {
 
       {hasStarted && !gameOver && !victory && (
         <div className="block md:hidden mt-6">
-          <GameButton
-            onAction={jump}
-            color="green"
-            label="SALTAR"
-          />
         </div>
       )}
 
@@ -199,7 +193,9 @@ export const GameCanvas = () => {
       {gameOver && (
         <div className="mt-8 text-center max-w-xl transition-opacity duration-300">
           {deathMessage && (
-            <p className="text-red-400 font-bold text-xl md:text-2xl mb-3">{deathMessage}</p>
+            <p className="text-red-400 font-bold text-xl md:text-2xl mb-3">
+              {deathMessage}
+            </p>
           )}
           {scoreRank && (
             <p className="text-Coins font-extrabold text-xl md:text-2xl mb-3">
@@ -208,7 +204,8 @@ export const GameCanvas = () => {
           )}
           {achievedHighScore && (
             <p className="text-green-400 font-bold text-xl md:text-2xl animate-pulseGlow">
-              🎉 ¡Felicidades! Has llegado muy lejos. El trébol dorado casi fue tuyo ☘️✨
+              🎉 ¡Felicidades! Has llegado muy lejos. El trébol dorado casi fue
+              tuyo ☘️✨
             </p>
           )}
         </div>

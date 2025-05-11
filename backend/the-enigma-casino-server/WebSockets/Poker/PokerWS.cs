@@ -350,7 +350,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = "flop_dealt",
-            cards = pokerGame.GetCommunityCards().Select(c => new {
+            cards = pokerGame.GetCommunityCards().Select(c => new
+            {
                 suit = c.Suit.ToString(),
                 rank = c.Rank.ToString(),
             })
@@ -387,7 +388,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = "turn_dealt",
-            cards = pokerGame.GetCommunityCards().Select(c => new {
+            cards = pokerGame.GetCommunityCards().Select(c => new
+            {
                 suit = c.Suit.ToString(),
                 rank = c.Rank.ToString(),
             })
@@ -421,7 +423,8 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             type = Type,
             action = "river_dealt",
-            cards = pokerGame.GetCommunityCards().Select(c => new {
+            cards = pokerGame.GetCommunityCards().Select(c => new
+            {
                 suit = c.Suit.ToString(),
                 rank = c.Rank.ToString(),
             })
@@ -460,12 +463,29 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
         }
 
+        var revealedHands = match.Players
+            .Where(p =>
+                p.PlayerState != PlayerState.Fold &&
+                p.PlayerState != PlayerState.Spectating &&
+                !p.HasAbandoned)
+            .Select(p => new
+            {
+                userId = p.UserId,
+                cards = p.Hand.Cards.Select(c => new
+                {
+                    rank = (int)c.Rank,
+                    suit = (int)c.Suit
+                }).ToList()
+            }).ToList();
+
+
         var summary = pokerGame.GetShowdownSummary();
         var response = new
         {
             type = Type,
             action = "round_result",
-            summary
+            summary,
+            revealedHands
         };
 
         List<string> userIds = match.Players
@@ -599,7 +619,17 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             player.HasAbandoned = true;
             Console.WriteLine($"🚪 {player.User.NickName} ha sido marcado como abandonado por 2 faltas acumuladas.");
             tracker.RemovePlayer(player);
+
+            await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), new
+            {
+                type = "poker",
+                action = "removed_by_inactivity",
+                message = "Has sido eliminado de la partida de poker por inactividad."
+            });
+
+            Console.WriteLine($"📨 [WS] Mensaje 'poker/removed_by_inactivity' enviado a {player.User.NickName} (UserId: {player.UserId})");
         }
+
 
         player.PlayerState = PlayerState.Fold;
         await turnService.ForceAdvanceTurnAsync(tableId, player.UserId);

@@ -81,3 +81,4 @@ export const UPDATE_PACK_ADMIN = `${API_BASE_URL}AdminCoinsPack/coins-pack`;
 
 /* ENDPOINTS DE GAMES */
 export const PLAYER_AVATARS = `${API_BASE_URL}Games/player-avatars`;
+export const LAST_BIG_WIN = `${API_BASE_URL}Games/last-big-win`;

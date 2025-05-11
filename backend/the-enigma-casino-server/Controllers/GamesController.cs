@@ -36,4 +36,19 @@ public class GamesController : BaseController
         }
 
     }
+
+    [HttpGet("last-big-win")]
+    public async Task<ActionResult<List<BigWinDto>>> LastBigWin()
+    {
+        try
+        {
+            List<BigWinDto> result = await _gameService.LastBigWin();
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Un error ha ocurrido al enviar su petición.");
+        }
+    }
 }

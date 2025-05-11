@@ -125,7 +125,7 @@ export default function PoliciesPage() {
             Además, aplicamos mecanismos para garantizar que ningún usuario o
             sistema tenga ventaja injusta, y mantenemos registros verificables
             de todas las partidas por si algún elfo litigante exige revisión.
-            <strong>Excepto el sistema de gachapón.</strong> Ese está más
+            <strong> Excepto el sistema de gachapón.</strong> Ese está más
             trucado que los árbitros de la Liga, un dado de seis caras con cinco
             ceros y una ilusión. Literalmente es magia negra envuelta en bolas
             de colores. Te lo advertimos.

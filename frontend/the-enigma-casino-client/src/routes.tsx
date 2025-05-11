@@ -16,6 +16,7 @@ import Withdrawal from "./features/withdraw/pages/Withdrawal";
 import routeProfile from "./features/profile/routes";
 import routeAdmin from "./features/admin/routes";
 import PoliciesPage from "./features/policies/pages/PoliciesPrivacyPage";
+import { AuthGuard } from "./guards/AuthGuard";
 
 const router = createBrowserRouter([
   {
@@ -28,19 +29,55 @@ const router = createBrowserRouter([
     errorElement: <Error />,
     children: [
       { index: true, element: <Home /> },
-      { path: "payment", element: <PaymentPage /> },
-      { path: "payment-confirmation", element: <PaymentConfirmation /> },
-      { path: "withdrawal", element: <Withdrawal /> },
-      { path: "withdraw-confirmation", element: <WithdrawalConfirmation /> },
       { path: "catalog", element: <Catalog /> },
-      { path: "/tables/:gameType", element: <GameTable /> },
-      { path: "/policies", element: <PoliciesPage /> },
+      { path: "policies", element: <PoliciesPage /> },
+
+      {
+        path: "payment",
+        element: (
+          <AuthGuard>
+            <PaymentPage />
+          </AuthGuard>
+        ),
+      },
+      {
+        path: "payment-confirmation",
+        element: (
+          <AuthGuard>
+            <PaymentConfirmation />
+          </AuthGuard>
+        ),
+      },
+      {
+        path: "withdrawal",
+        element: (
+          <AuthGuard>
+            <Withdrawal />
+          </AuthGuard>
+        ),
+      },
+      {
+        path: "withdraw-confirmation",
+        element: (
+          <AuthGuard>
+            <WithdrawalConfirmation />
+          </AuthGuard>
+        ),
+      },
+      {
+        path: "tables/:gameType",
+        element: (
+          <AuthGuard>
+            <GameTable />
+          </AuthGuard>
+        ),
+      },
     ],
   },
   ...routeAuth,
   ...routeGames,
   ...routeProfile,
-  ...routeAdmin
+  ...routeAdmin,
 ]);
 
 export default router;

@@ -2,14 +2,29 @@ import Footer from "../components/layouts/footer/Footer";
 import Header from "../components/layouts/header/Header";
 import HeaderMobile from "../components/layouts/header/HeaderMobile";
 import { NavigationInit } from "../features/games/shared/router/NavigationInit";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "../utils/useMediaQuery";
+import { useEffect } from "react";
+import { useUnit } from "effector-react";
+import { $token } from "../features/auth/store/authStore";
 
 function RootLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const token = useUnit($token);
   const isGameRoute = location.pathname.includes("/game/");
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  useEffect(() => {
+    const flag = "__hasVisitedEnigma__";
+
+    const isLandingOrAuth = location.pathname.startsWith("/landing") || location.pathname.startsWith("/auth");
+
+    if (!token && !window.name.includes(flag) && !isLandingOrAuth) {
+      window.name += ` ${flag}`;
+      navigate("/landing");
+    }
+  }, [token, location.pathname, navigate]);
 
   return (
     <>

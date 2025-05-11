@@ -53,10 +53,6 @@ function Header() {
   return (
     <>
       <header className={classes.header}>
-        {isGachaponModalOpen && (
-          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-20" />
-        )}
-
         <div className={classes.leftHeader}>
           <img
             className={classes.imgLogo}

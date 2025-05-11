@@ -33,21 +33,13 @@
 
 }
 
-* {
-  margin: 0;
-  padding: 0;
+*, ::after, ::before {
   box-sizing: border-box;
 }
 
 html, body {
+  margin: 0;
   font-size: 62.5%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  width: 100%;
-  min-height: 100vh;
-}
-
-body {
   font-family: "Reddit Sans", sans-serif;
 }
 

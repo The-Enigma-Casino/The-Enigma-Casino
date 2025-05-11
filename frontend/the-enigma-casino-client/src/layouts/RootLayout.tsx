@@ -13,7 +13,7 @@ function RootLayout() {
       <NavigationInit />
       <div className={styles.rootLayout}>
         {!isGameRoute && <Header />}
-        <main className={styles.rootContent}>
+        <main>
           <Outlet />
         </main>
         {!isGameRoute && <Footer />}

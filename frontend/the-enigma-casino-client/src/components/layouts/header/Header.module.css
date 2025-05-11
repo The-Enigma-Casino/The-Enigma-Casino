@@ -1,12 +1,9 @@
 .header {
-  height: 10rem;
   display: flex;
   background-color: var(--Background-Nav);
   color: white;
-  align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  box-sizing: border-box;
 }
 
 .leftHeader {

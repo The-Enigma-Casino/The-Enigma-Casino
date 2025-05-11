@@ -11,15 +11,15 @@ function Winners() {
   }, [load]);
 
   return (
-    <div className="w-[90%] mx-auto bg-Background-nav py-2 rounded-md overflow-hidden font-reddit">
+    <div className="w-[90%] mx-auto bg-Background-nav py-2 px-4 rounded-md overflow-hidden font-reddit text-white">
       <div className={`inline-block whitespace-nowrap ${styles.marquee}`}>
         {[...winners, ...winners].map((player, index) => (
           <span
             key={index}
-            className="inline-flex items-center gap-2 mx-2 px-3 py-1 rounded-full bg-[#1a1a1a] text-white text-sm sm:text-base"
+            className="inline-flex items-center gap-2 mx-3 text-sm sm:text-base"
           >
             <span className="text-white/80">{player.nickname}</span>
-            <span className="text-Coins font-semibold">
+            <span className="text-Coins font-semibold flex items-center gap-1">
               🪙 {player.amountWon}
             </span>
           </span>

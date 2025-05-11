@@ -9,6 +9,5 @@
 }
 
 .marquee {
-  animation: marquee 25s linear infinite;
-  white-space: nowrap;
+  animation: marquee 20s linear infinite;
 }

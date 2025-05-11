@@ -108,6 +108,7 @@ function RegisterFormSection() {
         <Checkbox
           labelText="Acepto la política de privacidad"
           checked={acceptPrivacy}
+          linkHref="/policies"
           onChange={() => setAcceptPrivacy(!acceptPrivacy)}
         />
       </div>

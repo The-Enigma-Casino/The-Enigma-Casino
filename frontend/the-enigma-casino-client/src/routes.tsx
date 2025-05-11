@@ -15,6 +15,7 @@ import GameTable from "./features/gameTables/pages/GameTablePage";
 import Withdrawal from "./features/withdraw/pages/Withdrawal";
 import routeProfile from "./features/profile/routes";
 import routeAdmin from "./features/admin/routes";
+import PoliciesPage from "./features/policies/pages/PoliciesPrivacyPage";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
       { path: "withdraw-confirmation", element: <WithdrawalConfirmation /> },
       { path: "catalog", element: <Catalog /> },
       { path: "/tables/:gameType", element: <GameTable /> },
+      { path: "/policies", element: <PoliciesPage /> },
     ],
   },
   ...routeAuth,

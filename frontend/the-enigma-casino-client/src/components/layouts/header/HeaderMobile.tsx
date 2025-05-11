@@ -11,6 +11,7 @@ import Button from "../../ui/button/Button";
 import Modal from "../../ui/modal/Modal";
 import ModalGachaComponent from "../../../features/gachapon/components/ModalGachaComponent";
 import { useLogout } from "../../../features/auth/utils/logout";
+import UserLiveCounter from "../../ui/userLive/UserLiveCounter";
 
 function HeaderMobile() {
   const navigate = useNavigate();
@@ -28,8 +29,6 @@ function HeaderMobile() {
     loadRole();
   }, [token]);
 
-  console.log("🔐 Rol actual:", role);
-
   const handleLogout = () => {
     logout();
     setIsLogoutModalOpen(false);
@@ -38,14 +37,15 @@ function HeaderMobile() {
   return (
     <>
       <header className="relative w-full h-[6rem] bg-[var(--Background-Nav)] px-3 py-2 flex items-center justify-between text-white">
-        {/* IZQUIERDA: botón hamburguesa */}
-        <div className="z-10">
+        {/* IZQUIERDA: botón hamburguesa + UserLiveCounter */}
+        <div className="z-10 flex items-center gap-4">
           <button
             className="text-white text-4xl"
             onClick={() => setIsMenuOpen((prev) => !prev)}
           >
             ☰
           </button>
+          <UserLiveCounter size="sm" />
         </div>
 
         {/* CENTRO: logo centrado con position absolute */}
@@ -81,9 +81,9 @@ function HeaderMobile() {
         <div className="absolute top-[6rem] left-0 w-1/2 bg-[var(--Background-Nav)] shadow-lg z-50 flex flex-col items-start px-6 py-6 gap-6 text-white text-xl font-medium rounded-r-xl">
           {!token && (
             <Button
-              variant="large"
+              variant="md"
               color="green"
-              font="bold"
+              font="smallBold"
               onClick={() => {
                 navigate("/auth/login");
                 setIsMenuOpen(false);
@@ -141,19 +141,14 @@ function HeaderMobile() {
                   setIsMenuOpen(false);
                 }}
               >
-                <img
-                  src="/svg/search-user.svg"
-                  alt="Amigos"
-                  className="w-12 h-12"
-                />
+                <img src="/svg/friend.svg" alt="Amigos" className="w-12 h-12" />
                 <p className="text-xl text-white/80">Amigos</p>
               </div>
-
-              <hr className="w-full border-t-2 border-[var(--Principal)] my-2" />
 
               {/* Admin panel */}
               {role === "Admin" && (
                 <>
+                  <hr className="w-full border-t-2 border-[var(--Principal)] my-2" />
                   <p className="text-[var(--Principal)] text-base font-bold">
                     ADMIN
                   </p>
@@ -181,15 +176,15 @@ function HeaderMobile() {
                     }}
                   >
                     <img
-                      src="/svg/coins.svg"
+                      src="/svg/coins_admin.svg"
                       alt="Fichas"
                       className="w-12 h-12"
                     />
                     <p className="text-xl text-white/80">Panel de Fichas</p>
                   </div>
+                  <hr className="w-full border-t-2 border-[var(--Principal)] my-2" />
                 </>
               )}
-              <hr className="w-full border-t-2 border-[var(--Principal)] my-2" />
 
               {/* Cerrar sesión */}
               <div

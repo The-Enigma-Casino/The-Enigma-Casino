@@ -395,6 +395,14 @@ public class UserService : BaseService
         return string.Empty;
     }
 
+    public async Task<string?> GetUserImageAsync(int userId)
+    {
+        var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+        if (user == null) return null;
+
+        return user.Image;
+    }
+
     public async Task<string> UpdateUserAsync(int userId, UpdateUserReq updateUserReq)
     {
         User user = await GetUserById(userId);

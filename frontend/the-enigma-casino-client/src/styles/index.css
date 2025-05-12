@@ -4,7 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 :root {
   /* Main Colors */
   --Principal: #74c410;
@@ -18,19 +17,18 @@
   --Black-color: #000814;
   --Grey-color: #505050;
   --Light-Grey-color: #a9a9a9;
-  --Background-Nav: #1C1C1C;
+  --Background-Nav: #1c1c1c;
 
   /* Chat Colors */
-  --Chat-Background: #D4EDB5;
+  --Chat-Background: #d4edb5;
 
   /* Roulette Colors */
   --Roulette-green: #14532d;
-  --Roulette-red: #A91607;
-  --Roulette-black: #0E3811;
+  --Roulette-red: #a91607;
+  --Roulette-black: #0e3811;
   --Chip-Orange: #ea580c;
   --Chip-Green: #15803d;
   --Chip-Yellow: #facc15;
-
 }
 
 * {
@@ -39,17 +37,20 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   font-size: 62.5%;
 }
 
 body {
   font-family: "Reddit Sans", sans-serif;
+  background-color: var(--Background-Page);
+  color: white;
 }
 
 @layer base {
   body {
     @apply font-reddit;
+    background-color: var(--Background-Page);
   }
 }
-

@@ -4,7 +4,7 @@ import HeaderMobile from "../components/layouts/header/HeaderMobile";
 import { NavigationInit } from "../features/games/shared/router/NavigationInit";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "../utils/useMediaQuery";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
 import { $token } from "../features/auth/store/authStore";
 
@@ -15,16 +15,28 @@ function RootLayout() {
   const isGameRoute = location.pathname.includes("/game/");
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
     const flag = "__hasVisitedEnigma__";
+    const isFirstVisit = !window.name.includes(flag);
+    const isRoot = location.pathname === "/" || location.pathname === "";
+    const isPublicEntry = ["/catalog", "/policies", "/auth"].some((path) =>
+      location.pathname.startsWith(path)
+    );
 
-    const isLandingOrAuth = location.pathname.startsWith("/landing") || location.pathname.startsWith("/auth");
-
-    if (!token && !window.name.includes(flag) && !isLandingOrAuth) {
+    if (!token && isFirstVisit && isRoot && !isPublicEntry) {
       window.name += ` ${flag}`;
-      navigate("/landing");
+      navigate("/landing", { replace: true });
+      return;
     }
+
+    setReady(true);
   }, [token, location.pathname, navigate]);
+
+  if (!ready && (location.pathname === "/" || location.pathname === "")) {
+    return null;
+  }
 
   return (
     <>

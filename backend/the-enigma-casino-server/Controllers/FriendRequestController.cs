@@ -63,11 +63,11 @@ namespace the_enigma_casino_server.Controllers
 
 
         [HttpDelete("cancel")]
-        public async Task<ActionResult> CancelFriendRequest([FromQuery] int receiverId)
+        public async Task<ActionResult> CancelFriendRequest([FromQuery] int senderId)
         {
             try
             {
-                int senderId = GetUserId();
+                int receiverId = GetUserId(); 
                 await _friendRequestService.CancelFriendRequestAsync(senderId, receiverId);
                 return Ok("Solicitud cancelada.");
             }

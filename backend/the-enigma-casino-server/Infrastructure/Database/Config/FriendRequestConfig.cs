@@ -23,5 +23,11 @@ public class FriendRequestConfig : IEntityTypeConfiguration<FriendRequest>
 
         builder.Property(fr => fr.Status)
                .IsRequired();
+
+        builder.HasOne(fr => fr.Sender)
+       .WithMany()
+       .HasForeignKey(fr => fr.SenderId)
+       .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

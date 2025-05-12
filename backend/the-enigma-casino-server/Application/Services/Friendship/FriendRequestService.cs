@@ -1,6 +1,7 @@
 ﻿using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Core.Entities.Enum;
+using the_enigma_casino_server.Application.Dtos.Request;
 
 namespace the_enigma_casino_server.Application.Services.Friendship;
 
@@ -13,9 +14,9 @@ public class FriendRequestService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<List<FriendRequest>> GetReceivedRequestsAsync(int userId)
+    public async Task<List<FriendRequestDto>> GetReceivedRequestsDtoAsync(int userId)
     {
-        return await _unitOfWork.FriendRequestRepository.GetReceivedRequestsAsync(userId);
+        return await _unitOfWork.FriendRequestRepository.GetReceivedRequestsDtoAsync(userId);
     }
 
     public async Task<bool> CanSendRequestAsync(int senderId, int receiverId)

@@ -34,6 +34,7 @@ public class UserFriendConfig : IEntityTypeConfiguration<UserFriend>
                .HasForeignKey(uf => uf.FriendId)
                .OnDelete(DeleteBehavior.Restrict);
 
+
         builder.HasIndex(uf => new { uf.UserId, uf.FriendId }).IsUnique();
     }
 }

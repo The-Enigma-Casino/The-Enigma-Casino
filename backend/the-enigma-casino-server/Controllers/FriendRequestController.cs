@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using the_enigma_casino_server.Application.Dtos;
+using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Services.Friendship;
 using the_enigma_casino_server.Core.Entities;
 
@@ -94,12 +95,12 @@ namespace the_enigma_casino_server.Controllers
 
 
         [HttpGet("received-requests")]
-        public async Task<ActionResult<List<FriendRequest>>> GetReceivedRequests()
+        public async Task<ActionResult<List<FriendRequestDto>>> GetReceivedRequests()
         {
             try
             {
                 int userId = GetUserId();
-                List<FriendRequest> requests = await _friendRequestService.GetReceivedRequestsAsync(userId);
+                var requests = await _friendRequestService.GetReceivedRequestsDtoAsync(userId);
                 return Ok(requests);
             }
             catch (Exception exception)

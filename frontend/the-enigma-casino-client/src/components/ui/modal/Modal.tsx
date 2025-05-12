@@ -6,7 +6,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  size?: "small" | "medium" | "large";
+  size?: "small" | "smallPlus" | "medium" | "large";
   position?: "center" | "top" | "bottom";
 }
 
@@ -19,7 +19,7 @@ interface ModalProps {
  * @param {boolean} props.isOpen - Indica si el modal está abierto.
  * @param {() => void} props.onClose - Función para cerrar el modal.
  * @param {React.ReactNode} props.children - Contenido del modal.
- * @param {string} [props.size] - Tamaño del modal ("small", "medium", "large").
+ * @param {string} [props.size] - Tamaño del modal ("small", "smallPlus", "medium", "large").
  * @param {string} [props.color] - Color del modal (ej: "white", "gray", "dark").
  * @param {string} [props.position] - Posición del modal ("center", "top", "bottom").
  *

@@ -6,6 +6,7 @@ import {
   $token,
   loadRole,
 } from "../../../features/auth/store/authStore";
+import { openAutoBanModal } from "../../../features/autoBan/stores/autoBan.store";
 
 function Footer() {
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ function Footer() {
           <div>
             <button
               className="text-[var(--Principal)] hover:underline"
-              onClick={() => navigate("/")}
+              onClick={() => openAutoBanModal()}
             >
               AutoExpulsión
             </button>

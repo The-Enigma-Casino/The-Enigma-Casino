@@ -1,6 +1,6 @@
 export interface Friend {
   id: number,
-  nickname: string,
+  nickName: string,
   image: string,
   isOnline?: boolean
 }
@@ -8,6 +8,8 @@ export interface Friend {
 export interface FriendRequest {
   id: number;
   senderId: number;
-  receiverId: number;
-  createdAt: string;
+  nickName: string;
+  image: string;
 }
+
+

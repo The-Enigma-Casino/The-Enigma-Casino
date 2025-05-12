@@ -14,6 +14,8 @@ import {
 
 import { Friend, FriendRequest } from "./friends.types";
 
+/* ---- ENDPOINTS ----*/ 
+
 // Obtener todos los amigos del usuario
 export const fetchFriendsFx = createEffect(async (): Promise<Friend[]> => {
   const response = await axios.get(GET_FRIENDS, {
@@ -50,8 +52,8 @@ export const acceptFriendRequestFx = createEffect(
 
 // Cancelar solicitud de amistad
 export const cancelFriendRequestFx = createEffect(
-  async ({ receiverId }: { receiverId: number }): Promise<void> => {
-    await axios.delete(`${CANCEL_REQUEST}?receiverId=${receiverId}`, {
+  async ({ senderId }: { senderId: number }): Promise<void> => {
+    await axios.delete(`${CANCEL_REQUEST}?senderId=${senderId}`, {
       headers: getAuthHeaders(),
     });
   }
@@ -85,3 +87,24 @@ export const canSendFriendRequestFx = createEffect(
     return response.data;
   }
 );
+
+// Falta crear endpoint busqueda usuarios - No borrar
+// export const searchUsersFx = createEffect(async (query: string): Promise<Friend[]> => {
+//   const response = await axios.get(`${SEARCH_USERS}?query=${query}`, {
+//     headers: getAuthHeaders(),
+//   });
+//   return response.data;
+// });
+
+//MOCK
+export const searchUserFx = createEffect<string, Friend[]>(async (query) => {
+  const mockResults: Friend[] = [
+    { id: 999, nickname: 'Rociolo1', image: 'user1.png' },
+    { id: 1000, nickname: 'Enigma', image: 'user2.png' },
+    { id: 1001, nickname: 'CasinoMaster', image: 'user3.png' },
+  ];
+
+  return mockResults.filter((user) =>
+    user.nickname.toLowerCase().includes(query.toLowerCase())
+  );
+})

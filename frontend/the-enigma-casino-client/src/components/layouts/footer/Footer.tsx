@@ -75,7 +75,7 @@ function Footer() {
 
         <div className="flex flex-col gap-1">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/about")}
             className="text-white hover:underline"
           >
             Sobre nosotros

@@ -22,7 +22,7 @@ function RootLayout() {
     const flag = "__hasVisitedEnigma__";
     const isFirstVisit = !window.name.includes(flag);
     const isRoot = location.pathname === "/" || location.pathname === "";
-    const isPublicEntry = ["/catalog", "/policies", "/auth"].some((path) =>
+    const isPublicEntry = ["/catalog", "/policies", "/auth", "/about"].some((path) =>
       location.pathname.startsWith(path)
     );
 

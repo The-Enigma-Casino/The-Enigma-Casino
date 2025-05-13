@@ -120,6 +120,7 @@ public class UserRepository : Repository<User, int>
                 NickName = u.NickName,
                 Image = u.Image,
             })
+            .Take(4)
             .ToListAsync();
     }
 }

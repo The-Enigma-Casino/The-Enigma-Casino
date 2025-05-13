@@ -8,9 +8,7 @@ import Checkbox from "../../ui/Checkbox";
 import Button from "../../../../../components/ui/button/Button";
 import CustomDatePickerHeader from "../../../../../components/ui/datePicker/CustomDatePickerHeader";
 import { registerLocale } from "react-datepicker";
-import {es} from "date-fns/locale/es";
-
-
+import { es } from "date-fns/locale/es";
 
 function RegisterFormSection() {
   const {
@@ -78,6 +76,7 @@ function RegisterFormSection() {
           placeholder="Contraseña"
           value={formData.password}
           onChange={handleChange}
+          showToggle
         />
 
         <Input
@@ -87,6 +86,7 @@ function RegisterFormSection() {
           placeholder="Confirma la contraseña"
           value={formData.confirmPassword}
           onChange={handleChange}
+          showToggle
         />
       </div>
 

@@ -26,17 +26,14 @@ const ModalEditPassword: React.FC<Props> = ({ onCancel, onConfirm }) => {
     }
 
     try {
-      await toast.promise(
-        updatePasswordFx({ password, confirmPassword }),
-        {
-          loading: "Actualizando contraseña...",
-          success: () => {
-            onConfirm(password);
-            return <b>Contraseña modificada correctamente.</b>;
-          },
-          error: (err) => <b>{err || "Error al actualizar la contraseña."}</b>,
-        }
-      );
+      await toast.promise(updatePasswordFx({ password, confirmPassword }), {
+        loading: "Actualizando contraseña...",
+        success: () => {
+          onConfirm(password);
+          return <b>Contraseña modificada correctamente.</b>;
+        },
+        error: (err) => <b>{err || "Error al actualizar la contraseña."}</b>,
+      });
     } catch (err) {
       console.error("Error al actualizar la contraseña", err);
     }
@@ -45,7 +42,6 @@ const ModalEditPassword: React.FC<Props> = ({ onCancel, onConfirm }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 px-2 ">
       <div className="bg-Background-Overlay rounded-3xl px-6 py-8 w-[600px] max-w-full border border-Principal flex flex-col lg:flex-row gap-10 lg:gap-20 items-center lg:items-start text-center lg:text-left">
-
         {/* Inputs */}
         <div className="flex flex-col gap-6 w-full max-w-md text-white text-xl">
           <label className="flex flex-col text-left w-full">
@@ -57,6 +53,7 @@ const ModalEditPassword: React.FC<Props> = ({ onCancel, onConfirm }) => {
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              showToggle
             />
           </label>
 
@@ -69,6 +66,7 @@ const ModalEditPassword: React.FC<Props> = ({ onCancel, onConfirm }) => {
               placeholder="Confirme la contraseña"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              showToggle
             />
           </label>
         </div>
@@ -109,7 +107,6 @@ const ModalEditPassword: React.FC<Props> = ({ onCancel, onConfirm }) => {
         </div>
       </div>
     </div>
-
   );
 };
 

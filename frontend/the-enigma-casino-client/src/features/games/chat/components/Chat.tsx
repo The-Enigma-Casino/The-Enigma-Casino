@@ -25,15 +25,13 @@ export const Chat = ({ gameType }: ChatProps) => {
 
   const chatMessages = useUnit($chatMessages);
 
-  useEffect(() => {
-    console.log("[Chat] UseEffect Mensajes recibidos:", chatMessages);
-    // return () => {
-    //   resetMessages();
-    // }
-  }, [chatMessages]);
+    useEffect(() => {
+    return () => {
+      resetMessages();
+    };
+  }, [tableId]);
 
   const [showInfo, setShowInfo] = useState(false);
-  // const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleSend = (text: string) => {
     console.log("[Chat] Mensaje enviado:", text);

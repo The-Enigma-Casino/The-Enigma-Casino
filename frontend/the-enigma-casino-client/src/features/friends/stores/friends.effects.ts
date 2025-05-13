@@ -10,6 +10,7 @@ import {
   REMOVE_FRIEND,
   IS_FRIEND,
   CAN_SEND_REQUEST,
+  SEARCH_USERS
 } from "../../../config";
 
 import { Friend, FriendRequest } from "./friends.types";
@@ -87,24 +88,10 @@ export const canSendFriendRequestFx = createEffect(
     return response.data;
   }
 );
-
-// Falta crear endpoint busqueda usuarios - No borrar
-// export const searchUsersFx = createEffect(async (query: string): Promise<Friend[]> => {
-//   const response = await axios.get(`${SEARCH_USERS}?query=${query}`, {
-//     headers: getAuthHeaders(),
-//   });
-//   return response.data;
-// });
-
-//MOCK
-export const searchUserFx = createEffect<string, Friend[]>(async (query) => {
-  const mockResults: Friend[] = [
-    { id: 999, nickname: 'Rociolo1', image: 'user1.png' },
-    { id: 1000, nickname: 'Enigma', image: 'user2.png' },
-    { id: 1001, nickname: 'CasinoMaster', image: 'user3.png' },
-  ];
-
-  return mockResults.filter((user) =>
-    user.nickname.toLowerCase().includes(query.toLowerCase())
-  );
-})
+// Buscar usuarios
+export const searchUserFx = createEffect(async (query: string): Promise<Friend[]> => {
+  const response = await axios.get(`${SEARCH_USERS}?query=${query}`, {
+    headers: getAuthHeaders(),
+  });
+  return response.data;
+});

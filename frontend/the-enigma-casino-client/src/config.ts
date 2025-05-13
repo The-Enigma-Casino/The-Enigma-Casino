@@ -89,3 +89,4 @@ export const CANCEL_REQUEST = `${API_BASE_URL}FriendRequest/cancel`;
 export const REMOVE_FRIEND = `${API_BASE_URL}FriendRequest/remove`;
 export const CAN_SEND_REQUEST = `${API_BASE_URL}FriendRequest/can-send`;
 export const IS_FRIEND = `${API_BASE_URL}FriendRequest/is-friend`;
+export const SEARCH_USERS = `${API_BASE_URL}User/search-user`;

@@ -13,24 +13,42 @@ const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onPageChange 
     if (page < totalPages) onPageChange(page + 1);
   };
 
+  const getPageNumbers = () => {
+    const pages = [];
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (page <= 4) {
+        pages.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (page >= totalPages - 3) {
+        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', page - 1, page, page + 1, '...', totalPages);
+      }
+    }
+
+    return pages;
+  };
+
   return (
     <div className="flex flex-wrap justify-center gap-6 mt-6 text-white items-center font-bold text-3xl">
       <span className="cursor-pointer" onClick={handlePrev}>{'‹'}</span>
 
-      {[...Array(totalPages)].map((_, i) => {
-        const currentPage = i + 1;
-        return (
+      {getPageNumbers().map((num, index) =>
+        typeof num === 'number' ? (
           <span
-            key={currentPage}
-            className={`cursor-pointer px-2 ${currentPage === page ? 'text-Principal font-bold' : 'text-white'}`}
-            onClick={() => onPageChange(currentPage)}
+            key={num}
+            className={`cursor-pointer px-2 ${num === page ? 'text-Principal font-bold' : 'text-white'}`}
+            onClick={() => onPageChange(num)}
           >
-            {currentPage}
+            {num}
           </span>
-        );
-      })}
+        ) : (
+          <span key={`ellipsis-${index}`} className="px-2 text-white/50 select-none">…</span>
+        )
+      )}
 
-      {totalPages > 5 && <span>…</span>}
       <span className="cursor-pointer" onClick={handleNext}>{'›'}</span>
     </div>
   );

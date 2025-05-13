@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Utilities;
@@ -106,6 +107,19 @@ public class UserRepository : Repository<User, int>
     {
         return await GetQueryable()
             .Where(u => nickNames.Contains(u.NickName))
+            .ToListAsync();
+    }
+
+    public async Task<List<FriendDto>> SearchUserByNickNameAsync(string query, int currentUserId)
+    {
+        return await GetQueryable()
+            .Where(u => u.NickName.Contains(query) && u.Id != currentUserId)
+            .Select(u => new FriendDto
+            {
+                Id = u.Id,
+                NickName = u.NickName,
+                Image = u.Image,
+            })
             .ToListAsync();
     }
 }

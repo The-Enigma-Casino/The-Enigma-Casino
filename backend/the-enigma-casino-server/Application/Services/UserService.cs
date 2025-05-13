@@ -440,4 +440,9 @@ public class UserService : BaseService
 
         return string.Empty;
     }
+
+    public async Task<List<FriendDto>> SearchUsersAsync(string query, int currentUserId)
+    {
+        return await _unitOfWork.UserRepository.SearchUserByNickNameAsync(query, currentUserId);
+    }
 }

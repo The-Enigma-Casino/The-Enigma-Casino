@@ -207,4 +207,19 @@ public class UserController : BaseController
             return StatusCode(500, "Ocurrió un error inesperado.");
         }
     }
+
+    [HttpGet("search-user")]
+    public async Task<ActionResult<List<FriendDto>>> SearchUsers([FromQuery] string query)
+    {
+        try
+        {
+            int userId = GetUserId();
+            var users = await _userService.SearchUsersAsync(query, userId);
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error al buscar usuarios: {ex.Message}");
+        }
+    }
 }

@@ -16,12 +16,14 @@ import {
   fetchReceivedRequestsFx,
   acceptFriendRequestFx,
   cancelFriendRequestFx,
+  removeFriendFx,
 } from "../stores/friends.effects";
 import { FriendItem } from "../components/FriendItem";
 import {
   removeReceivedRequest,
   resetReceivedRequests,
   resetSearchResults,
+  setFriends,
 } from "../stores/friends.events";
 
 type TabMode = "friends" | "search";
@@ -63,10 +65,7 @@ export const FriendsModal: React.FC = () => {
     }
   }, [searchResults, tab]);
 
-  const handleSearch = () => {
-    // Aquí iría una llamada a tu endpoint de búsqueda de usuarios
-    // y por cada uno llamarías canSendFriendRequestFx({ receiverId: user.id })
-  };
+  const handleSearch = () => {};
   const filteredFriends = friends.filter((f) =>
     f.nickName?.toLowerCase().includes(searchQuery?.toLowerCase() || "")
   );
@@ -109,6 +108,11 @@ export const FriendsModal: React.FC = () => {
               mode="friend-list"
               onInviteClick={() => {
                 console.log("Invitar a", friend.nickName);
+              }}
+              onRemoveFriendClick={async () => {
+                await removeFriendFx({ friendId: friend.id });
+                setFriends(friends.filter(f => f.id !== friend.id));
+                fetchFriendsFx();
               }}
             />
           ))}

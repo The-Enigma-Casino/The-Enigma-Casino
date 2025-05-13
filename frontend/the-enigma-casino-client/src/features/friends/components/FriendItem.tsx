@@ -13,6 +13,7 @@ interface FriendItemProps {
   onProfileClick?: () => void;
   onAcceptRequestClick?: () => void;
   onRejectRequestClick?: () => void;
+  onRemoveFriendClick?: () => void;
 }
 
 export const FriendItem: React.FC<FriendItemProps> = ({
@@ -28,6 +29,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
   onProfileClick,
   onAcceptRequestClick,
   onRejectRequestClick,
+  onRemoveFriendClick
 }) => {
   return (
     <div className="friend-item flex items-start justify-between gap-3 py-2 border-b border-gray-600">
@@ -69,6 +71,12 @@ export const FriendItem: React.FC<FriendItemProps> = ({
           {mode === "friend-list" && isOnline && (
             <button onClick={onInviteClick} title="Invitar a partida">
               <img src="/svg/addFriend.svg" className="w-5 h-5" />
+            </button>
+          )}
+
+          {mode === "friend-list" && isFriend && (
+            <button onClick={onRemoveFriendClick} title="Eliminar amigo">
+              <img src="/svg/reject-friend.svg" className="w-5 h-5" />
             </button>
           )}
 

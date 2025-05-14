@@ -16,7 +16,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
   linkedin,
 }) => {
   return (
-    <div className="flex flex-col items-center text-center border-2 border-[#74c410] rounded-[2rem] p-4 w-[100px] h-[180px] sm:w-[200px] sm:h-[280px] bg-black/60 shadow-xl flex-shrink-0">
+    <div className="flex flex-col items-center text-center border-2 border-[#74c410] rounded-[2rem] p-4 w-[100px] h-[180px] sm:w-[200px] sm:h-[280px] shadow-xl flex-shrink-0">
       <a href={github} target="_blank" rel="noopener noreferrer">
         <img
           src={image}

@@ -53,4 +53,14 @@ public class FriendRequestRepository : Repository<FriendRequest, int>
             (r.SenderId == userId2 && r.ReceiverId == userId1));
     }
 
+    public async Task<List<int>> GetPendingRequestUserIdsAsync(int currentUserId)
+    {
+        return await Context.Set<FriendRequest>()
+            .Where(r =>
+                (r.SenderId == currentUserId || r.ReceiverId == currentUserId) &&
+                r.Status == FriendRequestStatus.Pending)
+            .Select(r => r.SenderId == currentUserId ? r.ReceiverId : r.SenderId)
+            .Distinct()
+            .ToListAsync();
+    }
 }

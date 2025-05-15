@@ -6,8 +6,8 @@ interface FriendItemProps {
   image: string;
   isFriend: boolean;
   isOnline?: boolean;
-  canSend?: boolean;
   mode: "friend-list" | "search";
+  canSend: boolean;
   onInviteClick?: () => void;
   onAddFriendClick?: () => void;
   onProfileClick?: () => void;
@@ -22,15 +22,17 @@ export const FriendItem: React.FC<FriendItemProps> = ({
   image,
   isFriend,
   isOnline,
-  canSend,
   mode,
+  canSend,
   onInviteClick,
   onAddFriendClick,
   onProfileClick,
   onAcceptRequestClick,
   onRejectRequestClick,
-  onRemoveFriendClick
+  onRemoveFriendClick,
 }) => {
+  console.log("FriendItem", { id, canSend });
+
   return (
     <div className="friend-item flex items-start justify-between gap-3 py-2 border-b border-gray-600">
       {/* Izquierda: imagen y nombre */}
@@ -80,14 +82,10 @@ export const FriendItem: React.FC<FriendItemProps> = ({
             </button>
           )}
 
-          {mode === "search" && canSend && (
+          {mode === "search" && onAddFriendClick && canSend && (
             <button onClick={onAddFriendClick} title="Enviar solicitud">
-              <img src="/icons/add-friend.svg" className="w-5 h-5" />
+              <img src="/svg/add-friend.svg" className="w-5 h-5" />
             </button>
-          )}
-
-          {mode === "search" && !canSend && isFriend && (
-            <span className="text-gray-400 text-sm">Ya es tu amigo</span>
           )}
 
           {mode === "search" &&

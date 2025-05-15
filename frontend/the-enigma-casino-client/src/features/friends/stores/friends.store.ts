@@ -1,7 +1,7 @@
 import { createStore } from "effector";
-import { Friend, FriendRequest } from "./friends.types";
-import { removeReceivedRequest, resetReceivedRequests, resetSearchResults, setFriends, setOnlineFriends, setReceivedRequests, updateFriendOnlineStatus } from "./friends.events";
-import { acceptFriendRequestFx, cancelFriendRequestFx, canSendFriendRequestFx, fetchFriendsFx, fetchReceivedRequestsFx, searchUserFx } from "./friends.effects";
+import { Friend, FriendRequest, SearchUser } from "./friends.types";
+import { removeReceivedRequest, resetCanSendMap, resetReceivedRequests, resetSearchResults, setFriends, setOnlineFriends, setReceivedRequests, setSearchResults, updateFriendOnlineStatus } from "./friends.events";
+import { acceptFriendRequestFx, cancelFriendRequestFx, fetchFriendsFx, fetchReceivedRequestsFx, searchUserFx } from "./friends.effects";
 
 
 
@@ -15,16 +15,21 @@ export const $friends = createStore<Friend[]>([])
   export const $onlineFriendsIds = createStore<number[]>([])
   .on(setOnlineFriends, (_, list) => list);
 
-  export const $canSendMap = createStore<Record<number, boolean>>({})
-  .on(canSendFriendRequestFx.done, (state, { params, result }) => ({
-    ...state,
-    [params.receiverId]: result,
-  }));
+  // Borrar¿
+// export const $canSendMap = createStore<Record<number, boolean>>({})
+//   .on(canSendFriendRequestFx.done, (state, { params, result }) => ({
+//     ...state,
+//     [params.receiverId]: result,
+//   }));
 
-  // TO DO - Crear endpoint busqueda usuarios - No borrar
-  export const $searchResults = createStore<Friend[]>([])
-  .on(searchUserFx.doneData, (_, users) => users)
+export const $searchResults = createStore<Friend[]>([])
+  .on(searchUserFx.doneData, (_, users) => {
+    console.log("[DEBUG] Store actualizada con:", users);
+    return users;
+  })
   .reset(resetSearchResults);
+
+
 
 export const $receivedRequests = createStore<FriendRequest[]>([])
   .on(fetchReceivedRequestsFx.doneData, (_, list) => list)
@@ -45,3 +50,6 @@ cancelFriendRequestFx.done.watch(() => {
   fetchFriendsFx();
 });
 
+searchUserFx.doneData.watch((data) => {
+  setSearchResults(data);
+});

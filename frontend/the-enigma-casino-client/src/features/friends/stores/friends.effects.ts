@@ -79,19 +79,25 @@ export const isFriendFx = createEffect(
   }
 );
 
-// Comprobar si puedo enviar solicitud de amistad
-export const canSendFriendRequestFx = createEffect(
-  async ({ receiverId }: { receiverId: number }): Promise<boolean> => {
-    const response = await axios.get(`${CAN_SEND_REQUEST}?receiverId=${receiverId}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.data;
-  }
-);
+// Comprobar si puedo enviar solicitud de amistad BORRAR¿
+// export const canSendFriendRequestFx = createEffect(
+//   async ({ receiverId }: { receiverId: number }): Promise<boolean> => {
+//     const response = await axios.get(`${CAN_SEND_REQUEST}?receiverId=${receiverId}`, {
+//       headers: getAuthHeaders(),
+//     });
+//     console.log("canSendFriendRequestFx result for", receiverId, ":", response.data);
+//     return response.data;
+//   }
+// );
+
 // Buscar usuarios
-export const searchUserFx = createEffect(async (query: string): Promise<Friend[]> => {
+export const searchUserFx = createEffect(async (query: string) => {
   const response = await axios.get(`${SEARCH_USERS}?query=${query}`, {
     headers: getAuthHeaders(),
   });
+  console.log("[DEBUG] Response de backend:", response.data);
   return response.data;
 });
+
+
+

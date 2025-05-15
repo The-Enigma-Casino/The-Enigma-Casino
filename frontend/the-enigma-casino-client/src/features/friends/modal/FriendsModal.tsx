@@ -4,14 +4,12 @@ import {
   $friends,
   $onlineFriendsIds,
   $searchResults,
-  $canSendMap,
   $receivedRequests,
 } from "../stores/friends.store";
 
 import {
   searchUserFx,
   fetchFriendsFx,
-  canSendFriendRequestFx,
   sendFriendRequestFx,
   fetchReceivedRequestsFx,
   acceptFriendRequestFx,
@@ -33,10 +31,9 @@ export const FriendsModal: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const friends = useUnit($friends);
   const onlineIds = useUnit($onlineFriendsIds);
-  const canSend = useUnit($canSendMap);
   const searchResults = useUnit($searchResults);
   const receivedRequests = useUnit($receivedRequests);
-  console.log(receivedRequests);
+
   // Cargar amigos al iniciar
   useEffect(() => {
     fetchFriendsFx();
@@ -51,21 +48,24 @@ export const FriendsModal: React.FC = () => {
     }
   }, [tab]);
 
-  useEffect(() => {
-    if (tab === "search" && searchQuery) {
-      searchUserFx(searchQuery);
-    }
-  }, [searchQuery, tab]);
+useEffect(() => {
+  const trimmedQuery = searchQuery.trim();
 
-  useEffect(() => {
-    if (tab === "search" && searchResults.length > 0) {
-      searchResults.forEach((user) => {
-        canSendFriendRequestFx({ receiverId: user.id });
-      });
-    }
-  }, [searchResults, tab]);
+  if (tab !== "search") return;
 
-  const handleSearch = () => {};
+  if (trimmedQuery.length === 0) {
+    resetSearchResults();
+    return;
+  }
+
+  const delay = setTimeout(() => {
+    searchUserFx(trimmedQuery);
+  }, 300);
+
+  return () => clearTimeout(delay);
+}, [searchQuery, tab]);
+
+
   const filteredFriends = friends.filter((f) =>
     f.nickName?.toLowerCase().includes(searchQuery?.toLowerCase() || "")
   );
@@ -111,27 +111,35 @@ export const FriendsModal: React.FC = () => {
               }}
               onRemoveFriendClick={async () => {
                 await removeFriendFx({ friendId: friend.id });
-                setFriends(friends.filter(f => f.id !== friend.id));
+                setFriends(friends.filter((f) => f.id !== friend.id));
                 fetchFriendsFx();
               }}
             />
           ))}
-
         {tab === "search" &&
-          searchResults.map((user) => (
-            <FriendItem
-              key={user.id}
-              id={user.id}
-              nickname={user.nickName}
-              image={user.image}
-              isFriend={false}
-              canSend={canSend[user.id]}
-              mode="search"
-              onAddFriendClick={() => {
-                sendFriendRequestFx({ receiverId: user.id });
-              }}
-            />
-          ))}
+          searchResults.map((user) => {
+            console.log("Render user:", user);
+            return (
+              <FriendItem
+                key={user.id}
+                id={user.id}
+                nickname={user.nickName}
+                image={user.image}
+                isFriend={false}
+                canSend={true}
+                mode="search"
+                onAddFriendClick={() => {
+                  sendFriendRequestFx({ receiverId: user.id });
+                }}
+              />
+            );
+          })}
+
+        {tab === "search" && searchQuery && searchResults.length === 0 && (
+          <p className="text-gray-400 text-2xl text-center mt-4">
+            No se encontraron usuarios.
+          </p>
+        )}
 
         {receivedRequests.length > 0 && (
           <div className="mt-4 pt-3 border-t border-gray-600">
@@ -143,6 +151,7 @@ export const FriendsModal: React.FC = () => {
                 nickname={req.nickName}
                 image={req.image}
                 isFriend={false}
+                canSend={false}
                 mode="search"
                 onAcceptRequestClick={() =>
                   acceptFriendRequestFx({ senderId: req.senderId })

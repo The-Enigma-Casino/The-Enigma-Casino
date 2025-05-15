@@ -5,6 +5,12 @@ export interface Friend {
   isOnline?: boolean
 }
 
+export interface SearchUser {
+  id: number,
+  nickName: string,
+  image: string,
+}
+
 export interface FriendRequest {
   id: number;
   senderId: number;

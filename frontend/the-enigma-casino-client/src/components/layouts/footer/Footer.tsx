@@ -6,6 +6,7 @@ import {
   $token,
   loadRole,
 } from "../../../features/auth/store/authStore";
+import { openAutoBanModal } from "../../../features/autoBan/stores/autoBan.store";
 
 function Footer() {
   const navigate = useNavigate();
@@ -53,24 +54,28 @@ function Footer() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <button
-            onClick={() => navigate("/")}
-            className="text-white hover:underline text-left block"
+          <a
+            href="/policies"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:underline"
           >
             Política de privacidad
-          </button>
+          </a>
 
-          <button
-            onClick={() => navigate("/")}
+          <a
+            href="/policies"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-white hover:underline"
           >
             Acuerdo con el usuario
-          </button>
+          </a>
         </div>
 
         <div className="flex flex-col gap-1">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/about")}
             className="text-white hover:underline"
           >
             Sobre nosotros
@@ -89,7 +94,7 @@ function Footer() {
           <div>
             <button
               className="text-[var(--Principal)] hover:underline"
-              onClick={() => navigate("/")}
+              onClick={() => openAutoBanModal()}
             >
               AutoExpulsión
             </button>

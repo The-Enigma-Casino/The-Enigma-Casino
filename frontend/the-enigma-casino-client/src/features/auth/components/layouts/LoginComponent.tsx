@@ -73,6 +73,7 @@ function LoginComponent() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setPassword(e.target.value)
                 }
+                showToggle
               />
             </div>
             <div className={classes.checkboxContainer}>
@@ -105,8 +106,12 @@ function LoginComponent() {
               onClick={() => navigate("/")}
             />
           </div>
-          <a className={classes.register} href="" onClick={() => navigate("/auth/register")}>
-            <p >¿No tienes cuenta?</p>
+          <a
+            className={classes.register}
+            href=""
+            onClick={() => navigate("/auth/register")}
+          >
+            <p>¿No tienes cuenta?</p>
           </a>
         </div>
       </div>

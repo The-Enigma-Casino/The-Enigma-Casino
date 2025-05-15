@@ -37,6 +37,11 @@
   height: 14rem;
 }
 
+.smallPlus {
+  width: 52rem;
+  min-height: 16rem;
+}
+
 .center {
   align-items: center;
 }
@@ -49,6 +54,12 @@
   align-items: flex-end;
 }
 
+@media (max-width: 768px) {
+  .smallPlus {
+    width: 90%;
+    min-height: auto;
+  }
+}
 
 @media (max-width: 500px) {
   .text {

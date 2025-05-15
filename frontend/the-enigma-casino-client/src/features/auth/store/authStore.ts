@@ -58,7 +58,6 @@ $token
   .on(clearToken, () => "")
   .on(loginFx.doneData, (_, token) => token);
 
-
 setToken.watch(({ token, rememberMe }) => {
   if (token) {
     loadUserId();
@@ -166,6 +165,8 @@ logoutWithReason.watch((reason) => {
 
   if (reason === "Cuenta baneada") {
     toast.error("Tu cuenta ha sido baneada por un administrador.");
+  } else if (reason === "Auto-expulsión") {
+    toast.success("Has activado la auto expulsión. 💚");
   } else if (reason === "Token expirado") {
     toast("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
   }

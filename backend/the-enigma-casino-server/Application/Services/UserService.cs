@@ -441,8 +441,16 @@ public class UserService : BaseService
         return string.Empty;
     }
 
-    public async Task<List<FriendDto>> SearchUsersAsync(string query, int currentUserId)
+    public async Task<List<FriendDto>> SearchAddableUsersAsync(string query, int currentUserId)
     {
-        return await _unitOfWork.UserRepository.SearchUserByNickNameAsync(query, currentUserId);
+        var friendIds = await _unitOfWork.UserFriendRepository.GetFriendIdsAsync(currentUserId);
+
+        var pendingIds = await _unitOfWork.FriendRequestRepository.GetPendingRequestUserIdsAsync(currentUserId);
+
+        var excludedIds = friendIds.Concat(pendingIds).Append(currentUserId).Distinct().ToList();
+
+        return await _unitOfWork.UserRepository.SearchAddableUsersAsync(query, currentUserId, excludedIds);
     }
+
+
 }

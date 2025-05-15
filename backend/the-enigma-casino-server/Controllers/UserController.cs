@@ -214,7 +214,12 @@ public class UserController : BaseController
         try
         {
             int userId = GetUserId();
-            var users = await _userService.SearchUsersAsync(query, userId);
+
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("La consulta no puede estar vacía.");
+
+            var users = await _userService.SearchAddableUsersAsync(query, userId);
+
             return Ok(users);
         }
         catch (Exception ex)
@@ -222,4 +227,5 @@ public class UserController : BaseController
             return StatusCode(500, $"Error al buscar usuarios: {ex.Message}");
         }
     }
+
 }

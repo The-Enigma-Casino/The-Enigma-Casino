@@ -109,18 +109,34 @@ public class UserRepository : Repository<User, int>
             .Where(u => nickNames.Contains(u.NickName))
             .ToListAsync();
     }
-
-    public async Task<List<FriendDto>> SearchUserByNickNameAsync(string query, int currentUserId)
+    public async Task<List<FriendDto>> SearchAddableUsersAsync(string query, int currentUserId, List<int> excludedIds)
     {
-        return await GetQueryable()
-            .Where(u => u.NickName.Contains(query) && u.Id != currentUserId)
+        var lowerQuery = query.ToLower();
+
+        var candidates = await GetQueryable()
+            .Where(u =>
+                u.Id != currentUserId &&
+                u.NickName.ToLower().Contains(lowerQuery)
+            )
             .Select(u => new FriendDto
             {
                 Id = u.Id,
                 NickName = u.NickName,
-                Image = u.Image,
+                Image = u.Image
             })
-            .Take(4)
+            .Take(20)
             .ToListAsync();
+
+        Console.WriteLine("[DEBUG] Usuarios candidatos: " + string.Join(", ", candidates.Select(c => $"{c.Id} - {c.NickName}")));
+
+        var excludedSet = new HashSet<int>(excludedIds);
+        var result = candidates.Where(u => !excludedSet.Contains(u.Id)).ToList();
+
+        Console.WriteLine("[DEBUG] Usuarios después del filtro: " + string.Join(", ", result.Select(r => $"{r.Id} - {r.NickName}")));
+
+        return result;
     }
+
+
+
 }

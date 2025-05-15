@@ -12,6 +12,9 @@ import Modal from "../../ui/modal/Modal";
 import ModalGachaComponent from "../../../features/gachapon/components/ModalGachaComponent";
 import { useLogout } from "../../../features/auth/utils/logout";
 import UserLiveCounter from "../../ui/userLive/UserLiveCounter";
+import { $userImage } from "../../../features/profile/store/profile/profileStores";
+import { getUserImageFx } from "../../../features/profile/store/profile/profileEffects";
+import { USER_IMAGES } from "../../../config";
 
 function HeaderMobile() {
   const navigate = useNavigate();
@@ -19,6 +22,7 @@ function HeaderMobile() {
   const role = useUnit($role);
   const coins = useUnit($coins);
   const logout = useLogout();
+  const userImage = useUnit($userImage);
 
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isGachaponModalOpen, setIsGachaponModalOpen] = useState(false);
@@ -27,12 +31,18 @@ function HeaderMobile() {
   useEffect(() => {
     loadCoins();
     loadRole();
+    getUserImageFx();
   }, [token]);
 
   const handleLogout = () => {
     logout();
     setIsLogoutModalOpen(false);
   };
+
+  const profileImage =
+    token && userImage
+      ? `${USER_IMAGES}/${userImage}?${Date.now()}`
+      : "/svg/user.svg";
 
   return (
     <>
@@ -117,7 +127,7 @@ function HeaderMobile() {
                   setIsMenuOpen(false);
                 }}
               >
-                <img src="/svg/user.svg" alt="Perfil" className="w-12 h-12" />
+                <img src={profileImage} alt="Perfil" className="w-12 h-12 rounded-full" />
                 <p className="text-xl text-white/80">Mi Perfil</p>
               </div>
 

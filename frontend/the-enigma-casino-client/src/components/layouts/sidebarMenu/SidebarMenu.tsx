@@ -25,7 +25,7 @@ function SidebarMenu() {
   }, [token]);
 
   const profileImage =
-    token && userImage ? `${USER_IMAGES}/${userImage}` : "/svg/user.svg";
+    token && userImage ? `${USER_IMAGES}/${userImage}?${Date.now()}` : "/svg/user.svg";
 
   return (
     <nav className="hidden md:flex w-[24rem] h-full flex-col justify-between items-center bg-[var(--Background-Nav)] py-12 px-0">

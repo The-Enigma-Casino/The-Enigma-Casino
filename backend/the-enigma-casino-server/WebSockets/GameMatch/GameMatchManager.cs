@@ -257,6 +257,24 @@ public class GameMatchManager
             }
         }
 
+        if (match.Players.All(p => p.PlayerState == PlayerState.Left || p.HasAbandoned))
+        {
+            Console.WriteLine($"🛑 [MatchManager] Todos los jugadores abandonaron el match en mesa {tableId}. Cerrando partida.");
+
+            match.MatchState = MatchState.Finished;
+            ActiveGameMatchStore.Remove(tableId);
+
+            if (ActiveGameSessionStore.TryGet(tableId, out var session))
+            {
+                session.CancelBettingTimer();
+                session.CancelTurnTimer();
+                session.CancelPostMatchTimer();
+            }
+
+            return true; 
+        }
+
+
 
         return true;
     }

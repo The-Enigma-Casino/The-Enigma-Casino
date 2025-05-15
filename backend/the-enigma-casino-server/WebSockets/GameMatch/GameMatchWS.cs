@@ -2,7 +2,6 @@
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
-using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
@@ -112,6 +111,14 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             return;
         }
 
+        var existingMatch = ActiveGameMatchStore.TryGetNullable(tableId);
+        if (existingMatch != null && existingMatch.MatchState != MatchState.Finished)
+        {
+            Console.WriteLine($"⚠️ [StartMatch] Ya existe un match activo en mesa {tableId} (estado: {existingMatch.MatchState}). Abortando.");
+            return;
+        }
+
+
         Table table = session.Table;
 
         IServiceScope scope;
@@ -123,7 +130,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 return;
 
             ActiveGameMatchStore.Set(table.Id, match);
-       
+
             Console.WriteLine($"[GameMatchWS] Partida iniciada en mesa {table.Id} con {match.Players.Count} jugadores.");
 
             string[] userIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
@@ -319,7 +326,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             }
 
 
-            if (table.Players.Count >= table.MinPlayer)
+            if (table.Players.Count(p => p.PlayerState != PlayerState.Left && !p.HasAbandoned) >= table.MinPlayer)
             {
                 table.TableState = TableState.Starting;
 
@@ -340,38 +347,54 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             {
                 var lone = table.Players[0];
 
-                Console.WriteLine($"🚪 [PostMatch] Solo queda {lone.User.NickName}. Eliminándolo de la mesa y cerrando historial.");
+                Console.WriteLine($"🚪 [PostMatch] Solo queda {lone.User.NickName}. Esperando antes de expulsarlo...");
 
-                await ((IWebSocketSender)this).SendToUserAsync(lone.UserId.ToString(), new
+
+                // Cancelamos temporizadores que ya no aplican
+                session.CancelTurnTimer();
+                session.CancelBettingTimer();
+
+                session.StartPostMatchTimer(2000, async () =>
                 {
-                    type = "game_match",
-                    action = "return_to_table",
-                    message = "Todos los demás jugadores han abandonado. Volverás a la sala principal."
-                });
+                    Console.WriteLine($"⏳ [PostMatchTimer] Ejecutando expulsión diferida de {lone.User.NickName} en mesa {table.Id}.");
 
-
-                lone.PlayerState = PlayerState.Left;
-                lone.HasAbandoned = true;
-
-                using (var scope = _serviceProvider.CreateScope())
-                {
+                    using var scope = _serviceProvider.CreateScope();
                     var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+                    var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+                    lone.PlayerState = PlayerState.Left;
+                    lone.HasAbandoned = true;
+
                     tblMgr.RemovePlayerFromTable(table, lone.UserId, out _);
-                }
 
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    UnitOfWork uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-                    History hist = await uow.GameHistoryRepository.FindActiveSessionAsync(lone.UserId, table.Id);
-
+                    var hist = await uow.GameHistoryRepository.FindActiveSessionAsync(lone.UserId, table.Id);
                     if (hist != null && hist.LeftAt == null)
                     {
                         hist.LeftAt = DateTime.Now;
                         uow.GameHistoryRepository.Update(hist);
                         await uow.SaveAsync();
                     }
-                }
+
+                    if (table.Players.Count == 0)
+                    {
+                        table.TableState = TableState.Waiting;
+                        uow.GameTableRepository.Update(table);
+                        await uow.SaveAsync();
+
+                        Console.WriteLine($"🕳️ [PostMatch] Mesa {table.Id} vacía tras expulsión. Estado → Waiting.");
+                    }
+
+                    await ((IWebSocketSender)this).SendToUserAsync(lone.UserId.ToString(), new
+                    {
+                        type = "game_match",
+                        action = "return_to_table",
+                        message = "Todos los demás jugadores han abandonado. Volverás a la sala principal."
+                    });
+                });
+
+                return;
             }
+
 
 
             if (table.Players.Count == 0)

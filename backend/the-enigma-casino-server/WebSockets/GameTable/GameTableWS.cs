@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using the_enigma_casino_server.Application.Services;
-using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
@@ -64,20 +63,16 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private async Task HandleJoinTableAsync(string userId, JsonElement message)
     {
-
         if (!message.TryGetProperty("tableId", out JsonElement tableIdProp) ||
-            !int.TryParse(tableIdProp.GetString(), out int tableId))
-            return;
-
-
-        if (!int.TryParse(userId, out int userIdInt))
+            !int.TryParse(tableIdProp.GetString(), out int tableId) ||
+            !int.TryParse(userId, out int userIdInt))
             return;
 
         if (IsUserBusyInAnotherTable(userIdInt))
         {
             await ((IWebSocketSender)this).SendToUserAsync(userId, new
             {
-                type = Type, 
+                type = Type,
                 action = "error",
                 message = "No puedes unirte a otra mesa mientras participas en una partida activa."
             });
@@ -88,85 +83,72 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
         UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out scope);
         using (scope)
         {
-            User user = await unitOfWork.UserRepository.GetByIdAsync(userIdInt);
+            var user = await unitOfWork.UserRepository.GetByIdAsync(userIdInt);
             if (user == null)
             {
                 Console.WriteLine($"[GameTableWS] Usuario con ID {userIdInt} no encontrado.");
                 return;
             }
 
-            GameTableManager tableManager = GetScopedTableManager(scope);
+            var tableManager = GetScopedTableManager(scope);
             if (!tableManager.CanJoinTable(user.Id))
             {
-                await ((IWebSocketSender)this).SendToUserAsync(userId, new { type = "error", message = "Debes esperar antes de volver a unirte." });
+                await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                {
+                    type = "game_table",
+                    action = "join_denied",
+                    reason = "Hace poco que has salido de la mesa, no te puedes volver a unir."
+                });
                 return;
             }
 
-
-            ActiveGameSession session = await GetOrLoadTableAsync(tableId);
+            var session = await GetOrLoadTableAsync(tableId);
             if (session == null)
             {
                 Console.WriteLine($"[ERROR] No se pudo obtener sesión para mesa {tableId}");
                 return;
             }
 
-            Table table = session.Table;
+            var table = session.Table;
 
-            (bool success, string errorMessage) addResult;
+            var joinGuard = scope.ServiceProvider.GetRequiredService<GameTableJoinGuard>();
+            if (!joinGuard.CanJoin(table, user, out string reason))
+            {
+                Console.WriteLine($"⛔ [JoinDenied] Usuario {user.NickName} no puede unirse a la mesa {tableId}. Motivo: {reason}");
+                await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                {
+                    type = "game_table",
+                    action = "join_denied",
+                    reason
+                });
+                return;
+            }
 
             var semaphore = _tableLocks.GetOrAdd(tableId, _ => new SemaphoreSlim(1, 1));
             await semaphore.WaitAsync();
             try
             {
-                using var betScope = _serviceProvider.CreateScope();
-                var betInfoProvider = betScope.ServiceProvider.GetRequiredService<GameBetInfoProviderResolver>().Resolve(table.GameType);
-                int minimumCoins = betInfoProvider.GetMinimumRequiredCoins();
-
-                if (user.Coins < minimumCoins)
+                var result = tableManager.TryAddPlayer(table, user);
+                if (!result.Success)
                 {
-                    Console.WriteLine($"❌ {user.NickName} tiene {user.Coins} monedas, pero se requieren al menos {minimumCoins} para unirse a esta mesa.");
+                    Console.WriteLine($"❌ [JoinTable] No se pudo añadir a {user.NickName} a la mesa {table.Id}. Código: {result.ErrorCode}");
+
+                    string action = result.ErrorCode == "maintenance" ? "table_closed" : "join_denied";
+
                     await ((IWebSocketSender)this).SendToUserAsync(userId, new
                     {
-                        type = Type,
-                        action = "error",
-                        message = $"Necesitas al menos {minimumCoins} monedas para unirte a esta mesa."
+                        type = "game_table",
+                        action,
+                        reason = result.ErrorCode,
+                        message = result.ErrorMessage
                     });
                     return;
                 }
 
-                addResult = tableManager.TryAddPlayer(table, user);
             }
             finally
             {
                 semaphore.Release();
-            }
-
-
-            if (!addResult.success)
-            {
-                string errorType = addResult.errorMessage;
-
-                if (errorType == "maintenance")
-                {
-                    await ((IWebSocketSender)this).SendToUserAsync(userId, new
-                    {
-                        type = Type,
-                        action = "table_closed",
-                        tableId = table.Id,
-                        message = "Esta mesa está en mantenimiento y no se puede acceder por el momento."
-                    });
-                }
-                else
-                {
-                    await ((IWebSocketSender)this).SendToUserAsync(userId, new
-                    {
-                        type = Type,
-                        action = "error",
-                        message = errorType
-                    });
-                }
-
-                return;
             }
 
             await ((IWebSocketSender)this).BroadcastToUsersAsync(
@@ -175,9 +157,9 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 {
                     type = Type,
                     action = GameTableMessageTypes.TableUpdate,
-                    tableId = session.Table.Id,
+                    tableId = table.Id,
                     players = session.GetPlayerNames(),
-                    state = session.Table.TableState.ToString()
+                    state = table.TableState.ToString()
                 });
 
             if (table.TableState == TableState.InProgress)
@@ -192,27 +174,27 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
 
             using var gameScope = _serviceProvider.CreateScope();
-            var gameJoinHelperResolver = gameScope.ServiceProvider.GetRequiredService<GameJoinHelperResolver>();
-
-            var joinHelper = gameJoinHelperResolver.Resolve(table.GameType);
+            var joinHelper = gameScope.ServiceProvider
+                .GetRequiredService<GameJoinHelperResolver>()
+                .Resolve(table.GameType);
 
             if (joinHelper != null)
             {
-                await joinHelper.NotifyPlayerCanJoinCurrentMatchIfPossible(userIdInt, table, (IWebSocketSender)this);
+                await joinHelper.NotifyPlayerCanJoinCurrentMatchIfPossible(userIdInt, table, this);
             }
 
-
-            if (table.Players.Count >= table.MinPlayer && table.TableState == TableState.Waiting && !HasActiveMatch(table.Id))
+            if (table.Players.Count >= table.MinPlayer &&
+                table.TableState == TableState.Waiting &&
+                !HasActiveMatch(table.Id))
             {
                 Console.WriteLine($"🔍 [HandleJoinTableAsync] Mesa {table.Id} cumple minPlayer. Estado actual: {table.TableState}");
 
                 session.StartOrRestartCountdown();
                 table.TableState = TableState.Starting;
-                Console.WriteLine($"✅ [HandleJoinTableAsync] Estado de mesa {table.Id} cambiado a: {table.TableState}");
+                Console.WriteLine($"✅ Estado de mesa {table.Id} cambiado a: {table.TableState}");
 
                 unitOfWork.GameTableRepository.Update(table);
                 await unitOfWork.SaveAsync();
-
 
                 await ((IWebSocketSender)this).BroadcastToUsersAsync(
                     session.GetConnectedUserIds(),
@@ -226,10 +208,11 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
             else
             {
-                Console.WriteLine($"⏳ [HandleJoinTableAsync] Mesa {table.Id} aún no cumple condiciones para cambiar a 'Starting'. Jugadores: {table.Players.Count}/{table.MinPlayer}");
+                Console.WriteLine($"⏳ Mesa {table.Id} aún no cumple condiciones para 'Starting'. Jugadores: {table.Players.Count}/{table.MinPlayer}");
             }
         }
     }
+
 
     private async Task<ActiveGameSession> GetOrLoadTableAsync(int tableId)
     {
@@ -297,67 +280,106 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     }
 
 
-    private async Task HandleLeaveTableAsync(string userId, JsonElement message)
+    private async Task HandleLeaveTableAsync(string userIdStr, JsonElement message)
     {
-        if (!message.TryGetProperty("tableId", out JsonElement tableIdProp) ||
-            !int.TryParse(tableIdProp.GetString(), out int tableId) ||
-            !int.TryParse(userId, out int userIdInt))
+        if (!int.TryParse(userIdStr, out int userId))
             return;
 
-        if (ActiveGameMatchStore.TryGet(tableId, out Match match) && match.MatchState == MatchState.InProgress)
+        if (!message.TryGetProperty("tableId", out var tableIdProp) ||
+            !int.TryParse(tableIdProp.GetString(), out int tableId))
         {
-            Console.WriteLine($"[LeaveTable] Jugador {userId} intentó salir durante un Match activo. Ejecutando LeaveMatch automáticamente.");
-
-            var gameMatchWS = _serviceProvider.GetRequiredService<GameMatchWS>();
-            await gameMatchWS.ProcessPlayerMatchLeaveAsync(tableId, int.Parse(userId));
-            return; 
+            Console.WriteLine("❌ [LeaveTable] tableId inválido.");
+            return;
         }
 
-        if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session))
-            return;
+        using var scope = _serviceProvider.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+        var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
 
-        Table table = session.Table;
-        PlayerLeaveResult result;
-
-        IServiceScope scope;
-        GameTableManager tableManager = GetScopedService<GameTableManager>(out scope);
-        using (scope)
+        if (!ActiveGameSessionStore.TryGet(tableId, out var session))
         {
-            UnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+            Console.WriteLine($"❌ [LeaveTable] No se encontró sesión activa para la mesa {tableId}");
+            return;
+        }
 
-            lock (table)
-            {
-                result = tableManager.ProcessPlayerLeaving(table, session, userIdInt);
-                if (!result.PlayerRemoved)
-                    return;
-            }
+        var table = session.Table;
+        var player = table.Players.FirstOrDefault(p => p.UserId == userId);
 
-            // 🧾 Cerrar historial si lo hay
-            var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(userIdInt, table.Id);
+        if (player == null)
+        {
+            Console.WriteLine($"⚠️ [LeaveTable] Usuario {userId} no está en la mesa {tableId}");
+            return;
+        }
 
+        if (player.GameMatch != null && player.GameMatch.MatchState == MatchState.InProgress)
+        {
+            Console.WriteLine($"🚪 [LeaveTable] {player.User.NickName} está en partida activa. Forzando salida del match...");
+
+            var matchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
+            await matchWS.ProcessPlayerMatchLeaveAsync(tableId, userId);
+            return;
+        }
+
+        tableManager.RegisterJoinAttempt(userId);
+        PlayerLeaveResult result = tableManager.RemovePlayerFromTable(table, userId, out var removedPlayer);
+
+        if (result.PlayerRemoved)
+        {
+            Console.WriteLine($"✅ [LeaveTable] {removedPlayer.User.NickName} salió de la mesa {tableId}");
+
+            var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(userId, tableId);
             if (history != null && history.LeftAt == null)
             {
                 history.LeftAt = DateTime.Now;
                 unitOfWork.GameHistoryRepository.Update(history);
                 await unitOfWork.SaveAsync();
-
-                Console.WriteLine($"✅ Historial cerrado para jugador {userIdInt} al salir de la mesa {tableId}.");
             }
+
+            await ((IWebSocketSender)this).BroadcastToUsersAsync(result.ConnectedUsers, new
+            {
+                type = "game_table",
+                action = GameTableMessageTypes.TableUpdate,
+                tableId,
+                players = result.PlayerNames,
+                state = result.State.ToString()
+            });
 
             if (result.StopCountdown)
             {
-                await BroadcastCountdownStoppedAsync(table.Id, result.ConnectedUsers);
+                session.CancelCountdown();
+                await ((IWebSocketSender)this).BroadcastToUsersAsync(result.ConnectedUsers, new
+                {
+                    type = "game_table",
+                    action = GameTableMessageTypes.CountdownStopped,
+                    tableId
+                });             
             }
 
-            if (result.StateChanged)
+            unitOfWork.GameTableRepository.Update(table);
+            await unitOfWork.SaveAsync();
+
+            if (table.Players.All(p => p.PlayerState == PlayerState.Left))
             {
+                table.TableState = TableState.Waiting;
                 unitOfWork.GameTableRepository.Update(table);
                 await unitOfWork.SaveAsync();
+
+                ActiveGameSessionStore.Remove(tableId);
+                Console.WriteLine($"🧹 [LeaveTable] Mesa {tableId} vacía. Sesión eliminada y estado persistido.");
             }
 
-            await BroadcastTableUpdateAsync(table, result.ConnectedUsers, result.PlayerNames);
+            await ((IWebSocketSender)this).SendToUserAsync(userIdStr, new
+            {
+                type = "game_table",
+                action = "leave_success"
+            });
+        }
+        else
+        {
+            Console.WriteLine($"⚠️ [LeaveTable] No se eliminó a {player.User.NickName} porque no cumplía condiciones.");
         }
     }
+
 
     public bool IsUserBusyInAnotherTable(int userId)
     {

@@ -451,17 +451,22 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         pokerGame.GeneratePots();
         pokerGame.Showdown();
 
-        UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out IServiceScope coinsScope);
-        using (coinsScope)
+        using (var coinsScope = _serviceProvider.CreateScope())
         {
+            var unitOfWork = coinsScope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
             foreach (var player in match.Players)
             {
                 if (player.PlayerState is PlayerState.Playing or PlayerState.AllIn or PlayerState.Win)
                 {
-                    await PokerManager.UpdatePlayerCoinsAsync(unitOfWork, player);
+                    Console.WriteLine($"[DEBUG] Marcando para actualizar: {player.User.NickName} - {player.User.Coins} fichas");
+                    unitOfWork.UserRepository.Update(player.User);
                 }
             }
+
+            await unitOfWork.SaveAsync(); 
         }
+
 
         var revealedHands = match.Players
             .Where(p =>

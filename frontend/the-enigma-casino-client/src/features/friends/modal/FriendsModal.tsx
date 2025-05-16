@@ -2,11 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
 import {
   $friends,
-  $onlineFriendsIds,
   $searchResults,
   $receivedRequests,
 } from "../stores/friends.store";
-
 import {
   searchUserFx,
   fetchFriendsFx,
@@ -18,10 +16,10 @@ import {
 } from "../stores/friends.effects";
 import { FriendItem } from "../components/FriendItem";
 import {
+  getOnlineFriendsRequested,
   removeReceivedRequest,
   resetReceivedRequests,
   resetSearchResults,
-  setFriends,
 } from "../stores/friends.events";
 
 type TabMode = "friends" | "search";
@@ -30,13 +28,14 @@ export const FriendsModal: React.FC = () => {
   const [tab, setTab] = useState<TabMode>("friends");
   const [searchQuery, setSearchQuery] = useState("");
   const friends = useUnit($friends);
-  const onlineIds = useUnit($onlineFriendsIds);
   const searchResults = useUnit($searchResults);
   const receivedRequests = useUnit($receivedRequests);
 
-  // Cargar amigos al iniciar
+  // Cargar amigos y sus estados online
   useEffect(() => {
-    fetchFriendsFx();
+    fetchFriendsFx().finally(() => {
+      getOnlineFriendsRequested();
+    });
   }, []);
 
   useEffect(() => {
@@ -48,26 +47,24 @@ export const FriendsModal: React.FC = () => {
     }
   }, [tab]);
 
-useEffect(() => {
-  const trimmedQuery = searchQuery.trim();
+  useEffect(() => {
+    const trimmedQuery = searchQuery.trim();
+    if (tab !== "search") return;
 
-  if (tab !== "search") return;
+    if (trimmedQuery.length === 0) {
+      resetSearchResults();
+      return;
+    }
 
-  if (trimmedQuery.length === 0) {
-    resetSearchResults();
-    return;
-  }
+    const delay = setTimeout(() => {
+      searchUserFx(trimmedQuery);
+    }, 300);
 
-  const delay = setTimeout(() => {
-    searchUserFx(trimmedQuery);
-  }, 300);
-
-  return () => clearTimeout(delay);
-}, [searchQuery, tab]);
-
+    return () => clearTimeout(delay);
+  }, [searchQuery, tab]);
 
   const filteredFriends = friends.filter((f) =>
-    f.nickName?.toLowerCase().includes(searchQuery?.toLowerCase() || "")
+    f.nickName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -104,36 +101,33 @@ useEffect(() => {
               nickname={friend.nickName}
               image={friend.image}
               isFriend={true}
-              isOnline={onlineIds.includes(friend.id)}
+              isOnline={friend.isOnline}
               mode="friend-list"
               onInviteClick={() => {
                 console.log("Invitar a", friend.nickName);
               }}
               onRemoveFriendClick={async () => {
                 await removeFriendFx({ friendId: friend.id });
-                setFriends(friends.filter((f) => f.id !== friend.id));
                 fetchFriendsFx();
               }}
             />
           ))}
+
         {tab === "search" &&
-          searchResults.map((user) => {
-            console.log("Render user:", user);
-            return (
-              <FriendItem
-                key={user.id}
-                id={user.id}
-                nickname={user.nickName}
-                image={user.image}
-                isFriend={false}
-                canSend={true}
-                mode="search"
-                onAddFriendClick={() => {
-                  sendFriendRequestFx({ receiverId: user.id });
-                }}
-              />
-            );
-          })}
+          searchResults.map((user) => (
+            <FriendItem
+              key={user.id}
+              id={user.id}
+              nickname={user.nickName}
+              image={user.image}
+              isFriend={false}
+              canSend={true}
+              mode="search"
+              onAddFriendClick={() => {
+                sendFriendRequestFx({ receiverId: user.id });
+              }}
+            />
+          ))}
 
         {tab === "search" && searchQuery && searchResults.length === 0 && (
           <p className="text-gray-400 text-2xl text-center mt-4">

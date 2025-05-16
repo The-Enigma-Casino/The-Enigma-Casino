@@ -7,7 +7,7 @@ interface FriendItemProps {
   isFriend: boolean;
   isOnline?: boolean;
   mode: "friend-list" | "search";
-  canSend: boolean;
+  canSend?: boolean;
   onInviteClick?: () => void;
   onAddFriendClick?: () => void;
   onProfileClick?: () => void;
@@ -31,8 +31,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
   onRejectRequestClick,
   onRemoveFriendClick,
 }) => {
-  console.log("FriendItem", { id, canSend });
-
+console.log("FriendItem", { id, isOnline });
   return (
     <div className="friend-item flex items-start justify-between gap-3 py-2 border-b border-gray-600">
       {/* Izquierda: imagen y nombre */}

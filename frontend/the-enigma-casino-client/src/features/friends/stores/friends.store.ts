@@ -1,46 +1,67 @@
-import { createStore } from "effector";
+import { combine, createStore } from "effector";
 import { Friend, FriendRequest, SearchUser } from "./friends.types";
-import { removeReceivedRequest, resetCanSendMap, resetReceivedRequests, resetSearchResults, setFriends, setOnlineFriends, setReceivedRequests, setSearchResults, updateFriendOnlineStatus } from "./friends.events";
-import { acceptFriendRequestFx, cancelFriendRequestFx, fetchFriendsFx, fetchReceivedRequestsFx, searchUserFx } from "./friends.effects";
+import {
+  onlineFriendsUpdated,
+  removeReceivedRequest,
+  resetReceivedRequests,
+  resetSearchResults,
+  setReceivedRequests,
+  setSearchResults,
+} from "./friends.events";
+import {
+  acceptFriendRequestFx,
+  cancelFriendRequestFx,
+  fetchFriendsFx,
+  fetchReceivedRequestsFx,
+  searchUserFx,
+} from "./friends.effects";
+
+export const $onlineFriendsMap = createStore<Map<number, boolean>>(new Map()).on(
+  onlineFriendsUpdated,
+  (_, { friends }) => {
+    const ids = friends.map(f => f.id);
+    console.log("[$onlineFriendsMap] recibido:", ids);
+
+    const map = new Map(ids.map(id => [Number(id), true]));
+    return map;
+  }
+);
 
 
 
+export const $rawFriends = createStore<Friend[]>([])
+  .on(fetchFriendsFx.doneData, (_, friends) => friends);
 
-export const $friends = createStore<Friend[]>([])
-  .on(fetchFriendsFx.doneData, (_, list) => list)
-  .on(updateFriendOnlineStatus, (state, { id, isOnline }) =>
-    state.map(friend => (friend.id === id ? { ...friend, isOnline } : friend))
-  );
+export const $friends = combine(
+  $rawFriends,
+  $onlineFriendsMap,
+  (friends, onlineMap) => {
+    const raw = friends.map(f => f.id);
+    const online = [...onlineMap.keys()];
 
-  export const $onlineFriendsIds = createStore<number[]>([])
-  .on(setOnlineFriends, (_, list) => list);
+    console.log("[$friends] compare ids", { raw, online });
 
-  // Borrar¿
-// export const $canSendMap = createStore<Record<number, boolean>>({})
-//   .on(canSendFriendRequestFx.done, (state, { params, result }) => ({
-//     ...state,
-//     [params.receiverId]: result,
-//   }));
+    return friends.map(friend => ({
+      ...friend,
+      isOnline: onlineMap.has(Number(friend.id)),
+    }));
+  }
+);
+
+
 
 export const $searchResults = createStore<Friend[]>([])
-  .on(searchUserFx.doneData, (_, users) => {
-    console.log("[DEBUG] Store actualizada con:", users);
-    return users;
-  })
+  .on(searchUserFx.doneData, (_, users) => users)
   .reset(resetSearchResults);
-
-
 
 export const $receivedRequests = createStore<FriendRequest[]>([])
   .on(fetchReceivedRequestsFx.doneData, (_, list) => list)
   .on(removeReceivedRequest, (state, senderId) =>
-    state.filter(req => req.senderId !== senderId)
+    state.filter((req) => req.senderId !== senderId)
   )
   .reset(resetReceivedRequests);
 
-
-  // Actualiza al aceptar o rechazar
-  acceptFriendRequestFx.done.watch(() => {
+acceptFriendRequestFx.done.watch(() => {
   fetchReceivedRequestsFx();
   fetchFriendsFx();
 });
@@ -50,6 +71,5 @@ cancelFriendRequestFx.done.watch(() => {
   fetchFriendsFx();
 });
 
-searchUserFx.doneData.watch((data) => {
-  setSearchResults(data);
-});
+searchUserFx.doneData.watch(setSearchResults);
+

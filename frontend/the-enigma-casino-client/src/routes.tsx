@@ -33,7 +33,7 @@ const router = createBrowserRouter([
       { path: "withdraw-confirmation", element: <WithdrawalConfirmation /> },
       { path: "catalog", element: <Catalog /> },
       { path: "/tables/:gameType", element: <GameTable /> },
-      { path: "amigos", element: <FriendPage />}
+      { path: "friends", element: <FriendPage />}
     ],
   },
   ...routeAuth,

@@ -65,7 +65,7 @@ function SidebarMenu() {
                 color="green"
                 variant="large"
                 font="bold"
-                onClick={() => navigate("/")}
+            onClick={() => navigate("/friends")}
               >
                 Amigos
               </Button>

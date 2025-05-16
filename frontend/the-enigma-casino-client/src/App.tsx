@@ -4,7 +4,9 @@ import "./App.css";
 import router from "./routes";
 import { RouterProvider } from "react-router-dom";
 
-import "./features/gameTables/store/tableHandler";
+
+import "./features/gameTables/store/tableHandler"; // NO BORRAR
+import "./features/friends/stores/friends.handler";  // NO BORRAR
 
 function App() {
   return (

@@ -239,6 +239,7 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     await HandleGetOnlineFriendsAsync(friendId);
                 }
             }
+            await HandleGetOnlineFriendsAsync(userId);
         }
     }
 

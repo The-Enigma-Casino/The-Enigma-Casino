@@ -290,6 +290,7 @@ public class Program
         app.UseCors("MyPolicy");
 
         app.UseWebSockets();
+        _ = app.Services.GetServices<IWebSocketMessageHandler>().OfType<FriendsWS>().FirstOrDefault();
         app.UseMiddleware<WebSocketMiddleware>();
 
 

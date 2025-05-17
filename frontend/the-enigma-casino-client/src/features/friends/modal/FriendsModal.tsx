@@ -16,10 +16,14 @@ import {
 } from "../stores/friends.effects";
 import { FriendItem } from "../components/FriendItem";
 import {
+  acceptFriendRequest,
   getOnlineFriendsRequested,
+  rejectFriendRequest,
+  removeFriend,
   removeReceivedRequest,
   resetReceivedRequests,
   resetSearchResults,
+  sendFriendRequest,
 } from "../stores/friends.events";
 
 type TabMode = "friends" | "search";
@@ -147,9 +151,11 @@ export const FriendsModal: React.FC = () => {
                 isFriend={false}
                 canSend={false}
                 mode="search"
-                onAcceptRequestClick={() =>
-                  acceptFriendRequestFx({ senderId: req.senderId })
-                }
+                onAcceptRequestClick={() => {
+                  acceptFriendRequestFx({ senderId: req.senderId });
+                  removeReceivedRequest(req.senderId);
+                  setTab("friends");
+                }}
                 onRejectRequestClick={() => {
                   cancelFriendRequestFx({ senderId: req.senderId });
                   removeReceivedRequest(req.senderId);

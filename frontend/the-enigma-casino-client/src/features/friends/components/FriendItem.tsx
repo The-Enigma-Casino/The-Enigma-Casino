@@ -48,7 +48,7 @@ console.log("FriendItem", { id, isOnline });
       {/* Derecha: estado y acciones */}
       <div className="flex flex-col items-end">
         {/* Estado */}
-        {(mode === "friend-list" || mode === "search") && (
+        {(mode === "friend-list") && (
           <div className="flex items-center gap-1 text-sm">
             <span
               className={`w-2 h-2 rounded-full ${

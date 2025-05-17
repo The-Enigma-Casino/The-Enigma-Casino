@@ -8,8 +8,16 @@ import {
   acceptFriendRequest,
   removeFriend,
   getOnlineFriendsRequested,
+  rejectFriendRequest,
+  acceptGameInvite,
+  rejectGameInvite,
+  acceptTableInvite,
+  inviteFriendFromTable,
+  newFriendRequestsDetected,
 } from "./friends.events";
 import { messageSent } from "../../../websocket/store/wsIndex";
+import { $lastRequestIds, $onlineFriendsMap } from "./friends.store";
+import { acceptFriendRequestFx, cancelFriendRequestFx, fetchReceivedRequestsFx, removeFriendFx, sendFriendRequestFx } from "./friends.effects";
 
 sample({
   clock: getOnlineFriendsRequested,
@@ -21,26 +29,95 @@ sample({
   target: messageSent,
 });
 
+// Add friend ONLINE - WS
 sample({
   clock: sendFriendRequest,
-  fn: ({ receiverId }) =>
-    JSON.stringify({ type: "friend", action: "send", receiverId }),
+  source: $onlineFriendsMap,
+  filter: (onlineMap, { receiverId }) => onlineMap.has(receiverId),
+  fn: (_, { receiverId }) => JSON.stringify({
+    type: "friend",
+    action: "send",
+    receiverId,
+  }),
   target: messageSent,
 });
 
+// Add friend OFFLINE - API
+sample({
+  clock: sendFriendRequest,
+  source: $onlineFriendsMap,
+  filter: (onlineMap, { receiverId }) => !onlineMap.has(receiverId),
+  fn: (_, { receiverId }) => ({ receiverId }),
+  target: sendFriendRequestFx,
+});
+
+// Accept friend ONLINE - WS
 sample({
   clock: acceptFriendRequest,
-  fn: ({ senderId }) =>
-    JSON.stringify({ type: "friend", action: "accept", senderId }),
+  source: $onlineFriendsMap,
+  filter: (onlineMap, { senderId }) => onlineMap.has(senderId),
+  fn: (_, { senderId }) => JSON.stringify({
+    type: "friend",
+    action: "accept",
+    senderId,
+  }),
   target: messageSent,
 });
 
+// Accept friend OFFLINE - API
 sample({
-  clock: removeFriend,
-  fn: ({ friendId }) =>
-    JSON.stringify({ type: "friend", action: "remove", friendId }),
+  clock: acceptFriendRequest,
+  source: $onlineFriendsMap,
+  filter: (onlineMap, { senderId }) => !onlineMap.has(senderId),
+  fn: (_, { senderId }) => ({ senderId }),
+  target: acceptFriendRequestFx,
+});
+
+// Reject friend OFFLINE - WS
+sample({
+  clock: rejectFriendRequest,
+  source: $onlineFriendsMap,
+  filter: (onlineMap, { senderId }) => onlineMap.has(senderId),
+  fn: (_, { senderId }) => JSON.stringify({
+    type: "friend",
+    action: "cancel",
+    receiverId: senderId,
+  }),
   target: messageSent,
 });
+
+// Reject friend OFFLINE - API
+sample({
+  clock: rejectFriendRequest,
+  source: $onlineFriendsMap,
+  filter: (onlineMap, { senderId }) => !onlineMap.has(senderId),
+  fn: (_, { senderId }) => ({ senderId }),
+  target: cancelFriendRequestFx,
+});
+
+
+// Remove friend ONLINE - WS
+sample({
+  clock: removeFriend,
+  source: $onlineFriendsMap,
+  filter: (onlineMap, { friendId }) => onlineMap.has(friendId),
+  fn: (_, { friendId }) => JSON.stringify({
+    type: "friend",
+    action: "remove",
+    friendId,
+  }),
+  target: messageSent,
+});
+
+// Remove friend OFFLINE - API
+sample({
+  clock: removeFriend,
+  source: $onlineFriendsMap,
+  filter: (onlineMap, { friendId }) => !onlineMap.has(friendId),
+  fn: (_, { friendId }) => ({ friendId }),
+  target: removeFriendFx,
+});
+
 
 //Alertas
 sample({
@@ -59,4 +136,66 @@ sample({
 });
 
 
+// Aceptar juego
+sample({
+  clock: acceptGameInvite,
+  fn: ({ inviterId, tableId }) =>
+    JSON.stringify({
+      type: "friend",
+      action: "acceptGameInvite",
+      inviterId,
+      tableId,
+    }),
+  target: messageSent,
+});
 
+// Rechazar juego
+sample({
+  clock: rejectGameInvite,
+  fn: ({ inviterId }) =>
+    JSON.stringify({
+      type: "friend",
+      action: "rejectGameInvite",
+      inviterId,
+    }),
+  target: messageSent,
+});
+
+sample({
+  clock: acceptTableInvite,
+  fn: ({ inviterId, tableId }) =>
+    JSON.stringify({
+      type: "friend",
+      action: "acceptTableInvite",
+      inviterId,
+      tableId,
+    }),
+  target: messageSent,
+});
+
+sample({
+  clock: inviteFriendFromTable,
+  fn: ({ friendId, tableId }) =>
+    JSON.stringify({
+      type: "friend",
+      action: "inviteFromTable",
+      friendId,
+      tableId,
+    }),
+  target: messageSent,
+});
+
+
+sample({
+  clock: fetchReceivedRequestsFx.doneData,
+  source: $lastRequestIds,
+  fn: (previousIds, newRequests) =>
+    newRequests.filter((req) => !previousIds.includes(req.id)),
+  target: newFriendRequestsDetected,
+});
+
+sample({
+  clock: fetchReceivedRequestsFx.doneData,
+  fn: (reqs) => reqs.map((r) => r.id),
+  target: $lastRequestIds,
+});

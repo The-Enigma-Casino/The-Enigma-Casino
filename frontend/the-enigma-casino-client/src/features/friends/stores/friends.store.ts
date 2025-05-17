@@ -1,6 +1,8 @@
 import { combine, createStore } from "effector";
 import { Friend, FriendRequest, SearchUser } from "./friends.types";
 import {
+  friendRequestAccepted,
+  getOnlineFriendsRequested,
   onlineFriendsUpdated,
   removeReceivedRequest,
   resetReceivedRequests,
@@ -16,39 +18,36 @@ import {
   searchUserFx,
 } from "./friends.effects";
 
-export const $onlineFriendsMap = createStore<Map<number, boolean>>(new Map()).on(
-  onlineFriendsUpdated,
-  (_, { friends }) => {
-    const ids = friends.map(f => f.id);
-    console.log("[$onlineFriendsMap] recibido:", ids);
+export const $onlineFriendsMap = createStore<Map<number, boolean>>(
+  new Map()
+).on(onlineFriendsUpdated, (_, { friends }) => {
+  const ids = friends.map((f) => f.id);
+  console.log("[$onlineFriendsMap] recibido:", ids);
 
-    const map = new Map(ids.map(id => [Number(id), true]));
-    return map;
-  }
+  const map = new Map(ids.map((id) => [Number(id), true]));
+  return map;
+});
+
+export const $rawFriends = createStore<Friend[]>([]).on(
+  fetchFriendsFx.doneData,
+  (_, friends) => friends
 );
-
-
-
-export const $rawFriends = createStore<Friend[]>([])
-  .on(fetchFriendsFx.doneData, (_, friends) => friends);
 
 export const $friends = combine(
   $rawFriends,
   $onlineFriendsMap,
   (friends, onlineMap) => {
-    const raw = friends.map(f => f.id);
+    const raw = friends.map((f) => f.id);
     const online = [...onlineMap.keys()];
 
     console.log("[$friends] compare ids", { raw, online });
 
-    return friends.map(friend => ({
+    return friends.map((friend) => ({
       ...friend,
       isOnline: onlineMap.has(Number(friend.id)),
     }));
   }
 );
-
-
 
 export const $searchResults = createStore<Friend[]>([])
   .on(searchUserFx.doneData, (_, users) => users)
@@ -63,7 +62,15 @@ export const $receivedRequests = createStore<FriendRequest[]>([])
 
 acceptFriendRequestFx.done.watch(() => {
   fetchReceivedRequestsFx();
-  fetchFriendsFx();
+  fetchFriendsFx().finally(() => {
+    getOnlineFriendsRequested();
+  });
+});
+
+friendRequestAccepted.watch(() => {
+  fetchFriendsFx().finally(() => {
+    getOnlineFriendsRequested();
+  });
 });
 
 cancelFriendRequestFx.done.watch(() => {
@@ -73,3 +80,4 @@ cancelFriendRequestFx.done.watch(() => {
 
 searchUserFx.doneData.watch(setSearchResults);
 
+export const $lastRequestIds = createStore<number[]>([]);

@@ -13,6 +13,7 @@ import {
   inviteFriendFromTable,
   newFriendRequestsDetected,
   sendFriendRequestWs,
+  inviteFriendFromList,
 } from "./friends.events";
 import { messageSent } from "../../../websocket/store/wsIndex";
 import { $lastRequestIds, $onlineFriendsMap } from "./friends.store";
@@ -174,6 +175,19 @@ sample({
     }),
   target: messageSent,
 });
+
+sample({
+  clock: inviteFriendFromList,
+  fn: ({ friendId, gameType }) =>
+    JSON.stringify({
+      type: "friend",
+      action: "inviteFromFriendsList",
+      friendId,
+      gameType,
+    }),
+  target: messageSent,
+});
+
 
 
 sample({

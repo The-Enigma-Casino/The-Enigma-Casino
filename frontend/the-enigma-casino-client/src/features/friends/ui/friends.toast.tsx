@@ -35,16 +35,21 @@ export function showGameInviteToast(data: {
 
   if (data.tableId >= 1 && data.tableId <= 6) {
     gameTypeMessage = "una mesa de Blackjack 🃏";
-  } else if (data.tableId >= 7 && data.tableId <= 13) {
+  } else if (data.tableId >= 7 && data.tableId <= 12) {
     gameTypeMessage = "una mesa de Poker ♠️";
-  } else if (data.tableId >= 14) {
+  } else if (data.tableId >= 13 && data.tableId <= 18) {
     gameTypeMessage = "una mesa de Ruleta 🎰";
   }
 
-  const onAccept =
-    data.mode === "table"
-      ? () => acceptTableInvite({ inviterId: data.inviterId, tableId: data.tableId })
-      : () => acceptGameInvite({ inviterId: data.inviterId, tableId: data.tableId });
+  const onAccept = () => {
+    if (data.mode === "table") {
+      // Invita desde una mesa existente (solo el invitado debe entrar)
+      acceptTableInvite({ inviterId: data.inviterId, tableId: data.tableId });
+    } else {
+      // Invita desde el menu de amigos
+      acceptGameInvite({ inviterId: data.inviterId, tableId: data.tableId });
+    }
+  };
 
   toast.custom(
     (t) => (
@@ -57,7 +62,10 @@ export function showGameInviteToast(data: {
         onReject={() => rejectGameInvite({ inviterId: data.inviterId })}
       />
     ),
-    { duration: data.expiresIn * 1000 }
+    {
+      duration: data.expiresIn * 1000,
+      position: "top-right",
+    }
   );
 }
 

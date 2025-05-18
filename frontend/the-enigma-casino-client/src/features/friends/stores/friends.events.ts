@@ -27,3 +27,5 @@ export const acceptGameInvite = createEvent<{ inviterId: number; tableId: number
 export const rejectGameInvite = createEvent<{ inviterId: number }>();
 export const acceptTableInvite = createEvent<{ inviterId: number; tableId: number }>();
 export const inviteFriendFromTable = createEvent<{ friendId: number; tableId: number }>();
+export const inviteFriendFromList = createEvent<{ friendId: number; gameType: string }>();
+

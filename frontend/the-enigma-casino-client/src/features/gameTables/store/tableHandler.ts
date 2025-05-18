@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
 import { socketMessageReceived } from "../../../websocket/store/wsEvents";
 import { Player } from "../models/GameTable.interface";
-import { countdownStarted, countdownStopped, errorReceived, gameStarted, tableUpdated } from "./tablesEvents";
+import { countdownStarted, countdownStopped, errorReceived, gameStarted, joinTableClicked, tableUpdated } from "./tablesEvents";
 
 // Mensajes de error traducidos
 const errorMessageMap: Record<string, string> = {
@@ -10,7 +10,7 @@ const errorMessageMap: Record<string, string> = {
   table_full: "La mesa está llena.",
   maintenance: "Esta mesa está en mantenimiento.",
 };
-
+let lastJoinedTableId: number | null = null;
 socketMessageReceived.watch((data) => {
   if (data.type !== "game_table") return;
 
@@ -52,6 +52,17 @@ socketMessageReceived.watch((data) => {
       break;
     }
 
+    case "join_table": { // Friends
+      const tableId = Number(data.tableId);
+      if (lastJoinedTableId === tableId) {
+        console.log(`[WS][Table] Ignorado: ya estamos en la mesa ${tableId}`);
+        return;
+      }
+
+      lastJoinedTableId = tableId;
+      joinTableClicked(tableId);
+      break;
+    }
     default:
       console.warn("[WS] Acción desconocida en game_table:", data);
   }

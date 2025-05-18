@@ -8,13 +8,19 @@ interface FriendItemProps {
   isOnline?: boolean;
   mode: "friend-list" | "search";
   canSend?: boolean;
-  onInviteClick?: () => void;
+  onInviteClick?: (gameType: string) => void;
   onAddFriendClick?: () => void;
   onProfileClick?: () => void;
   onAcceptRequestClick?: () => void;
   onRejectRequestClick?: () => void;
   onRemoveFriendClick?: () => void;
 }
+
+const gameLabels: Record<string, string> = {
+  BlackJack: "BlackJack",
+  Poker: "Poker",
+  Roulette: "Ruleta",
+};
 
 export const FriendItem: React.FC<FriendItemProps> = ({
   id,
@@ -31,7 +37,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
   onRejectRequestClick,
   onRemoveFriendClick,
 }) => {
-console.log("FriendItem", { id, isOnline });
+  console.log("FriendItem", { id, isOnline });
   return (
     <div className="friend-item flex items-start justify-between gap-3 py-2 border-b border-gray-600">
       {/* Izquierda: imagen y nombre */}
@@ -51,9 +57,8 @@ console.log("FriendItem", { id, isOnline });
         {(mode === "friend-list") && (
           <div className="flex items-center gap-1 text-sm">
             <span
-              className={`w-2 h-2 rounded-full ${
-                isOnline ? "bg-green-400" : "bg-red-500"
-              }`}
+              className={`w-2 h-2 rounded-full ${isOnline ? "bg-green-400" : "bg-red-500"
+                }`}
             ></span>
             <span className={isOnline ? "text-green-400" : "text-red-500"}>
               {isOnline ? "EN LÍNEA" : "DESCONECTADO"}
@@ -69,10 +74,25 @@ console.log("FriendItem", { id, isOnline });
             </button>
           )}
 
-          {mode === "friend-list" && isOnline && (
-            <button onClick={onInviteClick} title="Invitar a partida">
-              <img src="/svg/addFriend.svg" className="w-5 h-5" />
-            </button>
+          {mode === "friend-list" && isFriend && isOnline && (
+            <div className="relative">
+              <details className="group">
+                <summary title="Invitar a jugar" className="cursor-pointer list-none focus:outline-none">
+                  <img src="/svg/invite_friend_table.svg" className="w-5 h-5" />
+                </summary>
+                <ul className="absolute z-10 top-6 right-0 bg-gray-800 border border-gray-600 text-white rounded shadow-lg text-sm min-w-[120px]">
+                  {["BlackJack", "Poker", "Roulette"].map((game) => (
+                    <li
+                      key={game}
+                      className="px-3 py-1 hover:bg-gray-700 cursor-pointer"
+                      onClick={() => onInviteClick?.(game)}
+                    >
+                      {gameLabels[game]}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </div>
           )}
 
           {mode === "friend-list" && isFriend && (

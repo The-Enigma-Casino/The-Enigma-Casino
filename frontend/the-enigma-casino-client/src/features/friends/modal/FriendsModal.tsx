@@ -16,6 +16,7 @@ import {
 import { FriendItem } from "../components/FriendItem";
 import {
   getOnlineFriendsRequested,
+  inviteFriendFromList,
   removeReceivedRequest,
   resetReceivedRequests,
   resetSearchResults,
@@ -103,8 +104,11 @@ export const FriendsModal: React.FC = () => {
               isFriend={true}
               isOnline={friend.isOnline}
               mode="friend-list"
-              onInviteClick={() => {
-                console.log("Invitar a", friend.nickName);
+              onInviteClick={(gameType) => {
+                inviteFriendFromList({
+                  friendId: friend.id,
+                  gameType,
+                });
               }}
               onRemoveFriendClick={async () => {
                 await removeFriendFx({ friendId: friend.id });

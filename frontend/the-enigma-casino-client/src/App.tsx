@@ -6,7 +6,9 @@ import { RouterProvider } from "react-router-dom";
 
 
 import "./features/gameTables/store/tableHandler"; // NO BORRAR
-import "./features/friends/stores/friends.handler";  // NO BORRAR
+import "./features/friends/stores/friends.handler";
+import "./features/friends/stores/friends.watchers";
+import "./features/friends/stores/friends.samples";
 
 function App() {
   return (

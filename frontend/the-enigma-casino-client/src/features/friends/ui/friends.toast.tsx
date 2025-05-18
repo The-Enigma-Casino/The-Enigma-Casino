@@ -4,22 +4,22 @@ import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, newFriendRequ
 import { acceptFriendRequestFx, cancelFriendRequestFx } from "../stores";
 import { IMAGE_PROFILE_URL } from "../../../config";
 
-export function showFriendRequestToast(data: {
-  senderId: number;
-  nickname: string;
-  image: string;
-}) {
-  toast.custom((t) => (
-    <FriendToast
-      id={t.id}
-      image={data.image}
-      nickname={data.nickname}
-      message="te ha enviado una solicitud de amistad"
-      onAccept={() => acceptFriendRequest({ senderId: data.senderId })}
-      onReject={() => rejectFriendRequest({ senderId: data.senderId })}
-    />
-  ));
-}
+// export function showFriendRequestToast(data: {
+//   senderId: number;
+//   nickname: string;
+//   image: string;
+// }) {
+//   toast.custom((t) => (
+//     <FriendToast
+//       id={t.id}
+//       image={data.image}
+//       nickname={data.nickname}
+//       message="te ha enviado una solicitud de amistad"
+//       onAccept={() => acceptFriendRequest({ senderId: data.senderId })}
+//       onReject={() => rejectFriendRequest({ senderId: data.senderId })}
+//     />
+//   ));
+// }
 
 
 
@@ -69,8 +69,8 @@ newFriendRequestsDetected.watch((newRequests) => {
         image={`${IMAGE_PROFILE_URL}${req.image}`}
         nickname={req.nickName}
         message="te ha enviado una solicitud de amistad"
-        onAccept={() => acceptFriendRequestFx({ senderId: req.senderId })}
-        onReject={() => cancelFriendRequestFx({ senderId: req.senderId })}
+        onAccept={() => acceptFriendRequest({ senderId: req.senderId })}
+        onReject={() => rejectFriendRequest({ senderId: req.senderId })}
       />
     ));
   });

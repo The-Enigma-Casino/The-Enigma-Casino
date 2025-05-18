@@ -8,7 +8,6 @@ import {
 import {
   searchUserFx,
   fetchFriendsFx,
-  sendFriendRequestFx,
   fetchReceivedRequestsFx,
   acceptFriendRequestFx,
   cancelFriendRequestFx,
@@ -16,14 +15,11 @@ import {
 } from "../stores/friends.effects";
 import { FriendItem } from "../components/FriendItem";
 import {
-  acceptFriendRequest,
   getOnlineFriendsRequested,
-  rejectFriendRequest,
-  removeFriend,
   removeReceivedRequest,
   resetReceivedRequests,
   resetSearchResults,
-  sendFriendRequest,
+  sendFriendRequestWs,
 } from "../stores/friends.events";
 
 type TabMode = "friends" | "search";
@@ -128,7 +124,7 @@ export const FriendsModal: React.FC = () => {
               canSend={true}
               mode="search"
               onAddFriendClick={() => {
-                sendFriendRequestFx({ receiverId: user.id });
+                sendFriendRequestWs({ receiverId: user.id });
               }}
             />
           ))}

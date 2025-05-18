@@ -60,24 +60,4 @@ export const $receivedRequests = createStore<FriendRequest[]>([])
   )
   .reset(resetReceivedRequests);
 
-acceptFriendRequestFx.done.watch(() => {
-  fetchReceivedRequestsFx();
-  fetchFriendsFx().finally(() => {
-    getOnlineFriendsRequested();
-  });
-});
-
-friendRequestAccepted.watch(() => {
-  fetchFriendsFx().finally(() => {
-    getOnlineFriendsRequested();
-  });
-});
-
-cancelFriendRequestFx.done.watch(() => {
-  fetchReceivedRequestsFx();
-  fetchFriendsFx();
-});
-
-searchUserFx.doneData.watch(setSearchResults);
-
 export const $lastRequestIds = createStore<number[]>([]);

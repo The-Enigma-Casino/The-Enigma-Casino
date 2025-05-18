@@ -9,16 +9,16 @@ import {
   CANCEL_REQUEST,
   REMOVE_FRIEND,
   IS_FRIEND,
-  CAN_SEND_REQUEST,
   SEARCH_USERS
 } from "../../../config";
 
 import { Friend, FriendRequest } from "./friends.types";
 
-/* ---- ENDPOINTS ----*/ 
+/* ---- ENDPOINTS ----*/
 
 // Obtener todos los amigos del usuario
 export const fetchFriendsFx = createEffect(async (): Promise<Friend[]> => {
+  console.log("[HTTP] Llamando a GET /api/friendrequest/friends");
   const response = await axios.get(GET_FRIENDS, {
     headers: getAuthHeaders(),
   });
@@ -78,17 +78,6 @@ export const isFriendFx = createEffect(
     return response.data;
   }
 );
-
-// Comprobar si puedo enviar solicitud de amistad BORRAR¿
-// export const canSendFriendRequestFx = createEffect(
-//   async ({ receiverId }: { receiverId: number }): Promise<boolean> => {
-//     const response = await axios.get(`${CAN_SEND_REQUEST}?receiverId=${receiverId}`, {
-//       headers: getAuthHeaders(),
-//     });
-//     console.log("canSendFriendRequestFx result for", receiverId, ":", response.data);
-//     return response.data;
-//   }
-// );
 
 // Buscar usuarios
 export const searchUserFx = createEffect(async (query: string) => {

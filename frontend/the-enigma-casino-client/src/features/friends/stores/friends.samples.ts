@@ -1,10 +1,8 @@
 import { sample } from "effector";
 import toast from "react-hot-toast";
 import {
-  friendRequestReceived,
   friendRequestAccepted,
   friendRemoved,
-  sendFriendRequest,
   acceptFriendRequest,
   removeFriend,
   getOnlineFriendsRequested,
@@ -14,6 +12,7 @@ import {
   acceptTableInvite,
   inviteFriendFromTable,
   newFriendRequestsDetected,
+  sendFriendRequestWs,
 } from "./friends.events";
 import { messageSent } from "../../../websocket/store/wsIndex";
 import { $lastRequestIds, $onlineFriendsMap } from "./friends.store";
@@ -29,12 +28,10 @@ sample({
   target: messageSent,
 });
 
-// Add friend ONLINE - WS
+// Add friend ONLINE y OFFLINE
 sample({
-  clock: sendFriendRequest,
-  source: $onlineFriendsMap,
-  filter: (onlineMap, { receiverId }) => onlineMap.has(receiverId),
-  fn: (_, { receiverId }) => JSON.stringify({
+  clock: sendFriendRequestWs,
+  fn: ({ receiverId }) => JSON.stringify({
     type: "friend",
     action: "send",
     receiverId,
@@ -42,14 +39,12 @@ sample({
   target: messageSent,
 });
 
-// Add friend OFFLINE - API
 sample({
-  clock: sendFriendRequest,
-  source: $onlineFriendsMap,
-  filter: (onlineMap, { receiverId }) => !onlineMap.has(receiverId),
-  fn: (_, { receiverId }) => ({ receiverId }),
+  clock: sendFriendRequestWs,
+  fn: ({ receiverId }) => ({ receiverId }),
   target: sendFriendRequestFx,
 });
+
 
 // Accept friend ONLINE - WS
 sample({
@@ -120,11 +115,6 @@ sample({
 
 
 //Alertas
-sample({
-  source: friendRequestReceived,
-  fn: ({ nickname }) => toast(`${nickname} te ha enviado una solicitud de amistad.`),
-});
-
 sample({
   source: friendRequestAccepted,
   fn: ({ nickname }) => toast.success(`${nickname} aceptó tu solicitud de amistad.`),

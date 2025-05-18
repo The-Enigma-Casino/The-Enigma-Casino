@@ -4,20 +4,19 @@ import {
   friendRequestAccepted,
   friendRemoved,
   onlineFriendsUpdated,
-  setOnlineFriends,
   removeReceivedRequest,
 } from "./friends.events";
 import {
-  showFriendRequestToast,
+  // showFriendRequestToast,
   showGameInviteToast,
 } from "../ui/friends.toast";
 import toast from "react-hot-toast";
 
 socketMessageReceived.watch((data) => {
-  console.log("[INIT] Friends handler registrado");
+
   if (data.type !== "friend") return;
 
-  console.log("[WS][Friends]", data);
+  console.log("[WSFRIEND[ - DATA", data);
 
   switch (data.action) {
     case "friendRequestReceived":
@@ -26,10 +25,10 @@ socketMessageReceived.watch((data) => {
         nickname: data.nickname,
         image: data.image,
       });
-
-      showFriendRequestToast(data);
       break;
+
     case "friendRequestAccepted":
+      console.log("[WS] Solicitud aceptada recibida por el solicitante");
       friendRequestAccepted({
         friendId: data.friendId,
         nickname: data.nickname,
@@ -71,21 +70,21 @@ socketMessageReceived.watch((data) => {
       );
       break;
 
-    case "friendRequestCanceled":
-      removeReceivedRequest(data.senderId); // Quitar del store
-      toast(`${data.senderId} canceló su solicitud de amistad.`);
-      break;
+    // case "friendRequestCanceled":
+    //   removeReceivedRequest(data.senderId); // Quitar del store
+    //   toast(`${data.nickname} canceló su solicitud de amistad.`, { duration: 2000 });
+    //   break;
 
     case "requestSent":
-      toast.success("Solicitud enviada correctamente.");
+      toast.success("Solicitud enviada correctamente.", { duration: 2000 });
       break;
 
     case "requestAccepted":
-      toast("Has aceptado la solicitud.");
+      toast("Has aceptado la solicitud.", { duration: 2000 });
       break;
 
     case "requestCanceled":
-      toast("Cancelaste la solicitud.");
+      toast("Cancelaste la solicitud.", { duration: 2000 });
       break;
     default:
       console.warn("[WS][Friends] Acción desconocida:", data.action);

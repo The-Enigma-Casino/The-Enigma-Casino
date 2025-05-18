@@ -66,14 +66,23 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 await friendRequestService.SendFriendRequestAsync(senderId, receiverId);
                 var senderUser = await GetUserById(senderId);
 
-                await ((IWebSocketSender)this).SendToUserAsync(receiverId.ToString(), new
+                // Notifica si esta conectado
+                if (_connectionManager.IsUserConnected(receiverId.ToString()))
                 {
-                    type = Type,
-                    action = FriendsMessageType.FriendRequestReceived,
-                    senderId = senderUser.Id,
-                    nickname = senderUser.NickName,
-                    image = senderUser.Image
-                });
+                    Console.WriteLine($"[WS] Enviando WS a {receiverId} desde {senderId}");
+                    await ((IWebSocketSender)this).SendToUserAsync(receiverId.ToString(), new
+                    {
+                        type = Type,
+                        action = FriendsMessageType.FriendRequestReceived,
+                        senderId = senderUser.Id,
+                        nickname = senderUser.NickName,
+                        image = senderUser.Image
+                    });
+                }
+                else
+                {
+                    Console.WriteLine($"[WS] Usuario {receiverId} está offline. No se envía nada.");
+                }
 
                 await ((IWebSocketSender)this).SendToUserAsync(senderId.ToString(), new
                 {

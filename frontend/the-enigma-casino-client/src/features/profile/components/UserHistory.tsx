@@ -9,9 +9,9 @@ interface UserHistoryProps {
 }
 
 const gameTypeMap: Record<number, { label: string; img: string }> = {
-  0: { label: "Póker", img: "/img/ficha-poker.webp" },
-  1: { label: "Ruleta", img: "/img/ficha-roulette.webp" },
-  2: { label: "BLACK JACK", img: "/img/ficha-blackjack.webp" },
+  0: { label: "BLACK JACK", img: "/img/ficha-blackjack.webp" },
+  1: { label: "Póker", img: "/img/ficha-poker.webp" },
+  2: { label: "Ruleta", img: "/img/ficha-roulette.webp" },
 };
 
 const formatDate = (iso: string) => {

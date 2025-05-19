@@ -4,8 +4,11 @@ import {
   $countdowns,
   $currentTableId,
   $isInLobby,
+  $pendingJoinTableId,
   $tables,
+  clearPendingJoinTableId,
   exitLobbyPage,
+  joinTableClicked,
   leaveTableClicked,
   sendLeaveTableMessage,
   tryJoinTable,
@@ -78,6 +81,15 @@ function GameTablePage() {
     }
     return avatars;
   };
+  //Friend
+  const pendingJoinTableId = useUnit($pendingJoinTableId);
+
+  useEffect(() => {
+    if (pendingJoinTableId !== null) {
+      joinTableClicked(pendingJoinTableId);
+      clearPendingJoinTableId();
+    }
+  }, [pendingJoinTableId]);
 
   return (
     <div className="p-16 gap-6 h-screen w-screen flex flex-col text-white bg-Background-Page">

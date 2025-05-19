@@ -49,7 +49,7 @@ export const CardPack = ({ pack }: Props) => {
     setImagePreview(null);
   };
 
-  const displayImage = imagePreview || `${BASE_URL}${pack.image}`;
+  const displayImage = imagePreview || `${BASE_URL}${pack.image}?${Date.now()}`;
 
   return (
     <div className="w-[320px] h-[250px] rounded-[20px] bg-Background-nav border-2 border-Green-lines flex flex-col items-center justify-between p-5 transition-transform duration-300 hover:scale-102">

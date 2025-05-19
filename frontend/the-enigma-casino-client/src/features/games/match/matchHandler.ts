@@ -1,7 +1,9 @@
 import { socketMessageReceived } from "../../../websocket/store/wsEvents";
+import { loadCoins } from "../../coins/store/coinsStore";
 import { matchStarted } from "../../gameTables/store/tablesIndex";
 import { matchPlayersInitialized } from "../pocker/stores/pokerIndex";
 import { eliminatedNoCoinsReceived } from "./matchRemoval";
+import { returnToTableReceived } from "./returnToTable";
 
 socketMessageReceived.watch((data) => {
   if (data.type !== "game_match") return;
@@ -20,6 +22,8 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "return_to_table":
+      returnToTableReceived(data.message ?? "Has sido devuelto al lobby.");
+      loadCoins();
       break;
 
     default:

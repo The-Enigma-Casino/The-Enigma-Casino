@@ -1,5 +1,5 @@
 import { createEvent } from "effector";
-import { Card, PlayerPoker, PotResult } from "../interfaces/poker.interfaces";
+import { Card, PlayerPoker, RoundResultPayload } from "../interfaces/poker.interfaces";
 
 export const matchPlayersInitialized = createEvent<PlayerPoker[]>();
 export const betConfirmedReceived = createEvent<{ userId: number; bet: number; totalBet: number }>();
@@ -17,7 +17,7 @@ export const blindsAssigned = createEvent<{ dealer: { userId: number }; smallBli
 export const pokerMatchCancelled = createEvent();
 export const playerKickedReceived = createEvent<{ userId: number }>();
 
-export const roundResultReceived = createEvent<{ summary: PotResult[] }>();
+export const roundResultReceived = createEvent<RoundResultPayload>();
 
 
 export const turnCountdownSet = createEvent<number>();
@@ -25,3 +25,5 @@ export const decrementTurnCountdown = createEvent();
 export const turnCountdownTotalSet = createEvent<number>();
 
 export const resetPokerGame = createEvent();
+
+export const removedByInactivity = createEvent();

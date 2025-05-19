@@ -26,4 +26,17 @@ public class GameHistoryRepository : Repository<History, int>
                         h.LeftAt == null)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<List<History>> GetTopBigWinsAsync(int limit, int minWin)
+    {
+        return await Context.Set<History>()
+            .Where(h => h.ChipResult >= minWin)
+            .OrderByDescending(h => h.ChipResult)
+            .ThenByDescending(h => h.LeftAt ?? h.JoinedAt)
+            .Take(limit)
+            .Include(h => h.User)
+            .ToListAsync();
+    }
+
+
 }

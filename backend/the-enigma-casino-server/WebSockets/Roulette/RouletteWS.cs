@@ -95,22 +95,27 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             if (!rouletteGame.CanAcceptBets)
             {
-                Console.WriteLine($"[❌ Apuesta fuera de tiempo] {player.User.NickName}");
                 await SendErrorAsync(userId, "No se pueden hacer apuestas en este momento.", Type);
                 return;
             }
 
             if (player.PlayerState != PlayerState.Playing)
             {
-                Console.WriteLine($"[❌ Apuesta denegada] {player.User.NickName} no está en estado 'Playing' (actual: {player.PlayerState})");
                 await SendErrorAsync(userId, "Solo los jugadores activos pueden apostar.", Type);
                 return;
             }
 
-            var bet = BuildRouletteBet(message);
-            Console.WriteLine($"✅ {player.User.NickName} apuesta {bet.Amount} a {bet}");
+            RouletteBet bet = BuildRouletteBet(message);
 
-            rouletteGame.RegisterBet(player, bet);
+            if (bet.Amount > 0)
+            {
+                rouletteGame.RegisterBet(player, bet);
+            }
+            else
+            {
+                rouletteGame.RemoveOrReduceBet(player, bet);
+            }
+
 
             UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out var scope);
             unitOfWork.UserRepository.Update(player.User);

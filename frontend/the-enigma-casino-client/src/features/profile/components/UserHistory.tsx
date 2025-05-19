@@ -8,19 +8,23 @@ interface UserHistoryProps {
   onPageChange: (page: number) => void;
 }
 
-const gameTypeMap: Record<number, { label: string; icon: string }> = {
-  0: { label: "Póker", icon: "🎲" },
-  1: { label: "Ruleta", icon: "🎡" },
-  2: { label: "BLACK JACK", icon: "🂡" },
+const gameTypeMap: Record<number, { label: string; img: string }> = {
+  0: { label: "BLACK JACK", img: "/img/ficha-blackjack.webp" },
+  1: { label: "Póker", img: "/img/ficha-poker.webp" },
+  2: { label: "Ruleta", img: "/img/ficha-roulette.webp" },
 };
-
 
 const formatDate = (iso: string) => {
   const date = new Date(iso);
-  return date.toLocaleDateString('es-ES');
+  return date.toLocaleDateString("es-ES");
 };
 
-const UserHistory: React.FC<UserHistoryProps> = ({ games, page, totalPages, onPageChange }) => {
+const UserHistory: React.FC<UserHistoryProps> = ({
+  games,
+  page,
+  totalPages,
+  onPageChange,
+}) => {
   return (
     <div className="bg-Background-Page text-white flex flex-col items-center px-4 py-6 font-sans text-xl sm:text-2xl md:text-3xl">
       {/* Tabla */}
@@ -37,27 +41,43 @@ const UserHistory: React.FC<UserHistoryProps> = ({ games, page, totalPages, onPa
           <div className="text-center text-white text-2xl py-10">
             No hay partidas disponibles.
           </div>
-        ) : games.map((game) => {
-          const info = gameTypeMap[game.gameType];
+        ) : (
+          games.map((game) => {
+            const info = gameTypeMap[game.gameType];
 
-          return (
-            <div
-              key={game.id}
-              className="grid grid-cols-3 items-center bg-Background-Overlay text-center text-white py-6 px-2 sm:px-4"
-            >
-              <div className="font-bold">{formatDate(game.joinedAt)}</div>
-              <div className="flex items-center justify-center gap-4">
-                <span className="text-3xl">{info.icon}</span>
-                <span className="uppercase">{info.label}</span>
+            return (
+              <div
+                key={game.id}
+                className="grid grid-cols-3 items-center bg-Background-Overlay text-center text-white py-6 px-2 sm:px-4"
+              >
+                <div className="font-bold">{formatDate(game.joinedAt)}</div>
+                <div className="flex items-center justify-center gap-4">
+                  <img
+                    src={info.img}
+                    alt={info.label}
+                    className={`h-10 sm:h-12 ${
+                      info.label === "BLACK JACK"
+                        ? "w-6 sm:w-8"
+                        : "w-10 sm:w-12"
+                    }`}
+                  />
+                  <span className="uppercase">{info.label}</span>
+                </div>
+                <div className="text-yellow-400 font-bold">
+                  {game.chipResult}
+                </div>
               </div>
-              <div className="text-yellow-400 font-bold">{game.chipResult}</div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* Paginación */}
-      <Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} />
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
     </div>
   );
 };

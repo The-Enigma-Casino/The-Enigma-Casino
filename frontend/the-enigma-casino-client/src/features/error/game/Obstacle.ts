@@ -11,8 +11,7 @@ export function initObstacle() {
 }
 
 export function updateObstacle(score: number) {
-  const difficultyMultiplier = Math.min(1 + score / 2600, 3);
-  console.log(difficultyMultiplier)
+  const difficultyMultiplier = Math.min(1 + score / 8000, 1.8);
   x -= speed * difficultyMultiplier;
 
   if (x + OBSTACLE.width < 0) {
@@ -23,8 +22,9 @@ export function updateObstacle(score: number) {
 
 export function drawObstacle(ctx: CanvasRenderingContext2D) {
   if (treasure) {
-    ctx.fillStyle = "#ffdf31";
-    ctx.fillRect(x, GAME_HEIGHT - OBSTACLE.height, OBSTACLE.width, OBSTACLE.height);
+    const treasureImg = new Image();
+    treasureImg.src = "/img/treasure.webp";
+    ctx.drawImage(treasureImg, GAME_WIDTH, GAME_HEIGHT, 50, 50);
   } else {
     const img = new Image();
     img.src = "/img/clover.webp";

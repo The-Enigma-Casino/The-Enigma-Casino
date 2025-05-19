@@ -25,9 +25,17 @@ type GamePlayer = {
 type Props = {
   players: GamePlayer[];
   gameType: "Blackjack" | "Poker";
+  revealedHands?: {
+    userId: number;
+    cards: { rank: number; suit: number }[];
+  }[];
 };
 
-export const GamePlayerCardList = ({ players, gameType }: Props) => {
+export const GamePlayerCardList = ({
+  players,
+  gameType,
+  revealedHands,
+}: Props) => {
   const avatars = useUnit($playerAvatars);
   const countryCache = useUnit($countryCache);
 
@@ -62,9 +70,52 @@ export const GamePlayerCardList = ({ players, gameType }: Props) => {
             : undefined;
           const flagUrl = country?.flags?.png;
 
-          const visibleCards = (
-            gameType === "Poker" ? player.hand.slice(0, 2) : player.hand
-          ).map((card) => ({ ...card, gameType }));
+          let visibleCards;
+
+          if (gameType === "Poker") {
+            const revealed = revealedHands?.find((h) => h.userId === player.id);
+
+            if (revealed) {
+              const suitNames = [
+                "spades",
+                "hearts",
+                "clubs",
+                "diamonds",
+              ] as const;
+              const rankNames = [
+                "two",
+                "three",
+                "four",
+                "five",
+                "six",
+                "seven",
+                "eight",
+                "nine",
+                "ten",
+                "jack",
+                "queen",
+                "king",
+                "ace",
+              ] as const;
+
+              visibleCards = revealed.cards.map((card) => ({
+                suit: suitNames[card.suit],
+                rank: rankNames[card.rank - 2],
+                value: 0,
+                gameType: "Poker",
+              }));
+            } else {
+              visibleCards = player.hand.slice(0, 2).map((card) => ({
+                ...card,
+                gameType: "Poker",
+              }));
+            }
+          } else {
+            visibleCards = player.hand.map((card) => ({
+              ...card,
+              gameType,
+            }));
+          }
 
           const total = typeof player.total === "number" ? player.total : "-";
 
@@ -103,31 +154,64 @@ export const GamePlayerCardList = ({ players, gameType }: Props) => {
 
               {/* Apuestas */}
               <div className="flex flex-col gap-1">
-                <div className="flex gap-2 items-baseline">
-                  <p className="text-xl font-bold text-white">Apuesta:</p>
-                  {player.coins === 0 || !player.bets?.length ? (
-                    <p className="text-xl text-Coins">Sin apuestas activas</p>
-                  ) : (
-                    <p className="text-xl text-Coins">{player.bets[0].amount}</p>
-                  )}
-                </div>
+                {gameType === "Poker" ? (
+                  <>
+                    <p className="text-sm text-white/80">
+                      Fichas disponibles:{" "}
+                      <span className="font-semibold text-Coins">
+                        {player.coins}
+                      </span>
+                    </p>
+                    {player.currentBet !== undefined && (
+                      <p className="text-sm text-white/80">
+                        Apuesta actual:{" "}
+                        <span className="font-semibold text-yellow-300">
+                          {player.currentBet}
+                        </span>
+                      </p>
+                    )}
+                    {player.totalBet !== undefined && (
+                      <p className="text-sm text-white/80">
+                        Total apostado:{" "}
+                        <span className="font-semibold text-yellow-300">
+                          {player.totalBet}
+                        </span>
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex gap-2 items-baseline">
+                      <p className="text-xl font-bold text-white">Apuesta:</p>
+                      {player.coins === 0 || !player.bets?.length ? (
+                        <p className="text-xl text-Coins">
+                          Sin apuestas activas
+                        </p>
+                      ) : (
+                        <p className="text-xl text-Coins">
+                          {player.bets[0].amount}
+                        </p>
+                      )}
+                    </div>
 
-                {player.currentBet !== undefined && (
-                  <p className="text-sm text-white/80">
-                    Apuesta actual:{" "}
-                    <span className="font-semibold text-yellow-300">
-                      {player.currentBet}
-                    </span>
-                  </p>
-                )}
+                    {player.currentBet !== undefined && (
+                      <p className="text-sm text-white/80">
+                        Apuesta actual:{" "}
+                        <span className="font-semibold text-yellow-300">
+                          {player.currentBet}
+                        </span>
+                      </p>
+                    )}
 
-                {player.totalBet !== undefined && (
-                  <p className="text-sm text-white/80">
-                    Total apostado:{" "}
-                    <span className="font-semibold text-yellow-300">
-                      {player.totalBet}
-                    </span>
-                  </p>
+                    {player.totalBet !== undefined && (
+                      <p className="text-sm text-white/80">
+                        Total apostado:{" "}
+                        <span className="font-semibold text-yellow-300">
+                          {player.totalBet}
+                        </span>
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -148,7 +232,13 @@ export const GamePlayerCardList = ({ players, gameType }: Props) => {
                       })`,
                     }}
                   >
-                    <CardStack cards={visibleCards} hideAll={gameType === "Poker"} />
+                    <CardStack
+                      cards={visibleCards}
+                      hideAll={
+                        gameType === "Poker" &&
+                        !revealedHands?.some((h) => h.userId === player.id)
+                      }
+                    />
                   </div>
                 </div>
               </div>

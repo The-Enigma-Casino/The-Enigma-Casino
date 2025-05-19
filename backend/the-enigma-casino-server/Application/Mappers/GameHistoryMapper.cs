@@ -21,4 +21,27 @@ public class GameHistoryMapper
 
         return gamesDtos;
     }
+
+    public BigWinDto ToBigWinDto(History gameHistory)
+    {
+        return new BigWinDto
+        {
+            Nickname = gameHistory.User.NickName,
+            GameType = gameHistory.GameType,
+            AmountWon = gameHistory.ChipResult,
+            WonAt = gameHistory.LeftAt ?? gameHistory.JoinedAt
+        };
+    }
+
+    public List<BigWinDto> ToListBigWinDto(List<History> gameHistorys)
+    {
+        List<BigWinDto> bigWinDtos = new List<BigWinDto>();
+
+        foreach (History gameHistory in gameHistorys)
+        {
+            bigWinDtos.Add(ToBigWinDto(gameHistory));
+        }
+
+        return bigWinDtos;
+    }
 }

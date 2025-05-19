@@ -1,5 +1,6 @@
 import { socketMessageReceived } from "../../../../websocket/store/wsIndex";
 import { loadCoins } from "../../../coins/store/coinsStore";
+import { navigateTo } from "../../shared/router/navigateFx";
 import {
   pokerPhaseChanged,
   communityCardsUpdated,
@@ -16,6 +17,7 @@ import {
   turnCountdownTotalSet,
   resetPokerGame,
   roundResultReceived,
+  removedByInactivity,
 } from "../stores/pokerIndex";
 
 socketMessageReceived.watch((data) => {
@@ -86,13 +88,24 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "player_action":
+      myTurnEnded();
+      break;
     case "round_result":
-      roundResultReceived({ summary: data.summary });
+      pokerPhaseChanged("showdown");
+      roundResultReceived({
+        summary: data.summary,
+        revealedHands: data.revealedHands,
+      });
+      loadCoins();
       myTurnEnded();
       break;
 
     case "flop_dealt":
+      pokerPhaseChanged("flop");
+      return;
     case "turn_dealt":
+      pokerPhaseChanged("turn");
+      return;
     case "river_dealt": {
       const cards = data.cards.map((c: any) => ({
         suit: c.suit,
@@ -100,11 +113,15 @@ socketMessageReceived.watch((data) => {
         value: 0,
         gameType: "Poker",
       }));
+      pokerPhaseChanged("river");
       myTurnEnded();
       communityCardsUpdated(cards);
       break;
     }
 
+    case "removed_by_inactivity":
+      removedByInactivity();
+      break;
     default:
       break;
   }

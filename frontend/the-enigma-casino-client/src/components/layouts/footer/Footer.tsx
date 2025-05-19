@@ -1,74 +1,100 @@
-import { useUnit } from "effector-react";
-import classes from "./Footer.module.css";
-
-import { useNavigate } from "react-router-dom";
-import { $role, $token, loadRole } from "../../../features/auth/store/authStore";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUnit } from "effector-react";
+import {
+  $role,
+  $token,
+  loadRole,
+} from "../../../features/auth/store/authStore";
+import { openAutoBanModal } from "../../../features/autoBan/stores/autoBan.store";
 
 function Footer() {
   const navigate = useNavigate();
-  const GITHUB: string = "https://github.com/The-Enigma-Casino/The-Enigma-Casino";
+  const GITHUB = "https://github.com/The-Enigma-Casino/The-Enigma-Casino";
 
-    const token = useUnit($token);
-    const role = useUnit($role);
+  const token = useUnit($token);
+  const role = useUnit($role);
 
-    useEffect(() => {
-      loadRole();
-    }, [token]);
+  useEffect(() => {
+    loadRole();
+  }, [token]);
 
   return (
-    <footer className={classes.footer}>
-      <div className={classes.leftFooter}>
+    <footer className="bg-[var(--Background-Nav)] text-white flex flex-col md:flex-row gap-5 p-5 w-full max-w-full overflow-x-clip">
+      {/* Izquierda */}
+      <div className="flex w-full md:w-auto items-center justify-center md:justify-start gap-5 flex-row max-sm:flex-col text-center md:text-left">
         <img
-          className={classes.imgFooter}
           src="/img/icono.webp"
           alt="Logo"
+          className="w-20 max-h-20 cursor-pointer"
           onClick={() => navigate("/")}
         />
-        <div className={classes.titleFooter}>
-          <h1>The Enigma Casino</h1>
-          <p>© 2025 | The Enigma Casino | All rights reserverd</p>
+
+        <div className="flex flex-col">
+          <h1 className="text-lg font-semibold">The Enigma Casino</h1>
+          <p className="text-sm">
+            © 2025 | The Enigma Casino | All rights reserved
+          </p>
         </div>
-        <div className={classes.line}></div>
       </div>
-      <div className={classes.rightFooter}>
-        <div className={classes.textFooter}>
-          <p>Juegos de casino</p>
+
+      <div className="hidden max-[770px]:block w-full h-[2px] bg-white my-4" />
+      <div className="hidden min-[771px]:block w-[2px] h-[50px] bg-white mx-4" />
+
+      {/* Derecha */}
+      <div className="flex flex-wrap md:flex-nowrap justify-center items-center gap-6 text-left text-lg max-[850px]:text-base max-[770px]:text-sm">
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold">Juegos de casino</p>
           <p>Ruleta | Blackjack | Poker</p>
         </div>
-        <div className={classes.textFooter}>
-          <p>Pagos</p>
-          <p>Euros | Ethereum </p>
+
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold">Pagos</p>
+          <p>Euros | Ethereum</p>
         </div>
-        <div className={classes.textFooter}>
-          <button
-            className={classes.InvisibilityButton}
-            onClick={() => navigate("/")}
+
+        <div className="flex flex-col gap-1">
+          <a
+            href="/policies"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:underline"
           >
             Política de privacidad
-          </button>
-          <button
-            className={classes.InvisibilityButton}
-            onClick={() => navigate("/")}
+          </a>
+
+          <a
+            href="/policies"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:underline"
           >
             Acuerdo con el usuario
-          </button>
+          </a>
         </div>
-        <div className={classes.textFooter}>
+
+        <div className="flex flex-col gap-1">
           <button
-            className={classes.InvisibilityButton}
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/about")}
+            className="text-white hover:underline"
           >
             Sobre nosotros
           </button>
-          <a href={GITHUB} target="_blank" rel="noopener noreferrer">
+          <a
+            href={GITHUB}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:underline"
+          >
             GitHub
           </a>
         </div>
+
         {role?.toLowerCase() === "user" && (
-          <div className={classes.autoExpulsion}>
+          <div>
             <button
-              className={`${classes.InvisibilityButton} ${classes.autoExpulsion}`}
+              className="text-[var(--Principal)] hover:underline"
+              onClick={() => openAutoBanModal()}
             >
               AutoExpulsión
             </button>

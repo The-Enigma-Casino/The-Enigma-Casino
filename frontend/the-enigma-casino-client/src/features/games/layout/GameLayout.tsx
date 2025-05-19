@@ -22,7 +22,7 @@ export const GameLayout = () => {
   return (
     <>
       <NavigationInit />
-      <div className="flex flex-row h-screen w-screen">
+      <div className="flex flex-row h-screen w-full">
         <div className="w-[15%] h-full p-4 bg-Background-Overlay text-white">
           <Chat gameType={gameType} />
         </div>

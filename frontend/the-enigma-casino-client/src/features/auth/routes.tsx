@@ -1,4 +1,4 @@
-import { RouteObject } from "react-router-dom";
+import { Navigate, RouteObject } from "react-router-dom";
 import AuthLayout from "./layouts/AuthLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -11,6 +11,10 @@ const routeAuth: RouteObject[] = [
     element: <AuthLayout />,
     errorElement: <Error />,
     children: [
+      {
+        index: true,
+        element: <Navigate to="login" replace />,
+      },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "email-confirmation/:token", element: <EmailConfirmation /> },

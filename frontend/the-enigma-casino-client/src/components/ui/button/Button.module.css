@@ -122,6 +122,11 @@ button.bold {
   font-weight: bold;
 }
 
+button.smallBold {
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
 /* Variantes de colores */
 
 button.green {

@@ -84,6 +84,22 @@ public class UserController : BaseController
         }
     }
 
+    [HttpGet("profile/get-image")]
+    public async Task<ActionResult> GetProfileImage()
+    {
+        try
+        {
+            int userId = GetUserId();
+            string image = await _userService.GetUserImageAsync(userId);
+
+            return Ok(image);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error al actualizar la imagen: {ex.Message}");
+        }
+    }
+
     [HttpPut("profile/image")]
     public async Task<ActionResult> UpdateProfileImage([FromForm] UpdateProfileImageDto dto)
     {

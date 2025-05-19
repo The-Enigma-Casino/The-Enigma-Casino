@@ -1,6 +1,6 @@
 import Button from "../../../components/ui/button/Button";
 import ModalEditUser from "../modal/ModalEditUser";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ModalEditImage from "../modal/ModalEditImage";
@@ -9,8 +9,10 @@ import ModalEditPassword from "../modal/ModalEditPassword";
 import { useUnit } from "effector-react";
 import { getFlagUrlByCca3 } from "../../../utils/flagUtils";
 import { $allCountries, countriesFx } from "../../countries/actions/countriesActions";
+import { inviteFriendFromList, sendFriendRequestWs } from "../../friends/stores/friends.events";
 
 interface UserData {
+  id?: number;
   name?: string;
   email?: string;
   nickname: string;
@@ -43,6 +45,24 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
   const isSelf = relations === "self";
   const isFriend = relations === "friend";
   const isStranger = relations === "stranger";
+
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
+
   useEffect(() => {
     if (countries.length === 0) {
       countriesFx();
@@ -131,26 +151,55 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
             )}
 
             {isFriend && (
-              <Button
-                variant="bigPlus"
-                color="green"
-                font="bold"
-                onClick={() => console.log("Invitar a partida")}
-              >
-                Invitar a partida
-              </Button>
+              <div className="relative" ref={dropdownRef}>
+                <Button
+                  variant="bigPlus"
+                  color="green"
+                  font="bold"
+                  onClick={() => setShowDropdown((prev) => !prev)}
+                >
+                  Invitar a partida ⏷
+                </Button>
+
+                {showDropdown && (
+                  <div className="absolute top-[110%] right-0 w-104 text-2xl bg-Background-Overlay border border-Principal rounded-xl shadow-xl z-50 overflow-hidden">
+                    {[
+                      { label: "Mesa de Blackjack", value: "BlackJack" },
+                      { label: "Mesa de Poker", value: "Poker" },
+                      { label: "Mesa de Ruleta", value: "Roulette" },
+                    ].map((item) => (
+                      <button
+                        key={item.value}
+                        onClick={() => {
+                          if (user.id !== undefined) {
+                            inviteFriendFromList({ friendId: user.id, gameType: item.value });
+                            setShowDropdown(false);
+                          }
+                        }}
+
+                        className="w-full px-4 py-2  text-white hover:bg-zinc-700 transition"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
-            {isStranger && (
+            {isStranger && user.id !== undefined && (
               <Button
                 variant="bigPlus"
                 color="green"
                 font="bold"
-                onClick={() => console.log("Enviar solicitud de Amistad")}
+                onClick={() => {
+                  sendFriendRequestWs({ receiverId: user.id! });
+                }}
               >
                 Enviar solicitud de Amistad
               </Button>
             )}
+
           </div>
 
           {/* Coins */}

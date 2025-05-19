@@ -20,30 +20,25 @@ const OtherUserProfile = () => {
   const userIdToken = useUnit($userId);
   const countries = useUnit($allCountries);
   const navigate = useNavigate();
-
+  const decodedId = userId ? decodeId(userId) : undefined;
   useEffect(() => {
     if (countries.length === 0) {
       countriesFx();
     }
   });
+  console.log("otherprofile", profile);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || decodedId === null) return;
 
-    try {
-      const decodedId = decodeId(userId); // solo para comparar
-
-      if (decodedId === Number(userIdToken)) {
-        navigate("/profile", { replace: true });
-        return;
-      }
-      loadOtherUserProfile(userId);
-      loadOtherUserHistory({ userId: String(decodedId), page: 1 });
-    } catch (err) {
-      console.error("Error decoding userId", err);
+    if (decodedId === Number(userIdToken)) {
       navigate("/profile", { replace: true });
+      return;
     }
-  }, [userId, userIdToken, navigate]);
+
+    loadOtherUserProfile(userId);
+    loadOtherUserHistory({ userId: String(decodedId), page: 1 });
+  }, [userId, decodedId, userIdToken, navigate]);
 
   if (!profile) {
     return (
@@ -54,7 +49,7 @@ const OtherUserProfile = () => {
   }
   return (
     <div className="bg-Background-Page">
-      <UserInfo user={profile} relations={profile.relation} />
+      <UserInfo user={decodedId !== undefined ? { ...profile, id: decodedId } : profile} relations={profile.relation} />
 
       <div className="flex justify-center my-10">
         <h2 className="text-white text-3xl font-bold">Historial de Partidas</h2>

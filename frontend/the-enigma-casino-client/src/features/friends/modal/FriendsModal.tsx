@@ -22,6 +22,8 @@ import {
   resetSearchResults,
   sendFriendRequestWs,
 } from "../stores/friends.events";
+import { encodeId } from "../../../utils/sqidUtils";
+import { useNavigate } from "react-router-dom";
 
 type TabMode = "friends" | "search";
 
@@ -31,6 +33,7 @@ export const FriendsModal: React.FC = () => {
   const friends = useUnit($friends);
   const searchResults = useUnit($searchResults);
   const receivedRequests = useUnit($receivedRequests);
+  const navigate = useNavigate();
 
   // Cargar amigos y sus estados online
   useEffect(() => {
@@ -114,6 +117,7 @@ export const FriendsModal: React.FC = () => {
                 await removeFriendFx({ friendId: friend.id });
                 fetchFriendsFx();
               }}
+              onProfileClick={() => navigate(`/profile/${encodeId(friend.id)}`)}
             />
           ))}
 
@@ -130,6 +134,7 @@ export const FriendsModal: React.FC = () => {
               onAddFriendClick={() => {
                 sendFriendRequestWs({ receiverId: user.id });
               }}
+              onProfileClick={() => navigate(`/profile/${encodeId(user.id)}`)}
             />
           ))}
 

@@ -24,7 +24,7 @@ function Home() {
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40"
           onClick={() => setShowFriends(false)}
         >
-          <div onClick={(e) => e.stopPropagation()}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full flex justify-center px-4">
             <FriendsModal onClose={() => setShowFriends(false)} />
           </div>
         </div>

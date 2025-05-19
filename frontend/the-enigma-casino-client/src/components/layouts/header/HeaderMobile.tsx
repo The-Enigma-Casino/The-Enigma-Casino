@@ -15,6 +15,7 @@ import UserLiveCounter from "../../ui/userLive/UserLiveCounter";
 import { $userImage } from "../../../features/profile/store/profile/profileStores";
 import { getUserImageFx } from "../../../features/profile/store/profile/profileEffects";
 import { USER_IMAGES } from "../../../config";
+import { FriendsModal } from "../../../features/friends/modal/FriendsModal";
 
 function HeaderMobile() {
   const navigate = useNavigate();
@@ -27,6 +28,8 @@ function HeaderMobile() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isGachaponModalOpen, setIsGachaponModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false);
+
 
   useEffect(() => {
     loadCoins();
@@ -147,7 +150,7 @@ function HeaderMobile() {
               <div
                 className="flex items-center gap-4 cursor-pointer"
                 onClick={() => {
-                  navigate("/friends");
+                  setIsFriendsModalOpen(true);
                   setIsMenuOpen(false);
                 }}
               >
@@ -222,6 +225,17 @@ function HeaderMobile() {
             isOpen={isGachaponModalOpen}
             closeModal={() => setIsGachaponModalOpen(false)}
           />
+        </div>
+      )}
+
+      {isFriendsModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40"
+          onClick={() => setIsFriendsModalOpen(false)}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <FriendsModal onClose={() => setIsFriendsModalOpen(false)} />
+          </div>
         </div>
       )}
 

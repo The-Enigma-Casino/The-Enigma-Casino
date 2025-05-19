@@ -14,7 +14,11 @@ import { $onlineUsers } from "../../../websocket/store/wsIndex";
 import { USER_IMAGES } from "../../../config";
 import FriendsPanel from "../../../features/friends/components/layouts/FriendsPanel";
 
-function SidebarMenu() {
+interface SidebarMenuProps {
+  onOpenFriendsModal?: () => void;
+}
+
+function SidebarMenu({ onOpenFriendsModal }: SidebarMenuProps) {
   const token = useUnit($token);
   const name = useUnit($name);
   const userImage = useUnit($image);
@@ -65,7 +69,7 @@ function SidebarMenu() {
                 color="green"
                 variant="large"
                 font="bold"
-            onClick={() => navigate("/friends")}
+                onClick={onOpenFriendsModal}
               >
                 Amigos
               </Button>

@@ -24,10 +24,14 @@ import {
 } from "../stores/friends.events";
 import { encodeId } from "../../../utils/sqidUtils";
 import { useNavigate } from "react-router-dom";
-
+import classes from "./FriendsModal.module.css";
 type TabMode = "friends" | "search";
 
-export const FriendsModal: React.FC = () => {
+interface FriendsModalProps {
+  onClose?: () => void;
+}
+
+export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
   const [tab, setTab] = useState<TabMode>("friends");
   const [searchQuery, setSearchQuery] = useState("");
   const friends = useUnit($friends);
@@ -67,36 +71,57 @@ export const FriendsModal: React.FC = () => {
     return () => clearTimeout(delay);
   }, [searchQuery, tab]);
 
-  const filteredFriends = friends.filter((f) =>
-    f.nickName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredFriends = friends
+    .filter((f) =>
+      f.nickName.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => (b.isOnline ? 1 : 0) - (a.isOnline ? 1 : 0));
+
 
   return (
-    <div className="modal bg-Background-Overlay border-2 border-Principal p-4 rounded-xl w-[400px]">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="flex text-white text-xl font-bold items-center">
-          {tab === "friends" ? "AMIGOS" : "AGREGAR AMIGO"}
-        </h2>
+    <div className="relative bg-Background-Overlay border-2 border-Principal p-6 rounded-[2.5rem] w-[400px]">
+
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-5 p-1 hover:opacity-70 transition-opacity"
+      >
+        <img src="/svg/close.svg" alt="Cerrar" className="w-11 h-11" />
+      </button>
+
+      <h2 className="text-white text-4xl font-bold text-center mb-4">
+        {tab === "friends" ? "AMIGOS" : "AGREGAR AMIGO"}
+      </h2>
+
+      <div className="flex items-center justify-between mb-2 ml-10">
+
+        <div className="relative w-[65%]">
+          <img
+            src="/svg/search_user.svg"
+            alt="Buscar"
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-7 h-7 opacity-70"
+          />
+          <input
+            type="text"
+            placeholder="Introduzca un nombre de usuario"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-10 text-xl pl-12 pr-3 py-1 rounded-xl bg-gray-800 text-white border border-Principal focus:outline-none"
+          />
+        </div>
+
         <button
-          className="text-Principal font-bold"
+          className="flex flex-col items-center gap-1 text-white text-base font-semibold hover:opacity-80"
           onClick={() => setTab(tab === "friends" ? "search" : "friends")}
         >
-          <img src="/svg/searchUser.svg" />
-          {tab === "friends" ? "AGREGAR AMIGO" : "BUSCAR AMIGO"}
+          <img src="/svg/searchUser.svg" alt="Agregar amigo" className="w-6 h-6" />
+          {tab === "friends" ? "AGREGAR AMIGO" : "AMIGOS"}
         </button>
       </div>
 
-      <div className="mb-3">
-        <input
-          type="text"
-          placeholder="Introduce un nombre de usuario"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-3 py-1 rounded bg-gray-800 text-white border border-green-500"
-        />
-      </div>
+      {/* Línea separadora */}
+      <hr className="border-t border-gray-600 mb-3 ml-10" />
 
-      <div className="h-[300px] overflow-y-auto flex flex-col gap-2">
+      <div className={`h-[300px] overflow-y-auto flex flex-col gap-5 pr-4 ${classes.customScroll}`}>
         {tab === "friends" &&
           filteredFriends.map((friend) => (
             <FriendItem

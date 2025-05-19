@@ -16,7 +16,7 @@ function FriendsPanel() {
     });
   }, []);
 
-  const onlineFriends = friends.filter(f => f.isOnline);
+  const onlineFriends = friends.filter(f => f.isOnline).slice(0, 4);
   return (
     <div className={classes.friendsPanel}>
       <div className={classes.friendsPanelContainer}>

@@ -13,33 +13,39 @@ public class UserFriendSeeder
 
     public void Seed()
     {
-        var user1 = _context.Users.FirstOrDefault(u => u.NickName == "admin");
-        var user2 = _context.Users.FirstOrDefault(u => u.NickName == "user");
+        var admin = _context.Users.FirstOrDefault(u => u.NickName == "admin");
 
-        if (user1 == null || user2 == null)
+        if (admin == null)
         {
-            Console.WriteLine("Usuarios no encontrados. Ejecutá el UserSeeder primero.");
+            Console.WriteLine("Usuario 'admin' no encontrado. Ejecutá el UserSeeder primero.");
             return;
         }
 
-        // Verificamos si ya existe la amistad
-        bool alreadyFriends = _context.UserFriends.Any(f =>
-            (f.UserId == user1.Id && f.FriendId == user2.Id) ||
-            (f.UserId == user2.Id && f.FriendId == user1.Id));
+        var allOtherUsers = _context.Users
+            .Where(u => u.NickName != "admin")
+            .ToList();
 
-        if (alreadyFriends)
+        foreach (var otherUser in allOtherUsers)
         {
-            Console.WriteLine("Ya son amigos, no se insertará duplicado.");
-            return;
-        }
+            bool alreadyFriends = _context.UserFriends.Any(f =>
+                (f.UserId == admin.Id && f.FriendId == otherUser.Id) ||
+                (f.UserId == otherUser.Id && f.FriendId == admin.Id));
 
-        _context.UserFriends.AddRange(
-            new UserFriend { UserId = user1.Id, FriendId = user2.Id },
-            new UserFriend { UserId = user2.Id, FriendId = user1.Id } // opcional para bidireccional
-        );
+            if (!alreadyFriends)
+            {
+                _context.UserFriends.AddRange(
+                    new UserFriend { UserId = admin.Id, FriendId = otherUser.Id },
+                    new UserFriend { UserId = otherUser.Id, FriendId = admin.Id }
+                );
+
+                Console.WriteLine($"Amistad creada entre {admin.NickName} y {otherUser.NickName}");
+            }
+            else
+            {
+                Console.WriteLine($"{admin.NickName} y {otherUser.NickName} ya son amigos.");
+            }
+        }
 
         _context.SaveChanges();
-
-        Console.WriteLine($"Amistad creada entre {user1.NickName} y {user2.NickName}");
     }
 }

@@ -11,6 +11,9 @@ import { messageSent } from "../stores/chatStore";
 import { $currentTableId, $hasLeftTable } from "../../../gameTables/store/tablesStores";
 import { markLeftTable, sendLeaveTableMessage } from "../../../gameTables/store/tablesEvents";
 import { navigateTo } from "../../shared/router/navigateFx";
+import { InviteFriendButton } from "../../../friends/ui/InviteFriendButton";
+import { inviteFriendFromTable } from "../../../friends/stores/friends.events";
+import { $friends } from "../../../friends/stores/friends.store";
 
 
 interface ChatProps {
@@ -47,6 +50,9 @@ export const Chat = ({ gameType }: ChatProps) => {
     navigateTo("/");
   };
 
+  const onlineFriends = useUnit($friends).filter((f) => f.isOnline);
+  console.log("FRIENDS", onlineFriends)
+
 
   return (
     <div className={styles.wrapper}>
@@ -69,7 +75,7 @@ export const Chat = ({ gameType }: ChatProps) => {
           </div>
 
           <div className={styles.inputWrapper}>
-          <ChatInput onSend={handleSend} />
+            <ChatInput onSend={handleSend} />
           </div>
         </div>
 
@@ -84,6 +90,19 @@ export const Chat = ({ gameType }: ChatProps) => {
           >
             <img src="/svg/info_icon.svg" alt="Info" className={styles.icon} />
           </button>
+
+          <InviteFriendButton
+            className={styles.iconButton}
+            onlineFriends={onlineFriends}
+            onInvite={(friendId) => {
+              if (tableId !== null) {
+                inviteFriendFromTable({ friendId, tableId });
+              } else {
+                console.warn("No hay una mesa activa para enviar la invitación.");
+              }
+            }}
+          />
+
 
           <button
             className={styles.iconButton}

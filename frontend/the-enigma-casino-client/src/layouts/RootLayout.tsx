@@ -9,6 +9,7 @@ import { useUnit } from "effector-react";
 import { $token } from "../features/auth/store/authStore";
 import AutoBanModal from "../features/autoBan/components/AutoBanModal";
 
+
 function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();

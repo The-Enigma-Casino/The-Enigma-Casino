@@ -181,10 +181,10 @@ export const GameCanvas = () => {
 
       {victory && (
         <div className="mt-8 text-center max-w-xl">
-          <p className="text-yellow-300 text-2xl md:text-3xl font-extrabold mb-4">
+          <p className="text-Coins text-2xl md:text-5xl font-extrabold mb-4">
             🏆 ¡Encontraste el tesoro escondido!
           </p>
-          <p className="text-Green-lines text-xl md:text-2xl font-bold animate-pulseGlow">
+          <p className="text-Coins text-xl md:text-4xl font-bold">
             🪙 ¡El caldero de oro es tuyo, campeón del 404!
           </p>
         </div>
@@ -203,7 +203,7 @@ export const GameCanvas = () => {
             </p>
           )}
           {achievedHighScore && (
-            <p className="text-green-400 font-bold text-xl md:text-2xl animate-pulseGlow">
+            <p className="text-green-400 font-bold text-xl md:text-2xl">
               🎉 ¡Felicidades! Has llegado muy lejos. El trébol dorado casi fue
               tuyo ☘️✨
             </p>

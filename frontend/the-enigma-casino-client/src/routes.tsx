@@ -4,7 +4,7 @@ import Error from "./features/error/pages/Error";
 import Catalog from "./features/catalog/pages/Catalog";
 import PaymentPage from "./features/payment/pages/PaymentPage";
 import PaymentConfirmation from "./features/payment/pages/PaymentConfirmation";
-
+import FriendPage from "./features/friends/pages/FriendPage";
 import routeAuth from "./features/auth/routes";
 import routeGames from "./features/games/routes";
 

@@ -10,6 +10,7 @@ using the_enigma_casino_server.Application.Mappers;
 using the_enigma_casino_server.Application.Services;
 using the_enigma_casino_server.Application.Services.Blockchain;
 using the_enigma_casino_server.Application.Services.Email;
+using the_enigma_casino_server.Application.Services.Friendship;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Infrastructure.Database.Seeder;
 using the_enigma_casino_server.Middleware;
@@ -19,6 +20,7 @@ using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.Chat;
+using the_enigma_casino_server.WebSockets.Friends;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameTable;
 using the_enigma_casino_server.WebSockets.Handlers;
@@ -72,10 +74,11 @@ public class Program
         builder.Services.AddScoped<TableService>();
         builder.Services.AddScoped<GachaponService>();
         builder.Services.AddScoped<BlockchainService>();
-        builder.Services.AddScoped<UserFriendService>(); 
         builder.Services.AddScoped<AdminUserService>();
         builder.Services.AddScoped<AdminCoinsPackService>();
         builder.Services.AddScoped<GameService>();
+        builder.Services.AddScoped<UserFriendService>();
+        builder.Services.AddScoped<FriendRequestService>();
 
         // --- Validaciones ---
         builder.Services.AddSingleton<ValidationService>();
@@ -95,6 +98,7 @@ public class Program
         builder.Services.AddSingleton<PokerWS>();
         builder.Services.AddSingleton<RouletteWS>();
         builder.Services.AddSingleton<GameChatWS>();
+        builder.Services.AddSingleton<FriendsWS>();
 
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameTableWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameMatchWS>();
@@ -102,6 +106,8 @@ public class Program
         builder.Services.AddSingleton<IWebSocketMessageHandler, PokerWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, RouletteWS>();
         builder.Services.AddSingleton<IWebSocketMessageHandler, GameChatWS>();
+        builder.Services.AddSingleton<IWebSocketMessageHandler, FriendsWS>();
+
 
         builder.Services.AddSingleton<IWebSocketSender>(provider => provider.GetRequiredService<GameMatchWS>());
 
@@ -286,6 +292,7 @@ public class Program
         app.UseCors("MyPolicy");
 
         app.UseWebSockets();
+        _ = app.Services.GetServices<IWebSocketMessageHandler>().OfType<FriendsWS>().FirstOrDefault();
         app.UseMiddleware<WebSocketMiddleware>();
 
 

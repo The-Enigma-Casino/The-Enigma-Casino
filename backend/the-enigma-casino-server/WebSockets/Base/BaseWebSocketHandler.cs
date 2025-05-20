@@ -1,7 +1,9 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Games.Shared.Entities;
+using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
 
 namespace the_enigma_casino_server.WebSockets.Base;
@@ -135,7 +137,7 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
     protected bool TryGetMatch(int tableId, out Match match)
         => TryGetWithError(ActiveGameMatchStore.TryGetNullable, tableId, out match, "match");
 
-    // 🧑‍🤝‍🧑 Obtener Player desde Match
+    // 🧑‍🤝‍🧑Obtener Player desde Match
     protected bool TryGetPlayer(Match match, string userId, out Player player)
         => TryGetWithError(
             () => TryGetPlayerFromMatch(match, userId),
@@ -147,4 +149,21 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
     {
         return match.Players.FirstOrDefault(p => p.UserId.ToString() == userId);
     }
+
+    // Obtener Id
+    protected async Task<User> GetUserById(int userId)
+    {
+        IServiceScope scope;
+        var unitOfWork = GetScopedService<UnitOfWork>(out scope);
+
+        using (scope)
+        {
+            var user = await unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new KeyNotFoundException($"Usuario con ID {userId} no encontrado.");
+
+            return user;
+        }
+    }
+
 }

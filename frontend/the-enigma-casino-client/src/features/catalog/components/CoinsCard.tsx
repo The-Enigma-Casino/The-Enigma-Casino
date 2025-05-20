@@ -47,7 +47,7 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
       >
         <div className="relative">
           <img
-            src={`${BASE_URL}${image}`}
+            src={`${BASE_URL}${image}?${Date.now()}`}
             alt="pack"
             className={`object-cover rounded-lg ${imageClasses}`}
           />

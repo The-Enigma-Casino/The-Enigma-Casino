@@ -83,3 +83,15 @@ export const UPDATE_PACK_ADMIN = `${API_BASE_URL}AdminCoinsPack/coins-pack`;
 /* ENDPOINTS DE GAMES */
 export const PLAYER_AVATARS = `${API_BASE_URL}Games/player-avatars`;
 export const LAST_BIG_WIN = `${API_BASE_URL}Games/last-big-win`;
+
+/* ENDPOINTS DE FRIENDS */
+export const GET_FRIENDS = `${API_BASE_URL}FriendRequest/friends`;
+export const GET_RECEIVED_REQUESTS = `${API_BASE_URL}FriendRequest/received-requests`;
+export const SEND_REQUEST = `${API_BASE_URL}FriendRequest/send`;
+export const ACCEPT_REQUEST = `${API_BASE_URL}FriendRequest/accept`;
+export const CANCEL_REQUEST = `${API_BASE_URL}FriendRequest/cancel`;
+export const REMOVE_FRIEND = `${API_BASE_URL}FriendRequest/remove`;
+export const CAN_SEND_REQUEST = `${API_BASE_URL}FriendRequest/can-send`;
+export const IS_FRIEND = `${API_BASE_URL}FriendRequest/is-friend`;
+export const SEARCH_USERS = `${API_BASE_URL}User/search-user`;
+

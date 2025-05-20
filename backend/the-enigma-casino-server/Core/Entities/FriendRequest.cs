@@ -9,6 +9,8 @@ public class FriendRequest
     public int SenderId { get; set; }
     public int ReceiverId { get; set; }
 
+    public User Sender { get; set; }
+
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
     public FriendRequestStatus Status { get; set; } = FriendRequestStatus.Pending;

@@ -13,7 +13,11 @@ import UserLiveCounter from "../../ui/userLive/UserLiveCounter";
 import { $userImage } from "../../../features/profile/store/profile/profileStores";
 import { getUserImageFx } from "../../../features/profile/store/profile/profileEffects";
 
-function SidebarMenu() {
+interface SidebarMenuProps {
+  onOpenFriendsModal?: () => void;
+}
+
+function SidebarMenu({ onOpenFriendsModal }: SidebarMenuProps) {
   const token = useUnit($token);
   const name = useUnit($name);
   const userImage = useUnit($userImage);
@@ -25,7 +29,7 @@ function SidebarMenu() {
   }, [token]);
 
   const profileImage =
-    token && userImage ? `${USER_IMAGES}/${userImage}` : "/svg/user.svg";
+    token && userImage ? `${USER_IMAGES}/${userImage}?${Date.now()}` : "/svg/user.svg";
 
   return (
     <nav className="hidden md:flex h-full flex-col justify-between items-center bg-[var(--Background-Nav)] py-12">
@@ -72,7 +76,7 @@ function SidebarMenu() {
                 color="green"
                 variant="large"
                 font="bold"
-                onClick={() => navigate("/friends")}
+                onClick={onOpenFriendsModal}
               >
                 Amigos
               </Button>

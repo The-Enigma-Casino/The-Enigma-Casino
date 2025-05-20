@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Core.Entities;
+using the_enigma_casino_server.Core.Entities.Enum;
 
 namespace the_enigma_casino_server.Infrastructure.Database.Repositories;
 
@@ -14,15 +16,24 @@ public class UserFriendRepository : Repository<UserFriend, int>
             (friend.UserId == friendId && friend.FriendId == userId));
     }
 
-    public async Task<List<User>> GetFriendsAsync(int userId)
+    public async Task<List<FriendDto>> GetFriendsAsync(int userId)
     {
         List<int> friendIds = await Context.Set<UserFriend>()
             .Where(friend => friend.UserId == userId)
             .Select(friend => friend.FriendId)
             .ToListAsync();
 
+        if (!friendIds.Any())
+            return new List<FriendDto>();
+
         return await Context.Set<User>()
             .Where(user => friendIds.Contains(user.Id))
+            .Select(user => new FriendDto
+            {
+                Id = user.Id,
+                NickName = user.NickName,
+                Image = user.Image
+            })
             .ToListAsync();
     }
 
@@ -35,12 +46,37 @@ public class UserFriendRepository : Repository<UserFriend, int>
     }
     public async Task RemoveFriendshipAsync(int userId, int friendId)
     {
-        List<UserFriend> friendships = await Context.Set<UserFriend>()
+
+        var friendships = await Context.Set<UserFriend>()
             .Where(f =>
                 (f.UserId == userId && f.FriendId == friendId) ||
                 (f.UserId == friendId && f.FriendId == userId))
             .ToListAsync();
 
-        Context.Set<UserFriend>().RemoveRange(friendships);
+        if (friendships.Any())
+            Context.Set<UserFriend>().RemoveRange(friendships);
+
+        var pendingRequests = await Context.Set<FriendRequest>()
+            .Where(r =>
+                ((r.SenderId == userId && r.ReceiverId == friendId) ||
+                 (r.SenderId == friendId && r.ReceiverId == userId)) &&
+                r.Status == FriendRequestStatus.Pending)
+            .ToListAsync();
+
+        if (pendingRequests.Any())
+            Context.Set<FriendRequest>().RemoveRange(pendingRequests);
+
+        await Context.SaveChangesAsync();
+    }
+
+    public async Task<List<User>> GetOnlineFriendsAsync(int userId, List<int> onlineUserIds)
+    {
+        return await Context.Set<UserFriend>()
+            .Where(uf => uf.UserId == userId && onlineUserIds.Contains(uf.FriendId))
+            .Join(Context.Users,
+                  uf => uf.FriendId,
+                  u => u.Id,
+                  (uf, u) => u)
+            .ToListAsync();
     }
 }

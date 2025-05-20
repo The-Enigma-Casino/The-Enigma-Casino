@@ -49,7 +49,7 @@ const UserProfile = () => {
         {/* Botones para alternar vistas */}
         <div className="flex flex-wrap justify-center gap-6 my-10 ">
           <Button
-            variant="bigPlus"
+            variant="big"
             color={activeTab === "history" ? "green" : "selectedProfile"}
             font="bold"
             onClick={() => setActiveTab("history")}
@@ -58,7 +58,7 @@ const UserProfile = () => {
           </Button>
 
           <Button
-            variant="bigPlus"
+            variant="big"
             color={activeTab === "orders" ? "green" : "selectedProfile"}
             font="bold"
             onClick={() => setActiveTab("orders")}

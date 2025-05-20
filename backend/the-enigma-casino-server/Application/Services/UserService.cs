@@ -22,18 +22,16 @@ public class UserService : BaseService
     private readonly EmailService _emailService;
     private readonly ValidationService _validation;
     private readonly UserMapper _userMapper;
-    private readonly UserFriendService _userFriendService;
     private readonly SmartSearchService _smartSearchService;
     private const string DefaultProfileImage = "user_default.webp";
 
 
-    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper, UserFriendService userFriendService, SmartSearchService smartSearchService) : base(unitOfWork)
+    public UserService(UnitOfWork unitOfWork, IOptionsMonitor<JwtBearerOptions> jwtOptions, EmailService emailService, ValidationService validationService, UserMapper userMapper, SmartSearchService smartSearchService) : base(unitOfWork)
     {
         _tokenParameters = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
         _emailService = emailService;
         _validation = validationService;
         _userMapper = userMapper;
-        _userFriendService = userFriendService;
         _smartSearchService = smartSearchService;
     }
 
@@ -254,29 +252,6 @@ public class UserService : BaseService
         }
     }
 
-    public async Task<OtherUserDto> GetOtherProfile(int currentUserId, int profileUserId)
-    {
-        User user = await GetUserById(profileUserId);
-
-        if (user == null)
-            throw new KeyNotFoundException("Usuario no encontrado");
-
-        string relation;
-
-        if (currentUserId == profileUserId)
-        {
-            relation = "self";
-        }
-        else
-        {
-            bool isFriend = await _userFriendService.AreFriendsAsync(currentUserId, profileUserId);
-            relation = isFriend ? "friend" : "stranger";
-        }
-
-        return new OtherUserDto(user.NickName, user.Country, user.Image, relation);
-
-    }
-
     public async Task UpdateUserImageAsync(int userId, IFormFile imageFile)
     {
         if (imageFile == null || imageFile.Length == 0)
@@ -473,4 +448,17 @@ public class UserService : BaseService
 
         return string.Empty;
     }
+
+    public async Task<List<FriendDto>> SearchAddableUsersAsync(string query, int currentUserId)
+    {
+        var friendIds = await _unitOfWork.UserFriendRepository.GetFriendIdsAsync(currentUserId);
+
+        var pendingIds = await _unitOfWork.FriendRequestRepository.GetPendingRequestUserIdsAsync(currentUserId);
+
+        var excludedIds = friendIds.Concat(pendingIds).Append(currentUserId).Distinct().ToList();
+
+        return await _unitOfWork.UserRepository.SearchAddableUsersAsync(query, currentUserId, excludedIds);
+    }
+
+
 }

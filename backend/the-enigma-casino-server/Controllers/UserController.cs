@@ -4,6 +4,7 @@ using Nethereum.Contracts.QueryHandlers.MultiCall;
 using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Application.Services.Friendship;
 using the_enigma_casino_server.Utilities;
 
 namespace the_enigma_casino_server.Controllers;
@@ -14,9 +15,11 @@ namespace the_enigma_casino_server.Controllers;
 public class UserController : BaseController
 {
     public UserService _userService;
-    public UserController(UserService userService)
+    public UserFriendService _userFriendService;
+    public UserController(UserService userService, UserFriendService userFriendService)
     {
         _userService = userService;
+        _userFriendService = userFriendService;
     }
 
     [HttpGet("coins")]
@@ -60,8 +63,7 @@ public class UserController : BaseController
         }
     }
 
-
-    [HttpGet("profile/{encodedId}")]
+    [HttpGet("profile/{encodedId}")] //TIENE SQID DECODE
     public async Task<ActionResult<OtherUserDto>> GetOtherProfile(string encodedId)
     {
         try
@@ -69,7 +71,7 @@ public class UserController : BaseController
             int currentUserId = GetUserId();
             int profileUserId = SqidHelper.Decode(encodedId);
 
-            OtherUserDto otherUserDto = await _userService.GetOtherProfile(currentUserId, profileUserId);
+            OtherUserDto otherUserDto = await _userFriendService.GetOtherProfile(currentUserId, profileUserId);
             return Ok(otherUserDto);
         }
         catch (KeyNotFoundException ex)
@@ -221,4 +223,25 @@ public class UserController : BaseController
             return StatusCode(500, "Ocurrió un error inesperado.");
         }
     }
+
+    [HttpGet("search-user")]
+    public async Task<ActionResult<List<FriendDto>>> SearchUsers([FromQuery] string query)
+    {
+        try
+        {
+            int userId = GetUserId();
+
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("La consulta no puede estar vacía.");
+
+            var users = await _userService.SearchAddableUsersAsync(query, userId);
+
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error al buscar usuarios: {ex.Message}");
+        }
+    }
+
 }

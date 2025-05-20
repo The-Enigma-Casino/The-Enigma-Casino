@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using the_enigma_casino_server.Application.Dtos;
+using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Services.Friendship;
 using the_enigma_casino_server.Core.Entities;
 
@@ -61,11 +63,11 @@ namespace the_enigma_casino_server.Controllers
 
 
         [HttpDelete("cancel")]
-        public async Task<ActionResult> CancelFriendRequest([FromQuery] int receiverId)
+        public async Task<ActionResult> CancelFriendRequest([FromQuery] int senderId)
         {
             try
             {
-                int senderId = GetUserId();
+                int receiverId = GetUserId(); 
                 await _friendRequestService.CancelFriendRequestAsync(senderId, receiverId);
                 return Ok("Solicitud cancelada.");
             }
@@ -93,12 +95,12 @@ namespace the_enigma_casino_server.Controllers
 
 
         [HttpGet("received-requests")]
-        public async Task<ActionResult<List<FriendRequest>>> GetReceivedRequests()
+        public async Task<ActionResult<List<FriendRequestDto>>> GetReceivedRequests()
         {
             try
             {
                 int userId = GetUserId();
-                List<FriendRequest> requests = await _friendRequestService.GetReceivedRequestsAsync(userId);
+                var requests = await _friendRequestService.GetReceivedRequestsDtoAsync(userId);
                 return Ok(requests);
             }
             catch (Exception exception)
@@ -109,12 +111,12 @@ namespace the_enigma_casino_server.Controllers
 
 
         [HttpGet("friends")]
-        public async Task<ActionResult<List<User>>> GetFriends()
+        public async Task<ActionResult<List<FriendDto>>> GetFriends()
         {
             try
             {
                 int userId = GetUserId();
-                List<User> friends = await _userFriendService.GetFriendsAsync(userId);
+                var friends = await _userFriendService.GetFriendsAsync(userId);
                 return Ok(friends);
             }
             catch (Exception exception)

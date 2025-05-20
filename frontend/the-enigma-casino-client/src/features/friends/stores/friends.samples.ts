@@ -91,13 +91,10 @@ sample({
   target: cancelFriendRequestFx,
 });
 
-
 // Remove friend ONLINE - WS
 sample({
   clock: removeFriend,
-  source: $onlineFriendsMap,
-  filter: (onlineMap, { friendId }) => onlineMap.has(friendId),
-  fn: (_, { friendId }) => JSON.stringify({
+  fn: ({ friendId }) => JSON.stringify({
     type: "friend",
     action: "remove",
     friendId,
@@ -105,14 +102,12 @@ sample({
   target: messageSent,
 });
 
-// Remove friend OFFLINE - API
 sample({
   clock: removeFriend,
-  source: $onlineFriendsMap,
-  filter: (onlineMap, { friendId }) => !onlineMap.has(friendId),
-  fn: (_, { friendId }) => ({ friendId }),
+  fn: ({ friendId }) => ({ friendId }),
   target: removeFriendFx,
 });
+
 
 
 //Alertas
@@ -120,12 +115,6 @@ sample({
   source: friendRequestAccepted,
   fn: ({ nickname }) => toast.success(`${nickname} aceptó tu solicitud de amistad.`),
 });
-
-sample({
-  source: friendRemoved,
-  fn: ({ removedBy }) => toast("Se ha eliminado la amistad."),
-});
-
 
 // Aceptar juego
 sample({

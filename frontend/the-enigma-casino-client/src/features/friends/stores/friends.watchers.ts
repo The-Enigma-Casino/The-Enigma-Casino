@@ -1,4 +1,4 @@
-import { friendRequestAccepted, friendRequestReceived, getOnlineFriendsRequested, sendFriendRequest, setSearchResults } from "./friends.events";
+import { friendRemoved, friendRequestAccepted, friendRequestReceived, getOnlineFriendsRequested, sendFriendRequest, setSearchResults } from "./friends.events";
 import {
   acceptFriendRequestFx,
   cancelFriendRequestFx,
@@ -30,6 +30,12 @@ friendRequestAccepted.watch((payload) => {
 cancelFriendRequestFx.done.watch(() => {
   fetchReceivedRequestsFx();
   fetchFriendsFx();
+});
+
+friendRemoved.watch(() => {
+  fetchFriendsFx().finally(() => {
+    getOnlineFriendsRequested();
+  });
 });
 
 

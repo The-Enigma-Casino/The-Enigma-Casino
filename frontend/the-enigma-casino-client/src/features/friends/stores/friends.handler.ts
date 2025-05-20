@@ -38,6 +38,7 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "friendRemoved":
+      console.log("[WS] Recibido friendRemovedddddddddddd:", data);
       friendRemoved({ removedBy: data.removedBy });
       break;
 
@@ -68,9 +69,9 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "inviteExpired":
-      toast(
-        `La invitación con ${data.friendId || data.inviterId} ha expirado.`
-        , { duration: 2000 });
+      // toast(
+      //   `La invitación con ${data.friendId || data.inviterId} ha expirado.`
+      //   , { duration: 2000 });
       break;
 
     case "friendRequestCanceled":

@@ -17,6 +17,7 @@ import { FriendItem } from "../components/FriendItem";
 import {
   getOnlineFriendsRequested,
   inviteFriendFromList,
+  removeFriend,
   removeReceivedRequest,
   resetReceivedRequests,
   resetSearchResults,
@@ -139,9 +140,8 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
                   gameType,
                 });
               }}
-              onRemoveFriendClick={async () => {
-                await removeFriendFx({ friendId: friend.id });
-                fetchFriendsFx();
+              onRemoveFriendClick={() => {
+                removeFriend({ friendId: friend.id });
               }}
               onProfileClick={() => navigate(`/profile/${encodeId(friend.id)}`)}
             />

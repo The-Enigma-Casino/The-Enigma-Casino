@@ -9,16 +9,16 @@ import {
   searchUserFx,
   fetchFriendsFx,
   fetchReceivedRequestsFx,
-  acceptFriendRequestFx,
   cancelFriendRequestFx,
-  removeFriendFx,
 } from "../stores/friends.effects";
 import { FriendItem } from "../components/FriendItem";
 import {
+  acceptFriendRequest,
   getOnlineFriendsRequested,
   inviteFriendFromList,
   removeFriend,
   removeReceivedRequest,
+  removeUserFromSearchResults,
   resetReceivedRequests,
   resetSearchResults,
   sendFriendRequestWs,
@@ -159,6 +159,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
               mode="search"
               onAddFriendClick={() => {
                 sendFriendRequestWs({ receiverId: user.id });
+                removeUserFromSearchResults(user.id);
               }}
               onProfileClick={() => navigate(`/profile/${encodeId(user.id)}`)}
             />
@@ -183,7 +184,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
                 canSend={false}
                 mode="search"
                 onAcceptRequestClick={() => {
-                  acceptFriendRequestFx({ senderId: req.senderId });
+                  acceptFriendRequest({ senderId: req.senderId });
                   removeReceivedRequest(req.senderId);
                   setTab("friends");
                 }}

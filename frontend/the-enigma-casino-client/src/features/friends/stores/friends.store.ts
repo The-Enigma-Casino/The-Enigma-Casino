@@ -5,6 +5,7 @@ import {
   getOnlineFriendsRequested,
   onlineFriendsUpdated,
   removeReceivedRequest,
+  removeUserFromSearchResults,
   resetReceivedRequests,
   resetSearchResults,
   setReceivedRequests,
@@ -49,9 +50,12 @@ export const $friends = combine(
   }
 );
 
-export const $searchResults = createStore<Friend[]>([])
-  .on(searchUserFx.doneData, (_, users) => users)
-  .reset(resetSearchResults);
+export const $searchResults = createStore<SearchUser[]>([])
+  .on(setSearchResults, (_, users) => users)
+  .on(resetSearchResults, () => [])
+  .on(removeUserFromSearchResults, (state, userId) =>
+    state.filter((u) => u.id !== userId)
+  );
 
 export const $receivedRequests = createStore<FriendRequest[]>([])
   .on(fetchReceivedRequestsFx.doneData, (_, list) => list)

@@ -5,6 +5,7 @@ import {
   friendRemoved,
   onlineFriendsUpdated,
   removeReceivedRequest,
+  requestAccepted,
 } from "./friends.events";
 import {
   // showFriendRequestToast,
@@ -84,6 +85,7 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "requestAccepted":
+      requestAccepted({ friendId: data.friendId });
       toast("Has aceptado la solicitud.", { duration: 2000 });
       break;
 

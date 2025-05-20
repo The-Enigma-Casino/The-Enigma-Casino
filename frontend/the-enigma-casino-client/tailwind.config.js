@@ -33,6 +33,7 @@ export default {
       },
       animation: {
         pulseGlow: "pulseGlow 1.8s ease-in-out infinite",
+        marquee: "marquee 20s linear infinite",
       },
       keyframes: {
         pulseGlow: {
@@ -42,6 +43,10 @@ export default {
           "50%": {
             boxShadow: "0 0 14px 6px rgba(116, 196, 16, 0.5)",
           },
+        },
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
     },

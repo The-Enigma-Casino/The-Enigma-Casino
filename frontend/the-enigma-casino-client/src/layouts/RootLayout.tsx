@@ -9,7 +9,6 @@ import { useUnit } from "effector-react";
 import { $token } from "../features/auth/store/authStore";
 import AutoBanModal from "../features/autoBan/components/AutoBanModal";
 
-
 function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,8 +22,8 @@ function RootLayout() {
     const flag = "__hasVisitedEnigma__";
     const isFirstVisit = !window.name.includes(flag);
     const isRoot = location.pathname === "/" || location.pathname === "";
-    const isPublicEntry = ["/catalog", "/policies", "/auth", "/about"].some((path) =>
-      location.pathname.startsWith(path)
+    const isPublicEntry = ["/catalog", "/policies", "/auth", "/about"].some(
+      (path) => location.pathname.startsWith(path)
     );
 
     if (!token && isFirstVisit && isRoot && !isPublicEntry) {
@@ -50,7 +49,7 @@ function RootLayout() {
           </div>
         )}
 
-        <main className="w-full max-w-full overflow-x-clip">
+        <main className="w-full max-w-full h-full min-h-0 overflow-x-clip">
           <Outlet />
         </main>
 

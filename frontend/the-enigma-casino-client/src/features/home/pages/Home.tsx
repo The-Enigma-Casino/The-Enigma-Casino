@@ -14,7 +14,7 @@ function Home() {
         <SidebarMenu onOpenFriendsModal={() => setShowFriends(true)} />
       </div>
 
-      <section className="flex flex-col items-center gap-8 w-full">
+      <section className="flex flex-col items-center gap-8 w-full h-full min-h-0">
         <Carousel />
         <Winners />
         <GamePanel />

@@ -47,27 +47,31 @@ export const FriendItem: React.FC<FriendItemProps> = ({
 
         <img
           src={`${IMAGE_PROFILE_URL}${image}`}
-          className="w-14 h-14 rounded-full object-cover"
+          className="w-16 h-16 rounded-full object-cover"
         />
-        <p className="text-white text-xl">{nickname}</p>
+        <p className="text-white text-2xl">{nickname}</p>
       </div>
 
       {/* Derecha */}
       <div className="flex flex-col gap-2 w-1/2">
         {/* Estado */}
-        {mode === "friend-list" && (
-          <div className="flex items-center gap-1 text-sm">
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-green-400" : "bg-red-500"}`}
-            ></span>
-            <span className="text-gray-400 font-light text-xs self-start">
-              {isOnline ? "EN LÍNEA" : "DESCONECTADO"}
-            </span>
-          </div>
+        {mode === "friend-list" ? (
+          <>
+            <div className="flex items-center gap-1 text-lg">
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-green-400" : "bg-red-500"}`}
+              ></span>
+              <span className="text-gray-400 font-light text-base self-start">
+                {isOnline ? "EN LÍNEA" : "DESCONECTADO"}
+              </span>
+            </div>
+          </>
+        ) : (
+          <span className="invisible">Estado</span>
         )}
 
         {/* Iconos */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 ml-10">
           {(mode === "friend-list" || mode === "search") && (
             <button onClick={onProfileClick} title="Ver perfil">
               <img src="/svg/friendProfile.svg" className="w-8 h-8" />

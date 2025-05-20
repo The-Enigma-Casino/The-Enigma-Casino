@@ -79,16 +79,17 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
 
 
   return (
-    <div className="relative bg-Background-Overlay border-2 border-Principal p-6 rounded-[2.5rem] w-[400px]">
+    <div className="relative bg-Background-Overlay border-2 border-Principal p-8 rounded-[3rem] w-full max-w-[450px]">
 
       <button
         onClick={onClose}
         className="absolute top-4 right-5 p-1 hover:opacity-70 transition-opacity"
       >
-        <img src="/svg/close.svg" alt="Cerrar" className="w-11 h-11" />
+        <img src="/svg/close.svg" alt="Cerrar" className="w-12 h-12" />
       </button>
 
-      <h2 className="text-white text-4xl font-bold text-center mb-4">
+      <h2 className="text-white text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4">
+
         {tab === "friends" ? "AMIGOS" : "AGREGAR AMIGO"}
       </h2>
 
@@ -98,7 +99,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
           <img
             src="/svg/search_user.svg"
             alt="Buscar"
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-7 h-7 opacity-70"
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-8 h-8 opacity-70"
           />
           <input
             type="text"
@@ -110,10 +111,10 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
         </div>
 
         <button
-          className="flex flex-col items-center gap-1 text-white text-base font-semibold hover:opacity-80"
+          className="flex flex-col items-center gap-1 text-white text-xl font-semibold hover:opacity-80"
           onClick={() => setTab(tab === "friends" ? "search" : "friends")}
         >
-          <img src="/svg/searchUser.svg" alt="Agregar amigo" className="w-6 h-6" />
+          <img src="/svg/searchUser.svg" alt="Agregar amigo" className="w-8 h-8" />
           {tab === "friends" ? "AGREGAR AMIGO" : "AMIGOS"}
         </button>
       </div>
@@ -121,7 +122,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
       {/* Línea separadora */}
       <hr className="border-t border-gray-600 mb-3 ml-10" />
 
-      <div className={`h-[300px] overflow-y-auto flex flex-col gap-5 pr-4 ${classes.customScroll}`}>
+      <div className={`h-[340px] overflow-y-auto flex flex-col gap-5 pr-4 ${classes.customScroll}`}>
         {tab === "friends" &&
           filteredFriends.map((friend) => (
             <FriendItem
@@ -170,8 +171,8 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
         )}
 
         {receivedRequests.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-gray-600">
-            <p className="text-white text-sm mb-2">Solicitudes recibidas</p>
+          <div className="mt-4 pt-3  ml-10">
+            <p className="text-white text-xl mb-2">Solicitudes recibidas</p>
             {receivedRequests.map((req) => (
               <FriendItem
                 key={req.senderId}

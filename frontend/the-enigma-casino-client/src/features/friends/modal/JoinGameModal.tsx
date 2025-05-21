@@ -8,48 +8,36 @@ import { useEffect, useRef, useState } from "react";
 
 const JoinGameModal = () => {
   const isOpenGame = useUnit($isGameLoading);
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [muted, setMuted] = useState(() => {
     const stored = localStorage.getItem("gameSoundMuted");
     return stored === "true";
   });
 
-  // Inicializar el audio una sola vez
   useEffect(() => {
     if (!audioRef.current) {
-      audioRef.current = new Audio("/sounds/waiting.mp3");
+      audioRef.current = new Audio("/music/waiting.mp3");
       audioRef.current.loop = true;
-      audioRef.current.volume = 1;
     }
-  }, []);
 
-  // Controlar reproducción en base a modal abierto
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.muted = muted;
+    audioRef.current.muted = muted;
 
     if (isOpenGame) {
-      // Solo reproducir si no está reproduciendo ya
-      audio
+      audioRef.current
         .play()
         .catch((err) => console.warn("No se pudo reproducir el audio:", err));
     } else {
-      audio.pause();
-      audio.currentTime = 0;
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
   }, [isOpenGame, muted]);
 
   const toggleMute = () => {
-    const next = !muted;
-    setMuted(next);
-    localStorage.setItem("gameSoundMuted", String(next));
-
-    if (audioRef.current) {
-      audioRef.current.muted = next;
-    }
+    setMuted((prev) => {
+      const next = !prev;
+      localStorage.setItem("gameSoundMuted", String(next));
+      return next;
+    });
   };
 
   return (
@@ -63,19 +51,21 @@ const JoinGameModal = () => {
           />
         </button>
         <img src="/svg/loading-spinner.svg" className="w-40 h-40" />
-        <p className="text-3xl font-bold">Uniéndose a partida...</p>
+        <p className="text-3xl font-bold">Uniendose a partida...</p>
         <Button
           variant="short"
           color="red"
           font="bold"
-          onClick={() => { stopGameLoading(); }}
+          onClick={() => {
+            stopGameLoading();
+          }}
         >
           Cancelar
         </Button>
       </div>
     </Modal>
   );
-};
+}
 
 
 export default JoinGameModal;

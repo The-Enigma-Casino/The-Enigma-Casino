@@ -29,6 +29,7 @@ function GameTablePage() {
   const countdowns = useUnit($countdowns);
   const currentTableId = useUnit($currentTableId);
   const isInLobby = useUnit($isInLobby);
+  const pendingTableId = useUnit($pendingJoinTableId);
 
   useEffect(() => {
     if (gameType) {
@@ -41,6 +42,13 @@ function GameTablePage() {
       exitLobbyPage();
     };
   }, []);
+
+  useEffect(() => {
+    if (pendingTableId !== null) {
+      joinTableClicked(pendingTableId);
+      clearPendingJoinTableId();
+    }
+  }, [pendingTableId]);
 
   const gameNames = ["Blackjack", "Poker", "Ruleta"];
   const gameName = gameNames[parseInt(gameType ?? "")] || "Desconocido";

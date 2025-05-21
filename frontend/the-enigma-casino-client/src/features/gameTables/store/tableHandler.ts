@@ -63,13 +63,8 @@ socketMessageReceived.watch((data) => {
       })();
 
       setPendingJoinTableId(tableId);
+
       navigateTo(gameViewPath);
-      if (window.location.pathname === gameViewPath) {
-        joinTableClicked(tableId);
-
-        return;
-      }
-
       break;
     }
 

@@ -22,6 +22,7 @@ import {
   resetReceivedRequests,
   resetSearchResults,
   sendFriendRequestWs,
+  startGameLoading,
 } from "../stores/friends.events";
 import { encodeId } from "../../../utils/sqidUtils";
 import { useNavigate } from "react-router-dom";
@@ -139,6 +140,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
                   friendId: friend.id,
                   gameType,
                 });
+                startGameLoading();
               }}
               onRemoveFriendClick={() => {
                 removeFriend({ friendId: friend.id });

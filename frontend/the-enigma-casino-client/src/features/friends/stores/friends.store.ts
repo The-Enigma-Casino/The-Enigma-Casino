@@ -10,6 +10,8 @@ import {
   resetSearchResults,
   setReceivedRequests,
   setSearchResults,
+  startGameLoading,
+  stopGameLoading,
 } from "./friends.events";
 import {
   acceptFriendRequestFx,
@@ -65,3 +67,8 @@ export const $receivedRequests = createStore<FriendRequest[]>([])
   .reset(resetReceivedRequests);
 
 export const $lastRequestIds = createStore<number[]>([]);
+
+
+export const $isGameLoading = createStore(false)
+  .on(startGameLoading, () => true)
+  .on(stopGameLoading, () => false);

@@ -6,6 +6,7 @@ import {
   onlineFriendsUpdated,
   removeReceivedRequest,
   requestAccepted,
+  stopGameLoading,
 } from "./friends.events";
 import {
   // showFriendRequestToast,
@@ -66,10 +67,12 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "gameInviteRejected":
+      stopGameLoading();
       toast.error(`El usuario ${data.friendId} rechazó tu invitación.`, { duration: 2000 });
       break;
 
     case "inviteExpired":
+      //stopGameLoading();
       // toast(
       //   `La invitación con ${data.friendId || data.inviterId} ha expirado.`
       //   , { duration: 2000 });

@@ -31,3 +31,6 @@ export const acceptTableInvite = createEvent<{ inviterId: number; tableId: numbe
 export const inviteFriendFromTable = createEvent<{ friendId: number; tableId: number }>();
 export const inviteFriendFromList = createEvent<{ friendId: number; gameType: string }>();
 
+// Modal carga
+export const startGameLoading = createEvent();
+export const stopGameLoading = createEvent();

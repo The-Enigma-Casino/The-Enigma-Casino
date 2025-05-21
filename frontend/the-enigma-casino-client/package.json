@@ -18,6 +18,7 @@
     "date-fns": "^4.1.0",
     "effector": "^23.3.0",
     "effector-react": "^23.3.0",
+    "embla-carousel-react": "^8.6.0",
     "gsap": "^3.13.0",
     "history": "^5.3.0",
     "jwt-decode": "^4.0.0",

@@ -1,8 +1,6 @@
-import CardGame from '../ui/CardGame';
-import classes from './GamePanel.module.css';
+import CardGame from "../ui/CardGame";
 
 function GamePanel() {
-
   const cardData = [
     {
       imageUrl: "/img/blackjack.webp",
@@ -22,10 +20,10 @@ function GamePanel() {
   ];
 
   return (
-    <div className={classes.panelContainer}>
-      <h1 className={classes.title}>NUESTROS JUEGOS</h1>
+    <div className="flex flex-col items-center text-center text-Principal gap-8">
+      <h1 className="text-[5rem] font-black text-Principal">NUESTROS JUEGOS</h1>
 
-      <div className={classes.cardContainer}>
+      <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
         {cardData.map((card, index) => (
           <CardGame
             key={index}

@@ -32,7 +32,7 @@ function SidebarMenu({ onOpenFriendsModal }: SidebarMenuProps) {
     token && userImage ? `${USER_IMAGES}/${userImage}?${Date.now()}` : "/svg/user.svg";
 
   return (
-    <nav className="hidden md:flex w-[24rem] h-full flex-col justify-between items-center bg-[var(--Background-Nav)] py-12 px-0">
+    <nav className="hidden md:flex h-full flex-col justify-between items-center bg-[var(--Background-Nav)] py-12">
       {/* Parte superior: perfil + botones */}
       <div className="flex flex-col items-center w-full gap-4 px-4">
         {/* Perfil */}

@@ -12,7 +12,7 @@ namespace the_enigma_casino_server.WebSockets.GameTable;
 public class GameTableManager
 {
     private readonly ConcurrentDictionary<int, DateTime> _lastJoinTimestamps = new();
-    private const int JoinCooldownSeconds = 15;
+    private const int JoinCooldownSeconds = 30;
 
     private readonly IServiceProvider _serviceProvider;
 
@@ -21,45 +21,69 @@ public class GameTableManager
         _serviceProvider = serviceProvider;
     }
 
+    public void RegisterJoinAttempt(int userId)
+    {
+        _lastJoinTimestamps[userId] = DateTime.Now;
+        Console.WriteLine($"🕒 [JoinCooldown] Timestamp actualizado manualmente para {userId}");
+    }
+
     public bool CanJoinTable(int userId)
     {
         if (_lastJoinTimestamps.TryGetValue(userId, out DateTime lastTime))
         {
-            if ((DateTime.Now - lastTime).TotalSeconds < JoinCooldownSeconds) return false;
-        }
+            double elapsed = (DateTime.Now - lastTime).TotalSeconds;
+            Console.WriteLine($"⏱️ [CooldownCheck] Last timestamp: {lastTime:HH:mm:ss.fff}, Now: {DateTime.Now:HH:mm:ss.fff}, Elapsed: {elapsed:0.00}s");
 
+            if (elapsed < JoinCooldownSeconds)
+            {
+                Console.WriteLine($"⏳ [JoinCooldown] Usuario {userId} bloqueado. Tiempo transcurrido: {elapsed:0.00}s");
+                return false;
+            }
+        }
+        Console.WriteLine($"✅ [JoinCooldown] Usuario {userId} puede entrar. Cooldown pasado o no aplicado.");
         _lastJoinTimestamps[userId] = DateTime.Now;
         return true;
     }
 
-    public bool RemovePlayerFromTable(Table table, int userId, out Player removedPlayer)
+
+    public PlayerLeaveResult RemovePlayerFromTable(Table table, int userId, out Player removedPlayer)
     {
         removedPlayer = table.Players.FirstOrDefault(p => p.UserId == userId);
-        if (removedPlayer != null)
+        var result = new PlayerLeaveResult
         {
-            removedPlayer.JoinedAt = null;
-            table.Players.Remove(removedPlayer);
+            PlayerRemoved = false,
+            StopCountdown = false,
+            State = table.TableState
+        };
 
-            if (table.Players.Count == 0)
-            {
-                table.TableState = TableState.Waiting;
+        if (removedPlayer == null)
+            return result;
 
-                using var scope = _serviceProvider.CreateScope();
-                var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+        removedPlayer.JoinedAt = null;
+        table.Players.Remove(removedPlayer);
 
-                uow.GameTableRepository.Update(table);
-                uow.SaveAsync().GetAwaiter().GetResult();
+        result.PlayerRemoved = true;
 
-                ActiveGameSessionStore.Remove(table.Id);
-                ActiveGameMatchStore.Remove(table.Id);
-            }
-
-            return true;
-
+        if (table.Players.Count(p => p.PlayerState != PlayerState.Left && !p.HasAbandoned) < table.MinPlayer &&
+            table.TableState == TableState.Starting)
+        {
+            table.TableState = TableState.Waiting;
+            result.StopCountdown = true;
         }
 
-        return false;
+        result.State = table.TableState;
+        result.ConnectedUsers = table.Players
+            .Where(p => p.PlayerState != PlayerState.Left && !p.HasAbandoned)
+            .Select(p => p.UserId.ToString())
+            .ToList();
+
+        result.PlayerNames = table.Players
+            .Select(p => p.User.NickName)
+            .ToArray();
+
+        return result;
     }
+
 
     public PlayerLeaveResult ProcessPlayerLeaving(Table table, ActiveGameSession session, int userId)
     {
@@ -80,8 +104,9 @@ public class GameTableManager
             };
         }
 
+        PlayerLeaveResult result = RemovePlayerFromTable(table, userId, out Player player);
 
-        if (!RemovePlayerFromTable(table, userId, out Player player))
+        if (!result.PlayerRemoved)
         {
             return new PlayerLeaveResult
             {
@@ -112,34 +137,33 @@ public class GameTableManager
         };
     }
 
-    public (bool Success, string ErrorMessage) TryAddPlayer(Table table, User user)
+    public record PlayerJoinResult(bool Success, string ErrorCode, string ErrorMessage);
+
+    public PlayerJoinResult TryAddPlayer(Table table, User user)
     {
         if (table.TableState == TableState.Maintenance)
         {
-            return (false, "maintenance");
+            return new(false, "maintenance", "La mesa está en mantenimiento.");
         }
 
-        Player existingPlayer = table.Players.FirstOrDefault(p => p.UserId == user.Id);
-
+        var existingPlayer = table.Players.FirstOrDefault(p => p.UserId == user.Id);
         if (existingPlayer != null)
         {
             if (existingPlayer.PlayerState == PlayerState.Left || existingPlayer.HasAbandoned)
             {
                 Console.WriteLine($"[JoinTable] Usuario {user.NickName} intentó volver pero ya abandonó la partida.");
-                return (false, "already_left");
+                return new(false, "already_left", "Ya abandonaste esta mesa y no puedes volver.");
             }
 
-            string msg = $"El usuario {user.Id} ya está en la mesa {table.Id}.";
-            return (false, msg);
+            return new(false, "already_joined", $"El usuario {user.Id} ya está en la mesa {table.Id}.");
         }
 
         if (table.Players.Count(IsActivePlayer) >= table.MaxPlayer)
         {
-            string msg = $"La mesa {table.Id} está llena ({table.Players.Count(IsActivePlayer)}/{table.MaxPlayer}).";
-            return (false, msg);
+            return new(false, "table_full", "La mesa está llena.");
         }
 
-        Player player = new Player(user)
+        var player = new Player(user)
         {
             JoinedAt = DateTime.Now,
             GameTableId = table.Id,
@@ -149,12 +173,14 @@ public class GameTableManager
         };
 
         table.AddPlayer(player);
-        return (true, null);
+        return new(true, null, null);
     }
+
 
 
     private bool IsActivePlayer(Player player)
     {
         return player.PlayerState != PlayerState.Left && !player.HasAbandoned;
     }
+
 }

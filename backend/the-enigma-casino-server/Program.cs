@@ -112,7 +112,9 @@ public class Program
         builder.Services.AddSingleton<IWebSocketSender>(provider => provider.GetRequiredService<GameMatchWS>());
 
         // --- WebSocket: servicios específicos del juego ---
-        builder.Services.AddScoped<GameTableManager>();
+        builder.Services.AddSingleton<GameTableManager>();
+        builder.Services.AddTransient<GameTableJoinGuard>();
+
         builder.Services.AddScoped<GameMatchManager>();
         builder.Services.AddScoped<GameInactivityHandler>();
 

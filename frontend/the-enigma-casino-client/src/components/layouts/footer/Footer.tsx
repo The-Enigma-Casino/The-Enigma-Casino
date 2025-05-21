@@ -38,8 +38,8 @@ function Footer() {
         </div>
       </div>
 
-      <div className="hidden max-[770px]:block w-full h-[2px] bg-white my-4" />
-      <div className="hidden min-[771px]:block w-[2px] h-[50px] bg-white mx-4" />
+      <div className="block md:hidden w-full h-[2px] bg-white my-4" />
+      <div className="hidden md:block w-[2px] h-[50px] bg-white mx-4" />
 
       {/* Derecha */}
       <div className="flex flex-wrap md:flex-nowrap justify-center items-center gap-6 text-left text-lg max-[850px]:text-base max-[770px]:text-sm">

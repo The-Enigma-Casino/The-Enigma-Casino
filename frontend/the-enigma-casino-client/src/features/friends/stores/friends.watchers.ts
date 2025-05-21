@@ -1,4 +1,4 @@
-import { friendRequestAccepted, friendRequestReceived, getOnlineFriendsRequested, sendFriendRequest, setSearchResults } from "./friends.events";
+import { friendRemoved, friendRequestAccepted, friendRequestReceived, getOnlineFriendsRequested, requestAccepted, sendFriendRequest, setSearchResults } from "./friends.events";
 import {
   acceptFriendRequestFx,
   cancelFriendRequestFx,
@@ -21,15 +21,28 @@ friendRequestReceived.watch(() => {
 });
 
 // Cuando otro usuario acepta nuestra solicitud
-friendRequestAccepted.watch((payload) => {
-  console.log("[WATCHER] friendRequestAccepted recibido:", payload);
+friendRequestAccepted.watch((data) => {
+  console.log("[FRIEND WATCHER] friendRequestAccepted:", data);
   fetchFriendsFx().finally(() => getOnlineFriendsRequested());
+});
+
+requestAccepted.watch((data) => {
+  fetchFriendsFx().finally(() => {
+    console.log("[WATCHER] requestAccepted recibido:", data);
+    getOnlineFriendsRequested();
+  });
 });
 
 // Al cancelar solicitud
 cancelFriendRequestFx.done.watch(() => {
   fetchReceivedRequestsFx();
   fetchFriendsFx();
+});
+
+friendRemoved.watch(() => {
+  fetchFriendsFx().finally(() => {
+    getOnlineFriendsRequested();
+  });
 });
 
 

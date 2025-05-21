@@ -5,6 +5,8 @@ import {
   friendRemoved,
   onlineFriendsUpdated,
   removeReceivedRequest,
+  requestAccepted,
+  stopGameLoading,
 } from "./friends.events";
 import {
   // showFriendRequestToast,
@@ -38,6 +40,7 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "friendRemoved":
+      console.log("[WS] Recibido friendRemovedddddddddddd:", data);
       friendRemoved({ removedBy: data.removedBy });
       break;
 
@@ -64,13 +67,15 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "gameInviteRejected":
+      stopGameLoading();
       toast.error(`El usuario ${data.friendId} rechazó tu invitación.`, { duration: 2000 });
       break;
 
     case "inviteExpired":
-      toast(
-        `La invitación con ${data.friendId || data.inviterId} ha expirado.`
-        , { duration: 2000 });
+      //stopGameLoading();
+      // toast(
+      //   `La invitación con ${data.friendId || data.inviterId} ha expirado.`
+      //   , { duration: 2000 });
       break;
 
     case "friendRequestCanceled":
@@ -83,6 +88,7 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "requestAccepted":
+      requestAccepted({ friendId: data.friendId });
       toast("Has aceptado la solicitud.", { duration: 2000 });
       break;
 

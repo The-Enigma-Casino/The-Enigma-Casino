@@ -14,11 +14,13 @@ export const friendRequestAccepted = createEvent<{ friendId: number; nickname: s
 export const friendRemoved = createEvent<{ removedBy: number }>();
 export const onlineFriendsUpdated = createEvent<{ friends: { id: number; nickname: string; image: string }[] }>();
 export const rejectFriendRequest = createEvent<{ senderId: number }>();
+export const requestAccepted = createEvent<{ friendId: number }>();
 
 export const sendFriendRequestWs = createEvent<{ receiverId: number }>();
 export const sendFriendRequest = createEvent<{ receiverId: number }>();
 export const acceptFriendRequest = createEvent<{ senderId: number }>();
 export const removeFriend = createEvent<{ friendId: number }>();
+export const removeUserFromSearchResults = createEvent<number>(); // userId
 export const setOnlineFriends = createEvent<number[]>();
 export const newFriendRequestsDetected = createEvent<FriendRequest[]>();
 
@@ -29,3 +31,6 @@ export const acceptTableInvite = createEvent<{ inviterId: number; tableId: numbe
 export const inviteFriendFromTable = createEvent<{ friendId: number; tableId: number }>();
 export const inviteFriendFromList = createEvent<{ friendId: number; gameType: string }>();
 
+// Modal carga
+export const startGameLoading = createEvent();
+export const stopGameLoading = createEvent();

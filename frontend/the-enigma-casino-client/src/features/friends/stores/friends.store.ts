@@ -5,10 +5,13 @@ import {
   getOnlineFriendsRequested,
   onlineFriendsUpdated,
   removeReceivedRequest,
+  removeUserFromSearchResults,
   resetReceivedRequests,
   resetSearchResults,
   setReceivedRequests,
   setSearchResults,
+  startGameLoading,
+  stopGameLoading,
 } from "./friends.events";
 import {
   acceptFriendRequestFx,
@@ -49,9 +52,12 @@ export const $friends = combine(
   }
 );
 
-export const $searchResults = createStore<Friend[]>([])
-  .on(searchUserFx.doneData, (_, users) => users)
-  .reset(resetSearchResults);
+export const $searchResults = createStore<SearchUser[]>([])
+  .on(setSearchResults, (_, users) => users)
+  .on(resetSearchResults, () => [])
+  .on(removeUserFromSearchResults, (state, userId) =>
+    state.filter((u) => u.id !== userId)
+  );
 
 export const $receivedRequests = createStore<FriendRequest[]>([])
   .on(fetchReceivedRequestsFx.doneData, (_, list) => list)
@@ -61,3 +67,8 @@ export const $receivedRequests = createStore<FriendRequest[]>([])
   .reset(resetReceivedRequests);
 
 export const $lastRequestIds = createStore<number[]>([]);
+
+
+export const $isGameLoading = createStore(false)
+  .on(startGameLoading, () => true)
+  .on(stopGameLoading, () => false);

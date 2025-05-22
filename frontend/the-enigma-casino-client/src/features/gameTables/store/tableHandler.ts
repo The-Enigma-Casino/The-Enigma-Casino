@@ -14,14 +14,6 @@ const errorMessageMap: Record<string, string> = {
   maintenance: "Esta mesa está en mantenimiento.",
 };
 
-const getGamePathByTableId = (tableId: number): string => {
-  if (tableId >= 1 && tableId <= 6) return "blackjack";
-  if (tableId >= 7 && tableId <= 12) return "poker";
-  if (tableId >= 13 && tableId <= 18) return "roulette";
-  return "unknown";
-};
-
-let lastJoinedTableId: number | null = null;
 socketMessageReceived.watch((data) => {
   if (data.type !== "game_table") return;
 

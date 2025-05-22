@@ -12,6 +12,7 @@ interface Friend {
 interface Props {
   onlineFriends: Friend[];
   onInvite: (friendId: number) => void;
+  className?: string;
 }
 
 export const InviteFriendButton = ({ onlineFriends, onInvite }: Props) => {

@@ -30,6 +30,15 @@ const JoinGameModal = () => {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.src = "";
+        audioRef.current = null;
+      }
+    };
   }, [isOpenGame, muted]);
 
   const toggleMute = () => {
@@ -57,6 +66,7 @@ const JoinGameModal = () => {
           color="red"
           font="bold"
           onClick={() => {
+            setMuted(false);
             stopGameLoading();
           }}
         >

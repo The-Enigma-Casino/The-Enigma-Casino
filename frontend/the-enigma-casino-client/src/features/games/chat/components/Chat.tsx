@@ -12,7 +12,7 @@ import { $currentTableId, $hasLeftTable } from "../../../gameTables/store/tables
 import { markLeftTable, sendLeaveTableMessage } from "../../../gameTables/store/tablesEvents";
 import { navigateTo } from "../../shared/router/navigateFx";
 import { InviteFriendButton } from "../../../friends/ui/InviteFriendButton";
-import { inviteFriendFromTable } from "../../../friends/stores/friends.events";
+import { inviteFriendFromTable, stopGameLoading } from "../../../friends/stores/friends.events";
 import { $friends } from "../../../friends/stores/friends.store";
 
 
@@ -28,7 +28,7 @@ export const Chat = ({ gameType }: ChatProps) => {
 
   const chatMessages = useUnit($chatMessages);
 
-    useEffect(() => {
+  useEffect(() => {
     return () => {
       resetMessages();
     };
@@ -106,7 +106,10 @@ export const Chat = ({ gameType }: ChatProps) => {
 
           <button
             className={styles.iconButton}
-            onClick={() => handleLogout()}
+            onClick={() => {
+              handleLogout();
+              stopGameLoading();
+            }}
           >
             <img
               src="/svg/logout_icon.svg"

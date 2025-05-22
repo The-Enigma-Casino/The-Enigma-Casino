@@ -2,6 +2,7 @@ import {
   socketMessageReceived,
   messageSent,
 } from "../../../../websocket/store/wsIndex";
+import { stopGameLoading } from "../../../friends/stores/friends.events";
 import { $currentTableId } from "../../../gameTables/store/tablesIndex";
 import {
   gameStateReceived,
@@ -68,6 +69,7 @@ socketMessageReceived.watch((data) => {
         wheelRotation: data.wheelRotation,
         players: [],
       });
+      stopGameLoading(); // Cierra modal friends
       break;
 
     default:

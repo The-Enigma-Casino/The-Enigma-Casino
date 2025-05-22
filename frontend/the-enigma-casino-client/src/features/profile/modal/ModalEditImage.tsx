@@ -70,7 +70,7 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, onFileSelect, im
                 : `${IMAGE_PROFILE_URL}${image}?cb=${Date.now()}`
             }
             alt="Usuario"
-            className="w-60 h-60 object-cover rounded-full"
+            className="w-60 h-60 object-cover rounded-full aspect-square"
           />
 
 

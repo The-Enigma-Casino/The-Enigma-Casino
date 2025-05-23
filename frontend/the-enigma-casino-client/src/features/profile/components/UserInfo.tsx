@@ -8,8 +8,15 @@ import { IMAGE_PROFILE_URL } from "../../../config";
 import ModalEditPassword from "../modal/ModalEditPassword";
 import { useUnit } from "effector-react";
 import { getFlagUrlByCca3 } from "../../../utils/flagUtils";
-import { $allCountries, countriesFx } from "../../countries/actions/countriesActions";
-import { inviteFriendFromList, sendFriendRequestWs, startGameLoading } from "../../friends/stores/friends.events";
+import {
+  $allCountries,
+  countriesFx,
+} from "../../countries/actions/countriesActions";
+import {
+  inviteFriendFromList,
+  sendFriendRequestWs,
+  startGameLoading,
+} from "../../friends/stores/friends.events";
 
 interface UserData {
   id?: number;
@@ -34,13 +41,12 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
   const countries = useUnit($allCountries);
-  const flagUrl = getFlagUrlByCca3(user.country, countries)
+  const flagUrl = getFlagUrlByCca3(user.country ?? "ESP", countries);
 
   const isSelf = relations === "self";
   const isFriend = relations === "friend";
@@ -51,7 +57,10 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
 
   useEffect(() => {
     const handleClickOutside = (event: PointerEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
@@ -75,8 +84,9 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
     <>
       <div className="bg-Background-Page px-4 pt-40 sm:pt-44 md:pt-48 pb-10 flex flex-col items-center">
         <div
-          className={`relative bg-Background-Overlay border ${isFriend || isStranger ? "border-Principal" : "border-Principal"
-            } rounded-xl px-6 py-20 w-full max-w-6xl text-white mb-20 flex flex-col items-center`}
+          className={`relative bg-Background-Overlay border ${
+            isFriend || isStranger ? "border-Principal" : "border-Principal"
+          } rounded-xl px-6 py-20 w-full max-w-6xl text-white mb-20 flex flex-col items-center`}
         >
           {/* Avatar */}
           <div
@@ -89,7 +99,6 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
               className="w-full h-full object-cover rounded-full"
             />
           </div>
-
 
           {/* Bandera */}
           {(isFriend || isStranger) && flagUrl && (
@@ -104,28 +113,41 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
 
           {/* Contenido */}
           <div
-            className={`${isStranger || isFriend
-              ? "mt-28 text-center flex flex-col gap-6 items-center"
-              : "flex flex-col lg:flex-row justify-between items-center lg:items-start mt-24 sm:mt-32 gap-10 w-full p-10"
-              }`}
+            className={`${
+              isStranger || isFriend
+                ? "mt-28 text-center flex flex-col gap-6 items-center"
+                : "flex flex-col lg:flex-row justify-between items-center lg:items-start mt-24 sm:mt-32 gap-10 w-full p-10"
+            }`}
           >
             {/* Info */}
             <div
-              className={`flex flex-col gap-4 ${isStranger || isFriend
-                ? "text-3xl font-bold items-center"
-                : "text-xl sm:text-2xl lg:text-3xl w-full text-center lg:text-left items-center lg:items-start"
-                }`}
+              className={`flex flex-col gap-4 ${
+                isStranger || isFriend
+                  ? "text-3xl font-bold items-center"
+                  : "text-xl sm:text-2xl lg:text-3xl w-full text-center lg:text-left items-center lg:items-start"
+              }`}
             >
-
               <p className={!isSelf ? "text-5xl" : ""}>
                 {isSelf && "Nickname: "}
                 <strong>{nickname}</strong>
               </p>
 
-              {isSelf && name && <p>Nombre de Usuario: <strong>{name}</strong></p>}
-              {isSelf && email && <p>Correo electrónico: <strong>{email}</strong></p>}
-              {isSelf && address && <p>Dirección: <strong>{address}</strong></p>}
-              {(isSelf) && country && flagUrl && (
+              {isSelf && name && (
+                <p>
+                  Nombre de Usuario: <strong>{name}</strong>
+                </p>
+              )}
+              {isSelf && email && (
+                <p>
+                  Correo electrónico: <strong>{email}</strong>
+                </p>
+              )}
+              {isSelf && address && (
+                <p>
+                  Dirección: <strong>{address}</strong>
+                </p>
+              )}
+              {isSelf && country && flagUrl && (
                 <div className="flex items-center gap-3">
                   <p>Nacionalidad:</p>
                   <img
@@ -135,19 +157,38 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
                   />
                 </div>
               )}
-              {isSelf && role && <p>Rol: <strong>{role}</strong></p>}
+              {isSelf && role && (
+                <p>
+                  Rol: <strong>{role}</strong>
+                </p>
+              )}
             </div>
 
             {/* Botones */}
             {isSelf && (
               <div className="flex flex-col gap-4 items-center mx-auto lg:mx-0">
-                <Button variant="shortPlus" color="green" font="bold" onClick={handleOpenModal}>
+                <Button
+                  variant="shortPlus"
+                  color="green"
+                  font="bold"
+                  onClick={handleOpenModal}
+                >
                   Modificar Datos
                 </Button>
-                <Button variant="shortPlus" color="green" font="bold" onClick={() => setShowPasswordModal(true)}>
+                <Button
+                  variant="shortPlus"
+                  color="green"
+                  font="bold"
+                  onClick={() => setShowPasswordModal(true)}
+                >
                   Modificar Contraseña
                 </Button>
-                <Button variant="shortPlus" color="green" font="bold" onClick={() => navigate("/withdrawal")}>
+                <Button
+                  variant="shortPlus"
+                  color="green"
+                  font="bold"
+                  onClick={() => navigate("/withdrawal")}
+                >
                   Retirar Dinero
                 </Button>
               </div>
@@ -175,9 +216,14 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
                         key={item.value}
                         onClick={() => {
                           if (user.id !== undefined) {
-                            console.log("[UserInfo] llamando a startGameLoading()");
+                            console.log(
+                              "[UserInfo] llamando a startGameLoading()"
+                            );
                             startGameLoading();
-                            inviteFriendFromList({ friendId: user.id, gameType: item.value });
+                            inviteFriendFromList({
+                              friendId: user.id,
+                              gameType: item.value,
+                            });
                             setShowDropdown(false);
                           }
                         }}
@@ -203,7 +249,6 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
                 Enviar solicitud de Amistad
               </Button>
             )}
-
           </div>
 
           {/* Coins */}
@@ -225,7 +270,6 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
       {/* Modal editar perfil */}
       {isModalOpen && (
         <ModalEditUser
-          user={user}
           onCancel={handleCloseModal}
           onSave={() => {
             handleCloseModal();
@@ -240,22 +284,17 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
           onConfirm={() => {
             setShowImageModal(false);
           }}
-          onFileSelect={(file) => {
-            setSelectedImage(file);
-          }}
         />
       )}
       {/* Modal Contrasena */}
       {showPasswordModal && (
         <ModalEditPassword
           onCancel={() => setShowPasswordModal(false)}
-          onConfirm={(newPassword) => {
+          onConfirm={() => {
             setShowPasswordModal(false);
           }}
         />
       )}
-
-
     </>
   );
 };

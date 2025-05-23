@@ -1,9 +1,9 @@
 import toast from "react-hot-toast";
 import { socketMessageReceived } from "../../../websocket/store/wsEvents";
 import { Player } from "../models/GameTable.interface";
-import { countdownStarted, countdownStopped, errorReceived, gameStarted, joinTableClicked, setPendingJoinTableId, tableUpdated } from "./tablesEvents";
+import { countdownStarted, countdownStopped, gameStarted, setPendingJoinTableId, tableUpdated } from "./tablesEvents"; // errorReceived añadir para toast
 import { navigateTo } from "../../games/shared/router/navigateFx";
-import { startGameLoading, stopGameLoading } from "../../friends/stores/friends.events";
+import { stopGameLoading } from "../../friends/stores/friends.events";
 
 
 // Mensajes de error traducidos
@@ -14,14 +14,6 @@ const errorMessageMap: Record<string, string> = {
   maintenance: "Esta mesa está en mantenimiento.",
 };
 
-const getGamePathByTableId = (tableId: number): string => {
-  if (tableId >= 1 && tableId <= 6) return "blackjack";
-  if (tableId >= 7 && tableId <= 12) return "poker";
-  if (tableId >= 13 && tableId <= 18) return "roulette";
-  return "unknown";
-};
-
-let lastJoinedTableId: number | null = null;
 socketMessageReceived.watch((data) => {
   if (data.type !== "game_table") return;
 
@@ -63,13 +55,8 @@ socketMessageReceived.watch((data) => {
       })();
 
       setPendingJoinTableId(tableId);
+
       navigateTo(gameViewPath);
-      if (window.location.pathname === gameViewPath) {
-        joinTableClicked(tableId);
-
-        return;
-      }
-
       break;
     }
 
@@ -80,7 +67,7 @@ socketMessageReceived.watch((data) => {
 
       if (typeof rawMessage === "string") {
         toast.error(userMessage);
-        errorReceived(rawMessage);
+        // errorReceived(rawMessage);  Controlar el error que siempre llega
       }
       break;
     }

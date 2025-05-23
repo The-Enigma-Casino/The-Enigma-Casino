@@ -432,11 +432,14 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         _pendingInvitations.TryRemove(userId, out _);
 
+        var rejectingUser = await GetUserById(userId);
+
         await ((IWebSocketSender)this).SendToUserAsync(inviterId.ToString(), new
         {
             type = Type,
             action = FriendsMessageType.GameInviteRejected,
-            friendId = userId
+            friendId = userId,
+            nickname = rejectingUser.NickName,
         });
     }
 
@@ -453,6 +456,8 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
         using var scope = _serviceProvider.CreateScope();
         var tableService = scope.ServiceProvider.GetRequiredService<TableService>();
         var table = await tableService.GetTableByIdAsync(tableId);
+
+        var inviterNickname = await GetUserById(userId);
 
         if (table == null)
         {
@@ -479,7 +484,8 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             type = Type,
             action = FriendsMessageType.GameInviteAccepted,
             friendId = userId,
-            tableId = tableId.ToString()
+            tableId = tableId.ToString(),
+            nickName = inviterNickname.NickName
         });
     }
 }

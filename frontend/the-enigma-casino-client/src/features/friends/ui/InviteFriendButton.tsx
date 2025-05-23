@@ -12,6 +12,7 @@ interface Friend {
 interface Props {
   onlineFriends: Friend[];
   onInvite: (friendId: number) => void;
+  className?: string;
 }
 
 export const InviteFriendButton = ({ onlineFriends, onInvite }: Props) => {
@@ -58,9 +59,11 @@ export const InviteFriendButton = ({ onlineFriends, onInvite }: Props) => {
       </button>
 
       {open && (
-        <div className="absolute bottom-10 right-0 bg-zinc-800 border border-gray-700 rounded-lg shadow-lg w-44 max-h-40 overflow-y-auto z-50">
+        <div className="absolute bottom-full mb-3 right-0 w-60 bg-zinc-800 border border-gray-600 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto pr-1">
           {onlineFriends.length === 0 ? (
-            <p className="text-sm text-gray-400 px-3 py-2">Sin amigos online</p>
+            <p className="text-xl text-gray-400 px-4 py-3 text-center">
+              Sin amigos online
+            </p>
           ) : (
             onlineFriends.map((friend) => (
               <button
@@ -69,19 +72,20 @@ export const InviteFriendButton = ({ onlineFriends, onInvite }: Props) => {
                   onInvite(friend.id);
                   setOpen(false);
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-zinc-700 transition text-white text-sm"
+                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-zinc-700 transition text-white text-lg text-left"
               >
                 <img
                   src={`${IMAGE_PROFILE_URL}${friend.image}`}
                   alt={friend.nickName}
-                  className="w-6 h-6 rounded-full object-cover"
+                  className="w-9 h-9 rounded-full object-cover"
                 />
-                {friend.nickName}
+                <span className="truncate">{friend.nickName}</span>
               </button>
             ))
           )}
         </div>
       )}
     </div>
+
   );
 };

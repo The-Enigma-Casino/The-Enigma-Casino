@@ -14,16 +14,13 @@ const LandingPage: React.FC = () => {
   const coinShape = confetti.shapeFromPath({
     path: "M 62.401119,194.58107 c -14.944827,4e-5 -27.060005,14.96647 -27.060049,33.42852 -1.88e-4,18.46225 12.115058,33.42899 27.060049,33.42904 2.02323,-0.0141 3.96196,-0.0193 6.00886,-0.0176 2.059,0.002 4.00949,0.007 6.04469,0.0176 14.945,-5e-5 27.060251,-14.96679 27.060061,-33.42904 -5e-5,-18.46205 -12.115221,-33.42848 -27.060061,-33.42852 -2.0232,0.0139 -3.962,0.0188 -6.00887,0.017 -2.05897,-0.002 -4.00948,-0.006 -6.04468,-0.017 z",
   });
-  // Función para mostrar el confetti
   const launchConfetti = () => {
-    let end = Date.now() + 3000;
-    let colors = ["#ffcc00", "#f5a623"];
-    let animationFrameId: number | null = null;
+    const end = Date.now() + 3000;
+    const colors = ["#ffcc00", "#f5a623"];
 
     if (!isConfettiActive) {
       setIsConfettiActive(true);
 
-      // Código de confetti
       const frame = () => {
         confetti({
           shapes: [coinShape],
@@ -42,7 +39,7 @@ const LandingPage: React.FC = () => {
           colors: colors,
         });
         if (Date.now() < end) {
-          animationFrameId = requestAnimationFrame(frame);
+          requestAnimationFrame(frame);
         }
       };
 
@@ -61,7 +58,7 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     return () => {
-      confetti.reset(); // Detener la animación al cambiar de vista
+      confetti.reset();
     };
   }, [navigate]);
 
@@ -72,8 +69,8 @@ const LandingPage: React.FC = () => {
           src="/img/duende.png"
           alt="duende"
           className="w-full h-auto object-contain
-             max-w-[450px] sm:max-w-[500px] md:max-w-[550px] lg:max-w-[600px] xl:max-w-[700px]
-             max-h-[70vh] sm:max-h-[75vh] md:max-h-[75vh] lg:max-h-[80vh]"
+            max-w-[450px] sm:max-w-[500px] md:max-w-[550px] lg:max-w-[600px] xl:max-w-[700px]
+            max-h-[70vh] sm:max-h-[75vh] md:max-h-[75vh] lg:max-h-[80vh]"
         />
       </div>
 
@@ -93,7 +90,6 @@ const LandingPage: React.FC = () => {
           ))}
         </div>
       </header>
-
 
       <div className="absolute top-[12vh] sm:top-[10vh] md:top-[10vh] lg:top-[12vh] w-full flex justify-center z-20 px-4 mt-3 text-center">
         <div className={classes.content}>

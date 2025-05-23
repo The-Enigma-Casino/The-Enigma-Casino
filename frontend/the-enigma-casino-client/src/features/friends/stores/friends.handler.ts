@@ -31,7 +31,6 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "friendRequestAccepted":
-      console.log("[WS] Solicitud aceptada recibida por el solicitante");
       friendRequestAccepted({
         friendId: data.friendId,
         nickname: data.nickname,
@@ -40,7 +39,6 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "friendRemoved":
-      console.log("[WS] Recibido friendRemovedddddddddddd:", data);
       friendRemoved({ removedBy: data.removedBy });
       break;
 
@@ -61,14 +59,14 @@ socketMessageReceived.watch((data) => {
 
     case "gameInviteAccepted":
       toast.success(
-        `¡${data.friendId} ha aceptado tu invitación a la mesa ${data.tableId}!`
+        `¡${data.nickName} ha aceptado tu invitación a la mesa ${data.tableId}!`
         , { duration: 2000 });
       joinTableClicked(Number(data.tableId)); // Table Events
       break;
 
     case "gameInviteRejected":
       stopGameLoading();
-      toast.error(`El usuario ${data.friendId} rechazó tu invitación.`, { duration: 2000 });
+      toast.error(`${data.nickname} rechazó tu invitación.`, { duration: 2000 });
       break;
 
     case "inviteExpired":

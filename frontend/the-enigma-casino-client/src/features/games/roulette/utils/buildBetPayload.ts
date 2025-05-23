@@ -1,4 +1,5 @@
-import { PlaceRouletteBetPayload } from "../stores/rouletteEvents";
+import { PlaceRouletteBetPayload } from "../types/placeRouletteBetPayload.type";
+
 
 // Función para construir la apuesta a enviar
 export function buildBetPayload(

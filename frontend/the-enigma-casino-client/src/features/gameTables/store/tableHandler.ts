@@ -3,6 +3,7 @@ import { socketMessageReceived } from "../../../websocket/store/wsEvents";
 import { Player } from "../models/GameTable.interface";
 import { countdownStarted, countdownStopped, errorReceived, gameStarted, joinTableClicked, setPendingJoinTableId, tableUpdated } from "./tablesEvents";
 import { navigateTo } from "../../games/shared/router/navigateFx";
+import { startGameLoading, stopGameLoading } from "../../friends/stores/friends.events";
 
 
 // Mensajes de error traducidos
@@ -48,6 +49,7 @@ socketMessageReceived.watch((data) => {
 
     case "game_start":
       gameStarted({ tableId: Number(data.tableId) });
+      stopGameLoading(); // Cierra modal
       break;
 
     case "join_table": { //Friend
@@ -60,12 +62,14 @@ socketMessageReceived.watch((data) => {
         return "/tables";
       })();
 
-      if (window.location.pathname === gameViewPath) {
-        joinTableClicked(tableId);
-        return;
-      }
       setPendingJoinTableId(tableId);
       navigateTo(gameViewPath);
+      if (window.location.pathname === gameViewPath) {
+        joinTableClicked(tableId);
+
+        return;
+      }
+
       break;
     }
 

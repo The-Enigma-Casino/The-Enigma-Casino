@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { FriendToast } from "./FriendToast";
-import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, newFriendRequestsDetected, rejectFriendRequest, rejectGameInvite } from "../stores/friends.events";
+import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, newFriendRequestsDetected, rejectFriendRequest, rejectGameInvite, startGameLoading } from "../stores/friends.events";
 import { acceptFriendRequestFx, cancelFriendRequestFx } from "../stores";
 import { IMAGE_PROFILE_URL } from "../../../config";
 
@@ -45,9 +45,11 @@ export function showGameInviteToast(data: {
     if (data.mode === "table") {
       // Invita desde una mesa existente (solo el invitado debe entrar)
       acceptTableInvite({ inviterId: data.inviterId, tableId: data.tableId });
+      startGameLoading();
     } else {
       // Invita desde el menu de amigos
       acceptGameInvite({ inviterId: data.inviterId, tableId: data.tableId });
+      startGameLoading();
     }
   };
 

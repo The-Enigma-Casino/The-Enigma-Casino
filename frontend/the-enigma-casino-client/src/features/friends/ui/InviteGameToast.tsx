@@ -55,6 +55,6 @@ export const showGameInviteToast = ({
     </div>
   ), {
     duration: expiresIn * 1000,
-    position: "top-right",
+    position: "top-left",
   });
 };

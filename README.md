@@ -32,3 +32,11 @@
 [Notion](https://aquatic-breadfruit-03f.notion.site/1ba5df69c5bd80b49b87d9999c427090?v=1ba5df69c5bd8043a150000c22dd6466)
 
 [Checkpoint](https://youtu.be/3HNNEJo4mmw)
+
+
+## 📄 Licencia
+
+Este proyecto está protegido por derechos de autor. No se permite su uso, copia, modificación, distribución ni creación de obras derivadas sin autorización expresa de los autores.
+
+© 2025 Alejandro-BR, Rlopber, Jmolmel. Todos los derechos reservados.  
+Para consultas o permisos especiales, contactar a: [theenigmacasino@gmail.com](mailto:theenigmacasino@gmail.com)

@@ -9,7 +9,7 @@ import ModalEditPassword from "../modal/ModalEditPassword";
 import { useUnit } from "effector-react";
 import { getFlagUrlByCca3 } from "../../../utils/flagUtils";
 import { $allCountries, countriesFx } from "../../countries/actions/countriesActions";
-import { inviteFriendFromList, sendFriendRequestWs } from "../../friends/stores/friends.events";
+import { inviteFriendFromList, sendFriendRequestWs, startGameLoading } from "../../friends/stores/friends.events";
 
 interface UserData {
   id?: number;
@@ -50,16 +50,18 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: PointerEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
     };
+
     if (showDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("pointerdown", handleClickOutside);
     }
+
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("pointerdown", handleClickOutside);
     };
   }, [showDropdown]);
 
@@ -68,6 +70,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
       countriesFx();
     }
   }, []);
+
   return (
     <>
       <div className="bg-Background-Page px-4 pt-40 sm:pt-44 md:pt-48 pb-10 flex flex-col items-center">
@@ -172,12 +175,13 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
                         key={item.value}
                         onClick={() => {
                           if (user.id !== undefined) {
+                            console.log("[UserInfo] llamando a startGameLoading()");
+                            startGameLoading();
                             inviteFriendFromList({ friendId: user.id, gameType: item.value });
                             setShowDropdown(false);
                           }
                         }}
-
-                        className="w-full px-4 py-2  text-white hover:bg-zinc-700 transition"
+                        className="w-full px-4 py-2 text-white hover:bg-zinc-700 transition"
                       >
                         {item.label}
                       </button>

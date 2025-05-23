@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
 import { $token } from "../features/auth/store/authStore";
 import AutoBanModal from "../features/autoBan/components/AutoBanModal";
+import JoinGameModal from "../features/friends/modal/JoinGameModal";
 
 function RootLayout() {
   const location = useLocation();
@@ -60,6 +61,7 @@ function RootLayout() {
         )}
       </div>
       <AutoBanModal />
+      <JoinGameModal />
     </>
   );
 }

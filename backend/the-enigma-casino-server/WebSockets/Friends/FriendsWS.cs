@@ -457,6 +457,8 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
         var tableService = scope.ServiceProvider.GetRequiredService<TableService>();
         var table = await tableService.GetTableByIdAsync(tableId);
 
+        var inviterNickname = await GetUserById(userId);
+
         if (table == null)
         {
             await SendErrorAsync(userId.ToString(), "La mesa ya no existe.", Type);
@@ -482,7 +484,8 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             type = Type,
             action = FriendsMessageType.GameInviteAccepted,
             friendId = userId,
-            tableId = tableId.ToString()
+            tableId = tableId.ToString(),
+            nickName = inviterNickname.NickName
         });
     }
 }

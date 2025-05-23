@@ -20,7 +20,7 @@ type GamePlayer = {
   bets: { bet: string; amount: number }[];
   isTurn?: boolean;
   coins: number;
-  state?: "Playing" | "Bust" | "Stand" | "Lose" | "Win" | "Draw";
+  state?: "Playing" | "Bust" | "Stand" | "Lose" | "Win" | "Draw" | "Waiting" | "Blackjack";
 };
 
 type Props = {

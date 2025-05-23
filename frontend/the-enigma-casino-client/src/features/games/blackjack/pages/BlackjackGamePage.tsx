@@ -4,7 +4,7 @@ import "../store/bjGameStateMapper";
 import { useUnit } from "effector-react";
 import {
   $players, $croupier, $gameState, $currentTurnUserId, resetPlayers, resetCroupier, resetGameState, resetCroupierTotal, playerHit, playerStand, doubleDown,
-  $roundResults, $croupierRoundHand, $croupierTotal, $gamePhase, setGamePhase, $turnCountdown, $countdown,
+  $roundResults, $croupierRoundHand, $croupierTotal, $gamePhase, $turnCountdown, $countdown,
   $persistedBets
 } from "../store/bjIndex";
 import { $userId } from "../../../auth/store/authStore";
@@ -30,7 +30,6 @@ export const BlackjackGamePage = () => {
   const croupier = useUnit($croupier);
   const gameState = useUnit($gameState);
   const currentTurnUserId = useUnit($currentTurnUserId);
-  // const currentTableId = useUnit($currentTableId);
   const gamePhase = useUnit($gamePhase);
   const totalCoinsUser = useUnit($coins);
 
@@ -42,11 +41,9 @@ export const BlackjackGamePage = () => {
   const resetCroupierFn = useUnit(resetCroupier);
   const resetGameStateFn = useUnit(resetGameState);
   const resetCroupierTotalFn = useUnit(resetCroupierTotal);
-  // const resetRoundResultsFn = useUnit(resetRoundResults); // Reinicia marcador
 
   const playerHitFn = useUnit(playerHit);
   const playerStandFn = useUnit(playerStand);
-  const doubleDownFn = useUnit(doubleDown);
   const countdown = useUnit($countdown);
   const turnCountdown = useUnit($turnCountdown);
   const persistedBets = useUnit($persistedBets);
@@ -62,7 +59,7 @@ export const BlackjackGamePage = () => {
     setBetAmount((prev) => prev * 2);
   };
   const isLocalTurn = currentTurnUserId === Number(userId);
-  const [showTurnCountdown, setShowTurnCountdown] = useState(false);
+  const [showTurnCountdown,] = useState(false);
   const [betSubmitted, setBetSubmitted] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const currentPhaseLabel = gamePhaseLabels[gamePhase] ?? gamePhase;
@@ -131,7 +128,7 @@ export const BlackjackGamePage = () => {
 
   const handlePlaceBet = () => {
     playerPlaceBet(betAmount);
-    localBetPlaced(betAmount);    
+    localBetPlaced(betAmount);
     setBetSubmitted(true);
     setShowConfirmation(true);
   };

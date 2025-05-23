@@ -100,7 +100,7 @@ function GameTablePage() {
   }, [pendingJoinTableId]);
 
   return (
-    <div className="p-16 gap-6 h-screen w-screen flex flex-col text-white bg-Background-Page">
+    <div className="px-4 sm:px-6 md:px-10 lg:px-16 py-10 gap-6 min-h-screen w-full max-w-full flex flex-col text-white bg-Background-Page overflow-x-hidden">
       <h2
         className="text-8xl font-bold text-center mb-6 text-white inline-block"
         style={{
@@ -125,7 +125,16 @@ function GameTablePage() {
                     navigate("/");
                   }}
                 >
-                  🚪 Salir
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/svg/delete.svg"
+                      alt="salir"
+                      className="w-8 h-8 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
+                    />
+                    <span className="hidden sm:inline text-base md:text-lg lg:text-xl font-medium">
+                      Salir
+                    </span>
+                  </div>
                 </button>
               )}
               <img

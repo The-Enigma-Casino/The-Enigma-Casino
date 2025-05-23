@@ -1,3 +1,5 @@
+.env*
+
 # User-specific files
 *.rsuser
 *.suo

@@ -1,17 +1,4 @@
-/* MARGIN RIGHT MODIFICAR AL CAMBIAR FOTO */
-
-.sectionLanding {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-section .wave {
+.wave {
   position: absolute;
   left: 0;
   width: 100%;
@@ -19,10 +6,10 @@ section .wave {
   background: #74c410;
   box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
   transition: 0.5s;
-  z-index: 0;
+  z-index: 1;
 }
 
-section .wave span {
+.wave span {
   content: "";
   position: absolute;
   width: 325vh;
@@ -42,104 +29,30 @@ section .wave span {
   }
 }
 
-section .wave span:nth-child(1) {
+.wave span:nth-child(1) {
   border-radius: 49%;
   background: #0f0f0f;
   animation: animate 50s linear infinite;
 }
 
-section .wave span:nth-child(2) {
+.wave span:nth-child(2) {
   border-radius: 40%;
   background: rgba(20, 20, 20, 0.5);
   animation: animate 80s linear infinite;
 }
 
-section .wave span:nth-child(3) {
+.wave span:nth-child(3) {
   border-radius: 42.5%;
   background: rgba(20, 20, 20, 0.5);
   animation: animate 30s linear infinite;
 }
 
-.main {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10rem;
-  position: relative;
-  z-index: 2;
-}
-
-.topContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
-  z-index: 1000;
-}
-
-
- .topText {
-  display: flex;
-  gap: 3rem;
-}
-
- .topTextItem {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: white;
-  letter-spacing: 2px;
-}
-
-.imageCoin{
-  position: relative;
-  z-index: 1;
-  width: 350px;
-}
-
-.imageContainer {
-  display: flex;
-  justify-content: center;
-  position: relative;
-  z-index: -1;
-}
-
-.wave {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #74c410;
-  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
-  transition: 0.5s;
-  z-index: 1;
-}
-
-
-.imageContainer img {
-  width: 580px;
-  height: auto;
-  margin-right: 80px;
-}
-
 .content {
-  position: absolute;
-  top: 80%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   text-align: center;
-  z-index: 3;
   color: #fff;
-  text-shadow:
-    3px 3px 8px rgba(255, 223, 49, 0.8),
-    -3px -3px 8px rgba(255, 223, 49, 0.8),
-    2px 2px 5px rgba(0, 0, 0, 0.7),
-    -2px -2px 5px rgba(0, 0, 0, 0.7),
-    2px -2px 5px rgba(0, 0, 0, 0.7),
+  text-shadow: 3px 3px 8px rgba(255, 223, 49, 0.8),
+    -3px -3px 8px rgba(255, 223, 49, 0.8), 2px 2px 5px rgba(0, 0, 0, 0.7),
+    -2px -2px 5px rgba(0, 0, 0, 0.7), 2px -2px 5px rgba(0, 0, 0, 0.7),
     -2px 2px 5px rgba(0, 0, 0, 0.7);
 }
 
@@ -147,25 +60,25 @@ section .wave span:nth-child(3) {
   font-size: 4rem;
   font-weight: bold;
   letter-spacing: 4px;
-  font-variant-emoji: normal;
+  margin: 0;
 }
 
 .content h1 {
   font-size: 8rem;
   font-weight: bold;
   letter-spacing: 5px;
+  margin: 0;
 }
 
-.buttonUp {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+
+.buttonMid {
+  animation: blink 1s infinite, pulse 1.5s infinite ease-in-out;
   display: flex;
-  gap: 10px;
-  z-index: 4;
+  background-color: var(--Coins);
+  border-radius: 28px;
+  margin-top: 5rem;
 }
 
-/* Animacion boton inferior */
 @keyframes blink {
   0% {
     box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.8);
@@ -193,34 +106,7 @@ section .wave span:nth-child(3) {
   }
 }
 
-
-.buttonMid {
-  animation: blink 1s infinite, pulse 1.5s infinite ease-in-out;
-  display: flex;
-  background-color: var(--Coins);
-  border-radius: 28px;
-  margin-top: 5rem;
-}
-
 @media screen and (max-width: 1024px) {
-
-  .main {
-    flex-direction: column;
-    gap: 10rem;
-  }
-
-  .topContainer {
-    padding: 15px 20px;
-  }
-
-  .imageContainer img {
-    display:flex;
-    align-items: center;
-    justify-content: center;
-    width: 80%;
-    margin-right: 80px;
-  }
-
   .content h1 {
     font-size: 6rem;
   }
@@ -228,38 +114,9 @@ section .wave span:nth-child(3) {
   .content h2 {
     font-size: 3.5rem;
   }
-
-  .topTextItem {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: white;
-    letter-spacing: 0px;
-  }
-
 }
 
 @media screen and (max-width: 768px) {
-  .main {
-    flex-direction: column;
-    height: 70%;
-    gap: 5rem;
-  }
-
-  .topText {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .topTextItem {
-    font-size: 1.8rem;
-  }
-
-  .imageContainer img {
-    width: 90%;
-    margin-right: 0;
-  }
-
   .content h1 {
     font-size: 5rem;
   }
@@ -274,29 +131,6 @@ section .wave span:nth-child(3) {
 }
 
 @media screen and (max-width: 480px) {
-
-  .main {
-    flex-direction: column;
-    gap: 4rem;
-  }
-  .content {
-    text-align: center;
-  }
-
-  .topText {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .topTextItem {
-    font-size: 1.5rem;
-  }
-
-  .imageContainer img {
-    width: 90%;
-    margin: 0 auto;
-  }
-
   .content h2 {
     font-size: 4rem;
   }
@@ -305,4 +139,5 @@ section .wave span:nth-child(3) {
     margin-top: 8rem;
   }
 }
+
 

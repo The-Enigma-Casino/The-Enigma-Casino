@@ -64,7 +64,7 @@ const UserHistory: React.FC<UserHistoryProps> = ({
                   <span className="uppercase">{info.label}</span>
                 </div>
                 <div className="text-yellow-400 font-bold">
-                  {game.chipResult}
+                  {game.chipResult > 0 ? `+${game.chipResult}` : 0}
                 </div>
               </div>
             );

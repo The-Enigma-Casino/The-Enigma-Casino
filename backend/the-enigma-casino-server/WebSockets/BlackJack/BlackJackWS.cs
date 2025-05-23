@@ -309,6 +309,9 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         BlackjackGame blackjackGame = new BlackjackGame(match);
         blackjackGame.StartRound();
 
+        bool endedImmediately = await CheckForImmediateBlackjackWinnersAsync(tableId, blackjackGame, match);
+        if (endedImmediately) return;
+
         Player firstTurnPlayer = match.Players.FirstOrDefault(p => p.PlayerState == PlayerState.Playing);
         if (firstTurnPlayer != null)
         {
@@ -763,4 +766,22 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         await AdvanceTurnAsync(blackjackGame, match, tableId);
         await BroadcastGameStateAsync(match, blackjackGame);
     }
+
+
+    private async Task<bool> CheckForImmediateBlackjackWinnersAsync(int tableId, BlackjackGame blackjackGame, Match match)
+    {
+        bool allPlayingStatesConsumed = match.Players.All(p => p.PlayerState != PlayerState.Playing);
+        bool anyBlackjack = match.Players.Any(p => p.PlayerState == PlayerState.Blackjack);
+
+        if (allPlayingStatesConsumed && anyBlackjack)
+        {
+            Console.WriteLine($"🏆 Todos los jugadores tienen Blackjack. Saltando turnos y evaluando ronda...");
+            ActiveBlackjackGameStore.Set(tableId, blackjackGame);
+            await AdvanceTurnAsync(blackjackGame, match, tableId);
+            return true;
+        }
+
+        return false;
+    }
 }
+

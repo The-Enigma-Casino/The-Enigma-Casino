@@ -1,26 +1,24 @@
-import { useEffect } from "react";
-import { loadStripe } from "@stripe/stripe-js";
 import {
-  EmbeddedCheckoutProvider,
   EmbeddedCheckout,
+  EmbeddedCheckoutProvider,
 } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { useUnit } from "effector-react";
+import { useEffect } from "react";
 import { $token } from "../../auth/store/authStore";
 
+import { useNavigate } from "react-router-dom";
+import { $selectedCard } from "../../catalog/store/catalogStore";
+import { fetchLastOrderFx, fetchLastOrderIdFx } from "../actions/orderActions";
 import {
   fetchClientSecretFx,
   fetchPaymentStatusFx,
 } from "../actions/stripeActions";
-import { $selectedCard } from "../../catalog/store/catalogStore";
-import { useNavigate } from "react-router-dom";
-import { fetchLastOrderFx, fetchLastOrderIdFx } from "../actions/orderActions";
 import {
   $clientSecret,
   $paymentError,
   $paymentStatus,
 } from "../store/PaymentStore";
-
-import styles from "./StripePayment.module.css";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -46,7 +44,6 @@ function StripePayment() {
   }, [token, coinCard]);
 
   const handleOnComplete = async () => {
-
     const fetchedOrderId = await fetchLastOrderIdFx();
 
     if (fetchedOrderId) {
@@ -75,7 +72,9 @@ function StripePayment() {
             onComplete: handleOnComplete,
           }}
         >
-          <EmbeddedCheckout className={styles["App-Container"]} />
+          <div className="w-[90vw] sm:w-[32rem] md:w-[40rem] lg:w-[50rem] xl:w-[64rem] py-3 bg-Background-Overlay border-2 border-Green-lines rounded-2xl shadow-lg">
+            <EmbeddedCheckout />
+          </div>
         </EmbeddedCheckoutProvider>
       )}
     </>

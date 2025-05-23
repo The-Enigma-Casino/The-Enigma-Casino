@@ -20,8 +20,7 @@ public class StripeMapper
                 UnitAmount = unitAmount,
                 ProductData = new SessionLineItemPriceDataProductDataOptions()
                 {
-                    Name = coinsPack.Quantity.ToString() + " fichas.",
-                    Description = "Pack de " + coinsPack.Quantity.ToString() + " fichas.",
+                    Name = "Pack de " + coinsPack.Quantity + " fichas",
                     Images = [coinsPack.Image]
                 }
             },

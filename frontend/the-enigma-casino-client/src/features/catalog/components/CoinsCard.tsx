@@ -1,7 +1,7 @@
 import React from "react";
 import { selectCard } from "../store/catalogStore";
 import { convertCentsToEuros } from "../../../utils/priceUtils";
-import { BASE_URL } from "../../../config"
+import { BASE_URL } from "../../../config";
 
 interface CoinsProps {
   id: number;
@@ -15,14 +15,26 @@ interface CoinsProps {
   clickable?: boolean;
 }
 
-const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "small", isSelected = false, onSelect = () => { }, offer, clickable = true }) => {
-  const containerClasses = size === "large"
-    ? "w-[50rem] h-[40rem]"
-    : "w-[25rem] h-[30rem]"; // Small
+const CoinsCard: React.FC<CoinsProps> = ({
+  id,
+  price,
+  quantity,
+  image,
+  size = "small",
+  isSelected = false,
+  onSelect = () => {},
+  offer,
+  clickable = true,
+}) => {
+  const containerClasses =
+    size === "large"
+      ? "w-[90vw] sm:w-[32rem] md:w-[40rem] lg:w-[50rem] h-auto sm:h-[26rem] md:h-[32rem] lg:h-[40rem]"
+      : "w-[90vw] sm:w-[20rem] md:w-[24rem] lg:w-[25rem] h-auto sm:h-[24rem] md:h-[28rem] lg:h-[30rem]";
 
-  const imageClasses = size === "large"
-    ? "w-[25rem] h-[25rem]"
-    : "w-[15rem] h-[15rem]"; // Small
+  const imageClasses =
+    size === "large"
+      ? "w-[50vw] sm:w-[12rem] md:w-[18rem] lg:w-[25rem] h-auto sm:h-[12rem] md:h-[18rem] lg:h-[25rem]"
+      : "w-[40vw] sm:w-[8rem] md:w-[10rem] lg:w-[15rem] h-auto sm:h-[8rem] md:h-[10rem] lg:h-[15rem]";
 
   const selectedClasses = isSelected ? "border-2 border-Principal" : "";
   const cursorClass = clickable ? "cursor-pointer" : "";
@@ -39,11 +51,15 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
     onSelect(id);
   };
 
+  const glowIfSelected = isSelected ? "shadow-[0_0_20px_5px_#74c410]" : "";
+
   return (
-    <div className={`flex items-center justify-center md:flex-col`} onClick={handleSelection}>
+    <div
+      className={`flex items-center justify-center md:flex-col`}
+      onClick={handleSelection}
+    >
       <div
-        className={`bg-Background-Overlay rounded-3xl p-6 shadow-lg text-center flex flex-col items-center justify-center ${containerClasses} hover:Principal
-                *:transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:bg-Background-Overlay hover:border-amber-40 hover:shadow-[0_0_20px_5px_#74c410] ${cursorClass} ${selectedClasses}`}
+        className={`bg-Background-Overlay rounded-3xl p-6 shadow-lg text-center flex flex-col items-center justify-center transition-all duration-300 transform lg:hover:scale-105 lg:hover:shadow-[0_0_20px_5px_#74c410] lg:hover:border-amber-400 lg:hover:bg-Background-Overlay active:scale-[0.98] ${containerClasses} ${cursorClass} ${selectedClasses} ${glowIfSelected}`}
       >
         <div className="relative">
           <img
@@ -66,11 +82,18 @@ const CoinsCard: React.FC<CoinsProps> = ({ id, price, quantity, image, size = "s
         <div className="flex items-center gap-4 mt-4">
           {offer > 0 && (
             <div className="border-2 border-Principal text-Color-Cancel px-4 py-2 rounded-full line-through">
-              <p className="text-xl font-bold">{convertCentsToEuros(price)} €</p>
+              <p className="text-xl font-bold">
+                {convertCentsToEuros(price)} €
+              </p>
             </div>
           )}
           <div className="border-2 border-Principal text-white px-4 py-2 rounded-full">
-            <p className="text-xl font-bold">{offer > 0 ? convertCentsToEuros(offer) : convertCentsToEuros(price)} €</p>
+            <p className="text-xl font-bold">
+              {offer > 0
+                ? convertCentsToEuros(offer)
+                : convertCentsToEuros(price)}{" "}
+              €
+            </p>
           </div>
         </div>
       </div>

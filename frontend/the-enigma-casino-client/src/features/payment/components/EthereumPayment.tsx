@@ -5,27 +5,43 @@ import MetaMaskLogo from "@metamask/logo";
 import { useUnit } from "effector-react";
 import { $token } from "../../auth/store/authStore";
 import { $selectedCard } from "../../catalog/store/catalogStore";
-import { fetchTransactionEthereumFx, verifyTransactionEthereumFx } from "../actions/ethereumActions";
-import { $transactionData, $verifyTransactionData, $loading, $error, $transactionEnd, setLoading, setTransactionEnd, $paymentStatus, $paymentError, resetTransactionData, resetError } from "../store/EthereumStore";
+import {
+  fetchTransactionEthereumFx,
+  verifyTransactionEthereumFx,
+} from "../actions/ethereumActions";
+import {
+  $transactionData,
+  $loading,
+  $error,
+  $transactionEnd,
+  setLoading,
+  setTransactionEnd,
+  resetTransactionData,
+  resetError,
+} from "../store/EthereumStore";
 import { fetchLastOrderFx } from "../actions/orderActions";
 import toast from "react-hot-toast";
 import Button from "../../../components/ui/button/Button";
+import { useMediaQuery } from "../../../utils/useMediaQuery";
 
 const Ethereum: React.FC = () => {
   const navigate = useNavigate();
-  const [wallet, setWallet] = useState<string | null>(null);
+  const [, setWallet] = useState<string | null>(null);
   const token = useUnit($token);
   const coinCard = useUnit($selectedCard);
   const orderPackId = coinCard?.id;
   const transactionData = useUnit($transactionData);
-  const verifyTransactionData = useUnit($verifyTransactionData);
   const loading = useUnit($loading);
   const error = useUnit($error);
-  const transactionEnd = useUnit($transactionEnd)
+  const transactionEnd = useUnit($transactionEnd);
   const logoRef = useRef<HTMLDivElement | null>(null);
-  const paymentError = useUnit($paymentError);
+
+  const isSmallScreen = useMediaQuery("(max-width: 1023px)");
+
   // Logo de MetaMask
   useEffect(() => {
+    if (isSmallScreen) return;
+
     const viewer = MetaMaskLogo({
       pxNotRatio: true,
       width: 100,
@@ -44,7 +60,7 @@ const Ethereum: React.FC = () => {
 
   useEffect(() => {
     return () => {
-      resetTransactionData()
+      resetTransactionData();
       setTransactionEnd(false);
       setLoading(false);
       resetError();
@@ -58,14 +74,12 @@ const Ethereum: React.FC = () => {
     }
   }, [orderPackId, token]);
 
-
   // Redirección
   const redirectToCatalog = () => {
     setTimeout(() => {
       navigate("/catalog");
     }, 3000);
   };
-
 
   // Flujo completo
   const handleComplete = async () => {
@@ -97,7 +111,9 @@ const Ethereum: React.FC = () => {
       const accounts = await web3Instance.eth.requestAccounts();
 
       if (accounts.length === 0) {
-        toast.error("No tienes cuenta en Metamask. Redirigiendo al catálogo...");
+        toast.error(
+          "No tienes cuenta en Metamask. Redirigiendo al catálogo..."
+        );
         redirectToCatalog();
         return;
       }
@@ -106,7 +122,9 @@ const Ethereum: React.FC = () => {
       setWallet(connectedWallet);
 
       if (!transactionData) {
-        toast.error("Datos de transacción no disponibles. Redirigiendo al carrito...");
+        toast.error(
+          "Datos de transacción no disponibles. Redirigiendo al carrito..."
+        );
         redirectToCatalog();
         return;
       }
@@ -147,15 +165,18 @@ const Ethereum: React.FC = () => {
             navigate("/payment-confirmation?error=true");
           }, 3000);
         }
-
       } else {
         toast.error("La transacción no es válida, volviendo a catálogo.");
         redirectToCatalog();
         return;
       }
-
     } catch (error) {
-      if (error.message.includes("MetaMask Tx Signature: User denied transaction signature")) {
+      if (
+        error instanceof Error &&
+        error.message.includes(
+          "MetaMask Tx Signature: User denied transaction signature"
+        )
+      ) {
         toast.error("La transacción fue rechazada por el usuario.");
         redirectToCatalog();
       } else {
@@ -167,28 +188,48 @@ const Ethereum: React.FC = () => {
     }
   };
 
-
-
   return (
-    <div className="flex flex-col items-center max-w-md mx-auto mt-12 p-5 text-center gap-7 text-white border-2 rounded-2xl border-Principal w-[30rem] h-[50rem] relative bg-Background-Overlay">
-
+    <div className="flex flex-col items-center justify-center w-[90vw] sm:w-[32rem] md:w-[40rem] lg:w-[50rem] min-h-[30rem] sm:min-h-[34rem] md:min-h-[36rem] lg:min-h-[40rem] bg-Background-Overlay border-2 border-Principal rounded-2xl p-6 text-white text-center shadow-lg gap-6">
       <div className="relative z-10 flex flex-col items-center justify-center h-full">
         <h1 className="text-4xl font-bold">Pagar con Ethereum</h1>
 
-        <div className="flex justify-center items-center my-5" ref={logoRef}></div>
+        {isSmallScreen ? (
+          <img
+            src="/img/metamask_static.png"
+            alt="MetaMask Logo"
+            className="w-[10rem] sm:w-[11rem] md:w-[12rem] lg:w-[13rem] my-5"
+          />
+        ) : (
+          <div
+            className="flex justify-center items-center my-5"
+            ref={logoRef}
+          ></div>
+        )}
 
         {loading && <p className="text-3xl">Procesando pago...</p>}
-        {transactionEnd && <p className="text-green-500 text-3xl">Transacción completada con éxito</p>}
+        {transactionEnd && (
+          <p className="text-green-500 text-3xl">
+            Transacción completada con éxito
+          </p>
+        )}
 
         {transactionData ? (
           <div className="flex flex-col items-center justify-center my-5 text-3xl">
             <div className="flex">
               <p>{transactionData.totalEuros.toFixed(2).replace(".", ",")}</p>
-              <img src="/svg/euro.svg" className="w-10 h-10" alt="Ethereum logo" />
+              <img
+                src="/svg/euro.svg"
+                className="w-10 h-10"
+                alt="Ethereum logo"
+              />
             </div>
             <p className="flex items-center justify-center gap-2 mt-2 mb-3">
               {transactionData.equivalentEthereum} ETH
-              <img src="/svg/ethereum.svg" className="w-10 h-10" alt="Ethereum logo" />
+              <img
+                src="/svg/ethereum.svg"
+                className="w-10 h-10"
+                alt="Ethereum logo"
+              />
             </p>
             <Button
               onClick={handleComplete}
@@ -202,9 +243,7 @@ const Ethereum: React.FC = () => {
           </div>
         ) : error ? (
           <>
-            <p className="text-3xl text-red-600 p-4 rounded-lg">
-              {error}
-            </p>
+            <p className="text-3xl text-red-600 p-4 rounded-lg">{error}</p>
             {toast.error("Volviendo al catálogo.")}
           </>
         ) : (

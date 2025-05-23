@@ -13,9 +13,9 @@ function PaymentPage() {
 
   return (
     <>
-      <div className="h-full bg-Background-Page flex justify-center">
-        <div className="grid grid-cols-2 gap-30 w-full justify-center">
-          <div className="col-start-1 row-start-1 place-self-center ml-[-5rem]">
+      <div className="h-full bg-Background-Page flex justify-center px-4 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-screen-xl place-items-center">
+          <div className="w-full max-w-[50rem] flex justify-center">
             <CoinsCards
               key={coinCard.id}
               id={coinCard.id}
@@ -24,18 +24,19 @@ function PaymentPage() {
               image={coinCard.image}
               offer={coinCard.offer}
               isSelected={false}
-              onSelect={() => { }}
+              onSelect={() => {}}
               size="large"
               clickable={false}
             />
           </div>
 
-          <div className="col-start-2 row-start-1 flex place-self-center justify-center">
+          <div className="w-full max-w-[50rem] flex justify-center">
             {method === "Stripe" && <StripePayment />}
             {method === "Ethereum" && <EthereumPayment />}
           </div>
         </div>
       </div>
+      );
     </>
   );
 }

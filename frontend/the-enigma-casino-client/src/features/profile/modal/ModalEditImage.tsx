@@ -9,10 +9,9 @@ interface Props {
   image: string;
   onCancel: () => void;
   onConfirm: () => void;
-  onFileSelect: (file: File | null) => void;
 }
 
-const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, onFileSelect, image }) => {
+const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageURL, setImageURL] = useState<string>("");
   const [isDefaultSelected, setIsDefaultSelected] = useState(false);
@@ -53,7 +52,7 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, onFileSelect, im
 
   const handleSetDefaultImage = () => {
     setImageFile(null);
-    setImageURL(DEFAULT_IMAGE_PATH); // Simula el cambio de imagen en front
+    setImageURL(DEFAULT_IMAGE_PATH);
     setIsDefaultSelected(true);
   };
 

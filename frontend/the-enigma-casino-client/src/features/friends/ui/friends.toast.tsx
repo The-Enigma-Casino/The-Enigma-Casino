@@ -1,27 +1,20 @@
 import toast from "react-hot-toast";
 import { FriendToast } from "./FriendToast";
 import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, newFriendRequestsDetected, rejectFriendRequest, rejectGameInvite, startGameLoading } from "../stores/friends.events";
-import { acceptFriendRequestFx, cancelFriendRequestFx } from "../stores";
 import { IMAGE_PROFILE_URL } from "../../../config";
 
-// export function showFriendRequestToast(data: {
-//   senderId: number;
-//   nickname: string;
-//   image: string;
-// }) {
-//   toast.custom((t) => (
-//     <FriendToast
-//       id={t.id}
-//       image={data.image}
-//       nickname={data.nickname}
-//       message="te ha enviado una solicitud de amistad"
-//       onAccept={() => acceptFriendRequest({ senderId: data.senderId })}
-//       onReject={() => rejectFriendRequest({ senderId: data.senderId })}
-//     />
-//   ));
-// }
+const gameTypeMap: Record<number, { label: string; img: string }> = {
+  0: { label: "BlackJack", img: "/img/ficha-blackjack.webp" },
+  1: { label: "Póker", img: "/img/ficha-poker.webp" },
+  2: { label: "Ruleta", img: "/img/ficha-roulette.webp" },
+};
 
-
+function getGameTypeByTableId(tableId: number) {
+  if (tableId >= 1 && tableId <= 6) return gameTypeMap[0];
+  if (tableId >= 7 && tableId <= 12) return gameTypeMap[1];
+  if (tableId >= 13 && tableId <= 18) return gameTypeMap[2];
+  return null;
+}
 
 export function showGameInviteToast(data: {
   inviterId: number;
@@ -31,23 +24,14 @@ export function showGameInviteToast(data: {
   expiresIn: number;
   mode?: "table" | "friendsList";
 }) {
-  let gameTypeMessage = "una partida";
-
-  if (data.tableId >= 1 && data.tableId <= 6) {
-    gameTypeMessage = "una mesa de Blackjack 🃏";
-  } else if (data.tableId >= 7 && data.tableId <= 12) {
-    gameTypeMessage = "una mesa de Poker ♠️";
-  } else if (data.tableId >= 13 && data.tableId <= 18) {
-    gameTypeMessage = "una mesa de Ruleta 🎰";
-  }
+  const gameType = getGameTypeByTableId(data.tableId);
 
   const onAccept = () => {
     if (data.mode === "table") {
-      // Invita desde una mesa existente (solo el invitado debe entrar)
       acceptTableInvite({ inviterId: data.inviterId, tableId: data.tableId });
       startGameLoading();
     } else {
-      // Invita desde el menu de amigos
+
       acceptGameInvite({ inviterId: data.inviterId, tableId: data.tableId });
       startGameLoading();
     }
@@ -59,15 +43,28 @@ export function showGameInviteToast(data: {
         id={t.id}
         image={`${IMAGE_PROFILE_URL}${data.image}`}
         nickname={data.nickname}
-        message={`te ha invitado a ${gameTypeMessage}`}
+        message={
+          <span className="flex flex-wrap items-center text-xl gap-2">
+            te ha invitado a
+            {gameType ? (
+              <span className="flex items-center gap-2">
+                <span className="font-semibold">{gameType.label}</span>
+                <img
+                  src={gameType.img}
+                  alt={gameType.label}
+                  className="w-8 h-8 object-contain"
+                />
+
+              </span>
+            ) : (
+              <span>una partida</span>
+            )}
+          </span>
+        }
         onAccept={onAccept}
         onReject={() => rejectGameInvite({ inviterId: data.inviterId })}
       />
-    ),
-    {
-      duration: data.expiresIn * 1000,
-      position: "top-right",
-    }
+    )
   );
 }
 

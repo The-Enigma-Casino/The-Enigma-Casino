@@ -432,11 +432,14 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         _pendingInvitations.TryRemove(userId, out _);
 
+        var rejectingUser = await GetUserById(userId);
+
         await ((IWebSocketSender)this).SendToUserAsync(inviterId.ToString(), new
         {
             type = Type,
             action = FriendsMessageType.GameInviteRejected,
-            friendId = userId
+            friendId = userId,
+            nickname = rejectingUser.NickName,
         });
     }
 

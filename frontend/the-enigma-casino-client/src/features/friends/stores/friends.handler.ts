@@ -31,7 +31,6 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "friendRequestAccepted":
-      console.log("[WS] Solicitud aceptada recibida por el solicitante");
       friendRequestAccepted({
         friendId: data.friendId,
         nickname: data.nickname,
@@ -40,7 +39,6 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "friendRemoved":
-      console.log("[WS] Recibido friendRemovedddddddddddd:", data);
       friendRemoved({ removedBy: data.removedBy });
       break;
 
@@ -68,7 +66,7 @@ socketMessageReceived.watch((data) => {
 
     case "gameInviteRejected":
       stopGameLoading();
-      toast.error(`El usuario ${data.friendId} rechazó tu invitación.`, { duration: 2000 });
+      toast.error(`${data.nickname} rechazó tu invitación.`, { duration: 2000 });
       break;
 
     case "inviteExpired":

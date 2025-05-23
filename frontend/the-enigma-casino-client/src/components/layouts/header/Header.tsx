@@ -14,6 +14,7 @@ import Modal from "../../ui/modal/Modal";
 import { $transactionEnd } from "../../../features/withdraw/store/WithdrawalStore";
 import ModalGachaComponent from "../../../features/gachapon/components/ModalGachaComponent";
 import { useLogout } from "../../../features/auth/utils/logout";
+import { Bell } from "../../../features/friends/ui/Bell";
 
 function Header() {
   const navigate = useNavigate();
@@ -74,11 +75,7 @@ function Header() {
           </div>
 
           {role && (
-            <img
-              src="/svg/notification-bell.svg"
-              alt="Notificaciones"
-              onClick={() => navigate("/")}
-            />
+            <Bell />
           )}
         </div>
 
@@ -89,30 +86,29 @@ function Header() {
                 src="/svg/admin.svg"
                 alt="Admin"
                 onClick={() => setIsAdminMenuOpen((prev) => !prev)}
-                className={`${classes.adminIcon} ${
-                  isAdminMenuOpen ? classes.rotatingOpen : classes.rotatingClose
-                }`}
+                className={`${classes.adminIcon} ${isAdminMenuOpen ? classes.rotatingOpen : classes.rotatingClose
+                  }`}
               />
             </div>
           )}
 
           {(role?.toLowerCase() === "user" ||
             role?.toLowerCase() === "admin") && (
-            <>
-              <button
-                className="cursor-pointer text-[var(--Coins)] text-[2.4rem] font-bold inline-flex items-center gap-2 truncate max-w-[12ch]"
-                onClick={() => navigate("/catalog")}
-              >
-                {coins} <img src="/svg/coins.svg" alt="Fichas" />
-              </button>
-              <img
-                src="/svg/exit.svg"
-                alt="Cerrar sesión"
-                className="cursor-pointer"
-                onClick={() => setIsLogoutModalOpen(true)}
-              />
-            </>
-          )}
+              <>
+                <button
+                  className="cursor-pointer text-[var(--Coins)] text-[2.4rem] font-bold inline-flex items-center gap-2 truncate max-w-[12ch]"
+                  onClick={() => navigate("/catalog")}
+                >
+                  {coins} <img src="/svg/coins.svg" alt="Fichas" />
+                </button>
+                <img
+                  src="/svg/exit.svg"
+                  alt="Cerrar sesión"
+                  className="cursor-pointer"
+                  onClick={() => setIsLogoutModalOpen(true)}
+                />
+              </>
+            )}
 
           {!role && (
             <Button

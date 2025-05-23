@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { FriendToast } from "./FriendToast";
-import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, newFriendRequestsDetected, rejectFriendRequest, rejectGameInvite, startGameLoading } from "../stores/friends.events";
+import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, bellNotification, bellReset, newFriendRequestsDetected, rejectFriendRequest, rejectGameInvite, startGameLoading } from "../stores/friends.events";
 import { IMAGE_PROFILE_URL } from "../../../config";
 
 const gameTypeMap: Record<number, { label: string; img: string }> = {
@@ -37,33 +37,40 @@ export function showGameInviteToast(data: {
     }
   };
 
-  toast.custom(
-    (t) => (
-      <FriendToast
-        id={t.id}
-        image={`${IMAGE_PROFILE_URL}${data.image}`}
-        nickname={data.nickname}
-        message={
-          <span className="flex flex-wrap items-center text-xl gap-2">
-            te ha invitado a
-            {gameType ? (
-              <span className="flex items-center gap-2">
-                <span className="font-semibold">{gameType.label}</span>
-                <img
-                  src={gameType.img}
-                  alt={gameType.label}
-                  className="w-8 h-8 object-contain"
-                />
-              </span>
-            ) : (
-              <span>una partida</span>
-            )}
-          </span>
-        }
-        onAccept={onAccept}
-        onReject={() => rejectGameInvite({ inviterId: data.inviterId })}
-      />
-    ),
+
+
+  toast.custom((t) => (
+    <FriendToast
+      id={t.id}
+      image={`${IMAGE_PROFILE_URL}${data.image}`}
+      nickname={data.nickname}
+      message={
+        <span className="flex flex-wrap items-center text-xl gap-2">
+          te ha invitado a
+          {gameType ? (
+            <span className="flex items-center gap-2">
+              <span className="font-semibold">{gameType.label}</span>
+              <img
+                src={gameType.img}
+                alt={gameType.label}
+                className="w-8 h-8 object-contain"
+              />
+            </span>
+          ) : (
+            <span>una partida</span>
+          )}
+        </span>
+      }
+      onAccept={() => {
+        onAccept();
+        bellReset();
+      }}
+      onReject={() => {
+        rejectGameInvite({ inviterId: data.inviterId });
+        bellReset();
+      }}
+    />
+  ),
     {
       duration: 20000,
     }
@@ -78,8 +85,14 @@ newFriendRequestsDetected.watch((newRequests) => {
         image={`${IMAGE_PROFILE_URL}${req.image}`}
         nickname={req.nickName}
         message="te ha enviado una solicitud de amistad"
-        onAccept={() => acceptFriendRequest({ senderId: req.senderId })}
-        onReject={() => rejectFriendRequest({ senderId: req.senderId })}
+        onAccept={() => {
+          acceptFriendRequest({ senderId: req.senderId });
+          bellReset();
+        }}
+        onReject={() => {
+          rejectFriendRequest({ senderId: req.senderId });
+          bellReset();
+        }}
       />
     ),
       {

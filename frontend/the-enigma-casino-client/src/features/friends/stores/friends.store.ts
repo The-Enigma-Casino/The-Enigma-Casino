@@ -1,6 +1,9 @@
 import { combine, createStore } from "effector";
 import { Friend, FriendRequest, SearchUser } from "./friends.types";
 import {
+  bellNewAlert,
+  bellNotification,
+  bellReset,
   onlineFriendsUpdated,
   removeReceivedRequest,
   removeUserFromSearchResults,
@@ -60,3 +63,10 @@ export const $lastRequestIds = createStore<number[]>([]);
 export const $isGameLoading = createStore(false)
   .on(startGameLoading, () => true)
   .on(stopGameLoading, () => false);
+
+
+export type BellType = "none" | "new" | "notification";
+export const $bellType = createStore<BellType>("none")
+  .on(bellReset, () => "none")
+  .on(bellNewAlert, () => "new")
+  .on(bellNotification, () => "notification");

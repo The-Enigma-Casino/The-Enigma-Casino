@@ -22,7 +22,7 @@ export const FriendToast: React.FC<FriendToastProps> = ({
 }) => {
   return (
     <div
-      className={`max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+      className={`mt-32 max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
     >
       <div className="flex-1 w-0 p-4">
         <div className="flex items-start">

@@ -54,7 +54,6 @@ export function showGameInviteToast(data: {
                   alt={gameType.label}
                   className="w-8 h-8 object-contain"
                 />
-
               </span>
             ) : (
               <span>una partida</span>
@@ -64,7 +63,10 @@ export function showGameInviteToast(data: {
         onAccept={onAccept}
         onReject={() => rejectGameInvite({ inviterId: data.inviterId })}
       />
-    )
+    ),
+    {
+      duration: 20000,
+    }
   );
 }
 
@@ -79,6 +81,9 @@ newFriendRequestsDetected.watch((newRequests) => {
         onAccept={() => acceptFriendRequest({ senderId: req.senderId })}
         onReject={() => rejectFriendRequest({ senderId: req.senderId })}
       />
-    ));
+    ),
+      {
+        duration: 20000,
+      });
   });
 });

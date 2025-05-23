@@ -59,7 +59,7 @@ socketMessageReceived.watch((data) => {
 
     case "gameInviteAccepted":
       toast.success(
-        `¡${data.friendId} ha aceptado tu invitación a la mesa ${data.tableId}!`
+        `¡${data.nickName} ha aceptado tu invitación a la mesa ${data.tableId}!`
         , { duration: 2000 });
       joinTableClicked(Number(data.tableId)); // Table Events
       break;

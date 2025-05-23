@@ -1,9 +1,9 @@
 import toast from "react-hot-toast";
 import { socketMessageReceived } from "../../../websocket/store/wsEvents";
 import { Player } from "../models/GameTable.interface";
-import { countdownStarted, countdownStopped, errorReceived, gameStarted, joinTableClicked, setPendingJoinTableId, tableUpdated } from "./tablesEvents";
+import { countdownStarted, countdownStopped, gameStarted, setPendingJoinTableId, tableUpdated } from "./tablesEvents"; // errorReceived añadir para toast
 import { navigateTo } from "../../games/shared/router/navigateFx";
-import { startGameLoading, stopGameLoading } from "../../friends/stores/friends.events";
+import { stopGameLoading } from "../../friends/stores/friends.events";
 
 
 // Mensajes de error traducidos
@@ -67,7 +67,7 @@ socketMessageReceived.watch((data) => {
 
       if (typeof rawMessage === "string") {
         toast.error(userMessage);
-        errorReceived(rawMessage);
+        // errorReceived(rawMessage);  Controlar el error que siempre llega
       }
       break;
     }

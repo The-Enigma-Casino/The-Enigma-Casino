@@ -24,15 +24,6 @@ const SIZE_MAP: Record<string, number> = {
   xsmall: 30,
 };
 
-function darkenColor(hex: string, factor = 0.7): string {
-  const parsed = hex.startsWith("#") ? hex.slice(1) : hex;
-  const num = parseInt(parsed, 16);
-  const r = Math.floor(((num >> 16) & 255) * factor);
-  const g = Math.floor(((num >> 8) & 255) * factor);
-  const b = Math.floor((num & 255) * factor);
-  return `rgb(${r}, ${g}, ${b})`;
-}
-
 export const Chip: React.FC<ChipProps> = ({
   value,
   size = "medium",
@@ -46,7 +37,6 @@ export const Chip: React.FC<ChipProps> = ({
   const segmentAngle = 360 / segmentCount;
 
   const baseColor = COLOR_MAP[color] || "#b91c1c";
-  const centerColor = darkenColor(baseColor);
 
   const chipSVG = (
     <svg

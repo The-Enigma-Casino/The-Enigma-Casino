@@ -127,8 +127,25 @@ export const PokerGamePage = () => {
         <div className="flex justify-center mb-10">
           <PlayerPokerCard
             player={{
-              ...me,
-              hand,
+              id: me.id,
+              nickname: me.nickname,
+              hand: hand.map((card) => ({
+                suit: card.suit as Suit,
+                rank: card.rank as CardRank,
+                value: card.value,
+                gameType: "Poker" as const,
+              })),
+              coins: me.coins,
+              state:
+                me.state === "Playing" ||
+                me.state === "Fold" ||
+                me.state === "AllIn"
+                  ? me.state
+                  : undefined,
+              role:
+                me.role === "dealer" || me.role === "sb" || me.role === "bb"
+                  ? me.role
+                  : undefined,
               currentBet: me.currentBet ?? 0,
               totalBet: me.totalBet ?? 0,
             }}
@@ -153,11 +170,27 @@ export const PokerGamePage = () => {
             id: p.id,
             nickName: p.nickname,
             hand: p.hand?.length
-              ? p.hand
+              ? p.hand.map((card) => ({
+                  suit: card.suit as Suit,
+                  rank: card.rank as CardRank,
+                  value: card.value,
+                  gameType: "Poker" as const,
+                }))
               : [
-                  { rank: "X", suit: "X", value: 0 },
-                  { rank: "X", suit: "X", value: 0 },
+                  {
+                    rank: "X" as CardRank,
+                    suit: "X" as Suit,
+                    value: 0,
+                    gameType: "Poker" as const,
+                  },
+                  {
+                    rank: "X" as CardRank,
+                    suit: "X" as Suit,
+                    value: 0,
+                    gameType: "Poker" as const,
+                  },
                 ],
+
             bets: [],
             isTurn: p.id === currentTurnUserId,
             coins: p.coins,
@@ -169,7 +202,6 @@ export const PokerGamePage = () => {
                 : undefined,
           }))}
           gameType="Poker"
-          coins={0}
           revealedHands={roundSummary?.revealedHands}
         />
       </div>

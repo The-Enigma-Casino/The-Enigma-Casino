@@ -75,7 +75,7 @@ sample({
   target: acceptFriendRequestFx,
 });
 
-// Reject friend OFFLINE - WS
+// Reject friend ONLINE - WS
 sample({
   clock: rejectFriendRequest,
   source: $onlineFriendsMap,

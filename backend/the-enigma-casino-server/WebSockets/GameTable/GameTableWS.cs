@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
@@ -144,7 +145,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     });
                     return;
                 }
-
+                user.Status = UserStatus.Playing;
+                UserStatusStore.SetStatus(user.Id, UserStatus.Playing);// Status playin
             }
             finally
             {
@@ -325,6 +327,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (result.PlayerRemoved)
         {
+            removedPlayer.User.Status = UserStatus.Online;
+            UserStatusStore.SetStatus(userId, UserStatus.Online);// Status Online
             Console.WriteLine($"✅ [LeaveTable] {removedPlayer.User.NickName} salió de la mesa {tableId}");
 
             var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(userId, tableId);

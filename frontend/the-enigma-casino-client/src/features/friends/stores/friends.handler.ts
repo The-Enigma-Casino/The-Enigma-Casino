@@ -83,6 +83,7 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "friendRequestCanceled":
+      console.log("[WSFRIEND] Cancelación de solicitud recibida:", data);
       removeReceivedRequest(data.senderId); // Quitar del store
       toast(`${data.nickname} canceló su solicitud de amistad.`, { duration: 2000 });
       bellNewAlert();

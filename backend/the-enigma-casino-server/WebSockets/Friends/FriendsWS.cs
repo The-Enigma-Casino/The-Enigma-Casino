@@ -2,6 +2,7 @@
 using System.Text.Json;
 using the_enigma_casino_server.Application.Services;
 using the_enigma_casino_server.Application.Services.Friendship;
+using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.WebSockets.Base;
@@ -224,7 +225,8 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 {
                     id = f.Id,
                     nickname = f.NickName,
-                    image = f.Image
+                    image = f.Image,
+                    status = UserStatusStore.GetStatus(f.Id).ToString()
                 }).ToList()
             });
         }
@@ -261,6 +263,13 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         int friendId = friendIdProp.GetInt32();
         int tableId = tableIdProp.GetInt32();
+
+        var friendStatus = UserStatusStore.GetStatus(friendId);
+        if (friendStatus == UserStatus.Playing)
+        {
+            await SendErrorAsync(inviterId.ToString(), "Tu amigo ya está jugando.", Type);
+            return;
+        }
 
         if (_pendingInvitations.ContainsKey(friendId))
         {
@@ -313,6 +322,14 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
 
         int friendId = friendIdProp.GetInt32();
+        var friendStatus = UserStatusStore.GetStatus(friendId);
+        if (friendStatus == UserStatus.Playing)
+        {
+            await SendErrorAsync(inviterId.ToString(), "Tu amigo ya está jugando.", Type);
+            return;
+        }
+
+
         if (!Enum.TryParse<GameType>(gameTypeProp.GetString(), out var gameType))
         {
             await SendErrorAsync(inviterId.ToString(), "Tipo de juego inválido.", Type);

@@ -26,7 +26,6 @@ const OtherUserProfile = () => {
       countriesFx();
     }
   });
-  console.log("otherprofile", profile);
 
   useEffect(() => {
     if (!userId || decodedId === null) return;
@@ -60,8 +59,8 @@ const OtherUserProfile = () => {
         page={page}
         totalPages={totalPages}
         onPageChange={(p) => {
-          if (!userId) return;
-          loadOtherUserHistory({ userId, page: p });
+          if (decodedId === undefined || decodedId === null) return;
+          loadOtherUserHistory({ userId: String(decodedId), page: p });
         }}
       />
     </div>

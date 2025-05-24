@@ -27,7 +27,6 @@ const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onPageChange 
         pages.push(1, '...', page - 1, page, page + 1, '...', totalPages);
       }
     }
-
     return pages;
   };
 
@@ -40,7 +39,8 @@ const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onPageChange 
           <span
             key={num}
             className={`cursor-pointer px-2 ${num === page ? 'text-Principal font-bold' : 'text-white'}`}
-            onClick={() => onPageChange(num)}
+            onClick={() => { onPageChange(num) }
+            }
           >
             {num}
           </span>

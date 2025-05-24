@@ -1,10 +1,11 @@
 import { CardStack } from "../../shared/components/GameCardStack";
+import { GameCard } from "../../shared/interfaces/gameCard.interface";
 import { RoleChip } from "./RoleChip";
 
 type PlayerPoker = {
   id: number;
   nickname: string;
-  hand: Card[];
+  hand: GameCard[];
   coins: number;
   currentBet?: number;
   totalBet?: number;

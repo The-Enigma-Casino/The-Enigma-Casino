@@ -10,18 +10,3 @@ public interface IGameBetInfoProvider
     bool HasPlayedThisMatch(Player player, Match match);
     int GetMinimumRequiredCoins();
 }
-
-
-
-// IMPORTANTE 
-
-//private static int GetMatchCountForGameType(GameType gameType)
-//{
-//    return gameType switch
-//    {
-//        GameType.BlackJack => 1,
-//        GameType.Roulette => 1,
-//        GameType.Poker => 0,
-//        _ => 1
-//    };
-//}

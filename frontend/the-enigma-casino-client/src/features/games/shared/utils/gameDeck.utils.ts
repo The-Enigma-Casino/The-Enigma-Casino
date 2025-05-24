@@ -32,7 +32,7 @@ function getCardValue(rank: CardRank, gameType: GameType): number {
 export class Deck {
   private cards: GameCard[];
 
-  constructor(private gameType: GameType) {
+  constructor(gameType: GameType) {
     this.cards = [];
 
     for (const suit of suits) {

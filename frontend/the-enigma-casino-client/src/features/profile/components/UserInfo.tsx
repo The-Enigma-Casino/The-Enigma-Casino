@@ -17,6 +17,7 @@ import {
   sendFriendRequestWs,
   startGameLoading,
 } from "../../friends/stores/friends.events";
+import { $onlineFriendsMap } from "../../friends/stores/friends.store";
 
 interface UserData {
   id?: number;
@@ -38,6 +39,10 @@ interface UserInfoProps {
 const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
   const { name, email, nickname, address, country, coins, image, role } = user;
   const navigate = useNavigate();
+  const onlineFriends = useUnit($onlineFriendsMap);
+  const isOnline = onlineFriends.has(Number(user.id));
+
+
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -84,9 +89,8 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
     <>
       <div className="bg-Background-Page px-4 pt-40 sm:pt-44 md:pt-48 pb-10 flex flex-col items-center">
         <div
-          className={`relative bg-Background-Overlay border ${
-            isFriend || isStranger ? "border-Principal" : "border-Principal"
-          } rounded-xl px-6 py-20 w-full max-w-6xl text-white mb-20 flex flex-col items-center`}
+          className={`relative bg-Background-Overlay border ${isFriend || isStranger ? "border-Principal" : "border-Principal"
+            } rounded-xl px-6 py-20 w-full max-w-6xl text-white mb-20 flex flex-col items-center`}
         >
           {/* Avatar */}
           <div
@@ -113,19 +117,17 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
 
           {/* Contenido */}
           <div
-            className={`${
-              isStranger || isFriend
-                ? "mt-28 text-center flex flex-col gap-6 items-center"
-                : "flex flex-col lg:flex-row justify-between items-center lg:items-start mt-24 sm:mt-32 gap-10 w-full p-10"
-            }`}
+            className={`${isStranger || isFriend
+              ? "mt-28 text-center flex flex-col gap-6 items-center"
+              : "flex flex-col lg:flex-row justify-between items-center lg:items-start mt-24 sm:mt-32 gap-10 w-full p-10"
+              }`}
           >
             {/* Info */}
             <div
-              className={`flex flex-col gap-4 ${
-                isStranger || isFriend
-                  ? "text-3xl font-bold items-center"
-                  : "text-xl sm:text-2xl lg:text-3xl w-full text-center lg:text-left items-center lg:items-start"
-              }`}
+              className={`flex flex-col gap-4 ${isStranger || isFriend
+                ? "text-3xl font-bold items-center"
+                : "text-xl sm:text-2xl lg:text-3xl w-full text-center lg:text-left items-center lg:items-start"
+                }`}
             >
               <p className={!isSelf ? "text-5xl" : ""}>
                 {isSelf && "Nickname: "}
@@ -195,46 +197,47 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
             )}
 
             {isFriend && (
-              <div className="relative" ref={dropdownRef}>
-                <Button
-                  variant="bigPlus"
-                  color="green"
-                  font="bold"
-                  onClick={() => setShowDropdown((prev) => !prev)}
-                >
-                  Invitar a partida ⏷
-                </Button>
+              isOnline ? (
+                <div className="relative" ref={dropdownRef}>
+                  <Button
+                    variant="bigPlus"
+                    color="green"
+                    font="bold"
+                    onClick={() => setShowDropdown((prev) => !prev)}
+                  >
+                    Invitar a partida ⏷
+                  </Button>
 
-                {showDropdown && (
-                  <div className="absolute top-[110%] right-0 w-104 text-2xl bg-Background-Overlay border border-Principal rounded-xl shadow-xl z-50 overflow-hidden">
-                    {[
-                      { label: "Mesa de Blackjack", value: "BlackJack" },
-                      { label: "Mesa de Poker", value: "Poker" },
-                      { label: "Mesa de Ruleta", value: "Roulette" },
-                    ].map((item) => (
-                      <button
-                        key={item.value}
-                        onClick={() => {
-                          if (user.id !== undefined) {
-                            console.log(
-                              "[UserInfo] llamando a startGameLoading()"
-                            );
-                            startGameLoading();
-                            inviteFriendFromList({
-                              friendId: user.id,
-                              gameType: item.value,
-                            });
-                            setShowDropdown(false);
-                          }
-                        }}
-                        className="w-full px-4 py-2 text-white hover:bg-zinc-700 transition"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                  {showDropdown && (
+                    <div className="absolute top-[110%] right-0 w-104 text-2xl bg-Background-Overlay border border-Principal rounded-xl shadow-xl z-50 overflow-hidden">
+                      {[
+                        { label: "Mesa de Blackjack", value: "BlackJack" },
+                        { label: "Mesa de Poker", value: "Poker" },
+                        { label: "Mesa de Ruleta", value: "Roulette" },
+                      ].map((item) => (
+                        <button
+                          key={item.value}
+                          onClick={() => {
+                            if (user.id !== undefined) {
+                              startGameLoading();
+                              inviteFriendFromList({
+                                friendId: user.id,
+                                gameType: item.value,
+                              });
+                              setShowDropdown(false);
+                            }
+                          }}
+                          className="w-full px-4 py-2 text-white hover:bg-zinc-700 transition"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-4xl">Tu amigo está desconectado</p>
+              )
             )}
 
             {isStranger && user.id !== undefined && (

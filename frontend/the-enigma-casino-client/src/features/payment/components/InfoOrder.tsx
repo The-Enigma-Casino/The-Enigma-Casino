@@ -1,5 +1,3 @@
-import classes from "./InfoOrder.module.css";
-
 import CoinsCard from "../../catalog/components/CoinsCard";
 import { OrderDto } from "../models/OrderDto.interface";
 import { formatPriceWithCurrency } from "../../../utils/priceUtils";
@@ -11,12 +9,10 @@ interface InfoOrderProps {
 
 const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
   const date = `Fecha: ${new Date(order.paidDate).toLocaleDateString()}`;
-
   const orderPaidmode = order.payMode;
   let paidWith = "Pagado con: ";
 
   let priceEthereum = 0;
-
   if (orderPaidmode === PayMode.Ethereum) {
     paidWith += "Ethereum";
     priceEthereum = order.ehtereum ?? 0;
@@ -30,9 +26,8 @@ const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
     order.coinsPack.offer > 0 ? order.coinsPack.offer : order.coinsPack.price
   )}`;
 
-
   return (
-    <div className={classes.infoOrderContainer}>
+    <div className="flex flex-col md:flex-row gap-16 md:gap-24 items-center justify-center bg-Background-Page">
       <CoinsCard
         id={order.id}
         price={order.coinsPack.price}
@@ -42,21 +37,21 @@ const InfoOrder: React.FC<InfoOrderProps> = ({ order }) => {
         isSelected={false}
         onSelect={() => {}}
       />
-      <div className={classes.infoOrderDetails}>
-        <div className={classes.coinsInfo}>
-          <p className={classes.coinsPrice}>+{order.coinsPack.quantity}</p>
-          <img className={classes.coinsImg} src="/svg/coins.svg" alt="coins" />
+      <div className="flex flex-col gap-6 md:gap-8 font-reddit text-white text-[1.2rem] md:text-[1.2rem] items-center md:items-start text-center md:text-left">
+        <div className="flex items-center gap-3 md:gap-4 text-[2rem]">
+          <p className="text-Coins font-bold">+{order.coinsPack.quantity}</p>
+          <img src="/svg/coins.svg" alt="coins" className="w-8 h-8 object-contain" />
         </div>
-        <p className={classes.text}>{date}</p>
-        <p className={classes.text}>{paidWith}</p>
-        <p className={classes.text}>{totalPaid}</p>
+        <p className="text-2xl">{date}</p>
+        <p className="text-2xl">{paidWith}</p>
+        <p className="text-2xl">{totalPaid}</p>
         {priceEthereum !== 0 && (
-          <p className={classes.text}>
-            Pagado en Ethereum: {priceEthereum.toFixed(6)}{" "}
+          <p className="text-2xl flex items-center justify-center md:justify-start">
+            Pagado en Ethereum: {priceEthereum.toFixed(6)}
             <img
               src="/svg/ethereum.svg"
               alt="Ethereum"
-              className={classes.ethereumIcon}
+              className="w-10 h-10 ml-2 object-contain"
             />
           </p>
         )}

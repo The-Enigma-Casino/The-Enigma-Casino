@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import classes from "./InfoWithdrawal.module.css";
 import { useUnit } from "effector-react";
 import { fetchLastOrderWithdrawalFx } from "../../actions/withdrawalActions";

@@ -1,21 +1,26 @@
 import { useEffect } from "react";
 import { useUnit } from "effector-react";
 import { $playerAvatars } from "../../stores/gamesStore";
-import { $countryCache, requestCountry } from "../../../countries/stores/countriesStore";
+import {
+  $countryCache,
+  requestCountry,
+} from "../../../countries/stores/countriesStore";
 import { IMAGE_PROFILE_URL } from "../../../../config";
 import { CardStack } from "../../shared/components/GameCardStack";
 import { ActionButton } from "../../shared/components/buttonActions/ActionButton";
 import { loadCoins } from "../../../coins/store/coinsStore";
+import { GameCard } from "../../shared/interfaces/gameCard.interface";
+import { CardRank, GameType, Suit } from "../../shared/types/gameCard.type";
 
 type GamePlayer = {
   id: number;
   nickName: string;
-  hand: Card[];
+  hand: GameCard[];
   total?: number;
   bets: { bet: string; amount: number }[];
   isTurn?: boolean;
   coins: number;
-  state?: "Playing" | "Bust" | "Stand" | "Lose" | "Win" | "Draw";
+  state?: "Playing" | "Bust" | "Stand" | "Lose" | "Win" | "Draw" | "Waiting" | "Blackjack";
 };
 
 type Props = {
@@ -27,7 +32,14 @@ type Props = {
   onDouble: () => void;
 };
 
-export const LocalPlayerCard = ({ player, gameType, gameState, onHit, onStand, onDouble }: Props) => {
+export const LocalPlayerCard = ({
+  player,
+  gameType,
+  gameState,
+  onHit,
+  onStand,
+  onDouble,
+}: Props) => {
   const avatars = useUnit($playerAvatars);
   const countryCache = useUnit($countryCache);
 
@@ -35,28 +47,39 @@ export const LocalPlayerCard = ({ player, gameType, gameState, onHit, onStand, o
   const countryCode = avatar?.country?.toUpperCase();
   const country = countryCode ? countryCache[countryCode] : undefined;
 
+  const rankToValue = (rank: string): number => {
+    if (["J", "Q", "K"].includes(rank)) return 10;
+    if (rank === "A") return 11;
+    return parseInt(rank, 10) || 0;
+  };
+
   useEffect(() => {
     if (countryCode && !countryCache[countryCode]) {
       requestCountry(countryCode);
     }
   }, [countryCode, countryCache]);
-  
+
   useEffect(() => {
     loadCoins();
-  },[]);
+  }, []);
 
   if (!avatar) return null;
 
   const flagUrl = country?.flags?.png;
-  const visibleCards = (
+
+  const visibleCards: GameCard[] = (
     gameType === "Poker" ? player.hand.slice(0, 2) : player.hand
-  ).map((card) => ({ ...card, gameType }));
+  ).map((card) => ({
+    suit: card.suit as Suit,
+    rank: card.rank as CardRank,
+    value: rankToValue(card.rank),
+    gameType: gameType as GameType,
+  }));
 
   const total = typeof player.total === "number" ? player.total : "-";
 
   return (
     <div className="bg-black/40 rounded-xl p-4 w-[300px] flex flex-col">
-
       <div
         className={`relative bg-black/30 p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3
           }`}
@@ -99,14 +122,15 @@ export const LocalPlayerCard = ({ player, gameType, gameState, onHit, onStand, o
             <div
               className="transition-transform origin-center inline-flex"
               style={{
-                transform: `scale(${visibleCards.length <= 2
-                  ? 1.
-                  : visibleCards.length <= 4
+                transform: `scale(${
+                  visibleCards.length <= 2
+                    ? 1
+                    : visibleCards.length <= 4
                     ? 1
                     : visibleCards.length === 5
-                      ? 0.8
-                      : 0.7
-                  })`,
+                    ? 0.8
+                    : 0.7
+                })`,
               }}
             >
               <CardStack cards={visibleCards} />
@@ -123,19 +147,25 @@ export const LocalPlayerCard = ({ player, gameType, gameState, onHit, onStand, o
 
         {/* Turno */}
         {player.isTurn && (
-          <p className={`text-xl font-semibold text-center h-6 ${player.isTurn ? "text-Principal" : "text-transparent"}`}>
+          <p
+            className={`text-xl font-semibold text-center h-6 ${
+              player.isTurn ? "text-Principal" : "text-transparent"
+            }`}
+          >
             Turno de {player.nickName}
           </p>
         )}
 
         {/* Botones de acción */}
-        {player.isTurn && gameState === "InProgress" && player.state === "Playing" && (
-          <div className="flex gap-2 mt-2 justify-center">
-            <ActionButton label="HIT" onClick={onHit} color="green" />
-            <ActionButton label="STAND" onClick={onStand} color="yellow" />
-            <ActionButton label="DOUBLE" onClick={onDouble} color="purple" />
-          </div>
-        )}
+        {player.isTurn &&
+          gameState === "InProgress" &&
+          player.state === "Playing" && (
+            <div className="flex gap-2 mt-2 justify-center">
+              <ActionButton label="HIT" onClick={onHit} color="green" />
+              <ActionButton label="STAND" onClick={onStand} color="yellow" />
+              <ActionButton label="DOUBLE" onClick={onDouble} color="purple" />
+            </div>
+          )}
 
         {/* Estado textual */}
         {gameState === "InProgress" && player.state !== "Playing" && (

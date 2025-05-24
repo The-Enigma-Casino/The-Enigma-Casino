@@ -6,8 +6,20 @@ import { useUnit } from "effector-react";
 import { $token } from "../../auth/store/authStore";
 import toast from "react-hot-toast";
 import Button from "../../../components/ui/button/Button";
-import { $loading, $error, $transactionEnd, setTransactionEnd, setLoading, resetWithdrawalData, resetError } from "../store/WithdrawalStore";
-import { fetchWithrawalFx, fetchConvertWithdrawalFx, fetchLastOrderWithdrawalFx } from "../actions/withdrawalActions";
+import {
+  $loading,
+  $error,
+  $transactionEnd,
+  setTransactionEnd,
+  setLoading,
+  resetWithdrawalData,
+  resetError,
+} from "../store/WithdrawalStore";
+import {
+  fetchWithrawalFx,
+  fetchConvertWithdrawalFx,
+  fetchLastOrderWithdrawalFx,
+} from "../actions/withdrawalActions";
 import classes from "./Withdrawal.module.css";
 
 const Withdrawal: React.FC = () => {
@@ -18,11 +30,14 @@ const Withdrawal: React.FC = () => {
   const loading = useUnit($loading);
   const error = useUnit($error);
   const transactionEnd = useUnit($transactionEnd);
-  const [wallet, setWallet] = useState<string | null>(null);
+  const [, setWallet] = useState<string | null>(null);
   const [coins, setcoins] = useState<number | null>();
   const [isConverted, setIsConverted] = useState<boolean>(false);
   const [isConverting, setIsConverting] = useState(false);
-  const [conversionResult, setConversionResult] = useState<{ euros: number; eth: number } | null>(null);
+  const [conversionResult, setConversionResult] = useState<{
+    euros: number;
+    eth: number;
+  } | null>(null);
 
   useEffect(() => {
     const viewer = MetaMaskLogo({
@@ -46,8 +61,7 @@ const Withdrawal: React.FC = () => {
     resetWithdrawalData();
     resetError();
     setcoins(null);
-  }
-    , [transactionEnd, navigate, error]);
+  }, [transactionEnd, navigate, error]);
 
   const handleConversion = async () => {
     if (!coins || coins <= 0) {
@@ -67,7 +81,11 @@ const Withdrawal: React.FC = () => {
       });
       setIsConverted(true);
     } catch (error) {
-      toast.error(error.message)
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Ha ocurrido un error inesperado.");
+      }
     } finally {
       setIsConverting(false);
     }
@@ -79,10 +97,9 @@ const Withdrawal: React.FC = () => {
     }, 3000);
   };
 
-
   const handleWithdrawal = async () => {
     try {
-      if (coins <= 0 || coins === null) {
+      if (!coins || coins <= 0) {
         toast.error("Ingresa una cantidad válida para retirar.");
         return;
       }
@@ -131,8 +148,12 @@ const Withdrawal: React.FC = () => {
       setTimeout(() => {
         navigate("/withdraw-confirmation");
       }, 3000);
-    } catch (error: any) {
-      toast.error(error.message)
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Ha ocurrido un error inesperado.");
+      }
     } finally {
       setLoading(false);
     }
@@ -140,7 +161,10 @@ const Withdrawal: React.FC = () => {
 
   return (
     <div className="bg-Background-Page flex flex-col min-h-screen m-0 pt-6">
-      <h2 className="text-8xl font-bold text-center mb-6 text-white inline-block" style={{ textShadow: "0px 4px 8px rgba(255, 255, 255, 0.4)" }}>
+      <h2
+        className="text-8xl font-bold text-center mb-6 text-white inline-block"
+        style={{ textShadow: "0px 4px 8px rgba(255, 255, 255, 0.4)" }}
+      >
         RETIRADA DE FICHAS
       </h2>
 
@@ -149,18 +173,25 @@ const Withdrawal: React.FC = () => {
           Cambia fichas por Ethereum
         </h1>
 
-        <div className="flex justify-center items-center my-5" ref={logoRef}></div>
+        <div
+          className="flex justify-center items-center my-5"
+          ref={logoRef}
+        ></div>
 
         <label htmlFor="inp" className={classes.inp}>
           <input
             type="number"
             id="inp"
-            value={coins}
-            onChange={(e) => setcoins(e.target.value)}
+            value={coins ?? ""}
+            onChange={(e) => setcoins(Number(e.target.value))}
             disabled={isConverted}
             placeholder=""
             className={`peer w-full py-4 pl-3 pr-3 text-lg border-2 rounded-md transition-all
-              ${isConverted ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-100 text-white border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-gray-50'}`}
+              ${
+                isConverted
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gray-100 text-white border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-gray-50"
+              }`}
           />
           <span className={classes.label}>Cantidad de Fichas</span>
           <span className={classes.focusbg}></span>
@@ -173,14 +204,22 @@ const Withdrawal: React.FC = () => {
                 <p className="text-4xl font-bold text-white">
                   {conversionResult.euros.toFixed(2)}
                 </p>
-                <img src="/svg/euro.svg" alt="Euro Icon" className="w-10 h-10" />
+                <img
+                  src="/svg/euro.svg"
+                  alt="Euro Icon"
+                  className="w-10 h-10"
+                />
               </div>
 
               <div className="flex justify-center items-center gap-2">
                 <p className="text-4xl font-bold text-white">
                   {conversionResult.eth.toFixed(6)} ETH
                 </p>
-                <img src="/svg/ethereum.svg" alt="Ethereum Icon" className="w-10 h-10" />
+                <img
+                  src="/svg/ethereum.svg"
+                  alt="Ethereum Icon"
+                  className="w-10 h-10"
+                />
               </div>
             </>
           )}
@@ -199,14 +238,13 @@ const Withdrawal: React.FC = () => {
           {isConverting
             ? "Convirtiendo..."
             : loading
-              ? "Procesando Retiro..."
-              : isConverted
-                ? "Realizar Retirada"
-                : "Realizar Conversión"}
+            ? "Procesando Retiro..."
+            : isConverted
+            ? "Realizar Retirada"
+            : "Realizar Conversión"}
         </Button>
       </div>
     </div>
-
   );
 };
 

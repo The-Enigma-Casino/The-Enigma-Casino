@@ -53,6 +53,7 @@ function RouletteGamePage() {
       requestGameState(tableId);
       requestWheelState(tableId);
     }
+    setBets([]);
     loadCoins();
     resetSpinResult();
   }, [tableId]);
@@ -101,6 +102,15 @@ function RouletteGamePage() {
     }
   }, [isBetsClosed]);
 
+  useEffect(() => {
+    if (initialBets.length === 0) {
+      setBets([]);
+      setDelayedSpinResult(null);
+      setDelayedHistory([]);
+      setStatusMessage(null);
+    }
+  }, [tableId, initialBets]);
+
   const handleIncrement = (amount: number) => {
     setBetAmount((prev) => Math.min(prev + amount, coins));
   };
@@ -143,7 +153,6 @@ function RouletteGamePage() {
     setBets((prev) => prev.filter((b) => b.key !== key));
     loadCoins();
   };
-
 
   const getResultMessage = (spinResult: any) => {
     if (!spinResult?.bets?.length) {

@@ -147,6 +147,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 }
                 user.Status = UserStatus.Playing;
                 UserStatusStore.SetStatus(user.Id, UserStatus.Playing);// Status playin
+                _connectionManager.RaiseUserStatusChanged(userId.ToString());
+
             }
             finally
             {
@@ -319,6 +321,9 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             var matchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
             await matchWS.ProcessPlayerMatchLeaveAsync(tableId, userId);
+
+            UserStatusStore.SetStatus(userId, UserStatus.Online);
+            _connectionManager.RaiseUserStatusChanged(userId.ToString());
             return;
         }
 
@@ -327,8 +332,6 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (result.PlayerRemoved)
         {
-            removedPlayer.User.Status = UserStatus.Online;
-            UserStatusStore.SetStatus(userId, UserStatus.Online);// Status Online
             Console.WriteLine($"✅ [LeaveTable] {removedPlayer.User.NickName} salió de la mesa {tableId}");
 
             var history = await unitOfWork.GameHistoryRepository.FindActiveSessionAsync(userId, tableId);

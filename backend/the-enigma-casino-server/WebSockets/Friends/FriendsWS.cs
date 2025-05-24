@@ -22,6 +22,7 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         connectionManager.OnUserConnected += HandleUserStatusChanged;
         connectionManager.OnUserDisconnected += HandleUserStatusChanged;
+        connectionManager.OnUserStatusChanged += HandleUserStatusChanged;
     }
 
 

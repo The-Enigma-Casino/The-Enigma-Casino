@@ -11,6 +11,7 @@ public class ConnectionManagerWS
 
     public event Action<string> OnUserDisconnected;
     public event Action<string> OnUserConnected; //User connected friendsOnline
+    public event Action<string> OnUserStatusChanged;
 
     public void AddConnection(string userId, WebSocket webSocket)
     {
@@ -100,5 +101,14 @@ public class ConnectionManagerWS
             .Where(id => id.HasValue)
             .Select(id => id.Value)
             .ToList();
+    }
+    public void RaiseUserStatusUpdated(string userId)
+    {
+        OnUserConnected?.Invoke(userId);
+    }
+
+    public void RaiseUserStatusChanged(string userId)
+    {
+        OnUserStatusChanged?.Invoke(userId);
     }
 }

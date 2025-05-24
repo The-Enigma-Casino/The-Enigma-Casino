@@ -277,7 +277,7 @@ public class UserService : BaseService
 
             WebpEncoder encoder = new WebpEncoder
             {
-                Quality = 75
+                Quality = 100
             };
 
             await image.SaveAsync(filePath, encoder);

@@ -1,8 +1,13 @@
 import { createEffect } from "effector";
 import { jwtDecode } from "jwt-decode";
-import { $wsConnection, disconnectSocket, socketError, socketMessageReceived, updateOnlineUsers } from "./wsIndex";
+import {
+  $wsConnection,
+  disconnectSocket,
+  socketError,
+  socketMessageReceived,
+  updateOnlineUsers,
+} from "./wsIndex";
 import { WS_BASE_URL } from "../../config";
-
 
 export const connectWebSocketFx = createEffect(async (token: string) => {
   const decoded = jwtDecode<{ id: string }>(token);
@@ -12,12 +17,15 @@ export const connectWebSocketFx = createEffect(async (token: string) => {
   const existing = $wsConnection.getState();
   if (
     existing &&
-    (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)
+    (existing.readyState === WebSocket.OPEN ||
+      existing.readyState === WebSocket.CONNECTING)
   ) {
     existing.close();
   }
 
-  const ws = new WebSocket(`${WS_BASE_URL}socket?token=${token}&userId=${userId}`);
+  const ws = new WebSocket(
+    `${WS_BASE_URL}socket?token=${token}&userId=${userId}`
+  );
 
   return new Promise<WebSocket>((resolve, reject) => {
     ws.onopen = () => resolve(ws);
@@ -35,6 +43,12 @@ export const connectWebSocketFx = createEffect(async (token: string) => {
 
     ws.onclose = () => {
       disconnectSocket();
+
+      console.warn("🔌 WebSocket cerrado. Reintentando en 2s...");
+
+      setTimeout(() => {
+        connectWebSocketFx(token);
+      }, 2000);
     };
   });
 });

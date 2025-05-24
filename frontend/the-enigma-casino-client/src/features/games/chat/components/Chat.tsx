@@ -8,13 +8,22 @@ import { GameInfoModal } from "../../shared/components/modals/GameInfoModal";
 import { $chatMessages, resetMessages } from "../stores/chatStore";
 import { $userId } from "../../../auth/store/authStore";
 import { messageSent } from "../stores/chatStore";
-import { $currentTableId, $hasLeftTable } from "../../../gameTables/store/tablesStores";
-import { markLeftTable, sendLeaveTableMessage } from "../../../gameTables/store/tablesEvents";
+import {
+  $currentTableId,
+  $hasLeftTable,
+} from "../../../gameTables/store/tablesStores";
+import {
+  markLeftTable,
+  sendLeaveTableMessage,
+} from "../../../gameTables/store/tablesEvents";
 import { navigateTo } from "../../shared/router/navigateFx";
 import { InviteFriendButton } from "../../../friends/ui/InviteFriendButton";
-import { inviteFriendFromTable } from "../../../friends/stores/friends.events";
+import {
+  inviteFriendFromTable,
+  stopGameLoading,
+} from "../../../friends/stores/friends.events";
 import { $friends } from "../../../friends/stores/friends.store";
-
+import toast from "react-hot-toast";
 
 interface ChatProps {
   gameType: "poker" | "blackjack" | "roulette";
@@ -28,7 +37,7 @@ export const Chat = ({ gameType }: ChatProps) => {
 
   const chatMessages = useUnit($chatMessages);
 
-    useEffect(() => {
+  useEffect(() => {
     return () => {
       resetMessages();
     };
@@ -37,10 +46,12 @@ export const Chat = ({ gameType }: ChatProps) => {
   const [showInfo, setShowInfo] = useState(false);
 
   const handleSend = (text: string) => {
-    console.log("[Chat] Mensaje enviado:", text);
-    messageSent({ tableId, text });
+    if (tableId !== null) {
+      messageSent({ tableId, text });
+    } else {
+      toast.error("No hay una mesa activa para enviar mensajes.");
+    }
   };
-
   const handleLogout = () => {
     if (!hasLeft) {
       sendLeaveTableMessage();
@@ -51,8 +62,7 @@ export const Chat = ({ gameType }: ChatProps) => {
   };
 
   const onlineFriends = useUnit($friends).filter((f) => f.isOnline);
-  console.log("FRIENDS", onlineFriends)
-
+  console.log("FRIENDS", onlineFriends);
 
   return (
     <div className={styles.wrapper}>
@@ -98,15 +108,19 @@ export const Chat = ({ gameType }: ChatProps) => {
               if (tableId !== null) {
                 inviteFriendFromTable({ friendId, tableId });
               } else {
-                console.warn("No hay una mesa activa para enviar la invitación.");
+                console.warn(
+                  "No hay una mesa activa para enviar la invitación."
+                );
               }
             }}
           />
 
-
           <button
             className={styles.iconButton}
-            onClick={() => handleLogout()}
+            onClick={() => {
+              handleLogout();
+              stopGameLoading();
+            }}
           >
             <img
               src="/svg/logout_icon.svg"

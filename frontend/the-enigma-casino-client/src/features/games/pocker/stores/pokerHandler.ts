@@ -1,6 +1,5 @@
 import { socketMessageReceived } from "../../../../websocket/store/wsIndex";
 import { loadCoins } from "../../../coins/store/coinsStore";
-import { navigateTo } from "../../shared/router/navigateFx";
 import {
   pokerPhaseChanged,
   communityCardsUpdated,

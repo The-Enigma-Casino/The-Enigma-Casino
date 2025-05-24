@@ -8,11 +8,13 @@ import {
 import { IMAGE_PROFILE_URL } from "../../../../../config";
 import { CardStack } from "../GameCardStack";
 import { RoleChip } from "../../../pocker/components/RoleChip";
+import { GameCard } from "../../interfaces/gameCard.interface";
+import { CardRank, GameType, Suit } from "../../types/gameCard.type";
 
 type GamePlayer = {
   id: number;
   nickName: string;
-  hand: Card[];
+  hand: GameCard[];
   total?: number;
   bets?: { bet: string; amount: number }[];
   isTurn?: boolean;
@@ -43,6 +45,23 @@ export const GamePlayerCardList = ({
     return avatars.find((a) => a.nickName === nickName);
   };
 
+  const suitMap: Suit[] = ["Spades", "Hearts", "Clubs", "Diamonds"];
+  const rankMap: CardRank[] = [
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Jack",
+    "Queen",
+    "King",
+    "Ace",
+  ];
+
   useEffect(() => {
     avatars.forEach((avatar) => {
       const code = avatar.country?.toUpperCase();
@@ -70,50 +89,32 @@ export const GamePlayerCardList = ({
             : undefined;
           const flagUrl = country?.flags?.png;
 
-          let visibleCards;
+          let visibleCards: GameCard[];
 
           if (gameType === "Poker") {
             const revealed = revealedHands?.find((h) => h.userId === player.id);
 
             if (revealed) {
-              const suitNames = [
-                "spades",
-                "hearts",
-                "clubs",
-                "diamonds",
-              ] as const;
-              const rankNames = [
-                "two",
-                "three",
-                "four",
-                "five",
-                "six",
-                "seven",
-                "eight",
-                "nine",
-                "ten",
-                "jack",
-                "queen",
-                "king",
-                "ace",
-              ] as const;
-
               visibleCards = revealed.cards.map((card) => ({
-                suit: suitNames[card.suit],
-                rank: rankNames[card.rank - 2],
+                suit: suitMap[card.suit],
+                rank: rankMap[card.rank - 2],
                 value: 0,
                 gameType: "Poker",
               }));
             } else {
               visibleCards = player.hand.slice(0, 2).map((card) => ({
-                ...card,
-                gameType: "Poker",
+                suit: card.suit as Suit,
+                rank: card.rank as CardRank,
+                value: card.value,
+                gameType: "Poker" as GameType,
               }));
             }
           } else {
             visibleCards = player.hand.map((card) => ({
-              ...card,
-              gameType,
+              suit: card.suit as Suit,
+              rank: card.rank as CardRank,
+              value: card.value,
+              gameType: gameType as GameType,
             }));
           }
 

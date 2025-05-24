@@ -24,7 +24,6 @@ const gameLabels: Record<string, string> = {
 };
 
 export const FriendItem: React.FC<FriendItemProps> = ({
-  id,
   nickname,
   image,
   isFriend,

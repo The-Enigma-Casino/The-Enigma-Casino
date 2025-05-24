@@ -28,9 +28,7 @@ export default function Carousel() {
 
   return (
     <div className="w-full flex flex-col items-center justify-center pt-4 px-4">
-      {/* Wrapper visual con bordes */}
       <div className="w-full max-w-screen-xl rounded-2xl overflow-hidden">
-        {/* Carrusel funcional */}
         <div ref={emblaRef} className="w-full overflow-hidden">
           <div className="flex">
             {slides.map((slide) => (

@@ -5,7 +5,7 @@ interface FriendToastProps {
   id: string;
   image: string;
   nickname: string;
-  message: string;
+  message: React.ReactNode;
   onAccept?: () => void;
   onReject?: () => void;
   onClose?: () => void;
@@ -34,8 +34,8 @@ export const FriendToast: React.FC<FriendToastProps> = ({
             />
           </div>
           <div className="ml-3 flex-1">
-            <p className="text-sm font-medium text-gray-900">{nickname}</p>
-            <p className="mt-1 text-sm text-gray-500">{message}</p>
+            <p className="text-2xl font-medium text-gray-900">{nickname}</p>
+            <p className="mt-1 text-base text-gray-500">{message}</p>
           </div>
         </div>
       </div>

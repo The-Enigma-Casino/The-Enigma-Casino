@@ -1,8 +1,21 @@
 import { createStore, sample } from "effector";
 import {
-  setPlayers, setCroupier, setGameState, resetPlayers, resetCroupier, resetGameState, setCurrentTurnUserId, matchStarted, roundResultReceived, resetCroupierRoundHand,
-  resetRoundResults, setCroupierRoundHand, resetCroupierTotal,
-  setGamePhase, betsOpened, matchCancelled,
+  setPlayers,
+  setCroupier,
+  setGameState,
+  resetPlayers,
+  resetCroupier,
+  resetGameState,
+  setCurrentTurnUserId,
+  matchStarted,
+  roundResultReceived,
+  resetCroupierRoundHand,
+  resetRoundResults,
+  setCroupierRoundHand,
+  resetCroupierTotal,
+  setGamePhase,
+  betsOpened,
+  matchCancelled,
   countdownStarted,
   decrementCountdown,
   resetCountdown,
@@ -15,13 +28,12 @@ import {
   matchReadyReceived,
   localBetPlaced,
   resetBets,
-  gameStateReceived
+  gameStateReceived,
 } from "../store/bjEvents";
 import { navigateTo } from "../../shared/router/navigateFx";
 import { Player, Croupier, GameState } from "../../shared/types";
 import { $userId } from "../../../auth/store/authStore";
 import toast from "react-hot-toast";
-
 
 export const $players = createStore<Player[]>([])
   .on(setPlayers, (prevPlayers, newPlayers) =>
@@ -34,14 +46,23 @@ export const $players = createStore<Player[]>([])
     })
   )
   .on(gameStateReceived, (_, data) =>
-    data.players.map((p) => ({
-      id: p.userId,
-      name: p.nickname,
-      hand: p.hand,
-      total: p.total,
-      state: p.state,
-      bet: p.bet ?? 0,
-    }))
+    data.players.map(
+      (p: {
+        userId: number;
+        nickname: string;
+        hand: any[];
+        total: number;
+        state: string;
+        bet?: number;
+      }) => ({
+        id: p.userId,
+        name: p.nickname,
+        hand: p.hand,
+        total: p.total,
+        state: p.state,
+        bet: p.bet ?? 0,
+      })
+    )
   )
   .on(resetPlayers, () => [])
   .on(localBetPlaced, (players, amount) =>
@@ -49,10 +70,7 @@ export const $players = createStore<Player[]>([])
       p.id === Number($userId.getState()) ? { ...p, bet: amount } : p
     )
   )
-  .on(resetBets, (players) =>
-    players.map((p) => ({ ...p, bet: 0 }))
-  );
-
+  .on(resetBets, (players) => players.map((p) => ({ ...p, bet: 0 })));
 
 export const $croupier = createStore<Croupier>({ hand: [] })
   .on(setCroupier, (_, croupier) => croupier)
@@ -69,31 +87,37 @@ export const $gamePhase = createStore<
 
 $gamePhase.on(setGamePhase, (_, phase) => phase);
 
-export const $currentTurnUserId = createStore<number | null>(null)
-  .on(setCurrentTurnUserId, (_, id) => id);
+export const $currentTurnUserId = createStore<number | null>(null).on(
+  setCurrentTurnUserId,
+  (_, id) => id
+);
 
 $players.on(localBetPlaced, (players, amount) => {
-  return players.map(p =>
+  return players.map((p) =>
     p.id === Number($userId.getState()) ? { ...p, bet: amount } : p
   );
 });
 
-export const $roundResults = createStore<{
-  userId: number;
-  nickname: string;
-  result: "win" | "lose" | "draw" | "blackjack";
-  coinsChange: number;
-  finalTotal: number;
-}[]>([])
+export const $roundResults = createStore<
+  {
+    userId: number;
+    nickname: string;
+    result: "win" | "lose" | "draw" | "blackjack";
+    coinsChange: number;
+    finalTotal: number;
+  }[]
+>([])
   .on(roundResultReceived, (_, payload) => payload.results)
   .on(resetRoundResults, () => []);
 
 // Croupier
-export const $croupierRoundHand = createStore<{
-  rank: string;
-  suit: string;
-  value: number;
-}[]>([])
+export const $croupierRoundHand = createStore<
+  {
+    rank: string;
+    suit: string;
+    value: number;
+  }[]
+>([])
   .on(roundResultReceived, (_, payload) => payload.croupierHand)
   .on(setCroupierRoundHand, (_, cards) => cards)
   .on(resetCroupierRoundHand, () => []);
@@ -190,11 +214,10 @@ sample({
   fn: (localUserId, { userId, duration }) => ({
     userId,
     localUserId,
-    duration
+    duration,
   }),
-  target: turnCountdownTicked
+  target: turnCountdownTicked,
 });
-
 
 // Inactividad
 sample({
@@ -203,7 +226,7 @@ sample({
     toast.error("Has sido expulsado de la mesa por inactividad.");
     return "/";
   },
-  target: navigateTo
+  target: navigateTo,
 });
 
 sample({

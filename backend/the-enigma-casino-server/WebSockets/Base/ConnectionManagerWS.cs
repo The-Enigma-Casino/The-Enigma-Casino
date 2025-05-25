@@ -9,8 +9,12 @@ public class ConnectionManagerWS
 {
     private readonly ConcurrentDictionary<string, WebSocket> _connections = new();
 
+    private readonly ConcurrentDictionary<string, int> _reconnectAttempts = new();
+    private const int MaxReconnectAttempts = 5;
+
+
     public event Action<string> OnUserDisconnected;
-    public event Action<string> OnUserConnected; //User connected friendsOnline
+    public event Action<string> OnUserConnected;
 
     public void AddConnection(string userId, WebSocket webSocket)
     {
@@ -18,22 +22,26 @@ public class ConnectionManagerWS
         {
             if (existingSocket.State == WebSocketState.Open || existingSocket.State == WebSocketState.Connecting)
             {
-                try
+                if (_reconnectAttempts.TryGetValue(userId, out var attempts) && attempts >= MaxReconnectAttempts)
                 {
-                    existingSocket.Abort();
-                    existingSocket.Dispose();
-                    Console.WriteLine($"🔁 Reemplazada conexión previa de {userId}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"❌ Error cerrando WebSocket anterior para {userId}: {ex.Message}");
+                    Console.WriteLine($"⛔ Usuario {userId} ha superado el límite de reconexiones ({MaxReconnectAttempts}). Conexión rechazada.");
+                    try
+                    {
+                        webSocket.Abort();
+                        webSocket.Dispose();
+                    }
+                    catch { }
+
+                    return;
                 }
             }
         }
 
         _connections[userId] = webSocket;
-        Console.WriteLine($"✅ Conexión WebSocket activa para {userId}");
-        OnUserConnected?.Invoke(userId); //User connected friendsOnline
+        _reconnectAttempts.AddOrUpdate(userId, 1, (_, current) => current + 1);
+        Console.WriteLine($"✅ Conexión WebSocket activa para {userId} (Intento #{_reconnectAttempts[userId]})");
+
+        OnUserConnected?.Invoke(userId);
 
         if (int.TryParse(userId, out int id))
         {
@@ -66,6 +74,7 @@ public class ConnectionManagerWS
                 Console.WriteLine($"🔴 Usuario {id} marcado como Offline");
             }
 
+            _reconnectAttempts.TryRemove(userId, out _);
             var handler = OnUserDisconnected;
             handler?.Invoke(userId);
         }

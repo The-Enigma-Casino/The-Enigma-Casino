@@ -279,7 +279,6 @@ public class PokerGame
 
     // Showdown y reparto del bote
 
-
     public void GeneratePots()
     {
         _pots.Clear();
@@ -443,8 +442,11 @@ public class PokerGame
         }
 
         List<Player> activePlayers = _players
-            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
-            .ToList();
+        .Where(p =>
+            (p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
+            && !p.HasAbandoned
+        ).ToList();
+
 
         Console.WriteLine("[DEBUG] Jugadores activos detectados para el showdown:");
         foreach (var p in activePlayers)
@@ -452,26 +454,26 @@ public class PokerGame
             Console.WriteLine($" - {p.User.NickName}");
         }
 
-
         if (!activePlayers.Any())
         {
             Console.WriteLine("No hay jugadores activos para el showdown.");
             return;
         }
 
+        (int rake, int distributablePot) = CalculateRakeForShowdown();
         if (activePlayers.Count == 1)
         {
             Player winner = activePlayers.First();
-            int totalPot = _pots.Sum(p => p.Amount);
 
-            winner.Win(totalPot);
-            PokerBetTracker.RegisterWinnings(winner.GameTableId, winner.UserId, totalPot);
+            winner.Win(distributablePot);
+            PokerBetTracker.RegisterWinnings(winner.GameTableId, winner.UserId, distributablePot);
 
             _lastShowdownSummary.Add(new
             {
                 userId = winner.UserId,
                 nickname = winner.User.NickName,
-                amount = totalPot,
+                amount = distributablePot,
+                rake,
                 description = "Ganador automático (único jugador activo)",
                 hand = winner.Hand.Cards.Select(c => new
                 {
@@ -491,6 +493,7 @@ public class PokerGame
         UpdatePlayerStates();
         _pots.Clear();
     }
+
 
     private List<EvaluatedHand> EvaluatePlayerHands(List<Player> activePlayers)
     {
@@ -545,4 +548,33 @@ public class PokerGame
     {
         return _players.Select(p => (p, p.CurrentBet));
     }
+
+    private bool WonByEarlyAbandonment()
+    {
+        string phase = GetCurrentPhase();
+
+        bool noBets = _pots.Sum(p => p.Amount) <= 20;
+
+        return _players.Count(p => p.PlayerState == PlayerState.Playing) == 1
+               && (phase == "preflop" || phase == "flop")
+               && noBets;
+    }
+    private (int rake, int distributable) CalculateRakeForShowdown()
+    {
+        int totalPot = _pots.Sum(p => p.Amount);
+
+        if (WonByEarlyAbandonment())
+        {
+            Console.WriteLine($"[RAKE] No se aplica rake: abandono temprano. Pot: {totalPot}.");
+            return (0, totalPot);
+        }
+
+        int rake = CalculateRake(totalPot);
+        int net = totalPot - rake;
+
+        Console.WriteLine($"[RAKE] Aplicando rake de {rake} fichas sobre pot de {totalPot}. Neto: {net}");
+        return (rake, net);
+    }
+
+
 }

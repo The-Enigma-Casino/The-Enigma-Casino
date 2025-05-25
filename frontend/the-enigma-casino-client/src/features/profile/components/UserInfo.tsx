@@ -17,7 +17,7 @@ import {
   sendFriendRequestWs,
   startGameLoading,
 } from "../../friends/stores/friends.events";
-import { $onlineFriendsMap } from "../../friends/stores/friends.store";
+import { $friends, $onlineFriendsMap } from "../../friends/stores/friends.store";
 
 interface UserData {
   id?: number;
@@ -40,8 +40,11 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
   const { name, email, nickname, address, country, coins, image, role } = user;
   const navigate = useNavigate();
   const onlineFriends = useUnit($onlineFriendsMap);
+  console.log("Online Friends Map:", onlineFriends);
   const isOnline = onlineFriends.has(Number(user.id));
+  const isStatusFriend = useUnit($friends);
 
+  const isPlaying = isStatusFriend.find((f) => f.status === "Playing");
 
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -196,48 +199,53 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
               </div>
             )}
 
-            {isFriend && (
-              isOnline ? (
-                <div className="relative" ref={dropdownRef}>
-                  <Button
-                    variant="bigPlus"
-                    color="green"
-                    font="bold"
-                    onClick={() => setShowDropdown((prev) => !prev)}
-                  >
-                    Invitar a partida ⏷
-                  </Button>
+            {isFriend && isOnline && !isPlaying && (
 
-                  {showDropdown && (
-                    <div className="absolute top-[110%] right-0 w-104 text-2xl bg-Background-Overlay border border-Principal rounded-xl shadow-xl z-50 overflow-hidden">
-                      {[
-                        { label: "Mesa de Blackjack", value: "BlackJack" },
-                        { label: "Mesa de Poker", value: "Poker" },
-                        { label: "Mesa de Ruleta", value: "Roulette" },
-                      ].map((item) => (
-                        <button
-                          key={item.value}
-                          onClick={() => {
-                            if (user.id !== undefined) {
-                              startGameLoading();
-                              inviteFriendFromList({
-                                friendId: user.id,
-                                gameType: item.value,
-                              });
-                              setShowDropdown(false);
-                            }
-                          }}
-                          className="w-full px-4 py-2 text-white hover:bg-zinc-700 transition"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-gray-400 text-4xl">Tu amigo está desconectado</p>
-              )
+              <div className="relative" ref={dropdownRef}>
+                <Button
+                  variant="bigPlus"
+                  color="green"
+                  font="bold"
+                  onClick={() => setShowDropdown((prev) => !prev)}
+                >
+                  Invitar a partida ⏷
+                </Button>
+
+                {showDropdown && (
+                  <div className="absolute top-[110%] right-0 w-104 text-2xl bg-Background-Overlay border border-Principal rounded-xl shadow-xl z-50 overflow-hidden">
+                    {[
+                      { label: "Mesa de Blackjack", value: "BlackJack" },
+                      { label: "Mesa de Poker", value: "Poker" },
+                      { label: "Mesa de Ruleta", value: "Roulette" },
+                    ].map((item) => (
+                      <button
+                        key={item.value}
+                        onClick={() => {
+                          if (user.id !== undefined) {
+                            startGameLoading();
+                            inviteFriendFromList({
+                              friendId: user.id,
+                              gameType: item.value,
+                            });
+                            setShowDropdown(false);
+                          }
+                        }}
+                        className="w-full px-4 py-2 text-white hover:bg-zinc-700 transition"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {isFriend && isPlaying && (
+              <p className="text-yellow-400 text-4xl">Tu amigo está en una partida</p>
+            )}
+
+            {isFriend && !isOnline && (
+              <p className="text-gray-400 text-4xl">Tu amigo está desconectado</p>
             )}
 
             {isStranger && user.id !== undefined && (

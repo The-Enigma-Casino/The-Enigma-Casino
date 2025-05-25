@@ -28,7 +28,6 @@ export const FriendItem: React.FC<FriendItemProps> = ({
   nickname,
   image,
   isFriend,
-  isOnline,
   status = "Online",
   mode,
   canSend,
@@ -61,11 +60,11 @@ export const FriendItem: React.FC<FriendItemProps> = ({
           <>
             <div className="flex items-center gap-1 text-lg">
               <span
-                className={`w-2.5 h-2.5 rounded-full ${isPlayingStatus ? "bg-yellow-400" : isOnlineStatus ? "bg-green-400" : "bg-red-500"
+                className={`w-2.5 h-2.5 rounded-full ${isPlayingStatus ? "bg-yellow-400" : isOnlineStatus ? "bg-Principal" : "bg-red-500"
                   }`}
               ></span>
               <span className="text-gray-400 font-light text-base self-start">
-                {isPlayingStatus ? "JUGANDO" : isOnlineStatus ? "EN LÍNEA" : "DESCONECTADO"}
+                {isPlayingStatus ? "EN PARTIDA" : isOnlineStatus ? "EN LÍNEA" : "DESCONECTADO"}
               </span>
             </div>
           </>

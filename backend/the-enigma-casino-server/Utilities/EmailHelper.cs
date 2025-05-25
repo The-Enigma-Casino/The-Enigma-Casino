@@ -14,6 +14,8 @@ public class EmailHelper
     public static async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
     {
         string useGmail = Environment.GetEnvironmentVariable(USE_GMAIL_API)?.Trim().ToLower();
+        Console.WriteLine(useGmail);
+        Console.WriteLine($"🔍 Enviando correo a {to} usando {(useGmail == "true" ? "Gmail API" : "SMTP")}...");
         if (useGmail == "true")
         {
             try

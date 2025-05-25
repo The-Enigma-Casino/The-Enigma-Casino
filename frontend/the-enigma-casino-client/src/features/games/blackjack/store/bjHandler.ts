@@ -5,8 +5,6 @@ import { gameStateReceived, betConfirmed, roundResultReceived, errorReceived, be
 socketMessageReceived.watch((data) => {
   if (data.type !== "blackjack") return;
 
-  console.log("[WS]", JSON.stringify(data, null, 2));
-
   switch (data.action) {
     case "game_state":
       gameStateReceived(data);
@@ -40,8 +38,6 @@ socketMessageReceived.watch((data) => {
       break;
     case "match_ready": {
       const tableId = $currentTableId.getState();
-
-      console.log(tableId);
 
       if (tableId !== null) {
         matchReadyReceived(tableId);

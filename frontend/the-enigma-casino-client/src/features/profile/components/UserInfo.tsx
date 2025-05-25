@@ -40,7 +40,6 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
   const { name, email, nickname, address, country, coins, image, role } = user;
   const navigate = useNavigate();
   const onlineFriends = useUnit($onlineFriendsMap);
-  console.log("Online Friends Map:", onlineFriends);
   const isOnline = onlineFriends.has(Number(user.id));
   const isStatusFriend = useUnit($friends);
 

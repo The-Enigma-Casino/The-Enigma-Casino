@@ -9,15 +9,31 @@ public class EmailHelper
     private const int SMTP_PORT = 587;
     private const string EMAIL_FROM = "theenigmacasino@gmail.com";
     private const string PASSWORD_EMAIL_FROM = "EMAIL_KEY";
+    private const string USE_GMAIL_API = "USE_GMAIL_API";
 
     public static async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
     {
+        if (Environment.GetEnvironmentVariable(USE_GMAIL_API)?.ToLower() == "true")
+        {
+            try
+            {
+                GmailApiHelper gmail = new GmailApiHelper("credentials.json", "tokens");
+                await gmail.SendEmailAsync(to, subject, body);
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("⚠️ Error con Gmail API. Intentando con SMTP...");
+                Console.WriteLine($"  Error: {ex.Message}");
+            }
+        }
+
         string key = Environment.GetEnvironmentVariable(PASSWORD_EMAIL_FROM);
 
         if (string.IsNullOrWhiteSpace(key))
         {
-            Console.WriteLine("❌ EMAIL_KEY is not configured.");
-            throw new InvalidOperationException("EMAIL_KEY is not configured in environment variables.");
+            Console.WriteLine("❌ EMAIL_KEY no está configurado.");
+            throw new InvalidOperationException("EMAIL_KEY no está configurado en variables de entorno.");
         }
 
         System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -37,21 +53,12 @@ public class EmailHelper
             };
 
             await client.SendMailAsync(mail);
-
-        }
-        catch (SmtpException smtpEx)
-        {
-            Console.WriteLine($"  StatusCode: {smtpEx.StatusCode}");
-            Console.WriteLine($"  Message: {smtpEx.Message}");
-            Console.WriteLine($"  InnerException: {smtpEx.InnerException?.Message}");
-            throw new Exception("Error al enviar el correo electrónico. Verifique las credenciales y la conexión.", smtpEx);
+            Console.WriteLine($"📧 Enviado por SMTP a {to}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"  Type: {ex.GetType()}");
-            Console.WriteLine($"  Message: {ex.Message}");
-            Console.WriteLine($"  StackTrace: {ex.StackTrace}");
-            throw new Exception("Error al enviar el correo electrónico.", ex);
+            Console.WriteLine($"❌ Falló también por SMTP: {ex.Message}");
+            throw;
         }
     }
 }

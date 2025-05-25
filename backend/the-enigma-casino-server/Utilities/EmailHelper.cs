@@ -13,7 +13,8 @@ public class EmailHelper
 
     public static async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
     {
-        if (Environment.GetEnvironmentVariable(USE_GMAIL_API)?.ToLower() == "true")
+        string useGmail = Environment.GetEnvironmentVariable(USE_GMAIL_API)?.Trim().ToLower();
+        if (useGmail == "true")
         {
             try
             {

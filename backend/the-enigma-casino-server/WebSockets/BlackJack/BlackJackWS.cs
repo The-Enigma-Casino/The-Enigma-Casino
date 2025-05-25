@@ -598,7 +598,14 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
                     {
                         IGameBetInfoProvider provider = resolver.Resolve(match.GameTable.GameType);
                         bool matchPlayed = provider.HasPlayedThisMatch(player, match);
-                        await matchManager.UpdateOrInsertHistoryAsync(player, match, playerLeftTable: false, matchPlayed);
+                        bool playerLeftTable = player.PlayerState == PlayerState.Left;
+
+                        Console.WriteLine($"📝 [Historial] Guardando historial para {player.User.NickName}:");
+                        Console.WriteLine($"    - matchPlayed: {matchPlayed}");
+                        Console.WriteLine($"    - playerLeftTable: {playerLeftTable}");
+                        Console.WriteLine($"    - state actual: {player.PlayerState}");
+
+                        await matchManager.UpdateOrInsertHistoryAsync(player, match, playerLeftTable, matchPlayed);
                     }
                 }
             }
@@ -631,6 +638,8 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
 
             if (ActiveGameSessionStore.TryGet(tableId, out var session))
             {
+                Console.WriteLine($"🕰️ [DEBUG] StartPostMatchTimer iniciado para mesa {tableId} en {DateTime.Now:HH:mm:ss.fff}");
+
                 session.StartPostMatchTimer(20_000, async () =>
                 {
                     var gameMatchWS = GetScopedService<GameMatchWS>(out var scope);
@@ -721,6 +730,11 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
 
         if (blackjackGame.CurrentPlayerTurnId != userId) return;
 
+        if (ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            session.CancelTurnTimer();
+        }
+
         Console.WriteLine($"🔄 [BlackjackWS] Forzando avance de turno tras la salida del jugador {userId}...");
         await AdvanceTurnAsync(blackjackGame, match, tableId);
         await BroadcastGameStateAsync(match, blackjackGame);
@@ -736,6 +750,8 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
 
     private async Task ForceStandAndAdvanceTurnAsync(int userId, int tableId)
     {
+        Console.WriteLine($"⏰ [DEBUG] ForceStandAndAdvanceTurnAsync ejecutado para userId {userId} en mesa {tableId} a {DateTime.Now:HH:mm:ss.fff}");
+
         if (!ActiveGameMatchStore.TryGet(tableId, out var match)) return;
         if (!TryGetPlayer(match, userId.ToString(), out Player player)) return;
         if (!ActiveBlackjackGameStore.TryGet(tableId, out BlackjackGame blackjackGame)) return;

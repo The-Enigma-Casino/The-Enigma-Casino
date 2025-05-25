@@ -17,6 +17,7 @@ import {
   resetPokerGame,
   roundResultReceived,
   removedByInactivity,
+  opponentLeftReceived,
 } from "../stores/pokerIndex";
 
 socketMessageReceived.watch((data) => {
@@ -121,6 +122,13 @@ socketMessageReceived.watch((data) => {
     case "removed_by_inactivity":
       removedByInactivity();
       break;
+
+    case "opponent_left": {
+      console.log("[WS] El oponente ha abandonado");
+      opponentLeftReceived();
+      break;
+    }
+    
     default:
       break;
   }

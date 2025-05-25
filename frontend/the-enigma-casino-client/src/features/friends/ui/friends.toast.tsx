@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { FriendToast } from "./FriendToast";
-import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, bellNotification, bellReset, newFriendRequestsDetected, rejectFriendRequest, rejectGameInvite, startGameLoading } from "../stores/friends.events";
+import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, bellReset, newFriendRequestsDetected, rejectFriendRequest, rejectGameInvite, startGameLoading } from "../stores/friends.events";
 import { IMAGE_PROFILE_URL } from "../../../config";
 
 const gameTypeMap: Record<number, { label: string; img: string }> = {
@@ -96,7 +96,7 @@ newFriendRequestsDetected.watch((newRequests) => {
       />
     ),
       {
-        duration: 20000,
+        duration: 4000,
       });
   });
 });

@@ -385,6 +385,12 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             session.StartPostMatchTimer(15_000, async () =>
             {
+                if (!ActiveGameSessionStore.TryGet(tableId, out _))
+                {
+                    Console.WriteLine($"⛔ [PostMatchTimer] Mesa {tableId} ya no existe. Cancelando evaluación.");
+                    return;
+                }
+
                 Console.WriteLine($"[RouletteWS] Finalizando Match para mesa {tableId} tras espera de resultados.");
 
                 using var scope = _serviceProvider.CreateScope();

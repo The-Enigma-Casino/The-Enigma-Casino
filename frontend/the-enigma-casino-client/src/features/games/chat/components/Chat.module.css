@@ -5,6 +5,7 @@
 }
 
 .mainArea {
+  align-items: center;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -17,7 +18,6 @@
   font-weight: bold;
 }
 
-
 .container {
   display: flex;
   flex-direction: column;
@@ -28,8 +28,8 @@
   border-radius: 2rem;
   margin-top: 0.5rem;
   overflow: hidden;
+  width: 100%;
 }
-
 
 .messages {
   flex-grow: 1;
@@ -40,7 +40,7 @@
   padding: 0.5rem 1rem;
 
   --sb-track-color: transparent;
-  --sb-thumb-color: rgba(180, 180, 180, 0.6);  
+  --sb-thumb-color: rgba(180, 180, 180, 0.6);
   --sb-thumb-hover: rgba(220, 220, 220, 0.9);
   --sb-size: 8px;
 
@@ -73,14 +73,12 @@
   }
 }
 
-
 .inputWrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 0.5rem 1rem;
 }
-
 
 .coinsDisplay {
   width: 100%;
@@ -101,10 +99,23 @@
   object-fit: contain;
 }
 
-
 .footer {
   margin-top: auto;
   display: flex;
   justify-content: space-between;
   padding: 0.75rem 1rem;
+  gap: 4rem;
+}
+
+@media (max-width: 1000px) {
+  .container {
+    background-color: rgba(0, 128, 0, 0.12);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    width: 80%;
+  }
+
+  .footer {
+    gap: 10rem;
+  }
 }

@@ -90,6 +90,7 @@ socketMessageReceived.watch((data) => {
     case "player_action":
       myTurnEnded();
       break;
+
     case "round_result":
       pokerPhaseChanged("showdown");
       roundResultReceived({
@@ -100,12 +101,32 @@ socketMessageReceived.watch((data) => {
       myTurnEnded();
       break;
 
-    case "flop_dealt":
+    case "flop_dealt": {
+      const cards = data.cards.map((c: any) => ({
+        suit: c.suit,
+        rank: c.rank,
+        value: 0,
+        gameType: "Poker",
+      }));
       pokerPhaseChanged("flop");
-      return;
-    case "turn_dealt":
+      myTurnEnded();
+      communityCardsUpdated(cards);
+      break;
+    }
+
+    case "turn_dealt": {
+      const cards = data.cards.map((c: any) => ({
+        suit: c.suit,
+        rank: c.rank,
+        value: 0,
+        gameType: "Poker",
+      }));
       pokerPhaseChanged("turn");
-      return;
+      myTurnEnded();
+      communityCardsUpdated(cards);
+      break;
+    }
+
     case "river_dealt": {
       const cards = data.cards.map((c: any) => ({
         suit: c.suit,
@@ -128,7 +149,7 @@ socketMessageReceived.watch((data) => {
       opponentLeftReceived();
       break;
     }
-    
+
     default:
       break;
   }

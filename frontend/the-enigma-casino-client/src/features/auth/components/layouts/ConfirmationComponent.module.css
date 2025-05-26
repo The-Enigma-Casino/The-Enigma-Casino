@@ -50,7 +50,7 @@
   background: linear-gradient(to right, #222, #111);
   z-index: 2;
   transition: transform 1.5s ease-in-out;
-  background-image: url("https://images.vexels.com/media/users/17482/101168/preview2/01bdac45c37aff22f75230abf3f019d4-red-curtain-background.png");
+  background-image: url("/img/curtain.webp");
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -62,7 +62,7 @@
 .right {
   right: 0;
   background: linear-gradient(to left, #222, #111);
-  background-image: url("https://images.vexels.com/media/users/17482/101168/preview2/01bdac45c37aff22f75230abf3f019d4-red-curtain-background.png");
+  background-image: url("/img/curtain.webp");
   background-repeat: no-repeat;
   background-size: cover;
 }

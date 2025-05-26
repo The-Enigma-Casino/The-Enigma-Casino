@@ -554,7 +554,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 {
                     GameType.BlackJack => "blackjack",
                     GameType.Poker => "poker",
-                    GameType.Roulette => "rulette",
+                    GameType.Roulette => "roulette",
                     _ => "game_match"
                 };
 

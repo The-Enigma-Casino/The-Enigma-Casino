@@ -2,9 +2,11 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
+using the_enigma_casino_server.Websockets.Roulette;
 using the_enigma_casino_server.WebSockets.Base;
 using the_enigma_casino_server.WebSockets.GameMatch;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
@@ -144,6 +146,9 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     });
                     return;
                 }
+                user.Status = UserStatus.Playing;
+                UserStatusStore.SetStatus(user.Id, UserStatus.Playing);// Status playin
+                _connectionManager.RaiseUserStatusChanged(userId.ToString());
 
             }
             finally
@@ -317,8 +322,21 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             var matchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
             await matchWS.ProcessPlayerMatchLeaveAsync(tableId, userId);
+
+            UserStatusStore.SetStatus(userId, UserStatus.Online);
+            _connectionManager.RaiseUserStatusChanged(userId.ToString());
             return;
         }
+
+        if (player.GameMatch != null)
+        {
+            Console.WriteLine($"🔍 [LeaveTable] {player.User.NickName} sigue vinculado a un match con estado: {player.GameMatch.MatchState}");
+        }
+        else
+        {
+            Console.WriteLine($"🔍 [LeaveTable] {player.User.NickName} no está vinculado a ningún match.");
+        }
+
 
         tableManager.RegisterJoinAttempt(userId);
         PlayerLeaveResult result = tableManager.RemovePlayerFromTable(table, userId, out var removedPlayer);
@@ -352,7 +370,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     type = "game_table",
                     action = GameTableMessageTypes.CountdownStopped,
                     tableId
-                });             
+                });
             }
 
             unitOfWork.GameTableRepository.Update(table);
@@ -373,6 +391,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 type = "game_table",
                 action = "leave_success"
             });
+
+            await TryPromoteSpectatorsAndStartMatchAsync(tableId);
         }
         else
         {
@@ -447,5 +467,127 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         return ActiveGameMatchStore.TryGet(tableId, out Match match)
                && match.MatchState == MatchState.InProgress;
+    }
+
+    public async Task<bool> TryPromoteSpectatorsAndStartMatchAsync(int tableId)
+    {
+        Console.WriteLine($"🧪 [Promoción] Evaluando promoción en mesa {tableId}");
+
+        if (!ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            Console.WriteLine($"❌ [Promoción] No se encontró sesión activa para mesa {tableId}");
+            return false;
+        }
+
+        var table = session.Table;
+
+        Console.WriteLine($"📋 [Promoción] Jugadores en la mesa {tableId}:");
+        foreach (var p in table.Players)
+        {
+            Console.WriteLine($" - {p.User.NickName} | Estado: {p.PlayerState} | Abandonado: {p.HasAbandoned}");
+        }
+
+
+        bool allRealPlayersGone = table.Players.All(p =>
+             p.PlayerState != PlayerState.Playing && p.PlayerState != PlayerState.Waiting);
+
+
+        var spectators = table.Players.Where(p => p.PlayerState == PlayerState.Spectating).ToList();
+
+        if (!allRealPlayersGone || spectators.Count == 0)
+            return false;
+
+        Console.WriteLine($"👥 [GameTableWS] Todos los jugadores se fueron, y hay {spectators.Count} espectadores. Promoviéndolos...");
+
+        foreach (var spectator in spectators)
+        {
+            spectator.PlayerState = PlayerState.Waiting;
+            spectator.HasAbandoned = false;
+            Console.WriteLine($"👤 Promovido: {spectator.User.NickName}");
+        }
+
+        using var scope = _serviceProvider.CreateScope();
+        var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+        uow.GameTableRepository.Update(table);
+        await uow.SaveAsync();
+
+        var gameTableWS = scope.ServiceProvider.GetRequiredService<GameTableWS>();
+        await gameTableWS.BroadcastTableUpdateAsync(
+            table,
+            session.GetConnectedUserIds(),
+            session.GetPlayerNames().ToArray());
+
+        int activePlayers = table.Players.Count(p => p.PlayerState == PlayerState.Waiting);
+
+        if (activePlayers >= table.MinPlayer)
+        {
+            table.TableState = TableState.Starting;
+            uow.GameTableRepository.Update(table);
+            await uow.SaveAsync();
+
+            var matchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
+
+            var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+            var playersToRemove = table.Players
+                .Where(p => p.PlayerState == PlayerState.Left || p.HasAbandoned)
+                .ToList();
+
+            foreach (var p in playersToRemove)
+            {
+                tblMgr.RemovePlayerFromTable(table, p.UserId, out _);
+                Console.WriteLine($"🧹 [Promoción] Eliminado {p.User.NickName} de la mesa antes de iniciar partida.");
+            }
+
+            if (table.GameType == GameType.Roulette)
+            {
+                var rouletteWS = scope.ServiceProvider.GetRequiredService<RouletteWS>();
+                await rouletteWS.RestartRoundForSpectatorsAsync(table.Id);
+            }
+            else
+            {
+                await matchWS.StartMatchForTableAsync(table.Id);
+            }
+
+            foreach (var promoted in spectators)
+            {
+                string actionType = table.GameType switch
+                {
+                    GameType.BlackJack => "blackjack",
+                    GameType.Poker => "poker",
+                    GameType.Roulette => "roulette",
+                    _ => "game_match"
+                };
+
+                Console.WriteLine($"📨 [RouletteWS] Enviando match_ready a {promoted.User.NickName} en mesa {table.Id}");
+                await ((IWebSocketSender)this).SendToUserAsync(promoted.UserId.ToString(), new
+                {
+                    type = actionType,
+                    action = "match_ready",
+                    tableId,
+                    message = "¡Estás dentro de la próxima partida! Prepárate para jugar 🎲"
+                });
+            }
+
+            Console.WriteLine($"🟢 [GameTableWS] Partida iniciada automáticamente tras promover espectadores en mesa {table.Id}.");
+            return true;
+        }
+
+        if (table.GameType == GameType.Poker)
+        {
+            Console.WriteLine($"♠️ [GameTableWS] Jugador listo en mesa de Poker {table.Id} pero sin oponente. Enviando aviso...");
+
+            foreach (var userId in session.GetConnectedUserIds())
+            {
+                await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                {
+                    type = "game_table",
+                    action = "waiting_opponent",
+                    tableId = table.Id,
+                    message = "Estás listo para jugar, pero necesitas al menos un oponente. Esperando más jugadores..."
+                });
+            }
+        }
+
+        return false;
     }
 }

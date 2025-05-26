@@ -1,8 +1,10 @@
+export type UserStatus = "Online" | "Offline" | "Playing";
 export interface Friend {
   id: number,
   nickName: string,
   image: string,
-  isOnline?: boolean
+  isOnline?: boolean,
+  status?: UserStatus
 }
 
 export interface SearchUser {

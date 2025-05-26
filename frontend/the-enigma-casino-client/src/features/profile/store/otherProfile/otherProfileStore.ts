@@ -32,8 +32,9 @@ loadOtherUserProfile.watch((userId) => {
   loadOtherUserProfileFx(userId);
 });
 
-loadOtherUserHistory.watch(({ userId, page }) => {
-  getOtherUserHistoryFx({ userId, page });
+sample({
+  clock: loadOtherUserHistory,
+  target: getOtherUserHistoryFx,
 });
 
 sample({

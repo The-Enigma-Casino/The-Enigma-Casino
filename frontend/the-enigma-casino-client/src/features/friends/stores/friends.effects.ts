@@ -18,7 +18,6 @@ import { Friend, FriendRequest } from "./friends.types";
 
 // Obtener todos los amigos del usuario
 export const fetchFriendsFx = createEffect(async (): Promise<Friend[]> => {
-  console.log("[HTTP] Llamando a GET /api/friendrequest/friends");
   const response = await axios.get(GET_FRIENDS, {
     headers: getAuthHeaders(),
   });
@@ -84,7 +83,6 @@ export const searchUserFx = createEffect(async (query: string) => {
   const response = await axios.get(`${SEARCH_USERS}?query=${query}`, {
     headers: getAuthHeaders(),
   });
-  console.log("[DEBUG] Response de backend:", response.data);
   return response.data;
 });
 

@@ -1,7 +1,6 @@
 import { createStore, createEvent, sample } from "effector";
 import { loginFx, registerFx } from "../actions/authActions";
 import {
-  clearStorage,
   deleteLocalStorage,
   deleteSessionStorage,
   getVarLS,
@@ -16,6 +15,7 @@ import { SessionCheckResult } from "../models/SessionCheckResult.type";
 
 import { toast } from "react-hot-toast";
 import { getUserImageFx } from "../../profile/store/profile/profileEffects";
+import { logoutUser } from "../utils/logout";
 
 const storedToken: string =
   getVarLS("token") || getVarSessionStorage("token") || "";
@@ -160,7 +160,6 @@ sample({
 export const logoutWithReason = createEvent<string>();
 
 logoutWithReason.watch((reason) => {
-  clearToken();
   console.error("Sesión inválida:", reason);
 
   if (reason === "Cuenta baneada") {
@@ -171,7 +170,7 @@ logoutWithReason.watch((reason) => {
     toast("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
   }
 
-  clearStorage();
+  logoutUser();
 });
 
 sample({

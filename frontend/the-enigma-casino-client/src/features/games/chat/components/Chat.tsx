@@ -36,6 +36,7 @@ export const Chat = ({ gameType }: ChatProps) => {
   const hasLeft = useUnit($hasLeftTable);
 
   const chatMessages = useUnit($chatMessages);
+  const onlineFriends = useUnit($friends);
 
   useEffect(() => {
     return () => {
@@ -61,8 +62,7 @@ export const Chat = ({ gameType }: ChatProps) => {
     navigateTo("/");
   };
 
-  const onlineFriends = useUnit($friends).filter((f) => f.isOnline);
-  console.log("FRIENDS", onlineFriends);
+  const isOnlineFriends = onlineFriends.filter((f) => f.isOnline && f.status !== "Playing");
 
   return (
     <div className={styles.wrapper}>
@@ -103,7 +103,7 @@ export const Chat = ({ gameType }: ChatProps) => {
 
           <InviteFriendButton
             className={styles.iconButton}
-            onlineFriends={onlineFriends}
+            onlineFriends={isOnlineFriends}
             onInvite={(friendId) => {
               if (tableId !== null) {
                 inviteFriendFromTable({ friendId, tableId });

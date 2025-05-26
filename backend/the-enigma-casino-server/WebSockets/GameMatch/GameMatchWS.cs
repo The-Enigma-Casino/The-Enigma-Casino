@@ -1,6 +1,5 @@
-﻿// GameMatchWS.cs
-
-using System.Text.Json;
+﻿using System.Text.Json;
+using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
@@ -165,6 +164,36 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             await GameMatchHelper.NotifyOthersPlayerLeftAsync(this, match, userId, tableId);
             await GameMatchHelper.TryCancelMatchAsync(this, match, manager, tableManager, tableId);
             await GameMatchHelper.CheckGamePostExitLogicAsync(match, tableId, _serviceProvider);
+
+            var table = match.GameTable;
+
+            bool allPlayersGone = table.Players.All(p => p.PlayerState == PlayerState.Left || p.HasAbandoned);
+
+            if (allPlayersGone)
+            {
+                var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+                table.TableState = TableState.Waiting;
+                uow.GameTableRepository.Update(table);
+                await uow.SaveAsync();
+
+                if (ActiveGameSessionStore.TryGet(table.Id, out var session))
+                {
+                    session.CancelBettingTimer();
+                    session.CancelTurnTimer();
+                    session.CancelPostMatchTimer();
+                }
+
+                ActiveGameSessionStore.Remove(table.Id);
+                ActiveGameMatchStore.Remove(table.Id);
+
+                Console.WriteLine($"🧹 [MatchWS] Todos los jugadores se fueron. Mesa {table.Id} eliminada y timers cancelados.");
+            }
+            else
+            {
+                var gameTableWS = _serviceProvider.GetRequiredService<GameTableWS>();
+                await gameTableWS.TryPromoteSpectatorsAndStartMatchAsync(tableId);
+            }
         }
     }
 

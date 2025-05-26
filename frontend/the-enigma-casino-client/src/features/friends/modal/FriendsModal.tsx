@@ -131,6 +131,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
               key={friend.id}
               id={friend.id}
               nickname={friend.nickName}
+              status={friend.status as "Online" | "Playing"}
               image={friend.image}
               isFriend={true}
               isOnline={friend.isOnline}

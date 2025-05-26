@@ -8,16 +8,39 @@ public class EmailHelper
     private const string SMTP_HOST = "smtp.gmail.com";
     private const int SMTP_PORT = 587;
     private const string EMAIL_FROM = "theenigmacasino@gmail.com";
-    private const string PASSWORD_EMAIL_FROM = "EMAIL_KEY"; 
+    private const string PASSWORD_EMAIL_FROM = "EMAIL_KEY";
+    private const string USE_GMAIL_API = "USE_GMAIL_API";
 
     public static async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
     {
+        Console.WriteLine($"🔗 Enviando correo a {to}...");
+        string useGmail = Environment.GetEnvironmentVariable(USE_GMAIL_API)?.Trim().ToLower();
+        Console.WriteLine(useGmail);
+        Console.WriteLine($"🔍 Enviando correo a {to} usando {(useGmail == "true" ? "Gmail API" : "SMTP")}...");
+        if (useGmail == "true")
+        {
+            try
+            {
+                GmailApiHelper gmail = new GmailApiHelper("credentials.json", "tokens");
+                await gmail.SendEmailAsync(to, subject, body);
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("⚠️ Error con Gmail API. Intentando con SMTP...");
+                Console.WriteLine($"  Error: {ex.Message}");
+            }
+        }
+
         string key = Environment.GetEnvironmentVariable(PASSWORD_EMAIL_FROM);
 
-        if (string.IsNullOrEmpty(key))
+        if (string.IsNullOrWhiteSpace(key))
         {
-            throw new InvalidOperationException("EMAIL_KEY is not configured in environment variables.");
+            Console.WriteLine("❌ EMAIL_KEY no está configurado.");
+            throw new InvalidOperationException("EMAIL_KEY no está configurado en variables de entorno.");
         }
+
+        System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
         try
         {
@@ -25,27 +48,21 @@ public class EmailHelper
             {
                 EnableSsl = true,
                 UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(EMAIL_FROM, key) 
+                Credentials = new NetworkCredential(EMAIL_FROM, key)
             };
 
             MailMessage mail = new MailMessage(EMAIL_FROM, to, subject, body)
             {
-                IsBodyHtml = isHtml,
+                IsBodyHtml = isHtml
             };
 
             await client.SendMailAsync(mail);
-        }
-        catch (SmtpException smtpEx)
-        {
-            // Loguear el error SMTP de manera detallada
-            Console.WriteLine($"SMTP error: {smtpEx.Message}");
-            throw new Exception("Error al enviar el correo electrónico. Verifique las credenciales y la conexión.", smtpEx);
+            Console.WriteLine($"📧 Enviado por SMTP a {to}");
         }
         catch (Exception ex)
         {
-            // Captura cualquier otro error
-            Console.WriteLine($"General error: {ex.Message}");
-            throw new Exception("Error al enviar el correo electrónico", ex);
+            Console.WriteLine($"❌ Falló también por SMTP: {ex.Message}");
+            throw;
         }
     }
 }

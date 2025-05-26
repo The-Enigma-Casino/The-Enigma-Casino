@@ -385,6 +385,12 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             session.StartPostMatchTimer(15_000, async () =>
             {
+                if (!ActiveGameSessionStore.TryGet(tableId, out _))
+                {
+                    Console.WriteLine($"⛔ [PostMatchTimer] Mesa {tableId} ya no existe. Cancelando evaluación.");
+                    return;
+                }
+
                 Console.WriteLine($"[RouletteWS] Finalizando Match para mesa {tableId} tras espera de resultados.");
 
                 using var scope = _serviceProvider.CreateScope();
@@ -576,6 +582,46 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
             tableId,
             wheelRotation = rotation
         });
+    }
+    public async Task RestartRoundForSpectatorsAsync(int tableId)
+    {
+        if (!ActiveGameSessionStore.TryGet(tableId, out var session))
+            return;
 
+        var table = session.Table;
+
+        bool allPlayersGone = table.Players.All(p =>
+            p.PlayerState != PlayerState.Waiting &&
+            p.PlayerState != PlayerState.Playing);
+
+        var spectators = table.Players
+            .Where(p => p.PlayerState == PlayerState.Spectating)
+            .ToList();
+
+        if (!allPlayersGone || spectators.Count == 0)
+        {
+            Console.WriteLine($"[RouletteWS] No se cumplen condiciones para reiniciar ronda por espectadores en mesa {tableId}.");
+            return;
+        }
+
+        session.CancelPostMatchTimer();
+        Console.WriteLine($"⛔ [RouletteWS] Timer de cierre cancelado en mesa {tableId}.");
+
+        foreach (var s in spectators)
+        {
+            s.PlayerState = PlayerState.Waiting;
+            s.HasAbandoned = false;
+            Console.WriteLine($"👤 [RouletteWS] Promovido {s.User.NickName} a jugador activo.");
+        }
+
+        using var scope = _serviceProvider.CreateScope();
+        var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+        uow.GameTableRepository.Update(table);
+        await uow.SaveAsync();
+
+        var matchWS = _serviceProvider.GetRequiredService<GameMatchWS>();
+        await matchWS.StartMatchForTableAsync(tableId);
+
+        Console.WriteLine($"♻️ [RouletteWS] Ronda reiniciada automáticamente para espectadores en mesa {tableId}.");
     }
 }

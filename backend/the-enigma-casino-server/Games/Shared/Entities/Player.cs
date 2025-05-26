@@ -17,6 +17,8 @@ public class Player
     public DateTime? JoinedAt { get; set; }
     public bool HasAbandoned { get; set; } = false;
 
+    public Player() { }
+
     public Player(User user)
     {
         User = user;

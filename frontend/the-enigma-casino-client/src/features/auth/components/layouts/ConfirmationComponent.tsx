@@ -34,31 +34,6 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
     }
   }, [token]);
 
-  // useEffect(() => {
-  //   const toastId = toast.loading("Simulando confirmación de email...");
-  //   console.log(token);
-
-  //   const timer = setTimeout(() => {
-  //     const success = true;
-
-  //     if (success) {
-  //       toast.success("Email confirmado exitosamente! 🙂", {
-  //         id: toastId,
-  //         className: "text-xl font-bold p-4",
-  //       });
-  //       setIsConfirmed(true);
-  //     } else {
-  //       toast.error("No se pudo confirmar el email. 😟", {
-  //         id: toastId,
-  //         className: "text-xl font-bold p-4",
-  //       });
-  //       setIsConfirmed(false);
-  //     }
-  //   }, 2000); // espera 2 segundos
-
-  //   return () => clearTimeout(timer);
-  // }, []);
-
   return (
     <section
       className={`${classes.container} ${isConfirmed ? classes.open : ""}`}

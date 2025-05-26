@@ -4,10 +4,18 @@ import { useUnit } from "effector-react";
 import UserInfo from "../components/UserInfo";
 import UserHistory from "../components/UserHistory";
 import { $userId } from "../../auth/store/authStore";
-import { loadOtherUserProfile, loadOtherUserHistory } from "../store/otherProfile/otherProfileEvents";
+import {
+  loadOtherUserProfile,
+  loadOtherUserHistory,
+} from "../store/otherProfile/otherProfileEvents";
 import { $allCountries } from "../../countries/actions/countriesActions";
 
-import { $otherUserProfile, $otherUserHistory, $otherUserHistoryPage, $otherUserHistoryTotalPages } from "../store/otherProfile/otherProfileStore";
+import {
+  $otherUserProfile,
+  $otherUserHistory,
+  $otherUserHistoryPage,
+  $otherUserHistoryTotalPages,
+} from "../store/otherProfile/otherProfileStore";
 import { countriesFx } from "../../countries/actions/countriesActions";
 import { decodeId } from "../../../utils/sqidUtils";
 
@@ -48,11 +56,14 @@ const OtherUserProfile = () => {
   }
   return (
     <div className="bg-Background-Page">
-      <UserInfo user={decodedId !== undefined ? { ...profile, id: decodedId } : profile} relations={profile.relation} />
+      <UserInfo
+        user={decodedId !== undefined ? { ...profile, id: decodedId } : profile}
+        relations={profile.relation}
+      />
 
-      <div className="flex justify-center my-10">
-        <h2 className="text-white text-3xl font-bold">Historial de Partidas</h2>
-      </div>
+      <h2 className="mx-auto flex justify-center items-center text-Background-Page w-[250px] h-[50px] text-3xl bg-Principal border-none font-bold rounded-[20px] text-center">
+        Historial de Partidas
+      </h2>
 
       <UserHistory
         games={games}

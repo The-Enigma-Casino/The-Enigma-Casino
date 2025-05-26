@@ -197,6 +197,23 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             await GameMatchHelper.TryCancelMatchAsync(this, match, manager, tableManager, tableId);
             await GameMatchHelper.CheckGamePostExitLogicAsync(match, tableId, _serviceProvider);
 
+            var table = match.GameTable;
+
+            bool allPlayersGone = table.Players.All(p => p.PlayerState == PlayerState.Left || p.HasAbandoned);
+
+            if (allPlayersGone)
+            {
+                var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+                table.TableState = TableState.Waiting;
+                uow.GameTableRepository.Update(table);
+                await uow.SaveAsync();
+
+                ActiveGameSessionStore.Remove(table.Id);
+                ActiveGameMatchStore.Remove(table.Id);
+
+                Console.WriteLine($"🧹 [MatchWS] Todos los jugadores se fueron. Mesa {table.Id} eliminada después de ProcessPlayerMatchLeaveAsync.");
+            }
         }
     }
 

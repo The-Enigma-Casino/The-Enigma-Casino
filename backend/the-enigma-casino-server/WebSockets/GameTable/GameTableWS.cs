@@ -327,6 +327,16 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
+        if (player.GameMatch != null)
+        {
+            Console.WriteLine($"🔍 [LeaveTable] {player.User.NickName} sigue vinculado a un match con estado: {player.GameMatch.MatchState}");
+        }
+        else
+        {
+            Console.WriteLine($"🔍 [LeaveTable] {player.User.NickName} no está vinculado a ningún match.");
+        }
+
+
         tableManager.RegisterJoinAttempt(userId);
         PlayerLeaveResult result = tableManager.RemovePlayerFromTable(table, userId, out var removedPlayer);
 

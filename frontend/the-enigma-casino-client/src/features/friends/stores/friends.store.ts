@@ -1,6 +1,9 @@
 import { combine, createStore } from "effector";
 import { Friend, FriendRequest, SearchUser } from "./friends.types";
 import {
+  bellNewAlert,
+  bellNotification,
+  bellReset,
   onlineFriendsUpdated,
   removeReceivedRequest,
   removeUserFromSearchResults,
@@ -14,6 +17,8 @@ import {
   fetchFriendsFx,
   fetchReceivedRequestsFx,
 } from "./friends.effects";
+
+
 
 export const $onlineFriendsMap = createStore<Map<number, boolean>>(
   new Map()
@@ -29,16 +34,32 @@ export const $rawFriends = createStore<Friend[]>([]).on(
   (_, friends) => friends
 );
 
+
+export const $onlineFriendsStatusMap = createStore<Map<number, string>>(
+  new Map()
+).on(onlineFriendsUpdated, (_, { friends }) => {
+  const map = new Map(
+    (friends as Array<{ id: number; status?: string }>).map((f) => [
+      Number(f.id),
+      f.status || "Online",
+    ])
+  );
+  return map;
+});
+
 export const $friends = combine(
   $rawFriends,
-  $onlineFriendsMap,
-  (friends, onlineMap) => {
+  $onlineFriendsStatusMap,
+  (friends, statusMap) => {
     return friends.map((friend) => ({
       ...friend,
-      isOnline: onlineMap.has(Number(friend.id)),
+      isOnline: statusMap.has(Number(friend.id)),
+      status: statusMap.get(Number(friend.id)) || "Offline"
     }));
   }
 );
+
+
 
 export const $searchResults = createStore<SearchUser[]>([])
   .on(setSearchResults, (_, users) => users)
@@ -60,3 +81,10 @@ export const $lastRequestIds = createStore<number[]>([]);
 export const $isGameLoading = createStore(false)
   .on(startGameLoading, () => true)
   .on(stopGameLoading, () => false);
+
+
+export type BellType = "none" | "new" | "notification";
+export const $bellType = createStore<BellType>("none")
+  .on(bellReset, () => "none")
+  .on(bellNewAlert, () => "new")
+  .on(bellNotification, () => "notification");

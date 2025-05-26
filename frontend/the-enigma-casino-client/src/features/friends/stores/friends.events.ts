@@ -34,3 +34,8 @@ export const inviteFriendFromList = createEvent<{ friendId: number; gameType: st
 // Modal carga
 export const startGameLoading = createEvent();
 export const stopGameLoading = createEvent();
+
+// Bells
+export const bellReset = createEvent();
+export const bellNewAlert = createEvent();
+export const bellNotification = createEvent();

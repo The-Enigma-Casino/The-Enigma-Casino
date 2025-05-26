@@ -38,5 +38,19 @@ public class GameHistoryRepository : Repository<History, int>
             .ToListAsync();
     }
 
+    public async Task<List<History>> GetByUserIdPagedAsync(int userId, int page, int pageSize)
+    {
+        return await Context.Set<History>()
+            .Where(h => h.UserId == userId)
+            .OrderByDescending(h => h.JoinedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
 
+    public async Task<int> CountByUserIdAsync(int userId)
+    {
+        return await Context.Set<History>()
+            .CountAsync(h => h.UserId == userId);
+    }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using the_enigma_casino_server.Application.Services;
+using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
@@ -144,6 +145,9 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     });
                     return;
                 }
+                user.Status = UserStatus.Playing;
+                UserStatusStore.SetStatus(user.Id, UserStatus.Playing);// Status playin
+                _connectionManager.RaiseUserStatusChanged(userId.ToString());
 
             }
             finally
@@ -317,8 +321,21 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             var matchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
             await matchWS.ProcessPlayerMatchLeaveAsync(tableId, userId);
+
+            UserStatusStore.SetStatus(userId, UserStatus.Online);
+            _connectionManager.RaiseUserStatusChanged(userId.ToString());
             return;
         }
+
+        if (player.GameMatch != null)
+        {
+            Console.WriteLine($"🔍 [LeaveTable] {player.User.NickName} sigue vinculado a un match con estado: {player.GameMatch.MatchState}");
+        }
+        else
+        {
+            Console.WriteLine($"🔍 [LeaveTable] {player.User.NickName} no está vinculado a ningún match.");
+        }
+
 
         tableManager.RegisterJoinAttempt(userId);
         PlayerLeaveResult result = tableManager.RemovePlayerFromTable(table, userId, out var removedPlayer);

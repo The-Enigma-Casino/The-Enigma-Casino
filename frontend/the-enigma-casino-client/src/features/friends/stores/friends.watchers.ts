@@ -21,14 +21,12 @@ friendRequestReceived.watch(() => {
 });
 
 // Cuando otro usuario acepta nuestra solicitud
-friendRequestAccepted.watch((data) => {
-  console.log("[FRIEND WATCHER] friendRequestAccepted:", data);
+friendRequestAccepted.watch(() => {
   fetchFriendsFx().finally(() => getOnlineFriendsRequested());
 });
 
-requestAccepted.watch((data) => {
+requestAccepted.watch(() => {
   fetchFriendsFx().finally(() => {
-    console.log("[WATCHER] requestAccepted recibido:", data);
     getOnlineFriendsRequested();
   });
 });
@@ -45,12 +43,5 @@ friendRemoved.watch(() => {
   });
 });
 
-
-// Actualiza resultados de búsqueda
+// Actualiza resultados de busqueda
 searchUserFx.doneData.watch(setSearchResults);
-sendFriendRequestFx.watch(({ receiverId }) => {
-  console.log(`[FRIEND] Enviando solicitud por HTTP a usuario ${receiverId} (no amigo o desconectado)`);
-});
-sendFriendRequest.watch(({ receiverId }) => {
-  console.log("[DEBUG] Evento sendFriendRequest lanzado con ID:", receiverId);
-});

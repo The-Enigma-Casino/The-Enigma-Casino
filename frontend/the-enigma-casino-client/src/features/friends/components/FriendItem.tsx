@@ -6,6 +6,7 @@ interface FriendItemProps {
   image: string;
   isFriend: boolean;
   isOnline?: boolean;
+  status?: "Online" | "Playing";
   mode: "friend-list" | "search";
   canSend?: boolean;
   onInviteClick?: (gameType: string) => void;
@@ -27,7 +28,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
   nickname,
   image,
   isFriend,
-  isOnline,
+  status = "Online",
   mode,
   canSend,
   onInviteClick,
@@ -37,7 +38,8 @@ export const FriendItem: React.FC<FriendItemProps> = ({
   onRejectRequestClick,
   onRemoveFriendClick,
 }) => {
-
+  const isPlayingStatus = status === "Playing";
+  const isOnlineStatus = status === "Online";
   return (
     <div className="friend-item flex w-full gap-4">
 
@@ -58,10 +60,11 @@ export const FriendItem: React.FC<FriendItemProps> = ({
           <>
             <div className="flex items-center gap-1 text-lg">
               <span
-                className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-green-400" : "bg-red-500"}`}
+                className={`w-2.5 h-2.5 rounded-full ${isPlayingStatus ? "bg-yellow-400" : isOnlineStatus ? "bg-Principal" : "bg-red-500"
+                  }`}
               ></span>
               <span className="text-gray-400 font-light text-base self-start">
-                {isOnline ? "EN LÍNEA" : "DESCONECTADO"}
+                {isPlayingStatus ? "EN PARTIDA" : isOnlineStatus ? "EN LÍNEA" : "DESCONECTADO"}
               </span>
             </div>
           </>
@@ -77,23 +80,36 @@ export const FriendItem: React.FC<FriendItemProps> = ({
             </button>
           )}
 
-          {mode === "friend-list" && isFriend && isOnline && (
+          {mode === "friend-list" && isFriend && isOnlineStatus && (
             <div className="relative">
-              <details className="group">
-                <summary title="Invitar a jugar" className="cursor-pointer list-none focus:outline-none">
-                  <img src="/svg/invite_friend_table.svg" className="w-8 h-8" />
+              <details className="group" open={false}>
+                <summary
+                  title="Invitar a jugar"
+                  className={`list-none focus:outline-none ${isPlayingStatus ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                    }`}
+                  onClick={(e) => {
+                    if (isPlayingStatus) e.preventDefault();
+                  }}
+                >
+                  <img
+                    src="/svg/invite_friend_table.svg"
+                    className="w-8 h-8"
+                    alt="Invitar"
+                  />
                 </summary>
-                <ul className="absolute z-10 top-6 right-0 bg-gray-800 border border-gray-600 text-white rounded shadow-lg text-sm min-w-[120px]">
-                  {["BlackJack", "Poker", "Roulette"].map((game) => (
-                    <li
-                      key={game}
-                      className="px-3 py-1 hover:bg-gray-700 cursor-pointer"
-                      onClick={() => onInviteClick?.(game)}
-                    >
-                      {gameLabels[game]}
-                    </li>
-                  ))}
-                </ul>
+                {!isPlayingStatus && (
+                  <ul className="absolute z-10 top-6 right-0 bg-gray-800 border border-gray-600 text-white rounded shadow-lg text-sm min-w-[120px]">
+                    {["BlackJack", "Poker", "Roulette"].map((game) => (
+                      <li
+                        key={game}
+                        className="px-3 py-1 hover:bg-gray-700 cursor-pointer"
+                        onClick={() => onInviteClick?.(game)}
+                      >
+                        {gameLabels[game]}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </details>
             </div>
           )}

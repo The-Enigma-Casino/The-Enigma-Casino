@@ -209,10 +209,17 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 uow.GameTableRepository.Update(table);
                 await uow.SaveAsync();
 
+                if (ActiveGameSessionStore.TryGet(table.Id, out var session))
+                {
+                    session.CancelBettingTimer();
+                    session.CancelTurnTimer();
+                    session.CancelPostMatchTimer();
+                }
+
                 ActiveGameSessionStore.Remove(table.Id);
                 ActiveGameMatchStore.Remove(table.Id);
 
-                Console.WriteLine($"🧹 [MatchWS] Todos los jugadores se fueron. Mesa {table.Id} eliminada después de ProcessPlayerMatchLeaveAsync.");
+                Console.WriteLine($"🧹 [MatchWS] Todos los jugadores se fueron. Mesa {table.Id} eliminada y timers cancelados.");
             }
             else
             {

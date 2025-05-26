@@ -44,7 +44,7 @@ socketMessageReceived.watch((data) => {
       stopGameLoading(); // Cierra modal
       break;
 
-    case "join_table": { //Friend
+    case "join_table": {
       const tableId = Number(data.tableId);
 
       const gameViewPath = (() => {
@@ -55,7 +55,6 @@ socketMessageReceived.watch((data) => {
       })();
 
       setPendingJoinTableId(tableId);
-
       navigateTo(gameViewPath);
       break;
     }

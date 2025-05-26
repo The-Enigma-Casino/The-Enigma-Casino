@@ -1,5 +1,5 @@
 import { useUnit } from "effector-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   $countdowns,
   $currentTableId,
@@ -49,6 +49,16 @@ function GameTablePage() {
       clearPendingJoinTableId();
     }
   }, [pendingTableId]);
+
+  const location = useLocation();
+
+
+  useEffect(() => {
+    if (pendingTableId && location.pathname.startsWith("/tables")) {
+      tryJoinTable(pendingTableId);
+      clearPendingJoinTableId();
+    }
+  }, [pendingTableId, location.pathname]);
 
   const gameNames = ["Blackjack", "Poker", "Ruleta"];
   const gameName = gameNames[parseInt(gameType ?? "")] || "Desconocido";

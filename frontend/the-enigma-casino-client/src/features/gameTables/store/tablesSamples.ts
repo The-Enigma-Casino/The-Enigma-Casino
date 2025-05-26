@@ -1,11 +1,11 @@
 import { sample } from "effector";
-import { countdownCleared, gameStarted, joinTableClicked, sendLeaveTableMessage, tryJoinTable } from "./tablesEvents";
+import { clearPendingJoinTableId, countdownCleared, gameStarted, joinTableClicked, sendLeaveTableMessage, tryJoinTable } from "./tablesEvents";
 import { messageSent } from "../../../websocket/store/wsIndex";
 import { $userId } from "../../auth/store/authStore";
 import { navigateTo } from "../../games/shared/router/navigateFx";
 import { $coins } from "../../coins/store/coinsStore";
 import toast from "react-hot-toast";
-import { $currentTableId } from "./tablesStores";
+import { $currentTableId, $pendingJoinTableId } from "./tablesStores";
 
 
 const getGamePathByTableId = (tableId: number): string => {
@@ -76,4 +76,17 @@ sample({
   fn: () => {
     toast.error("No tienes suficientes fichas para unirte a una mesa.");
   },
+});
+
+
+sample({
+  source: $pendingJoinTableId,
+  filter: (tableId) =>
+    tableId !== null && window.location.pathname.startsWith("/tables"),
+  fn: (tableId) => tableId!,
+  target: tryJoinTable,
+});
+sample({
+  clock: tryJoinTable,
+  target: clearPendingJoinTableId,
 });

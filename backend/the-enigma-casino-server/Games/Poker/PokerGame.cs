@@ -417,8 +417,8 @@ public class PokerGame
                     nickname = winner.Player.User.NickName,
                     amount = winnings,
                     description = winner.Description,
-                    hand = winner.Player.Hand.Cards.Select(c => new
-                    {
+                    kicker = winner.RankList.Count > 1 ? winner.RankList[1].ToString() : null,
+                    hand = winner.Player.Hand.Cards.Select(c => new {
                         suit = c.Suit.ToString(),
                         rank = c.Rank.ToString(),
                         value = c.Value
@@ -451,7 +451,6 @@ public class PokerGame
         {
             Console.WriteLine($" - {p.User.NickName}");
         }
-
 
         if (!activePlayers.Any())
         {
@@ -487,10 +486,27 @@ public class PokerGame
         }
 
         List<EvaluatedHand> evaluatedHands = EvaluatePlayerHands(activePlayers);
+
+        Console.WriteLine("[DEBUG] Evaluación de manos:");
+        var bestHand = evaluatedHands.OrderByDescending(e => e, _handComparer).First();
+
+        foreach (var hand in evaluatedHands)
+        {
+            var comparison = _handComparer.Compare(hand, bestHand);
+            var extra = comparison == 0 && evaluatedHands.Count(h => _handComparer.Compare(h, bestHand) == 0) > 1
+                ? $" (Empate) → RankList: {string.Join(", ", hand.RankList)}"
+                : comparison != 0
+                    ? $" (Perdió) → RankList: {string.Join(", ", hand.RankList)}"
+                    : "";
+
+            Console.WriteLine($" - {hand.Player.User.NickName}: {hand.Description}{extra}");
+        }
+
         _lastShowdownSummary.AddRange(DistributePots(evaluatedHands));
         UpdatePlayerStates();
         _pots.Clear();
     }
+
 
     private List<EvaluatedHand> EvaluatePlayerHands(List<Player> activePlayers)
     {

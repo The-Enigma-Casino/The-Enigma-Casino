@@ -83,6 +83,7 @@ sample({
 sample({
   clock: matchReadyReceived,
   fn: (tableId) => {
+    console.log(tableId);
     const path = `/game/roulette/${tableId}`;
     return path;
   },

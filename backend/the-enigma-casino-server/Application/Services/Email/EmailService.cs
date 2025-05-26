@@ -45,7 +45,7 @@ public class EmailService
         string emailContent = await GetEmailTemplateAsync("invoice.html");
 
         emailContent = emailContent.Replace("{UserName}", user.NickName);
-        emailContent = emailContent.Replace("{OrderImage}", url + order.CoinsPack.Image);
+        emailContent = emailContent.Replace("{OrderImage}", url + "/" + order.CoinsPack.Image);
         emailContent = emailContent.Replace("{OrderPack}", $"Pack de {order.Coins} fichas");
         emailContent = emailContent.Replace("{OrderPrice}", (order.Price / 100.0).ToString("0.00"));
         emailContent = emailContent.Replace("{OrderCoins}", order.Coins.ToString());

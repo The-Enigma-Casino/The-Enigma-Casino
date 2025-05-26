@@ -7,9 +7,10 @@ import {
   removeReceivedRequest,
   requestAccepted,
   stopGameLoading,
+  bellNewAlert,
+  bellReset,
 } from "./friends.events";
 import {
-  // showFriendRequestToast,
   showGameInviteToast,
 } from "../ui/friends.toast";
 import toast from "react-hot-toast";
@@ -28,6 +29,7 @@ socketMessageReceived.watch((data) => {
         nickname: data.nickname,
         image: data.image,
       });
+      bellNewAlert();
       break;
 
     case "friendRequestAccepted":
@@ -36,6 +38,7 @@ socketMessageReceived.watch((data) => {
         nickname: data.nickname,
         image: data.image,
       });
+      bellNewAlert();
       break;
 
     case "friendRemoved":
@@ -55,6 +58,7 @@ socketMessageReceived.watch((data) => {
         expiresIn: data.expiresIn,
         mode: "table",
       });
+      bellNewAlert();
       break;
 
     case "gameInviteAccepted":
@@ -62,6 +66,8 @@ socketMessageReceived.watch((data) => {
         `¡${data.nickName} ha aceptado tu invitación a la mesa ${data.tableId}!`
         , { duration: 2000 });
       joinTableClicked(Number(data.tableId)); // Table Events
+      bellNewAlert();
+      setTimeout(() => bellReset(), 2000);
       break;
 
     case "gameInviteRejected":
@@ -79,6 +85,7 @@ socketMessageReceived.watch((data) => {
     case "friendRequestCanceled":
       removeReceivedRequest(data.senderId); // Quitar del store
       toast(`${data.nickname} canceló su solicitud de amistad.`, { duration: 2000 });
+      bellNewAlert();
       break;
 
     case "requestSent":

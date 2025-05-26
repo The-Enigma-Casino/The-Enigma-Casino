@@ -14,9 +14,10 @@ import {
   sendFriendRequestWs,
   inviteFriendFromList,
   setSearchResults,
+  bellReset,
 } from "./friends.events";
 import { messageSent } from "../../../websocket/store/wsIndex";
-import { $lastRequestIds, $onlineFriendsMap, $searchResults } from "./friends.store";
+import { $lastRequestIds, $onlineFriendsMap, $receivedRequests, $searchResults } from "./friends.store";
 import { acceptFriendRequestFx, cancelFriendRequestFx, fetchReceivedRequestsFx, removeFriendFx, sendFriendRequestFx } from "./friends.effects";
 
 sample({
@@ -74,7 +75,7 @@ sample({
   target: acceptFriendRequestFx,
 });
 
-// Reject friend OFFLINE - WS
+// Reject friend ONLINE - WS
 sample({
   clock: rejectFriendRequest,
   source: $onlineFriendsMap,
@@ -196,4 +197,10 @@ sample({
   clock: fetchReceivedRequestsFx.doneData,
   fn: (reqs) => reqs.map((r) => r.id),
   target: $lastRequestIds,
+});
+
+sample({
+  source: $receivedRequests,
+  filter: (list) => list.length === 0,
+  target: bellReset,
 });

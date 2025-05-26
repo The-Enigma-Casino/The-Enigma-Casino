@@ -44,7 +44,7 @@ public class HistoryController: BaseController
     {
         try
         {
-            HistoryDto history = await historyService.GetHistory(userId, page);
+            HistoryDto history = await historyService.GetOtherHistory(userId, page);
             return Ok(history);
         }
         catch (KeyNotFoundException ex)

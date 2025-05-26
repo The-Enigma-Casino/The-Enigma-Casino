@@ -36,7 +36,6 @@ export function useEditForm(onSuccess: () => void) {
         address: profile.address,
         country: profile.country,
       });
-      console.log("profile", profile);
     }
   }, [profile]);
 

@@ -27,7 +27,8 @@
         "METAMASK_WALLET": "0xB57B61DB1E978158A0c18951687318C1CC19fB54",
         "METAMASK_PRIVATE_WALLET": "15df86cd7db9c6018c9117271a9a131815456ea4dd93bc3f402b8c8bcca3ab90",
         "COIN_VALUE_IN_EUROS": "0,10",
-        "DB_CONFIG": "Server=db17985.databaseasp.net; Database=db17985; Uid=db17985; Pwd=F-t2?7Wk9Pe!;"
+        "DB_CONFIG": "Server=db17985.databaseasp.net; Database=db17985; Uid=db17985; Pwd=F-t2?7Wk9Pe!;",
+        "USE_GMAIL_API": "false"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7186;http://localhost:5057"

@@ -34,16 +34,62 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
     }
   }, [token]);
 
+  // useEffect(() => {
+  //   const toastId = toast.loading("Simulando confirmación de email...");
+  //   console.log(token);
+
+  //   const timer = setTimeout(() => {
+  //     const success = true;
+
+  //     if (success) {
+  //       toast.success("Email confirmado exitosamente! 🙂", {
+  //         id: toastId,
+  //         className: "text-xl font-bold p-4",
+  //       });
+  //       setIsConfirmed(true);
+  //     } else {
+  //       toast.error("No se pudo confirmar el email. 😟", {
+  //         id: toastId,
+  //         className: "text-xl font-bold p-4",
+  //       });
+  //       setIsConfirmed(false);
+  //     }
+  //   }, 2000); // espera 2 segundos
+
+  //   return () => clearTimeout(timer);
+  // }, []);
+
   return (
-    <div className={`${classes.container} ${isConfirmed ? classes.open : ""}`}>
+    <section
+      className={`${classes.container} ${isConfirmed ? classes.open : ""}`}
+    >
       <div className={`${classes.door} ${classes.left}`}></div>
       <div className={`${classes.door} ${classes.right}`}></div>
 
       {isConfirmed && (
-        <div className={classes.content}>
-          <h1 className={classes.title}>¡Bienvenido!</h1>
-          <h1 className={classes.title}>The Enigma Casino</h1>
-          <img src="/img/jumping-elf.webp" alt="Mascota" className={classes.elf} />
+        <div className="relative w-full h-screen min-h-screen overflow-hidden flex justify-center items-center">
+          <div
+            className={`${classes.elf} absolute inset-x-0 bottom-[5vh] z-[2] flex justify-center pointer-events-none`}
+          >
+            <img
+              src="/img/duende2.png"
+              alt="duende"
+              className="w-full h-auto object-contain min-w-[600px]
+    sm:max-w-[600px]  md:max-w-[900px] lg:max-w-[800px] xl:max-w-[900px]
+    md:max-h-[70vh] lg:max-h-[80vh]"
+            />
+          </div>
+
+          <div className="absolute top-[8vh] w-full flex justify-center z-20 text-center px-4">
+            <div className={`${classes.content} max-w-[90vw]`}>
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-7xl font-bold leading-tight whitespace-normal">
+                ¡Bienvenido!
+              </h1>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight whitespace-normal">
+                THE ENIGMA CASINO
+              </h1>
+            </div>
+          </div>
         </div>
       )}
 
@@ -53,7 +99,7 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
           <p>Por favor, verifica tu enlace e inténtalo de nuevo.</p>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

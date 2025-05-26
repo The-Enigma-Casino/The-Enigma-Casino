@@ -71,9 +71,22 @@
   transform: translateX(100%);
 }
 
+.elf {
+  opacity: 0;
+  animation: fadeIn 1s ease-in-out 1s forwards;
+}
+
 .content {
+  text-align: center;
+  color: #fff;
+  text-shadow: 3px 3px 8px rgba(255, 223, 49, 0.8),
+    -3px -3px 8px rgba(255, 223, 49, 0.8), 2px 2px 5px rgba(0, 0, 0, 0.7),
+    -2px -2px 5px rgba(0, 0, 0, 0.7), 2px -2px 5px rgba(0, 0, 0, 0.7),
+    -2px 2px 5px rgba(0, 0, 0, 0.7);
+
   position: absolute;
-  top: 50%;
+  top: 100%;
+  margin-top: 2rem;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
@@ -83,27 +96,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 2rem;
 }
 
-.title {
-  font-size: 5rem;
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
+.content h1 {
+  font-size: 4rem;
   font-weight: bold;
-  -webkit-background-clip: text;
-  background-clip: text;
-  display: inline-block;
-  position: relative;
-  animation: gold-shimmer 1s linear infinite alternate;
-  color: transparent;
-  background: linear-gradient(to right, var(--gold-1), var(--gold-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-.elf {
-  width: 200px;
-  height: auto;
+  letter-spacing: 2px;
+  margin: 0;
+  word-break: keep-all;
+  white-space: normal;
+  line-height: 1.2;
 }
 
 .errorMessage {
@@ -119,17 +122,15 @@
   z-index: 1;
 }
 
-@media (max-width: 480px) {
-  .title {
-    font-size: 3.5rem;
-  }
-
-  .elf {
-    width: 150px;
-  }
-
+@media (max-width: 740px) {
   .errorMessage {
     width: 90%;
     padding: 1.5rem;
   }
+
+  .content {
+    top: 10vh;
+    margin-top: 0px;
+  }
 }
+

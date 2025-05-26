@@ -23,10 +23,14 @@ export const ChatMobile = ({ gameType }: ChatMobileProps) => {
         <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex flex-col">
           <div className="flex justify-end p-4">
             <button
+              className="bg-[var(--Color-Cancel)] p-4 rounded-full shadow-lg"
               onClick={() => setExpanded(false)}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-lg"
             >
-              Cerrar chat
+              <img
+                src="/svg/delete.svg"
+                alt="Cerrar chat"
+                className="w-8 h-8"
+              />
             </button>
           </div>
           <div className="flex-grow overflow-hidden px-2">

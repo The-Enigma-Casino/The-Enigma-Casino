@@ -51,7 +51,7 @@
   line-height: 1.25rem;
 }
 
-@media (max-width: 1030px) {
+@media (max-width: 1600px) {
   .messageWrapper {
     max-width: 100%;
   }

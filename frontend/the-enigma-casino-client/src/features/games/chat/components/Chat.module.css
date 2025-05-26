@@ -107,7 +107,7 @@
   gap: 4rem;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1600px) {
   .container {
     background-color: rgba(0, 128, 0, 0.12);
     backdrop-filter: blur(2px);

@@ -13,7 +13,7 @@ import { resetMessages } from "../chat/stores/chatStore";
 export const GameLayout = () => {
   const { tableId } = useParams<{ tableId: string }>();
   const numericId = parseInt(tableId ?? "0", 10);
-  const isMobile = useMediaQuery("(max-width: 960px)");
+  const isMobile = useMediaQuery("(max-width: 1600px)");
 
   useLeaveTableOnUnload();
 

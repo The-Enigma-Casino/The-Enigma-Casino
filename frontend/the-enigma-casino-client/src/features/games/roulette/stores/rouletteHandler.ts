@@ -73,6 +73,8 @@ socketMessageReceived.watch((data) => {
       break;
 
     default:
+      console.log("A");
+      break;
   }
 });
 

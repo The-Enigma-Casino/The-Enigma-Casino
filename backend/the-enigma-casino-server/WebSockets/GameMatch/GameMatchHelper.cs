@@ -60,6 +60,12 @@ public static class GameMatchHelper
 
     public static async Task<bool> TryCancelMatchAsync(IWebSocketSender sender, Match match, GameMatchManager manager, GameTableManager tableManager, int tableId)
     {
+        if (match.MatchState == MatchState.Finished)
+        {
+            Console.WriteLine($"⛔ [TryCancelMatch] Match en mesa {tableId} ya estaba finalizado. No se cancela de nuevo.");
+            return false;
+        }
+
         bool cancelled = await manager.CancelMatchIfInsufficientPlayersAsync(match, tableManager);
         if (cancelled)
         {
@@ -83,30 +89,6 @@ public static class GameMatchHelper
         {
             var blackjackWS = serviceProvider.GetRequiredService<BlackjackWS>();
             await blackjackWS.CheckAutoStartAfterPlayerLeft(tableId);
-        }
-
-        if (match.GameTable.GameType == GameType.Poker)
-        {
-            int activePlayers = match.Players.Count(p => p.PlayerState == PlayerState.Playing);
-
-            if (activePlayers == 1)
-            {
-                Console.WriteLine("🏆 [Poker] Solo queda un jugador. Ganador automático.");
-
-                if (ActivePokerGameStore.TryGet(tableId, out var pokerGame))
-                {
-                    pokerGame.GeneratePots();
-                    pokerGame.Showdown();
-
-                    Player onlyPlayer = match.Players.FirstOrDefault(p => p.PlayerState != PlayerState.Spectating && p.PlayerState != PlayerState.Left);
-                    {
-                        onlyPlayer.PlayerState = PlayerState.Left;
-                    }
-
-                    var gameMatchWS = serviceProvider.GetRequiredService<GameMatchWS>();
-                    await gameMatchWS.FinalizeAndEvaluateMatchAsync(tableId);
-                }
-            }
         }
     }
 

@@ -15,6 +15,12 @@ namespace the_enigma_casino_server.Games.Poker
                 .ThenByDescending(g => g.Key)
                 .ToList();
 
+            Console.WriteLine("[DEBUG] Agrupación de cartas por rango:");
+            foreach (var g in grouped)
+            {
+                Console.WriteLine($"  - {g.Key} => {g.Count()} cartas");
+            }
+
             // Busca grupo de cartas del mismo palo para el flush (>=5 Cartas del mismo palo)
             var flushGroup = allCards
                 .GroupBy(c => c.Suit)
@@ -57,11 +63,24 @@ namespace the_enigma_casino_server.Games.Poker
             var trios = grouped.Where(g => g.Count() >= 3).ToList();
             var pairs = grouped.Where(g => g.Count() >= 2).ToList();
 
-            if (trios.Any())
+            if (trios.Count >= 2)
             {
-                var mainTrio = trios.First();
-                var secondPair = pairs.FirstOrDefault(p => p.Key != mainTrio.Key)
-                                 ?? trios.Skip(1).FirstOrDefault(); // usa segundo trío como pareja
+                var mainTrio = trios[0];
+                var backupTrioAsPair = trios[1];
+
+                return new EvaluatedHand
+                {
+                    Player = player,
+                    Description = $"Full: {mainTrio.Key}s con {backupTrioAsPair.Key}s",
+                    Strength = 7,
+                    HighCard = mainTrio.Key,
+                    RankList = new List<CardRank> { mainTrio.Key, backupTrioAsPair.Key }
+                };
+            }
+            else if (trios.Count == 1)
+            {
+                var mainTrio = trios[0];
+                var secondPair = pairs.Where(p => p.Key != mainTrio.Key).OrderByDescending(p => p.Key).FirstOrDefault();
 
                 if (secondPair != null)
                 {
@@ -73,8 +92,11 @@ namespace the_enigma_casino_server.Games.Poker
                         HighCard = mainTrio.Key,
                         RankList = new List<CardRank> { mainTrio.Key, secondPair.Key }
                     };
+
                 }
+
             }
+
 
             // FLUSH - COLOR ( 5 cartas del mismo color, se evalua arriba) 
             if (flushGroup != null)

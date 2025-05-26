@@ -11,9 +11,9 @@ using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Handlers;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker;
+using the_enigma_casino_server.WebSockets.Poker.Store;
 using the_enigma_casino_server.WebSockets.Resolvers;
 using the_enigma_casino_server.WebSockets.Resolversl;
-
 
 namespace the_enigma_casino_server.WebSockets.GameMatch;
 
@@ -21,21 +21,20 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 {
     public string Type => "game_match";
 
-
-    public GameMatchWS(
-    ConnectionManagerWS connectionManager,
-    IServiceProvider serviceProvider)
-    : base(connectionManager, serviceProvider)
+    public GameMatchWS(ConnectionManagerWS connectionManager, IServiceProvider serviceProvider)
+        : base(connectionManager, serviceProvider)
     {
         connectionManager.OnUserDisconnected += async userId =>
         {
-            if (!int.TryParse(userId, out int userIdInt))
-                return;
+            Console.WriteLine($"[WS DISCONNECT EVENT] Usuario desconectado: {userId}");
+
+            if (!int.TryParse(userId, out int userIdInt)) return;
 
             foreach (var (tableId, match) in ActiveGameMatchStore.GetAll())
             {
                 if (match.Players.Any(p => p.UserId == userIdInt))
                 {
+                    Console.WriteLine($"[WS DISCONNECT HANDLER] Usuario {userIdInt} encontrado en mesa {tableId}, procesando salida de partida.");
                     await ProcessPlayerMatchLeaveAsync(tableId, userIdInt);
                     break;
                 }
@@ -56,7 +55,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         GameInactivityTrackerResolver inactivityTrackerResolver = provider.GetRequiredService<GameInactivityTrackerResolver>();
 
         return new GameMatchManager(unitOfWork, betInfoResolver, turnResolver, sessionCleaner, exitRuleResolver, inactivityTrackerResolver, provider);
-
     }
 
     public async Task HandleAsync(string userId, JsonElement message)
@@ -73,7 +71,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         }
     }
 
-
     private async Task HandleStartMatchAsync(string userId, JsonElement message)
     {
         if (!message.TryGetProperty("tableId", out var tableIdProp) ||
@@ -85,32 +82,19 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
         await StartMatchForTableAsync(tableId);
     }
+
     private async Task HandleLeaveMatchAsync(string userId, JsonElement message)
     {
-        if (!int.TryParse(userId, out int userIdInt))
-        {
-            Console.WriteLine("leave_match: userId inválido.");
-            return;
-        }
-
+        if (!int.TryParse(userId, out int userIdInt)) return;
         if (!message.TryGetProperty("tableId", out var tableIdProp) ||
-            !int.TryParse(tableIdProp.GetString(), out int tableId))
-        {
-            Console.WriteLine("leave_match: tableId inválido.");
-            return;
-        }
+            !int.TryParse(tableIdProp.GetString(), out int tableId)) return;
 
         await ProcessPlayerMatchLeaveAsync(tableId, userIdInt);
     }
 
-
     public async Task StartMatchForTableAsync(int tableId)
     {
-        if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session))
-        {
-            Console.WriteLine($"[GameMatchWS] No se encontró sesión activa para la mesa {tableId}");
-            return;
-        }
+        if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session)) return;
 
         var existingMatch = ActiveGameMatchStore.TryGetNullable(tableId);
         if (existingMatch != null && existingMatch.MatchState != MatchState.Finished)
@@ -119,7 +103,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             return;
         }
 
-
         Table table = session.Table;
 
         IServiceScope scope;
@@ -127,8 +110,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         using (scope)
         {
             Match match = await manager.StartMatchAsync(table);
-            if (match == null)
-                return;
+            if (match == null) return;
 
             ActiveGameMatchStore.Set(table.Id, match);
 
@@ -148,29 +130,16 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
     public async Task ProcessPlayerMatchLeaveAsync(int tableId, int userId)
     {
-        if (!ActiveGameMatchStore.TryGet(tableId, out Match match))
-        {
-            GameMatchHelper.LogMatchNotFound(tableId);
-            return;
-        }
+        if (!ActiveGameMatchStore.TryGet(tableId, out Match match)) return;
 
         Console.WriteLine($"[DEBUG] Estado actual del Match en evento para mesa {tableId}: {match.MatchState}");
-
-
-        if (match.MatchState != MatchState.InProgress)
-        {
-            Console.WriteLine($"[DEBUG] Ignorando LeaveMatch para la mesa {tableId} porque el Match ya terminó ({match.MatchState}).");
-            return;
-        }
+        if (match.MatchState != MatchState.InProgress) return;
 
         Player player = GameMatchHelper.FindPlayer(match, userId);
-        if (player == null)
-            return;
-
+        if (player == null) return;
 
         IServiceScope scope;
         GameMatchManager manager = CreateScopedManager(out scope);
-
         using (scope)
         {
             IServiceProvider provider = scope.ServiceProvider;
@@ -183,10 +152,9 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             {
                 BlackjackBetTracker.RemovePlayer(tableId, userId);
             }
-
             if (match.GameTable.GameType == GameType.Poker)
             {
-                PokerBetTracker.ClearPlayer(tableId, userId);
+                Console.WriteLine($"[GameMatchWS] ⚠️ Se omite ClearPlayer en mesa {tableId} para preservar apuestas de {userId} antes del showdown.");
                 var pokerWS = _serviceProvider.GetRequiredService<PokerWS>();
                 await pokerWS.HandlePlayerDisconnectedAsync(tableId, userId);
             }
@@ -209,10 +177,22 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 uow.GameTableRepository.Update(table);
                 await uow.SaveAsync();
 
+                if (ActiveGameSessionStore.TryGet(table.Id, out var session))
+                {
+                    session.CancelBettingTimer();
+                    session.CancelTurnTimer();
+                    session.CancelPostMatchTimer();
+                }
+
                 ActiveGameSessionStore.Remove(table.Id);
                 ActiveGameMatchStore.Remove(table.Id);
 
-                Console.WriteLine($"🧹 [MatchWS] Todos los jugadores se fueron. Mesa {table.Id} eliminada después de ProcessPlayerMatchLeaveAsync.");
+                Console.WriteLine($"🧹 [MatchWS] Todos los jugadores se fueron. Mesa {table.Id} eliminada y timers cancelados.");
+            }
+            else
+            {
+                var gameTableWS = _serviceProvider.GetRequiredService<GameTableWS>();
+                await gameTableWS.TryPromoteSpectatorsAndStartMatchAsync(tableId);
             }
         }
     }
@@ -225,21 +205,11 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
     public async Task FinalizeMatchAsync(int tableId)
     {
-        if (!ActiveGameMatchStore.TryGet(tableId, out Match match))
-        {
-            Console.WriteLine($"❌ [GameMatchWS] No se encontró Match activo para la mesa {tableId}");
-            return;
-        }
-
-        if (match.Players.Count == 0)
-        {
-            Console.WriteLine($"⚠️ [GameMatchWS] No hay jugadores en el Match activo de la mesa {tableId}");
-            return;
-        }
+        if (!ActiveGameMatchStore.TryGet(tableId, out Match match)) return;
+        if (match.Players.Count == 0) return;
 
         IServiceScope scope;
         GameMatchManager manager = CreateScopedManager(out scope);
-
         using (scope)
         {
             await manager.EndMatchAsync(match);
@@ -255,10 +225,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 }
             }
 
-            List<string> userIds = match.GameTable.Players
-                .Select(p => p.UserId.ToString())
-                .ToList();
-
+            List<string> userIds = match.GameTable.Players.Select(p => p.UserId.ToString()).ToList();
             await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
                 type = GameMatchMessageTypes.MatchEnded,
@@ -272,12 +239,9 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
     public async Task EvaluatePostMatchAsync(int tableId)
     {
-
-        if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session))
-            return;
+        if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session)) return;
 
         Table table = session.Table;
-
         using (var betScope = _serviceProvider.CreateScope())
         {
             var betInfoProvider = betScope.ServiceProvider.GetRequiredService<GameBetInfoProviderResolver>().Resolve(table.GameType);
@@ -290,7 +254,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 {
                     var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
                     tblMgr.RemovePlayerFromTable(table, p.UserId, out _);
-
                     await NotifyPlayerKickedAsync(p.UserId.ToString());
 
                     var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
@@ -306,31 +269,22 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
             if (table.GameType == GameType.Poker)
             {
-                Console.WriteLine("📋 [PostMatch] Estado de jugadores:");
-                foreach (var p in table.Players)
-                {
-                    Console.WriteLine($" - {p.User.NickName}: HasAbandoned={p.HasAbandoned}, State={p.PlayerState}");
-                }
-
                 var inactivityTracker = betScope.ServiceProvider.GetRequiredService<GameInactivityTrackerResolver>().Resolve(GameType.Poker);
                 if (inactivityTracker is PokerInactivityTracker pokerTracker)
                 {
                     foreach (var p in table.Players.Where(p => !p.HasAbandoned).ToList())
                     {
                         int count = pokerTracker.GetInactivityCount(p);
-
                         if (count >= 2)
                         {
                             p.HasAbandoned = true;
                             pokerTracker.RemovePlayer(p);
-                            Console.WriteLine($"🚪 [PostMatch] {p.User.NickName} marcado como abandonado por {count} faltas acumuladas.");
                         }
                     }
                 }
 
                 foreach (Player p in table.Players.Where(p => p.HasAbandoned).ToList())
                 {
-                    Console.WriteLine($"🧹 [PostMatch] Eliminando jugador abandonado: {p.User.NickName}");
                     using var scope = _serviceProvider.CreateScope();
                     var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
                     tblMgr.RemovePlayerFromTable(table, p.UserId, out _);
@@ -343,83 +297,24 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 await inactivityHandler.HandleInactivityAsync(table);
             }
 
+            await HandleSoloPlayerPostMatchAsync(session, table);
 
             if (table.Players.Count(p => p.PlayerState != PlayerState.Left && !p.HasAbandoned) >= table.MinPlayer)
             {
                 table.TableState = TableState.Starting;
-
                 using var scope = _serviceProvider.CreateScope();
                 var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
                 uow.GameTableRepository.Update(table);
                 await uow.SaveAsync();
-
                 await StartMatchForTableAsync(table.Id);
                 return;
             }
 
-
-            if (table.GameType != GameType.Poker)
-                return;
-
-            if (table.Players.Count == 1)
-            {
-                var lone = table.Players[0];
-
-                Console.WriteLine($"🚪 [PostMatch] Solo queda {lone.User.NickName}. Esperando antes de expulsarlo...");
-
-
-                // Cancelamos temporizadores que ya no aplican
-                session.CancelTurnTimer();
-                session.CancelBettingTimer();
-
-                session.StartPostMatchTimer(2000, async () =>
-                {
-                    Console.WriteLine($"⏳ [PostMatchTimer] Ejecutando expulsión diferida de {lone.User.NickName} en mesa {table.Id}.");
-
-                    using var scope = _serviceProvider.CreateScope();
-                    var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
-                    var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-
-                    lone.PlayerState = PlayerState.Left;
-                    lone.HasAbandoned = true;
-
-                    tblMgr.RemovePlayerFromTable(table, lone.UserId, out _);
-
-                    var hist = await uow.GameHistoryRepository.FindActiveSessionAsync(lone.UserId, table.Id);
-                    if (hist != null && hist.LeftAt == null)
-                    {
-                        hist.LeftAt = DateTime.Now;
-                        uow.GameHistoryRepository.Update(hist);
-                        await uow.SaveAsync();
-                    }
-
-                    if (table.Players.Count == 0)
-                    {
-                        table.TableState = TableState.Waiting;
-                        uow.GameTableRepository.Update(table);
-                        await uow.SaveAsync();
-
-                        Console.WriteLine($"🕳️ [PostMatch] Mesa {table.Id} vacía tras expulsión. Estado → Waiting.");
-                    }
-
-                    await ((IWebSocketSender)this).SendToUserAsync(lone.UserId.ToString(), new
-                    {
-                        type = "game_match",
-                        action = "return_to_table",
-                        message = "Todos los demás jugadores han abandonado. Volverás a la sala principal."
-                    });
-                });
-
-                return;
-            }
-
-
+            if (table.GameType != GameType.Poker) return;
 
             if (table.Players.Count == 0)
             {
-                Console.WriteLine($"🕳️ [PostMatch] La mesa {table.Id} quedó vacía. Estado → Waiting.");
                 table.TableState = TableState.Waiting;
-
                 using var scope = _serviceProvider.CreateScope();
                 var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
                 uow.GameTableRepository.Update(table);
@@ -437,6 +332,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             message = "Te has quedado sin monedas suficientes para continuar. Has sido eliminado de la mesa."
         });
     }
+
     private async Task CleanupTableIfEmptyAsync(int tableId)
     {
         using var scope = _serviceProvider.CreateScope();
@@ -459,7 +355,95 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
             ActiveGameSessionStore.Remove(tableId);
             ActiveGameMatchStore.Remove(tableId);
-
         }
     }
+
+    private async Task HandleSoloPlayerPostMatchAsync(ActiveGameSession session, Table table)
+    {
+        Console.WriteLine($"[HANDLE SOLO PLAYER] Evaluando mesa {table.Id} para jugador solitario...");
+
+        var activePlayers = table.Players
+            .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
+            .ToList();
+
+        if (activePlayers.Count != 1)
+        {
+            Console.WriteLine($"[HANDLE SOLO PLAYER] Mesa {table.Id} no tiene exactamente un jugador activo. Se detectaron: {activePlayers.Count}");
+            return;
+        }
+
+        var lone = activePlayers[0];
+
+        session.CancelTurnTimer();
+        session.CancelBettingTimer();
+
+        Console.WriteLine($"[HANDLE SOLO PLAYER] Evaluando si hay espectadores...");
+
+        var spectators = table.Players
+            .Where(p => p.PlayerState == PlayerState.Spectating && !p.HasAbandoned)
+            .ToList();
+
+        if (spectators.Count == 0)
+        {
+            Console.WriteLine($"[HANDLE SOLO PLAYER] Ningún espectador en mesa {table.Id}. Expulsando a {lone.User.NickName} y limpiando mesa.");
+
+            using var scope = _serviceProvider.CreateScope();
+            var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+            var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+            lone.PlayerState = PlayerState.Left;
+            lone.HasAbandoned = true;
+
+            tblMgr.RemovePlayerFromTable(table, lone.UserId, out _);
+
+            var hist = await uow.GameHistoryRepository.FindActiveSessionAsync(lone.UserId, table.Id);
+            if (hist != null && hist.LeftAt == null)
+            {
+                hist.LeftAt = DateTime.Now;
+                uow.GameHistoryRepository.Update(hist);
+                await uow.SaveAsync();
+            }
+
+            if (table.Players.Count == 0)
+            {
+                table.TableState = TableState.Waiting;
+                uow.GameTableRepository.Update(table);
+                await uow.SaveAsync();
+
+                Console.WriteLine($"[HANDLE SOLO PLAYER] Mesa {table.Id} completamente vacía. Eliminando sesión activa.");
+                ActiveGameSessionStore.Remove(table.Id);
+                ActiveGameMatchStore.Remove(table.Id);
+            }
+
+            await ((IWebSocketSender)this).SendToUserAsync(lone.UserId.ToString(), new
+            {
+                type = "game_match",
+                action = "return_to_table",
+                message = "Todos los demás jugadores han abandonado. Volverás a la sala principal."
+            });
+        }
+        else
+        {
+            Console.WriteLine($"[HANDLE SOLO PLAYER] Se detectaron {spectators.Count} espectadores en mesa {table.Id}. Promocionando y reiniciando partida.");
+
+            foreach (var spectator in spectators)
+            {
+                Console.WriteLine($"[HANDLE SOLO PLAYER] Promoviendo a jugador: {spectator.User.NickName}");
+                spectator.PlayerState = PlayerState.Playing;
+            }
+
+            table.TableState = TableState.Starting;
+
+            using var scope = _serviceProvider.CreateScope();
+            var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+            uow.GameTableRepository.Update(table);
+            await uow.SaveAsync();
+
+            Console.WriteLine($"[HANDLE SOLO PLAYER] Llamando a StartMatchForTableAsync para mesa {table.Id}");
+            await StartMatchForTableAsync(table.Id);
+        }
+    }
+
 }
+
+

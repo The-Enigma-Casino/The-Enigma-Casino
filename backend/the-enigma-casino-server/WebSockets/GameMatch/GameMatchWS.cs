@@ -118,7 +118,8 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
             await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, new
             {
-                type = GameMatchMessageTypes.MatchStarted,
+                type = Type,
+                action = GameMatchMessageTypes.MatchStarted,
                 tableId = table.Id,
                 players = table.Players.Select(p => p.User.NickName).ToArray(),
                 startedAt = match.StartedAt
@@ -159,7 +160,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
             await manager.HandlePlayerExitAsync(player, match, tableId, turnService);
             await GameMatchHelper.NotifyPlayerMatchEndedAsync(this, userId, tableId);
-            await GameMatchHelper.NotifyOthersPlayerLeftAsync(this, match, userId, tableId);
+            await GameMatchHelper.NotifyOthersPlayerLeftAsync(this, match, userId, player.User.NickName, tableId);
             await GameMatchHelper.TryCancelMatchAsync(this, match, manager, tableManager, tableId);
             await GameMatchHelper.CheckGamePostExitLogicAsync(match, tableId, _serviceProvider);
 
@@ -325,7 +326,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
     {
         await ((IWebSocketSender)this).SendToUserAsync(userId, new
         {
-            type = "game_match",
+            type = Type,
             action = "eliminated_no_coins",
             message = "Te has quedado sin monedas suficientes para continuar. Has sido eliminado de la mesa."
         });
@@ -421,7 +422,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
                 await ((IWebSocketSender)this).SendToUserAsync(lone.UserId.ToString(), new
                 {
-                    type = "game_match",
+                    type = Type,
                     action = "return_to_table",
                     message = "Todos los demás jugadores han abandonado. Volverás a la sala principal."
                 });

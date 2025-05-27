@@ -3,12 +3,15 @@ using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.WebSockets.BlackJack;
 using the_enigma_casino_server.WebSockets.GameMatch.Store;
 using the_enigma_casino_server.WebSockets.GameTable;
+using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Poker.Store;
 
 namespace the_enigma_casino_server.WebSockets.GameMatch;
 
 public static class GameMatchHelper
 {
+    public const string Type = "game_match";
+
     public static void LogMatchNotFound(int tableId)
     {
         Console.WriteLine($"❌ [GameMatchWS] No hay partida activa en la mesa {tableId}");
@@ -28,30 +31,60 @@ public static class GameMatchHelper
     {
         await sender.SendToUserAsync(userId.ToString(), new
         {
-            type = GameMatchMessageTypes.MatchEnded,
+            type = Type,
+            action = GameMatchMessageTypes.MatchEnded,
+            message = "Match finalizado.",
             tableId,
             endedAt = DateTime.Now
         });
     }
 
-    public static async Task NotifyOthersPlayerLeftAsync(IWebSocketSender sender, Match match, int userId, int tableId)
+    public static async Task NotifyOthersPlayerLeftAsync(
+        IWebSocketSender sender,
+        Match match,
+        int userId,
+        string nickname,
+        int tableId)
     {
-        var otherUserIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
+        if (!ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            Console.WriteLine($"⚠️ [NotifyOthersPlayerLeftAsync] No se encontró sesión activa para la mesa {tableId}");
+            return;
+        }
+
+        var allConnected = session.GetConnectedUserIds();
+        var otherUserIds = allConnected.Where(id => id != userId.ToString()).ToArray();
+
+        if (otherUserIds.Length == 0)
+        {
+            Console.WriteLine($"⚠️ [NotifyOthersPlayerLeftAsync] No hay jugadores conectados a los que enviar el mensaje.");
+            return;
+        }
+
+        Console.WriteLine($"📢 Enviando 'player_left_match' a: {string.Join(", ", otherUserIds)}");
+
         await sender.BroadcastToUsersAsync(otherUserIds, new
         {
-            type = GameMatchMessageTypes.PlayerLeftMatch,
+            type = Type,
+            action = GameMatchMessageTypes.PlayerLeftMatch,
             tableId,
             userId,
+            message = $"{nickname} ha abandonado la partida."
         });
     }
+
+
+
 
     public static async Task NotifyMatchCancelledAsync(IWebSocketSender sender, Match match, int tableId)
     {
         var remainingUserIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
         await sender.BroadcastToUsersAsync(remainingUserIds, new
         {
-            type = GameMatchMessageTypes.MatchCancelled,
+            type = Type,
+            action = GameMatchMessageTypes.MatchCancelled,
             tableId,
+            message ="Partida eliminada por jugadores insuficientes en mesa.",
             reason = "not_enough_players"
         });
 

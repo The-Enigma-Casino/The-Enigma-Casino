@@ -2,12 +2,13 @@
   display: flex;
   align-items: center;
   background-color: var(--Background-Overlay);
-  border-radius: 9999px;
+  border-radius: 50px;
   padding: 0 1rem;
   width: 100%;
   height: 5rem;
-  max-width: 22rem;
+  max-width: none;
   gap: 1rem;
+  box-sizing: border-box;
 }
 
 .chatInput {
@@ -15,10 +16,9 @@
   background: transparent;
   color: white;
   font-size: 1.5rem;
-}
-
-.chatInput::placeholder {
-  color: var(--Light-Grey-color);
+  width: 100%;
+  min-width: 0;
+  outline: none;
 }
 
 .sendButton {
@@ -26,9 +26,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .sendIcon {
   width: 2rem;
   height: 2rem;
 }
+

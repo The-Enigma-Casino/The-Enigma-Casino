@@ -13,6 +13,7 @@ import {
   $isMyTurn,
   $maxRaise,
   $myHand,
+  $opponentLeft,
   $pokerPhase,
   $pokerPlayers,
   $roundSummary,
@@ -60,6 +61,9 @@ export const PokerGamePage = () => {
 
   const roundSummary = useUnit($roundSummary);
 
+  const opponentLeft = useUnit($opponentLeft);
+
+
   const handleAction = (
     move: "fold" | "call" | "check" | "raise" | "all-in",
     amount?: number
@@ -97,7 +101,7 @@ export const PokerGamePage = () => {
         </div>
       )}
 
-      {isMyTurn && (
+      {isMyTurn && !opponentLeft && (
         <div className="w-full flex justify-center mb-4">
           <CountdownBar countdown={countdown} total={total} />
         </div>
@@ -153,7 +157,7 @@ export const PokerGamePage = () => {
         </div>
       )}
 
-      {isMyTurn && (
+      {isMyTurn && !opponentLeft && (
         <ActionControls
           validMoves={validMoves}
           callAmount={callAmount}

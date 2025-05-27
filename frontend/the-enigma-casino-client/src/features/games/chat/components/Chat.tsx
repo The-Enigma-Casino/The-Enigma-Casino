@@ -1,13 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "./Chat.module.css";
 import { ChatInput } from "./InputChat";
 import { useUnit } from "effector-react";
 import { $coins } from "../../../coins/store/coinsStore";
 import { ChatMessage } from "./ChatMessage";
 import { GameInfoModal } from "../../shared/components/modals/GameInfoModal";
-import { $chatMessages, resetMessages } from "../stores/chatStore";
 import { $userId } from "../../../auth/store/authStore";
-import { messageSent } from "../stores/chatStore";
+import { $chatMessages, messageSent } from "../stores/chatStore";
 import {
   $currentTableId,
   $hasLeftTable,
@@ -37,12 +36,6 @@ export const Chat = ({ gameType }: ChatProps) => {
 
   const chatMessages = useUnit($chatMessages);
   const onlineFriends = useUnit($friends);
-
-  useEffect(() => {
-    return () => {
-      resetMessages();
-    };
-  }, [tableId]);
 
   const [showInfo, setShowInfo] = useState(false);
 

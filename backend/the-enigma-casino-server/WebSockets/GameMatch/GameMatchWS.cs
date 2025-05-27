@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Games.Shared.Entities;
 using the_enigma_casino_server.Games.Shared.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
@@ -11,7 +10,6 @@ using the_enigma_casino_server.WebSockets.GameTable.Store;
 using the_enigma_casino_server.WebSockets.Handlers;
 using the_enigma_casino_server.WebSockets.Interfaces;
 using the_enigma_casino_server.WebSockets.Poker;
-using the_enigma_casino_server.WebSockets.Poker.Store;
 using the_enigma_casino_server.WebSockets.Resolvers;
 using the_enigma_casino_server.WebSockets.Resolversl;
 
@@ -360,6 +358,8 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
     private async Task HandleSoloPlayerPostMatchAsync(ActiveGameSession session, Table table)
     {
+
+
         Console.WriteLine($"[HANDLE SOLO PLAYER] Evaluando mesa {table.Id} para jugador solitario...");
 
         var activePlayers = table.Players
@@ -383,44 +383,53 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             .Where(p => p.PlayerState == PlayerState.Spectating && !p.HasAbandoned)
             .ToList();
 
+        bool isPoker = table.GameType == GameType.Poker;
+
         if (spectators.Count == 0)
         {
-            Console.WriteLine($"[HANDLE SOLO PLAYER] Ningún espectador en mesa {table.Id}. Expulsando a {lone.User.NickName} y limpiando mesa.");
-
-            using var scope = _serviceProvider.CreateScope();
-            var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
-            var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
-
-            lone.PlayerState = PlayerState.Left;
-            lone.HasAbandoned = true;
-
-            tblMgr.RemovePlayerFromTable(table, lone.UserId, out _);
-
-            var hist = await uow.GameHistoryRepository.FindActiveSessionAsync(lone.UserId, table.Id);
-            if (hist != null && hist.LeftAt == null)
+            if (isPoker)
             {
-                hist.LeftAt = DateTime.Now;
-                uow.GameHistoryRepository.Update(hist);
-                await uow.SaveAsync();
+                Console.WriteLine($"[HANDLE SOLO PLAYER] Ningún espectador en mesa {table.Id}. Expulsando a {lone.User.NickName} y limpiando mesa.");
+
+                using var scope = _serviceProvider.CreateScope();
+                var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+                var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
+
+                lone.PlayerState = PlayerState.Left;
+                lone.HasAbandoned = true;
+
+                tblMgr.RemovePlayerFromTable(table, lone.UserId, out _);
+
+                var hist = await uow.GameHistoryRepository.FindActiveSessionAsync(lone.UserId, table.Id);
+                if (hist != null && hist.LeftAt == null)
+                {
+                    hist.LeftAt = DateTime.Now;
+                    uow.GameHistoryRepository.Update(hist);
+                    await uow.SaveAsync();
+                }
+
+                if (table.Players.Count == 0)
+                {
+                    table.TableState = TableState.Waiting;
+                    uow.GameTableRepository.Update(table);
+                    await uow.SaveAsync();
+
+                    Console.WriteLine($"[HANDLE SOLO PLAYER] Mesa {table.Id} completamente vacía. Eliminando sesión activa.");
+                    ActiveGameSessionStore.Remove(table.Id);
+                    ActiveGameMatchStore.Remove(table.Id);
+                }
+
+                await ((IWebSocketSender)this).SendToUserAsync(lone.UserId.ToString(), new
+                {
+                    type = "game_match",
+                    action = "return_to_table",
+                    message = "Todos los demás jugadores han abandonado. Volverás a la sala principal."
+                });
             }
-
-            if (table.Players.Count == 0)
+            else
             {
-                table.TableState = TableState.Waiting;
-                uow.GameTableRepository.Update(table);
-                await uow.SaveAsync();
-
-                Console.WriteLine($"[HANDLE SOLO PLAYER] Mesa {table.Id} completamente vacía. Eliminando sesión activa.");
-                ActiveGameSessionStore.Remove(table.Id);
-                ActiveGameMatchStore.Remove(table.Id);
+                Console.WriteLine($"[HANDLE SOLO PLAYER] Juego {table.GameType} permite jugador solitario. No se cierra mesa.");
             }
-
-            await ((IWebSocketSender)this).SendToUserAsync(lone.UserId.ToString(), new
-            {
-                type = "game_match",
-                action = "return_to_table",
-                message = "Todos los demás jugadores han abandonado. Volverás a la sala principal."
-            });
         }
         else
         {

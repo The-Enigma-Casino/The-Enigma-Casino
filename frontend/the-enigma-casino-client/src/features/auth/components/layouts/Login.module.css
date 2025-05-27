@@ -1,17 +1,7 @@
 .loginRight {
   width: 60%;
-  height: 100vh;
+  height: 100%;
   background-color: var(--Principal);
   clip-path: polygon(40% 0, 100% 0, 100% 100%, 0% 100%);
-  padding: 9rem;
-}
-
-@media (max-width: 768px) {
-  .loginRight {
-    width: 100%;
-    padding: 4rem 2rem;
-    background-color: var(--Principal);
-    clip-path: none; /* quita el corte diagonal */
-  }
 }
 

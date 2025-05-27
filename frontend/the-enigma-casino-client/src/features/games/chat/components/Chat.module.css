@@ -117,5 +117,9 @@
 
   .footer {
     gap: 10rem;
+    background-color: var(--Background-Overlay);
+    border-radius: 20px;
+    padding: 0.6rem;
+    margin: 1rem;
   }
 }

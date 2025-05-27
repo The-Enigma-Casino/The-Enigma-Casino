@@ -15,6 +15,8 @@ import {
 } from "../ui/friends.toast";
 import toast from "react-hot-toast";
 import { joinTableClicked } from "../../gameTables/store/tablesEvents";
+import { navigateTo } from "../../games/shared/router/navigateFx";
+import { $currentTableId } from "../../gameTables/store/tablesStores";
 
 socketMessageReceived.watch((data) => {
 
@@ -61,14 +63,34 @@ socketMessageReceived.watch((data) => {
       bellNewAlert();
       break;
 
-    case "gameInviteAccepted":
+    case "gameInviteAccepted": {
+      const tableId = Number(data.tableId);
+
       toast.success(
-        `¡${data.nickName} ha aceptado tu invitación a la mesa ${data.tableId}!`
-        , { duration: 2000 });
-      joinTableClicked(Number(data.tableId)); // Table Events
+        `¡${data.nickName} ha aceptado tu invitación a la mesa ${tableId}!`,
+        { duration: 2000 }
+      );
+
+      const alreadyInTable = $currentTableId.getState() === tableId;
+
+      if (!alreadyInTable) {
+        const gameViewPath = (() => {
+          if (tableId >= 1 && tableId <= 6) return "/tables/0";
+          if (tableId >= 7 && tableId <= 12) return "/tables/1";
+          if (tableId >= 13 && tableId <= 18) return "/tables/2";
+          return "/tables";
+        })();
+
+        navigateTo(gameViewPath);
+        setTimeout(() => {
+          joinTableClicked(tableId);
+        }, 300);
+      }
+
       bellNewAlert();
       setTimeout(() => bellReset(), 2000);
       break;
+    }
 
     case "gameInviteRejected":
       stopGameLoading();

@@ -60,7 +60,6 @@ function LoginComponent() {
             src="/img/icono.webp"
             alt="Logo Enigma"
             className="w-[200px] sm:w-[240px] md:w-[280px] lg:w-[260px] xl:w-[320px]"
-            onClick={() => navigate("/")}
           />
 
           <div className="text-center">

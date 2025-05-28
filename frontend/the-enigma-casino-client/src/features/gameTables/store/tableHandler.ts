@@ -4,11 +4,10 @@ import { Player } from "../models/GameTable.interface";
 import {
   countdownStarted,
   countdownStopped,
-  gameStarted,
-  setPendingJoinTableId,
+  gameStarted
   tableUpdated,
 } from "./tablesEvents"; // errorReceived añadir para toast
-import { navigateTo } from "../../games/shared/router/navigateFx";
+// import { navigateTo } from "../../games/shared/router/navigateFx";
 import { stopGameLoading } from "../../friends/stores/friends.events";
 
 // Mensajes de error traducidos
@@ -50,20 +49,20 @@ socketMessageReceived.watch((data) => {
       stopGameLoading(); // Cierra modal
       break;
 
-    case "join_table": {
-      const tableId = Number(data.tableId);
+    // case "join_table": {
+    //   const tableId = Number(data.tableId);
 
-      const gameViewPath = (() => {
-        if (tableId >= 1 && tableId <= 6) return "/tables/0";
-        if (tableId >= 7 && tableId <= 12) return "/tables/1";
-        if (tableId >= 13 && tableId <= 18) return "/tables/2";
-        return "/tables";
-      })();
+    //   const gameViewPath = (() => {
+    //     if (tableId >= 1 && tableId <= 6) return "/tables/0";
+    //     if (tableId >= 7 && tableId <= 12) return "/tables/1";
+    //     if (tableId >= 13 && tableId <= 18) return "/tables/2";
+    //     return "/tables";
+    //   })();
 
-      setPendingJoinTableId(tableId);
-      navigateTo(gameViewPath);
-      break;
-    }
+    //   setPendingJoinTableId(tableId);
+    //   navigateTo(gameViewPath);
+    //   break;
+    // }
     case "waiting_opponent": {
       toast(
         "👤 " +

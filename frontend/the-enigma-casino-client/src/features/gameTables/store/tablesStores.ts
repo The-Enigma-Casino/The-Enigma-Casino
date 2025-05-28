@@ -12,11 +12,9 @@ import {
   leaveTableClicked,
   markLeftTable,
   matchStarted,
-  // resetConfirmedJoin,
   resetTableId,
   setGameType,
   setPendingJoinTableId,
-  // tableConfirmedJoin,
   tableUpdated,
   tableWaitingOpponent,
 } from "./tablesEvents";
@@ -99,7 +97,3 @@ export const $waitingOpponentTableId = createStore<number | null>(null)
     resetTableId,
     clearWaitingOpponent,
   ]);
-
-// export const $confirmedTableId = createStore<number | null>(null)
-//   .on(tableConfirmedJoin, (_, id) => id)
-//   .reset([resetConfirmedJoin, leaveTableClicked, resetTableId]);

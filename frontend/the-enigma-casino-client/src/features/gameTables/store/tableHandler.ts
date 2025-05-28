@@ -7,15 +7,11 @@ import {
   gameStarted,
   markLeftTable,
   resetTableId,
-  setPendingJoinTableId,
-  // tableConfirmedJoin,
   tableUpdated,
   tableWaitingOpponent,
-} from "./tablesEvents"; // errorReceived añadir para toast
-import { navigateTo } from "../../games/shared/router/navigateFx";
+} from "./tablesEvents";
 import { stopGameLoading } from "../../friends/stores/friends.events";
 
-// Mensajes de error traducidos
 const errorMessageMap: Record<string, string> = {
   already_left:
     "Has abandonado recientemente esta mesa. Espera a que termine la partida en curso o únete a otra mesa.",
@@ -51,24 +47,9 @@ socketMessageReceived.watch((data) => {
 
     case "game_start":
       gameStarted({ tableId: Number(data.tableId) });
-      stopGameLoading(); // Cierra modal
+      stopGameLoading();
       break;
 
-    case "join_table": {
-      const tableId = Number(data.tableId);
-
-      const gameViewPath = (() => {
-        if (tableId >= 1 && tableId <= 6) return "/tables/0";
-        if (tableId >= 7 && tableId <= 12) return "/tables/1";
-        if (tableId >= 13 && tableId <= 18) return "/tables/2";
-        return "/tables";
-      })();
-
-      setPendingJoinTableId(tableId);
-      // tableJoinConfirmed(tableId);
-      navigateTo(gameViewPath);
-      break;
-    }
     case "waiting_opponent": {
       const tableId = Number(data.tableId);
       toast(
@@ -94,7 +75,6 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "table_closed": {
-      // toast.error(data.reason);
       break;
     }
     case "leave_success": {
@@ -106,8 +86,3 @@ socketMessageReceived.watch((data) => {
       break;
   }
 });
-
-
-// function tableJoinConfirmed(tableId: number) {
-//   tableConfirmedJoin(tableId);
-// }

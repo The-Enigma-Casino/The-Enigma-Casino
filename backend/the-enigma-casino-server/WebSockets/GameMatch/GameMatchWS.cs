@@ -440,6 +440,22 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             {
                 Console.WriteLine($"[HANDLE SOLO PLAYER] Promoviendo a jugador: {spectator.User.NickName}");
                 spectator.PlayerState = PlayerState.Playing;
+
+                string actionType = table.GameType switch
+                {
+                    GameType.BlackJack => "blackjack",
+                    GameType.Poker => "poker",
+                    GameType.Roulette => "roulette",
+                    _ => "game_match"
+                };
+
+                await ((IWebSocketSender)this).SendToUserAsync(spectator.UserId.ToString(), new
+                {
+                    type = actionType,
+                    action = "match_ready",
+                    table.Id,
+                    message = "¡Estás dentro de la próxima partida! Prepárate para jugar 🎲"
+                });
             }
 
             table.TableState = TableState.Starting;

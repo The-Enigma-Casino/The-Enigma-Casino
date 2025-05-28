@@ -138,7 +138,10 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         await ((IWebSocketSender)this).SendToUserAsync(userId, response);
         BlackjackBetTracker.RegisterBet(tableId, player.UserId);
 
-        var expectedPlayerIds = match.Players.Select(p => p.UserId).ToList();
+        var expectedPlayerIds = match.Players
+            .Where(p => p.PlayerState != PlayerState.Left && !p.HasAbandoned)
+            .Select(p => p.UserId)
+            .ToList();
 
         Console.WriteLine($"🎯 Jugadores esperados en match: {string.Join(", ", expectedPlayerIds)}");
         Console.WriteLine($"🎯 Jugadores que han apostado: {string.Join(", ", BlackjackBetTracker.GetAllForTable(tableId))}");
@@ -512,7 +515,7 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
     private async Task AdvanceTurnAsync(BlackjackGame blackjackGame, Match match, int tableId)
     {
         List<Player> players = match.Players
-            .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.Blackjack)
+            .Where(p => p.PlayerState is PlayerState.Playing or PlayerState.Blackjack or PlayerState.Stand or PlayerState.Bust)
             .ToList();
 
         var currentIndex = players.FindIndex(p => p.UserId == blackjackGame.CurrentPlayerTurnId);
@@ -529,12 +532,14 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         {
             int nextIndex = (currentIndex + i) % players.Count;
             var candidate = players[nextIndex];
+
             if (candidate.PlayerState == PlayerState.Playing)
             {
                 nextPlayer = candidate;
                 break;
             }
         }
+
 
         if (nextPlayer != null)
         {

@@ -28,7 +28,12 @@ export const tryJoinTable = createEvent<number>();
 export const resetTableId = createEvent();
 export const matchStarted = createEvent<number>();
 export const exitLobbyPage = createEvent();
+export const tableWaitingOpponent = createEvent<number>();
+export const clearWaitingOpponent = createEvent();
+// export const tableConfirmedJoin = createEvent<number>();
+// export const resetConfirmedJoin = createEvent();
 
 // Friend
 export const setPendingJoinTableId = createEvent<number>();
 export const clearPendingJoinTableId = createEvent();
+

@@ -1,6 +1,7 @@
 import { createStore } from "effector";
 import {
   clearPendingJoinTableId,
+  clearWaitingOpponent,
   countdownCleared,
   countdownStarted,
   countdownStopped,
@@ -11,10 +12,13 @@ import {
   leaveTableClicked,
   markLeftTable,
   matchStarted,
+  // resetConfirmedJoin,
   resetTableId,
   setGameType,
   setPendingJoinTableId,
+  // tableConfirmedJoin,
   tableUpdated,
+  tableWaitingOpponent,
 } from "./tablesEvents";
 import { GameTable } from "../models/GameTable.interface";
 
@@ -86,3 +90,16 @@ export const $isInLobby = createStore(false)
 export const $pendingJoinTableId = createStore<number | null>(null) // Friend
   .on(setPendingJoinTableId, (_, id) => id)
   .on(clearPendingJoinTableId, () => null);
+
+export const $waitingOpponentTableId = createStore<number | null>(null)
+  .on(tableWaitingOpponent, (_, id) => id)
+  .reset([
+    joinTableClicked,
+    leaveTableClicked,
+    resetTableId,
+    clearWaitingOpponent,
+  ]);
+
+// export const $confirmedTableId = createStore<number | null>(null)
+//   .on(tableConfirmedJoin, (_, id) => id)
+//   .reset([resetConfirmedJoin, leaveTableClicked, resetTableId]);

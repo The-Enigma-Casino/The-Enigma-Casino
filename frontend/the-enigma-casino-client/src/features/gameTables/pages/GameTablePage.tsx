@@ -6,6 +6,7 @@ import {
   $isInLobby,
   $pendingJoinTableId,
   $tables,
+  $waitingOpponentTableId,
   clearPendingJoinTableId,
   exitLobbyPage,
   joinTableClicked,
@@ -30,6 +31,7 @@ function GameTablePage() {
   const currentTableId = useUnit($currentTableId);
   const isInLobby = useUnit($isInLobby);
   const pendingTableId = useUnit($pendingJoinTableId);
+  const waitingOpponentTableId = useUnit($waitingOpponentTableId);
 
   useEffect(() => {
     if (gameType) {
@@ -51,7 +53,6 @@ function GameTablePage() {
   }, [pendingTableId]);
 
   const location = useLocation();
-
 
   useEffect(() => {
     if (pendingTableId && location.pathname.startsWith("/tables")) {
@@ -172,6 +173,11 @@ function GameTablePage() {
                     </p>
                   ) : (
                     <p className="text-gray-400">Sin jugadores</p>
+                  )}
+                  {waitingOpponentTableId === table.id && (
+                    <p className="mt-3 text-yellow-400 text-lg font-semibold animate-pulse">
+                      Esperando a un oponente para comenzar la partida...
+                    </p>
                   )}
                 </div>
                 <div className="mt-4 flex justify-center gap-6">

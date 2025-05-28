@@ -5,8 +5,12 @@ import {
   countdownStarted,
   countdownStopped,
   gameStarted,
+  markLeftTable,
+  resetTableId,
   setPendingJoinTableId,
+  // tableConfirmedJoin,
   tableUpdated,
+  tableWaitingOpponent,
 } from "./tablesEvents"; // errorReceived añadir para toast
 import { navigateTo } from "../../games/shared/router/navigateFx";
 import { stopGameLoading } from "../../friends/stores/friends.events";
@@ -61,15 +65,16 @@ socketMessageReceived.watch((data) => {
       })();
 
       setPendingJoinTableId(tableId);
+      // tableJoinConfirmed(tableId);
       navigateTo(gameViewPath);
       break;
     }
     case "waiting_opponent": {
+      const tableId = Number(data.tableId);
       toast(
-        "👤 " +
-          (data.message ??
-            "Esperando más jugadores para comenzar la partida...")
+        data.message ?? "Esperando más jugadores para comenzar la partida..."
       );
+      tableWaitingOpponent(tableId);
       break;
     }
     case "error": {
@@ -84,13 +89,25 @@ socketMessageReceived.watch((data) => {
     }
     case "join_denied":
       toast.error(data.reason);
+      resetTableId();
+      markLeftTable();
       break;
 
     case "table_closed": {
-      toast.error(data.reason);
+      // toast.error(data.reason);
+      break;
+    }
+    case "leave_success": {
+      resetTableId();
+      markLeftTable();
       break;
     }
     default:
       break;
   }
 });
+
+
+// function tableJoinConfirmed(tableId: number) {
+//   tableConfirmedJoin(tableId);
+// }

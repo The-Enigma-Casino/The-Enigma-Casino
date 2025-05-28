@@ -1,9 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { isValidEmail, isValidName, isValidPassword, nicknameValidator } from "../../../../../utils/validatorsUser";
-import { registerFx } from "../../../actions/authActions";
-
+import {
+  isValidEmail,
+  isValidName,
+  isValidPassword,
+  nicknameValidator,
+} from "../../../utils/validatorsUser";
+import { registerFx } from "../actions/authActions";
 
 interface FormData {
   nickName: string;
@@ -68,12 +72,17 @@ export function useRegisterForm() {
     toast.dismiss();
 
     if (!isAdult) return toast.error("Debes ser mayor de edad.");
-    if (!acceptPrivacy) return toast.error("Debes aceptar la política de privacidad.");
+    if (!acceptPrivacy)
+      return toast.error("Debes aceptar la política de privacidad.");
     if (!isValidEmail(formData.email)) return toast.error("Correo no válido.");
-    if (!nicknameValidator(formData.nickName)) return toast.error("Nombre de usuario inválido.");
-    if (!isValidPassword(formData.password)) return toast.error("Contraseña débil.");
-    if (!isValidName(formData.fullname)) return toast.error("Nombre completo inválido.");
-    if (formData.password !== formData.confirmPassword) return toast.error("Contraseñas no coinciden.");
+    if (!nicknameValidator(formData.nickName))
+      return toast.error("Nombre de usuario inválido.");
+    if (!isValidPassword(formData.password))
+      return toast.error("Contraseña débil.");
+    if (!isValidName(formData.fullname))
+      return toast.error("Nombre completo inválido.");
+    if (formData.password !== formData.confirmPassword)
+      return toast.error("Contraseñas no coinciden.");
 
     try {
       const { confirmPassword, ...formDataToSend } = formData;
@@ -81,23 +90,30 @@ export function useRegisterForm() {
       await toast.promise(registerFx(formDataToSend), {
         loading: "Registrando...",
         success: () => {
-          setTimeout(() => {
-            setFormData({
-              nickName: "",
-              fullname: "",
-              email: "",
-              dateOfBirth: "",
-              address: "",
-              country: "",
-              password: "",
-              confirmPassword: "",
-            });
-            setAcceptPrivacy(false);
-            navigate("/auth/login", { replace: true });
-            toast.dismiss();
-          }, 6000);
+          navigate("/auth/login", { replace: true });
 
-          return <b>Registro exitoso. Redirigiendo...</b>;
+          setTimeout(() => {
+            toast.success(
+              "Registro exitoso. Revisa tu correo para confirmar tu cuenta.",
+              {
+                className: "text-lg font-semibold p-4",
+              }
+            );
+          }, 100);
+
+          setFormData({
+            nickName: "",
+            fullname: "",
+            email: "",
+            dateOfBirth: "",
+            address: "",
+            country: "",
+            password: "",
+            confirmPassword: "",
+          });
+          setAcceptPrivacy(false);
+
+          return null;
         },
         error: (err) => <b>{err || "Ocurrió un error inesperado."}</b>,
       });

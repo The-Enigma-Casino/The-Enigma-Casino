@@ -1,7 +1,7 @@
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import classes from "./RegisterForm.module.css";
-import { useRegisterForm } from "./UseRegisterForm";
+import { useRegisterForm } from "../../../hooks/UseRegisterForm";
 import Input from "../../../../../components/ui/input/CustomInput";
 import InputDebounce from "../../ui/InputDebounce";
 import Checkbox from "../../ui/Checkbox";

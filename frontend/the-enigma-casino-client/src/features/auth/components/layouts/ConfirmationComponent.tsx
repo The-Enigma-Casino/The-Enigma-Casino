@@ -11,6 +11,8 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
   const [isConfirmed, setIsConfirmed] = useState<boolean | null>(null);
 
   useEffect(() => {
+    let closeTimeout: NodeJS.Timeout;
+
     if (token) {
       const toastId = toast.loading("Confirmando tu email...");
 
@@ -22,6 +24,10 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
           });
 
           setIsConfirmed(true);
+
+          closeTimeout = setTimeout(() => {
+            window.close();
+          }, 20000);
         })
         .catch(() => {
           toast.error("No se pudo confirmar el email. 😟", {
@@ -32,6 +38,10 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
           setIsConfirmed(false);
         });
     }
+
+    return () => {
+      if (closeTimeout) clearTimeout(closeTimeout);
+    };
   }, [token]);
 
   return (

@@ -4,8 +4,8 @@ import { Player } from "../models/GameTable.interface";
 import {
   countdownStarted,
   countdownStopped,
-  gameStarted
-  tableUpdated,
+  gameStarted,
+  tableUpdated
 } from "./tablesEvents"; // errorReceived añadir para toast
 // import { navigateTo } from "../../games/shared/router/navigateFx";
 import { stopGameLoading } from "../../friends/stores/friends.events";

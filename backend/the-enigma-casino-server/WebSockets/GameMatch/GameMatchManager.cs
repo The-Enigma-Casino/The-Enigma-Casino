@@ -132,7 +132,10 @@ public class GameMatchManager
         {
             if (player.PlayerState == PlayerState.Left)
             {
-                Console.WriteLine($"🛑 [EndMatchAsync] Saltando historial para {player.User.NickName} (ya abandonó la mesa).");
+                Console.WriteLine($"🛑 [EndMatchAsync] Jugador {player.User.NickName} ya estaba en Left. Será eliminado de la mesa.");
+                using var scope = _serviceProvider.CreateScope(); 
+                var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
+                tableManager.RemovePlayerFromTable(match.GameTable, player.UserId, out _);
                 continue;
             }
 

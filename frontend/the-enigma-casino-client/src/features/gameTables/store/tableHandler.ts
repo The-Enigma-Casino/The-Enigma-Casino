@@ -10,6 +10,7 @@ import {
   tableUpdated,
   tableWaitingOpponent,
 } from "./tablesEvents";
+
 import { stopGameLoading } from "../../friends/stores/friends.events";
 
 const errorMessageMap: Record<string, string> = {

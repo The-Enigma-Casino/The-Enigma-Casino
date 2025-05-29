@@ -29,6 +29,7 @@
   margin-top: 0.5rem;
   overflow: hidden;
   width: 100%;
+  min-width: 180px
 }
 
 .messages {
@@ -107,11 +108,12 @@
   gap: 4rem;
 }
 
-@media (max-width: 1600px) {
+@media (max-width: 1024px) {
   .container {
     background-color: rgba(0, 128, 0, 0.12);
     backdrop-filter: blur(2px);
     border: 1px solid rgba(0, 255, 0, 0.3);
+    min-width: 0px;
     width: 80%;
   }
 

@@ -162,7 +162,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             await GameMatchHelper.NotifyPlayerMatchEndedAsync(this, userId, tableId);
             await GameMatchHelper.NotifyOthersPlayerLeftAsync(this, match, userId, player.User.NickName, tableId);
             await GameMatchHelper.TryCancelMatchAsync(this, match, manager, tableManager, tableId);
-            await GameMatchHelper.CheckGamePostExitLogicAsync(match, tableId, _serviceProvider);
 
             var table = match.GameTable;
 
@@ -194,6 +193,8 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 await gameTableWS.TryPromoteSpectatorsAndStartMatchAsync(tableId);
             }
         }
+        await GameMatchHelper.CheckGamePostExitLogicAsync(match, tableId, _serviceProvider);
+
     }
 
     public async Task FinalizeAndEvaluateMatchAsync(int tableId)

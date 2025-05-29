@@ -1,6 +1,5 @@
 import toast from "react-hot-toast";
 import { socketMessageReceived } from "../../../websocket/store/wsEvents";
-import { Player } from "../models/GameTable.interface";
 import {
   countdownStarted,
   countdownStopped,
@@ -12,6 +11,7 @@ import {
 } from "./tablesEvents";
 
 import { stopGameLoading } from "../../friends/stores/friends.events";
+import { getPlayerAvatarsFx } from "../../games/actions/playerAvatarsAction";
 
 const errorMessageMap: Record<string, string> = {
   already_left:
@@ -27,13 +27,47 @@ socketMessageReceived.watch((data) => {
   console.log("🎯 [game_table] Acción recibida:", data.action, data);
 
   switch (data.action) {
-    case "table_update":
+    case "table_update": {
+  const tableId = Number(data.tableId);
+  const nickNames = data.players as string[];
+
+  console.log("🧩 [table_update] Mesa:", tableId);
+  console.log("👥 Nicknames recibidos:", nickNames);
+
+  if (nickNames.length > 0) {
+    getPlayerAvatarsFx(nickNames).then((avatars) => {
+      console.log("📦 Avatares recibidos del backend:", avatars);
+
+      const enrichedPlayers = nickNames.map((nick) => {
+        const avatarData = avatars.find((a) => a.nickName === nick);
+        const player = {
+          name: nick,
+          avatar: avatarData?.image ?? "/img/user_default.png",
+        };
+        console.log(`🎨 Avatar aplicado a ${nick}:`, player.avatar);
+        return player;
+      });
+
       tableUpdated({
-        tableId: Number(data.tableId),
-        players: data.players as (Player | null)[],
+        tableId,
+        players: enrichedPlayers,
         state: data.state,
       });
-      break;
+
+      console.log("✅ [tableUpdated] Jugadores enriquecidos enviados al store.");
+    });
+  } else {
+    console.log("⚠️ No hay jugadores en la mesa.");
+    tableUpdated({
+      tableId,
+      players: [],
+      state: data.state,
+    });
+  }
+
+  break;
+}
+
 
     case "countdown_started":
       countdownStarted({

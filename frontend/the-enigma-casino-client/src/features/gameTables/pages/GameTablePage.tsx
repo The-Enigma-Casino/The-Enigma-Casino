@@ -21,6 +21,7 @@ import { fetchTables } from "../actions/tableActions";
 import "../../games/roulette/stores/rouletteHandler";
 import "../../games/pocker/stores/pokerHandler";
 import "../../games/match/matchHandler";
+import { IMAGE_PROFILE_URL } from "../../../config";
 
 function GameTablePage() {
   const navigate = useNavigate();
@@ -81,7 +82,7 @@ function GameTablePage() {
         avatars.push(
           <img
             key={i}
-            src={players[i]?.avatar || "/img/user_default.png"}
+            src={IMAGE_PROFILE_URL + players[i]?.avatar || "/img/user_default.png"}
             alt={`Jugador ${players[i]?.name}`}
             className="w-20 h-20 rounded-full"
           />

@@ -81,9 +81,9 @@ function GameTablePage() {
         avatars.push(
           <img
             key={i}
-            src={players[i]?.avatar || "/path-to-default-avatar.jpg"}
+            src={players[i]?.avatar || "/img/user_default.png"}
             alt={`Jugador ${players[i]?.name}`}
-            className="w-12 h-12 rounded-full border-2 border-gray-500"
+            className="w-20 h-20 rounded-full"
           />
         );
       } else {

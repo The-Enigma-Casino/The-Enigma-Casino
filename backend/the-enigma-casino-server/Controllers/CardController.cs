@@ -20,19 +20,4 @@ public class CardController : ControllerBase
 
         return NotFound();
     }
-
-    [HttpGet("back/{version}")]
-    public IActionResult GetCardBackImage(int version)
-    {
-        string fileName = version == 1 ? "enigma_back1.webp" : "enigma_back2.webp";
-        string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "cards", fileName);
-
-        if (System.IO.File.Exists(filePath))
-        {
-            byte[] imageData = System.IO.File.ReadAllBytes(filePath);
-            return File(imageData, "image/webp");
-        }
-
-        return NotFound();
-    }
 }

@@ -52,7 +52,7 @@ public class GameTableSeeder
             {
                 Name = $"Ruleta Mesa {i}",
                 GameType = GameType.Roulette,
-                MaxPlayer = 10,
+                MaxPlayer = 6,
                 MinPlayer = 1,
                 TableState = TableState.Waiting
             });

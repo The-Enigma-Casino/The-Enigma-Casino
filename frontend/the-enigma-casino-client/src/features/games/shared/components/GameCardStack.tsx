@@ -1,4 +1,4 @@
-import { CARD_IMAGE, CARD_IMAGE_BACK } from "../../../../config";
+import { CARD_IMAGE } from "../../../../config";
 import { GameCard } from "../interfaces/gameCard.interface";
 
 type Props = {

@@ -77,7 +77,6 @@ export const $hasLeftTable = createStore(false)
   .on(markLeftTable, () => true)
   .reset([joinTableClicked, leaveTableClicked]);
 
-
 export const $isInLobby = createStore(false)
   .on(joinTableClicked, () => true)
   .on(matchStarted, () => false)
@@ -97,3 +96,7 @@ export const $waitingOpponentTableId = createStore<number | null>(null)
     resetTableId,
     clearWaitingOpponent,
   ]);
+
+export const $joiningTableId = createStore<number | null>(null)
+  .on(joinTableClicked, (_, id) => id)
+  .reset([resetTableId, markLeftTable, leaveTableClicked]);

@@ -4,6 +4,7 @@ import {
   $countdowns,
   $currentTableId,
   $isInLobby,
+  $joiningTableId,
   $pendingJoinTableId,
   $tables,
   $waitingOpponentTableId,
@@ -32,6 +33,7 @@ function GameTablePage() {
   const isInLobby = useUnit($isInLobby);
   const pendingTableId = useUnit($pendingJoinTableId);
   const waitingOpponentTableId = useUnit($waitingOpponentTableId);
+  const joiningTableId = useUnit($joiningTableId);
 
   useEffect(() => {
     if (gameType) {
@@ -87,11 +89,14 @@ function GameTablePage() {
           />
         );
       } else {
+        const isJoining = joiningTableId === tableId;
         avatars.push(
           <div
             key={i}
             className="w-20 h-20 rounded-full bg-gray-500 flex justify-center items-center cursor-pointer hover:bg-gray-600"
-            onClick={() => handleJoinTable(tableId)}
+            onClick={() => {
+              if (!isJoining) handleJoinTable(tableId);
+            }}
           >
             <span className="text-white text-lg font-bold">+</span>
           </div>

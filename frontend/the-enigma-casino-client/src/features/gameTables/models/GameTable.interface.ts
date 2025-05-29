@@ -1,8 +1,8 @@
 export interface Player {
-    id: number;
-    name: string;
-    avatar: string;
-  }
+  name: string;
+  avatar?: string;
+}
+
   
   export interface GameTable {
     id: number;

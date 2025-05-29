@@ -22,6 +22,7 @@ import { fetchTables } from "../actions/tableActions";
 import "../../games/roulette/stores/rouletteHandler";
 import "../../games/pocker/stores/pokerHandler";
 import "../../games/match/matchHandler";
+import { IMAGE_PROFILE_URL } from "../../../config";
 
 function GameTablePage() {
   const navigate = useNavigate();
@@ -83,9 +84,9 @@ function GameTablePage() {
         avatars.push(
           <img
             key={i}
-            src={players[i]?.avatar || "/path-to-default-avatar.jpg"}
+            src={IMAGE_PROFILE_URL + players[i]?.avatar || "/img/user_default.png"}
             alt={`Jugador ${players[i]?.name}`}
-            className="w-12 h-12 rounded-full border-2 border-gray-500"
+            className="w-20 h-20 rounded-full"
           />
         );
       } else {

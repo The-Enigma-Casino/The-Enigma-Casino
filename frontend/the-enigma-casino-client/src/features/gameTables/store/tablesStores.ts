@@ -30,8 +30,7 @@ export const $gameType = createStore<number>(0).on(
 export const $currentTableId = createStore<number | null>(null)
   .on(joinTableClicked, (_, tableId) => tableId)
   .on(leaveTableClicked, () => null)
-  .reset(resetTableId)
-  .reset(exitLobbyPage);
+  .reset(resetTableId);
 
 
 export const $tables = createStore<GameTable[]>([])

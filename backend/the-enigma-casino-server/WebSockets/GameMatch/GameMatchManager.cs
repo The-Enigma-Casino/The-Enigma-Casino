@@ -133,7 +133,7 @@ public class GameMatchManager
             if (player.PlayerState == PlayerState.Left)
             {
                 Console.WriteLine($"🛑 [EndMatchAsync] Jugador {player.User.NickName} ya estaba en Left. Será eliminado de la mesa.");
-                using var scope = _serviceProvider.CreateScope(); 
+                using var scope = _serviceProvider.CreateScope();
                 var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
                 tableManager.RemovePlayerFromTable(match.GameTable, player.UserId, out _);
                 continue;
@@ -232,16 +232,25 @@ public class GameMatchManager
         }
 
         bool matchPlayed = _betInfoResolver.Resolve(match.GameTable.GameType).HasPlayedThisMatch(player, match);
+        Console.WriteLine($"[DEBUG] Evaluando salida de jugador {player.User.NickName} ({player.UserId})");
+        Console.WriteLine($"        - Juego: {match.GameTable.GameType}");
+        Console.WriteLine($"        - CurrentBet: {player.CurrentBet}");
+        Console.WriteLine($"        - Estado actual: {player.PlayerState}");
+        Console.WriteLine($"        - matchPlayed: {matchPlayed}");
 
         await UpdateOrInsertHistoryAsync(player, match, playerLeftTable: true, matchPlayed);
 
         if (!matchPlayed)
         {
+            Console.WriteLine($"[DEBUG] Jugador {player.User.NickName} NO jugó. Se eliminará completamente de la mesa.");
+
             if (ActiveGameSessionStore.TryGet(tableId, out var session))
             {
                 var tableManager = _serviceProvider.GetRequiredService<GameTableManager>();
                 tableManager.RemovePlayerFromTable(session.Table, player.UserId, out _);
                 Console.WriteLine($"🚪 {player.User.NickName} salió del Match SIN apostar, eliminado de la mesa inmediatamente.");
+                match.Players.RemoveAll(p => p.UserId == player.UserId);
+                Console.WriteLine($"🧹 Jugador {player.User.NickName} eliminado también de match.Players (copiada de table.Players)");
 
                 if (session.Table.Players.Count == 0)
                 {
@@ -258,6 +267,11 @@ public class GameMatchManager
                     ActiveGameMatchStore.Remove(tableId);
                 }
             }
+        }
+        else
+        {
+            Console.WriteLine($"[DEBUG] Jugador {player.User.NickName} SÍ jugó. Se conservará en la mesa y su estado será evaluado por el juego.");
+
         }
 
         if (match.MatchState == MatchState.Finished)

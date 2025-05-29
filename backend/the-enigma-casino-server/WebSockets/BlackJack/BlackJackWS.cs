@@ -294,20 +294,34 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         if (!ActiveGameMatchStore.TryGet(tableId, out Match match))
             return;
 
-        var remainingPlayerIds = match.Players.Select(p => p.UserId).ToList();
+        var remainingPlayerIds = match.Players
+            .Where(p => p.PlayerState == PlayerState.Playing)
+            .Select(p => p.UserId)
+            .ToList();
 
         if (BlackjackBetTracker.HaveAllPlayersBet(tableId, remainingPlayerIds))
         {
             BlackjackBetTracker.Clear(tableId);
             Console.WriteLine($"♠️ Todos los jugadores han apostado (tras salida). Iniciando reparto...");
+            if (ActiveGameSessionStore.TryGet(tableId, out var session))
+            {
+                session.CancelBettingTimer();
+            }
             await HandleDealInitialCardsAsync(tableId);
         }
     }
 
 
+
     public async Task HandleDealInitialCardsAsync(int tableId)
     {
         if (!TryGetMatch(tableId, "SYSTEM", out var match)) return;
+
+        Console.WriteLine($"[DEBUG] Jugadores en match.Players justo antes de StartRound():");
+        foreach (var p in match.Players)
+        {
+            Console.WriteLine($" - {p.User.NickName} | Estado: {p.PlayerState}");
+        }
 
         BlackjackGame blackjackGame = new BlackjackGame(match);
         blackjackGame.StartRound();

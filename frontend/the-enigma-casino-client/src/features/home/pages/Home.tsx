@@ -3,18 +3,21 @@ import GamePanel from "../components/layouts/GamePanel";
 import Carousel from "../components/ui/Carousel";
 import Winners from "../components/ui/Winners";
 import { FriendsModal } from "../../friends/modal/FriendsModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { userSessionInitialized } from "../../friends/stores/friends.events";
 
 function Home() {
   const [showFriends, setShowFriends] = useState(false);
-
+  useEffect(() => {
+    userSessionInitialized();
+  }, []);
   return (
     <div className="flex grow h-full w-full max-w-full overflow-x-clip bg-Background-Page">
       <div className="hidden md:flex flex-col w-[280px] shrink-0 h-full">
         <SidebarMenu onOpenFriendsModal={() => setShowFriends(true)} />
       </div>
 
-<section className="flex flex-col items-center gap-8 w-full grow pb-12">
+      <section className="flex flex-col items-center gap-8 w-full grow pb-12">
         <Carousel />
         <Winners />
         <GamePanel />

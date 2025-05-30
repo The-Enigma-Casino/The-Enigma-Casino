@@ -14,7 +14,7 @@ import Modal from "../../ui/modal/Modal";
 import { $transactionEnd } from "../../../features/withdraw/store/WithdrawalStore";
 import ModalGachaComponent from "../../../features/gachapon/components/ModalGachaComponent";
 import { useLogout } from "../../../features/auth/utils/logout";
-import { Bell } from "../../../features/friends/ui/Bell";
+import { BellWithDropdown } from "../../../features/friends/components/BellWithDropdown";
 
 function Header() {
   const navigate = useNavigate();
@@ -75,7 +75,9 @@ function Header() {
           </div>
 
           {role && (
-            <Bell />
+            <div className="absolute top-[3.4rem] left-[22.2rem] z-50">
+              <BellWithDropdown />
+            </div>
           )}
         </div>
 

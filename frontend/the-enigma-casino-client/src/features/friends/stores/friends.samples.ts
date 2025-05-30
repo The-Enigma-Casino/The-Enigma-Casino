@@ -15,10 +15,16 @@ import {
   inviteFriendFromList,
   setSearchResults,
   bellReset,
+  removeSimpleAlert,
+  bulkAddSimpleAlerts,
+  bellNotification,
+  userSessionInitialized,
+  fetchReceivedRequests,
 } from "./friends.events";
 import { messageSent } from "../../../websocket/store/wsIndex";
-import { $lastRequestIds, $onlineFriendsMap, $receivedRequests, $searchResults } from "./friends.store";
+import { $isInitialFetch, $lastRequestIds, $onlineFriendsMap, $searchResults, $simpleAlerts } from "./friends.store";
 import { acceptFriendRequestFx, cancelFriendRequestFx, fetchReceivedRequestsFx, removeFriendFx, sendFriendRequestFx } from "./friends.effects";
+import { SimpleAlert } from "./friends.types";
 
 sample({
   clock: getOnlineFriendsRequested,
@@ -187,11 +193,26 @@ sample({
 
 sample({
   clock: fetchReceivedRequestsFx.doneData,
-  source: $lastRequestIds,
-  fn: (previousIds, newRequests) =>
-    newRequests.filter((req) => !previousIds.includes(req.id)),
+  fn: (newRequests) => {
+    const isInitial = $isInitialFetch.getState();
+    const previousIds = $lastRequestIds.getState();
+
+    if (isInitial) return [];
+
+    return newRequests
+      .filter((req) => !previousIds.includes(req.id))
+      .map((req): SimpleAlert<"friend_request"> => ({
+        id: `friend_request-${req.senderId}`,
+        type: "friend_request",
+        nickname: req.nickName,
+        image: req.image,
+        timestamp: Date.now(),
+        meta: { senderId: req.senderId },
+      }));
+  },
   target: newFriendRequestsDetected,
 });
+
 
 sample({
   clock: fetchReceivedRequestsFx.doneData,
@@ -200,7 +221,52 @@ sample({
 });
 
 sample({
-  source: $receivedRequests,
-  filter: (list) => list.length === 0,
+  source: $simpleAlerts,
+  clock: removeSimpleAlert,
+  filter: (alerts) => alerts.length === 0,
+  target: bellReset,
+});
+
+sample({
+  clock: fetchReceivedRequestsFx.doneData,
+  source: $simpleAlerts,
+  fn: (existingAlerts, requests): SimpleAlert<"friend_request">[] => {
+    const existingIds = new Set(existingAlerts.map((a) => a.id));
+
+    return requests
+      .map((r): SimpleAlert<"friend_request"> => ({
+        id: `friend_request-${r.senderId}`,
+        type: "friend_request",
+        nickname: r.nickName,
+        image: r.image,
+        timestamp: Date.now(),
+        meta: { senderId: r.senderId },
+      }))
+      .filter((alert) => !existingIds.has(alert.id));
+  },
+  target: bulkAddSimpleAlerts,
+});
+
+sample({
+  clock: userSessionInitialized,
+  target: fetchReceivedRequestsFx,
+});
+
+sample({
+  clock: fetchReceivedRequests,
+  fn: () => undefined,
+  target: fetchReceivedRequestsFx,
+});
+
+sample({
+  source: $simpleAlerts,
+  filter: (alerts) => alerts.length > 0,
+  target: bellNotification,
+});
+
+sample({
+  source: $simpleAlerts,
+  clock: removeSimpleAlert,
+  filter: (alerts) => alerts.length === 0,
   target: bellReset,
 });

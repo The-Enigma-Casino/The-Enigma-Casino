@@ -1,11 +1,16 @@
 import { combine, createStore } from "effector";
-import { Friend, FriendRequest, SearchUser } from "./friends.types";
+import { Friend, FriendRequest, SearchUser, SimpleAlert } from "./friends.types";
 import {
+  addSimpleAlert,
   bellNewAlert,
   bellNotification,
   bellReset,
+  bulkAddSimpleAlerts,
+  clearAllSimpleAlerts,
+  fetchReceivedRequests,
   onlineFriendsUpdated,
   removeReceivedRequest,
+  removeSimpleAlert,
   removeUserFromSearchResults,
   resetReceivedRequests,
   resetSearchResults,
@@ -88,3 +93,19 @@ export const $bellType = createStore<BellType>("none")
   .on(bellReset, () => "none")
   .on(bellNewAlert, () => "new")
   .on(bellNotification, () => "notification");
+
+export const $simpleAlerts = createStore<SimpleAlert[]>([])
+  .on(addSimpleAlert, (state, alert) => {
+    const exists = state.some((a) => a.id === alert.id);
+    return exists ? state : [alert, ...state];
+  })
+  .on(removeSimpleAlert, (state, id) => state.filter((a) => a.id !== id))
+  .on(bulkAddSimpleAlerts, (state, alerts) => {
+    const existingIds = new Set(state.map((a) => a.id));
+    const newAlerts = alerts.filter((a) => !existingIds.has(a.id));
+    return [...newAlerts, ...state];
+  })
+  .on(clearAllSimpleAlerts, () => []);
+
+export const $isInitialFetch = createStore(true)
+  .on(fetchReceivedRequests, (_, { isInitial }) => isInitial);

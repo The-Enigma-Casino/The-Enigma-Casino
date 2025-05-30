@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { FriendToast } from "./FriendToast";
-import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, bellReset, newFriendRequestsDetected, rejectFriendRequest, rejectGameInvite, startGameLoading } from "../stores/friends.events";
+import { acceptFriendRequest, acceptGameInvite, acceptTableInvite, newFriendRequestsDetected, rejectFriendRequest, rejectGameInvite, removeSimpleAlert, startGameLoading } from "../stores/friends.events";
 import { IMAGE_PROFILE_URL } from "../../../config";
 
 const gameTypeMap: Record<number, { label: string; img: string }> = {
@@ -23,8 +23,9 @@ export function showGameInviteToast(data: {
   tableId: number;
   expiresIn: number;
   mode?: "table" | "friendsList";
-}) {
+}): string {
   const gameType = getGameTypeByTableId(data.tableId);
+  const alertId = `game_invite-${data.inviterId}-${data.tableId}`;
 
   const onAccept = () => {
     if (data.mode === "table") {
@@ -39,7 +40,7 @@ export function showGameInviteToast(data: {
 
 
 
-  toast.custom((t) => (
+  const toastId = toast.custom((t) => (
     <FriendToast
       id={t.id}
       image={`${IMAGE_PROFILE_URL}${data.image}`}
@@ -63,18 +64,19 @@ export function showGameInviteToast(data: {
       }
       onAccept={() => {
         onAccept();
-        bellReset();
+        removeSimpleAlert(alertId);
       }}
       onReject={() => {
         rejectGameInvite({ inviterId: data.inviterId });
-        bellReset();
+        removeSimpleAlert(alertId);
       }}
     />
   ),
     {
-      duration: 20000,
+      duration: 19000,
     }
   );
+  return toastId;
 }
 
 newFriendRequestsDetected.watch((newRequests) => {
@@ -83,15 +85,15 @@ newFriendRequestsDetected.watch((newRequests) => {
       <FriendToast
         id={t.id}
         image={`${IMAGE_PROFILE_URL}${req.image}`}
-        nickname={req.nickName}
+        nickname={req.nickname}
         message="te ha enviado una solicitud de amistad"
         onAccept={() => {
-          acceptFriendRequest({ senderId: req.senderId });
-          bellReset();
+          acceptFriendRequest({ senderId: req.meta.senderId });
+          removeSimpleAlert(req.id)
         }}
         onReject={() => {
-          rejectFriendRequest({ senderId: req.senderId });
-          bellReset();
+          rejectFriendRequest({ senderId: req.meta.senderId });
+          removeSimpleAlert(req.id)
         }}
       />
     ),

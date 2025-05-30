@@ -1,5 +1,5 @@
 import { createEvent } from "effector";
-import { FriendRequest, SearchUser } from "./friends.types";
+import { FriendRequest, SearchUser, SimpleAlert } from "./friends.types";
 
 // Friends
 export const resetSearchResults = createEvent();
@@ -22,7 +22,7 @@ export const acceptFriendRequest = createEvent<{ senderId: number }>();
 export const removeFriend = createEvent<{ friendId: number }>();
 export const removeUserFromSearchResults = createEvent<number>(); // userId
 export const setOnlineFriends = createEvent<number[]>();
-export const newFriendRequestsDetected = createEvent<FriendRequest[]>();
+export const newFriendRequestsDetected = createEvent<SimpleAlert<"friend_request">[]>()
 
 // Games
 export const acceptGameInvite = createEvent<{ inviterId: number; tableId: number }>();
@@ -39,3 +39,12 @@ export const stopGameLoading = createEvent();
 export const bellReset = createEvent();
 export const bellNewAlert = createEvent();
 export const bellNotification = createEvent();
+export const bellTimeoutExpired = createEvent();
+
+export const addSimpleAlert = createEvent<SimpleAlert>();
+export const removeSimpleAlert = createEvent<string>();
+export const clearAllSimpleAlerts = createEvent();
+export const bulkAddSimpleAlerts = createEvent<SimpleAlert[]>();
+export const userSessionInitialized = createEvent();
+export const fetchReceivedRequests = createEvent<{ isInitial: boolean }>();
+

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import RegisterFormSection from "./RegisterFormSection";
-import classes from "./Register.module.css"; // contiene solo .registerLeft
+import classes from "./Register.module.css"; 
 
 function RegisterComponent() {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ function RegisterComponent() {
         />
       </div>
 
-      <div className="flex flex-col items-center justify-center w-full flex-grow lg:w-[60%] lg:mr-40 lg:mb-32">
+<div className="flex flex-col items-center justify-center w-full flex-grow lg:w-[60%] lg:mb-32 lg:mr-10">
         <RegisterFormSection />
       </div>
 

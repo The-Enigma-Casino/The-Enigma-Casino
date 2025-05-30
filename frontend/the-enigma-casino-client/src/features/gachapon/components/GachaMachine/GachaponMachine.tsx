@@ -103,24 +103,25 @@ const GachaponMachine = () => {
     return () => clearTimeout(timeout);
   }, [result, hasEggBeenClicked]);
 
-
   return (
     <>
-      <div className={styles.container}>
-        <MaskReward
-          isVisible={isMaskActive}
-          onClick={handleMaskClick}
-          color={currentColor}
-          benefit={winner}
-          winner={
-            specialMessage
-              ? specialMessage
-              : winner !== null
-              ? `¡Ganaste ${winner} Ficha${winner === 1 ? "" : "s"}!`
-              : "¡Jugando...!"
-          }
-        />
-        <div className={styles.gachapon}>
+      <MaskReward
+        isVisible={isMaskActive}
+        onClick={handleMaskClick}
+        color={currentColor}
+        benefit={winner}
+        winner={
+          specialMessage
+            ? specialMessage
+            : winner !== null
+            ? `¡Ganaste ${winner} Ficha${winner === 1 ? "" : "s"}!`
+            : "¡Jugando...!"
+        }
+      />
+      <div className="relative flex justify-center items-center">
+        <div className="relative w-[220px] sm:w-[300px] mx-auto">
+          <MachineSVG />
+
           <div
             className={`${styles.switch} ${
               isSwitchActive ? styles.active : ""
@@ -129,13 +130,13 @@ const GachaponMachine = () => {
           >
             <SwitchSVG />
           </div>
-          <MachineSVG />
-          <EggSVG
-            isActive={isEggActive}
-            onClick={handleEggClick}
-            color={currentColor}
-          />
         </div>
+
+        <EggSVG
+          isActive={isEggActive}
+          onClick={handleEggClick}
+          color={currentColor}
+        />
       </div>
     </>
   );

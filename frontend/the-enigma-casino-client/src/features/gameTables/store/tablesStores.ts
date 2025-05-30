@@ -32,6 +32,7 @@ export const $currentTableId = createStore<number | null>(null)
   .on(leaveTableClicked, () => null)
   .reset(resetTableId);
 
+
 export const $tables = createStore<GameTable[]>([])
   .on(fetchTables.doneData, (_, tables) => tables)
   .on(tableUpdated, (tables, updatedTable) =>
@@ -71,12 +72,12 @@ export const $countdowns = createStore<{ [tableId: number]: number }>({})
       }
     }
     return newState;
-  });
+  })
+  .reset(exitLobbyPage);
 
 export const $hasLeftTable = createStore(false)
   .on(markLeftTable, () => true)
-  .reset([joinTableClicked, leaveTableClicked]);
-
+  .reset([joinTableClicked, leaveTableClicked, exitLobbyPage]);
 
 export const $isInLobby = createStore(false)
   .on(joinTableClicked, () => true)
@@ -96,4 +97,9 @@ export const $waitingOpponentTableId = createStore<number | null>(null)
     leaveTableClicked,
     resetTableId,
     clearWaitingOpponent,
+    exitLobbyPage,
   ]);
+
+export const $joiningTableId = createStore<number | null>(null)
+  .on(joinTableClicked, (_, id) => id)
+  .reset([resetTableId, markLeftTable, leaveTableClicked]);

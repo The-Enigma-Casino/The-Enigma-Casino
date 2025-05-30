@@ -6,12 +6,14 @@ import {
   gameStarted,
   markLeftTable,
   resetTableId,
+  setPendingJoinTableId,
   tableUpdated,
   tableWaitingOpponent,
 } from "./tablesEvents";
 
 import { stopGameLoading } from "../../friends/stores/friends.events";
 import { getPlayerAvatarsFx } from "../../games/actions/playerAvatarsAction";
+import { navigateTo } from "../../games/shared/router/navigateFx";
 
 const errorMessageMap: Record<string, string> = {
   already_left:
@@ -28,46 +30,47 @@ socketMessageReceived.watch((data) => {
 
   switch (data.action) {
     case "table_update": {
-  const tableId = Number(data.tableId);
-  const nickNames = data.players as string[];
+      const tableId = Number(data.tableId);
+      const nickNames = data.players as string[];
 
-  console.log("🧩 [table_update] Mesa:", tableId);
-  console.log("👥 Nicknames recibidos:", nickNames);
+      console.log("🧩 [table_update] Mesa:", tableId);
+      console.log("👥 Nicknames recibidos:", nickNames);
 
-  if (nickNames.length > 0) {
-    getPlayerAvatarsFx(nickNames).then((avatars) => {
-      console.log("📦 Avatares recibidos del backend:", avatars);
+      if (nickNames.length > 0) {
+        getPlayerAvatarsFx(nickNames).then((avatars) => {
+          console.log("📦 Avatares recibidos del backend:", avatars);
 
-      const enrichedPlayers = nickNames.map((nick) => {
-        const avatarData = avatars.find((a) => a.nickName === nick);
-        const player = {
-          name: nick,
-          avatar: avatarData?.image ?? "/img/user_default.png",
-        };
-        console.log(`🎨 Avatar aplicado a ${nick}:`, player.avatar);
-        return player;
-      });
+          const enrichedPlayers = nickNames.map((nick) => {
+            const avatarData = avatars.find((a) => a.nickName === nick);
+            const player = {
+              name: nick,
+              avatar: avatarData?.image ?? "/img/user_default.png",
+            };
+            console.log(`🎨 Avatar aplicado a ${nick}:`, player.avatar);
+            return player;
+          });
 
-      tableUpdated({
-        tableId,
-        players: enrichedPlayers,
-        state: data.state,
-      });
+          tableUpdated({
+            tableId,
+            players: enrichedPlayers,
+            state: data.state,
+          });
 
-      console.log("✅ [tableUpdated] Jugadores enriquecidos enviados al store.");
-    });
-  } else {
-    console.log("⚠️ No hay jugadores en la mesa.");
-    tableUpdated({
-      tableId,
-      players: [],
-      state: data.state,
-    });
-  }
+          console.log(
+            "✅ [tableUpdated] Jugadores enriquecidos enviados al store."
+          );
+        });
+      } else {
+        console.log("⚠️ No hay jugadores en la mesa.");
+        tableUpdated({
+          tableId,
+          players: [],
+          state: data.state,
+        });
+      }
 
-  break;
-}
-
+      break;
+    }
 
     case "countdown_started":
       countdownStarted({
@@ -75,6 +78,21 @@ socketMessageReceived.watch((data) => {
         countdown: Number(data.countdown),
       });
       break;
+
+    case "join_table": {
+      const tableId = Number(data.tableId);
+
+      const gameViewPath = (() => {
+        if (tableId >= 1 && tableId <= 6) return "/tables/0";
+        if (tableId >= 7 && tableId <= 12) return "/tables/1";
+        if (tableId >= 13 && tableId <= 18) return "/tables/2";
+        return "/tables";
+      })();
+
+      setPendingJoinTableId(tableId);
+      navigateTo(gameViewPath);
+      break;
+    }
 
     case "countdown_stopped":
       countdownStopped({ tableId: Number(data.tableId) });

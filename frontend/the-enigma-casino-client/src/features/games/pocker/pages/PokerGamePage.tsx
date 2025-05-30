@@ -122,6 +122,7 @@ export const PokerGamePage = () => {
               gameType: "Poker",
             }))}
             hidden={false}
+            gameType="poker"
           />
         )}
       </div>

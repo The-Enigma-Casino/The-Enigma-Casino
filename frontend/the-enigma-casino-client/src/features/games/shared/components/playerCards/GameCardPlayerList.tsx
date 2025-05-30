@@ -239,6 +239,7 @@ export const GamePlayerCardList = ({
                         gameType === "Poker" &&
                         !revealedHands?.some((h) => h.userId === player.id)
                       }
+                      gameType="poker"
                     />
                   </div>
                 </div>

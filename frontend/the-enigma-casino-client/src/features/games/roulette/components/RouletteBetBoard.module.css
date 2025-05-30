@@ -1,10 +1,9 @@
 .roulette {
-  margin: 40px;
-  padding: 40px;
+  margin-top: 40px;
+  padding: 10px;
   background: var(--Roulette-green);
   display: table;
   position: relative;
-  width: 775px;
   color: white;
 }
 

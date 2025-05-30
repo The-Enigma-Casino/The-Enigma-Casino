@@ -43,7 +43,7 @@ export const PlayerPokerCard = ({ player }: Props) => {
 
       {/* Cartas */}
       <div>
-      <CardStack cards={player.hand ?? []} />
+      <CardStack cards={player.hand ?? []} gameType="poker" />
       </div>
 
       {/* Estado */}

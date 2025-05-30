@@ -24,8 +24,16 @@
 .close {
   position: absolute;
   top: 1rem;
-  right: 1.5rem;
+  z-index: 10;
   cursor: pointer;
+}
+
+.top-right {
+  right: 1.5rem;
+}
+
+.top-left {
+  left: 1.5rem;
 }
 
 .closeIcon {

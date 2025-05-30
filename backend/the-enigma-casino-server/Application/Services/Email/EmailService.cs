@@ -33,10 +33,11 @@ public class EmailService
         string emailContent = await GetEmailTemplateAsync("email_confirmation.html");
 
         emailContent = emailContent.Replace("{UserName}", user.NickName);
-        emailContent = emailContent.Replace("{ConfirmationLink}", $"{url}/auth/email-confirmation/{user.ConfirmationToken}");
+        emailContent = emailContent.Replace("{ConfirmationLink}", $"{url.TrimEnd('/')}/auth/email-confirmation/{user.ConfirmationToken}");
 
         await EmailHelper.SendEmailAsync(user.Email, "Confirma tu cuenta", emailContent, true);
     }
+
 
     public async Task SendInvoiceAsync(Order order, User user)
     {
@@ -45,7 +46,6 @@ public class EmailService
         string emailContent = await GetEmailTemplateAsync("invoice.html");
 
         emailContent = emailContent.Replace("{UserName}", user.NickName);
-        emailContent = emailContent.Replace("{OrderImage}", url + "/" + order.CoinsPack.Image);
         emailContent = emailContent.Replace("{OrderPack}", $"Pack de {order.Coins} fichas");
         emailContent = emailContent.Replace("{OrderPrice}", (order.Price / 100.0).ToString("0.00"));
         emailContent = emailContent.Replace("{OrderCoins}", order.Coins.ToString());
@@ -56,18 +56,17 @@ public class EmailService
             decimal equivalentEth = Math.Round((decimal)(order.Price / 100.0) / ethPriceEuros, 6);
 
             emailContent = emailContent.Replace("{PaymentMethod}", "Ethereum");
-            emailContent = emailContent.Replace("{EthereumPrice}", equivalentEth.ToString("0.000000"));
-            emailContent = emailContent.Replace("{PaymentMethodSpecificInfo}", $"Precio total Ethereum: {equivalentEth.ToString("0.000000")} ETH");
+            emailContent = emailContent.Replace("{PaymentMethodSpecificInfo}", $"Precio total Ethereum: {equivalentEth:0.000000} ETH");
         }
         else
         {
             emailContent = emailContent.Replace("{PaymentMethod}", "Tarjeta de Crédito");
-            emailContent = emailContent.Replace("{EthereumPrice}", string.Empty);
-            emailContent = emailContent.Replace("{PaymentMethodSpecificInfo}", string.Empty);
+            emailContent = emailContent.Replace("{PaymentMethodSpecificInfo}", "");
         }
 
         await EmailHelper.SendEmailAsync(user.Email, "Confirmación de compra", emailContent, true);
     }
+
 
     public async Task SendWithdrawalAsync(Order order, User user)
     {
@@ -94,8 +93,39 @@ public class EmailService
 
         emailContent = emailContent.Replace("{UserName}", user.NickName);
 
-        await EmailHelper.SendEmailAsync(user.Email, "Cuenta baneada", emailContent, true);
+        string clientUrl = Environment.GetEnvironmentVariable("CLIENT_URL");
+        string policyUrl = $"{clientUrl.TrimEnd('/')}/policies";
+
+        emailContent = emailContent.Replace("{PolicyUrl}", policyUrl);
+
+        await EmailHelper.SendEmailAsync(user.Email, "Cuenta suspendida", emailContent, true);
     }
+
+
+    public async Task SendUnbannedEmailAsync(User user)
+    {
+        string emailContent = await GetEmailTemplateAsync("unban_notification.html");
+
+        emailContent = emailContent.Replace("{UserName}", user.NickName);
+
+        await EmailHelper.SendEmailAsync(user.Email, "Tu cuenta ha sido restaurada", emailContent, true);
+    }
+
+
+    public async Task SendAutoBanEmailAsync(User user)
+    {
+        string emailContent = await GetEmailTemplateAsync("autoban_notification.html");
+
+        emailContent = emailContent.Replace("{UserName}", user.NickName);
+
+        DateTime unbanDate = DateTime.UtcNow.AddDays(15);
+        string formattedDate = unbanDate.ToString("dd/MM/yyyy");
+
+        emailContent = emailContent.Replace("{UnbanDate}", formattedDate);
+
+        await EmailHelper.SendEmailAsync(user.Email, "Autoexclusión activada", emailContent, true);
+    }
+
 
 }
 

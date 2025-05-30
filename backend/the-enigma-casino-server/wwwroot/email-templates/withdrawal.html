@@ -1,96 +1,109 @@
 ﻿<html>
-<head>
+  <head>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+      }
 
-        .container {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
-            max-width: 600px;
-            margin: auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
+      .container {
+        background-color: #ffffff !important;
+        border-radius: 10px;
+        padding: 30px;
+        max-width: 600px;
+        margin: auto;
+        color: #333333 !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(0, 0, 0, 0.15);
+      }
 
-        h2 {
-            color: #f0a500;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+      h2 {
+        color: #f0a500;
+        text-align: center;
+        margin-bottom: 6px;
+      }
 
-        p {
-            font-size: 16px;
-            line-height: 1.5;
-            color: #333;
-            text-align: justify;
-        }
+      .subtitle {
+        text-align: center;
+        font-size: 1.05em;
+        color: #888;
+        margin-bottom: 20px;
+      }
 
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding: 5px;
-        }
+      .item-line {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 1rem;
+      }
 
-            .info-row p {
-                margin: 0;
-            }
+      .item-line .label {
+        font-weight: bold;
+        color: #555;
+      }
 
-        .total {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
-        }
+      .item-line .value {
+        font-weight: normal;
+      }
 
-        .footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 0.9em;
-            color: #888;
-        }
+      .fichas-highlight {
+        color: #ffdf31;
+        font-weight: bold;
+      }
 
-        .tfooter {
-            text-align: center;
-            align-items: center;
-            align-content: center;
-        }
+      .summary {
+        margin-top: 20px;
+        font-size: 1rem;
+      }
+
+      .summary p {
+        margin: 8px 0;
+      }
+
+      .footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 0.9em;
+        color: #999;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h2>¡Confirmación de Retirada, {UserName}!</h2>
-        <p>Tu solicitud de retirada ha sido procesada con éxito. Aquí tienes los detalles de la transacción:</p>
+      <h2>¡Confirmación de retirada, {UserName}!</h2>
+      <div class="subtitle">Solicitud procesada correctamente</div>
 
-        <div class="info-row">
-            <p><strong>Precio Total:</strong></p>
-            <p>{OrderPrice} €</p>
-        </div>
+      <div class="item-line">
+        <span class="label">Fichas retiradas</span>
+        <span class="value fichas-highlight">{OrderCoins}</span>
+      </div>
+      <div class="item-line">
+        <span class="label">Valor en euros</span>
+        <span class="value">{OrderPrice} €</span>
+      </div>
+      <div class="item-line">
+        <span class="label">Método de pago</span>
+        <span class="value">{PaymentMethod}</span>
+      </div>
+      <div class="item-line">
+        <span class="label">Equivalente en ETH</span>
+        <span class="value">{EthereumPrice}</span>
+      </div>
 
-        <div class="info-row">
-            <p><strong>Fichas Retiradas:</strong></p>
-            <p>{OrderCoins}</p>
-        </div>
+      <div class="summary">
+        <p>
+          Gracias por usar Enigma Casino. Si tienes alguna duda, no dudes en
+          contactarnos.
+        </p>
+      </div>
 
-        <div class="info-row">
-            <p><strong>Método de Pago:</strong></p>
-            <p>{PaymentMethod}</p>
-        </div>
-
-        <div class="info-row">
-            <p><strong>Cantidad en ETH:</strong></p>
-            <p>{EthereumPrice}</p>
-        </div>
-
-        <div class="footer">
-            <p class="tfooter">&copy; 2025 The Enigma Casino. Todos los derechos reservados.</p>
-        </div>
+      <div class="footer">
+        &copy; 2025 The Enigma Casino · Todos los derechos reservados.
+      </div>
     </div>
-</body>
+  </body>
 </html>

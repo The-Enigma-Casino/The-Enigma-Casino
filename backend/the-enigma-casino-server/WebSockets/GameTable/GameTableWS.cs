@@ -214,7 +214,25 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             else
             {
                 Console.WriteLine($"⏳ Mesa {table.Id} aún no cumple condiciones para 'Starting'. Jugadores: {table.Players.Count}/{table.MinPlayer}");
+
+                if (table.GameType == GameType.Poker &&
+                    table.TableState == TableState.Waiting &&
+                    table.Players.Count(p => p.PlayerState == PlayerState.Waiting && !p.HasAbandoned) == 1)
+                {
+                    var waitingPlayer = table.Players.First(p => p.PlayerState == PlayerState.Waiting && !p.HasAbandoned);
+
+                    Console.WriteLine($"♠️ [GameTableWS] Mesa {table.Id} tiene un solo jugador esperando. Enviando mensaje 'waiting_opponent' a {waitingPlayer.UserId}.");
+
+                    await ((IWebSocketSender)this).SendToUserAsync(waitingPlayer.UserId.ToString(), new
+                    {
+                        type = "game_table",
+                        action = "waiting_opponent",
+                        tableId = table.Id,
+                        message = "Estás solo en la mesa. Esperando un oponente..."
+                    });
+                }
             }
+
         }
     }
 

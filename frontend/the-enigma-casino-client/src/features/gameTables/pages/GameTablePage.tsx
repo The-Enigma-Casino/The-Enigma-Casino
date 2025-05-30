@@ -4,8 +4,10 @@ import {
   $countdowns,
   $currentTableId,
   $isInLobby,
+  $joiningTableId,
   $pendingJoinTableId,
   $tables,
+  $waitingOpponentTableId,
   clearPendingJoinTableId,
   exitLobbyPage,
   joinTableClicked,
@@ -14,12 +16,13 @@ import {
   tryJoinTable,
 } from "../store/tablesIndex";
 import { GameTable, Player } from "../models/GameTable.interface";
-import { JSX, useEffect } from "react";
+import { useEffect } from "react";
 import { fetchTables } from "../actions/tableActions";
 
 import "../../games/roulette/stores/rouletteHandler";
 import "../../games/pocker/stores/pokerHandler";
 import "../../games/match/matchHandler";
+import { IMAGE_PROFILE_URL } from "../../../config";
 
 function GameTablePage() {
   const navigate = useNavigate();
@@ -30,6 +33,8 @@ function GameTablePage() {
   const currentTableId = useUnit($currentTableId);
   const isInLobby = useUnit($isInLobby);
   const pendingTableId = useUnit($pendingJoinTableId);
+  const waitingOpponentTableId = useUnit($waitingOpponentTableId);
+  const joiningTableId = useUnit($joiningTableId);
 
   useEffect(() => {
     if (gameType) {
@@ -52,7 +57,6 @@ function GameTablePage() {
 
   const location = useLocation();
 
-
   useEffect(() => {
     if (pendingTableId && location.pathname.startsWith("/tables")) {
       tryJoinTable(pendingTableId);
@@ -72,33 +76,47 @@ function GameTablePage() {
     maxPlayers: number,
     tableId: number
   ) => {
-    const avatars: JSX.Element[] = [];
+    const isJoining = joiningTableId === tableId;
 
-    for (let i = 0; i < maxPlayers; i++) {
+    const slots = Array.from({ length: maxPlayers }).map((_, i) => {
       if (players[i]) {
-        // Si hay un jugador en esta posición, mostramos su avatar
-        avatars.push(
+        return (
           <img
             key={i}
-            src={players[i]?.avatar || "/path-to-default-avatar.jpg"}
+            src={
+              IMAGE_PROFILE_URL + players[i]?.avatar || "/img/user_default.webp"
+            }
             alt={`Jugador ${players[i]?.name}`}
-            className="w-12 h-12 rounded-full border-2 border-gray-500"
+            className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full"
           />
         );
       } else {
-        avatars.push(
+        return (
           <div
             key={i}
-            className="w-20 h-20 rounded-full bg-gray-500 flex justify-center items-center cursor-pointer hover:bg-gray-600"
-            onClick={() => handleJoinTable(tableId)}
+            className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full bg-gray-500 flex justify-center items-center cursor-pointer hover:bg-gray-600"
+            onClick={() => {
+              if (!isJoining) handleJoinTable(tableId);
+            }}
           >
             <span className="text-white text-lg font-bold">+</span>
           </div>
         );
       }
-    }
-    return avatars;
+    });
+
+    const mid = Math.ceil(maxPlayers / 2);
+    const topRow = slots.slice(0, mid);
+    const bottomRow = slots.slice(mid);
+
+    return (
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex justify-center gap-3">{topRow}</div>
+        <div className="flex justify-center gap-3">{bottomRow}</div>
+      </div>
+    );
   };
+
   //Friend
   const pendingJoinTableId = useUnit($pendingJoinTableId);
 
@@ -119,12 +137,12 @@ function GameTablePage() {
       >
         Mesas de {gameName}
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-20 flex-grow shadow-xl-white">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-6 md:gap-10 lg:gap-12 xl:gap-16 flex-grow shadow-xl-white">
         {tables.length > 0 ? (
           tables.map((table) => (
             <div
               key={table.id}
-              className="bg-gray-800 text-white text-4xl p-6 rounded-2xl shadow-custom-white hover:shadow-custom-gray transition-all relative overflow-hidden h-full flex flex-col justify-center items-center"
+              className="bg-gray-800 text-white text-2xl sm:text-3xl md:text-4xl p-4 sm:p-5 md:p-6 rounded-2xl shadow-custom-white hover:shadow-custom-gray transition-all relative overflow-hidden h-full flex flex-col justify-center items-center max-w-[95vw] sm:max-w-none"
             >
               {currentTableId === table.id && isInLobby && (
                 <button
@@ -148,7 +166,7 @@ function GameTablePage() {
                 </button>
               )}
               <img
-                src="/img/mesa_lobby.jpg"
+                src="/img/mesa_lobby.webp"
                 alt="Mesa de casino"
                 className="absolute inset-0 w-full h-full object-cover opacity-70"
               />
@@ -163,18 +181,14 @@ function GameTablePage() {
                     Empieza en {countdowns[table.id]}s
                   </p>
                 )}
-
-                <div className="mt-3 text-gray-200">
-                  {table.players.length > 0 ? (
-                    <p>
-                      {table.players.filter((player) => player !== null).length}{" "}
-                      jugadores en la mesa
+                <div className="mt-3 min-h-[2.5rem] flex items-center justify-center">
+                  {waitingOpponentTableId === table.id ? (
+                    <p className="text-yellow-400 text-lg font-semibold animate-pulse text-center">
+                      Esperando a un oponente para comenzar la partida...
                     </p>
-                  ) : (
-                    <p className="text-gray-400">Sin jugadores</p>
-                  )}
+                  ) : null}
                 </div>
-                <div className="mt-4 flex justify-center gap-6">
+                <div className="mt-4">
                   {renderPlayerAvatars(
                     table.players,
                     table.maxPlayer,

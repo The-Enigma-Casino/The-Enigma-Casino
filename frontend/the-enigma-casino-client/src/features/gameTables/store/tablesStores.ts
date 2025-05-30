@@ -1,6 +1,7 @@
 import { createStore } from "effector";
 import {
   clearPendingJoinTableId,
+  clearWaitingOpponent,
   countdownCleared,
   countdownStarted,
   countdownStopped,
@@ -15,6 +16,7 @@ import {
   setGameType,
   setPendingJoinTableId,
   tableUpdated,
+  tableWaitingOpponent,
 } from "./tablesEvents";
 import { GameTable } from "../models/GameTable.interface";
 
@@ -29,6 +31,7 @@ export const $currentTableId = createStore<number | null>(null)
   .on(joinTableClicked, (_, tableId) => tableId)
   .on(leaveTableClicked, () => null)
   .reset(resetTableId);
+
 
 export const $tables = createStore<GameTable[]>([])
   .on(fetchTables.doneData, (_, tables) => tables)
@@ -69,12 +72,12 @@ export const $countdowns = createStore<{ [tableId: number]: number }>({})
       }
     }
     return newState;
-  });
+  })
+  .reset(exitLobbyPage);
 
 export const $hasLeftTable = createStore(false)
   .on(markLeftTable, () => true)
-  .reset([joinTableClicked, leaveTableClicked]);
-
+  .reset([joinTableClicked, leaveTableClicked, exitLobbyPage]);
 
 export const $isInLobby = createStore(false)
   .on(joinTableClicked, () => true)
@@ -86,3 +89,17 @@ export const $isInLobby = createStore(false)
 export const $pendingJoinTableId = createStore<number | null>(null) // Friend
   .on(setPendingJoinTableId, (_, id) => id)
   .on(clearPendingJoinTableId, () => null);
+
+export const $waitingOpponentTableId = createStore<number | null>(null)
+  .on(tableWaitingOpponent, (_, id) => id)
+  .reset([
+    joinTableClicked,
+    leaveTableClicked,
+    resetTableId,
+    clearWaitingOpponent,
+    exitLobbyPage,
+  ]);
+
+export const $joiningTableId = createStore<number | null>(null)
+  .on(joinTableClicked, (_, id) => id)
+  .reset([resetTableId, markLeftTable, leaveTableClicked]);

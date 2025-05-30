@@ -165,6 +165,7 @@ export const BlackjackGamePage = () => {
                       gameType: "BlackJack",
                     }))}
                     hidden={false}
+                    gameType="blackjack"
                   />
                 )}
 
@@ -183,6 +184,7 @@ export const BlackjackGamePage = () => {
                       },
                     ]}
                     hidden={true}
+                    gameType="blackjack"
                   />
                 )}
 

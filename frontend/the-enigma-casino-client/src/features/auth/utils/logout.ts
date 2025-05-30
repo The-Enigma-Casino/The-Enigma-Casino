@@ -9,7 +9,7 @@ export function useLogout() {
     clearStorage();
     resetCoins();
     clearStorage();
-    window.location.href = "/";
+    window.location.href = "/auth/login";
   };
 }
 

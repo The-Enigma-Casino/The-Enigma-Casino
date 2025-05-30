@@ -195,7 +195,7 @@ const Ethereum: React.FC = () => {
 
         {isSmallScreen ? (
           <img
-            src="/img/metamask_static.png"
+            src="/img/metamask_static.webp"
             alt="MetaMask Logo"
             className="w-[10rem] sm:w-[11rem] md:w-[12rem] lg:w-[13rem] my-5"
           />

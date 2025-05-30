@@ -39,9 +39,14 @@
         margin-bottom: 20px;
       }
 
-      a.terms-link {
-        color: #555 !important;
+      a.link-ayuda {
+        color: #d9534f;
         text-decoration: underline;
+      }
+
+      .fecha {
+        font-weight: bold;
+        color: #d9534f;
       }
 
       .footer {
@@ -54,26 +59,35 @@
   </head>
   <body>
     <div class="container">
-      <h2>Cuenta suspendida: {UserName}</h2>
-      <div class="subtitle">Notificación oficial de The Enigma Casino</div>
+      <h2>Autoexclusión activada: {UserName}</h2>
+      <div class="subtitle">Tu cuenta ha sido bloqueada temporalmente</div>
 
       <div class="section">
-        Lamentamos informarte que tu cuenta ha sido
-        <strong>suspendida</strong> tras detectar un incumplimiento de nuestras
-        políticas de uso.
+        Has activado manualmente la autoexclusión para protegerte del juego. A
+        partir de este momento, tu cuenta permanecerá cerrada y sin acceso
+        durante 15 días completos.
       </div>
 
       <div class="section">
-        Esta decisión ha sido tomada en conformidad con nuestros
-        <a href="{PolicyUrl}" class="terms-link">Términos y Condiciones</a>. Si
-        consideras que se trata de un error o deseas presentar una apelación,
-        puedes responder directamente a este correo. Nuestro equipo revisará tu
-        caso con la mayor prontitud posible.
+        Podrás volver a acceder a tu cuenta el día
+        <span class="fecha">{UnbanDate}</span>.
       </div>
 
       <div class="section">
-        Te agradecemos el tiempo que has pasado con nosotros y esperamos poder
-        ayudarte si la situación lo permite.
+        Si estás atravesando dificultades o crees que puedes tener una adicción,
+        te recomendamos buscar ayuda profesional. Puedes consultar los recursos
+        oficiales del
+        <a
+          href="https://pnsd.sanidad.gob.es/ciudadanos/informacion/otrasAdicciones/home.htm"
+          class="link-ayuda"
+          target="_blank"
+        >
+          Ministerio de Sanidad </a
+        >.
+      </div>
+
+      <div class="section" style="text-align: center">
+        Te deseamos lo mejor en este tiempo de pausa. 💚
       </div>
 
       <div class="footer">

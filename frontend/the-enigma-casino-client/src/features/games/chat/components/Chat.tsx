@@ -55,7 +55,9 @@ export const Chat = ({ gameType }: ChatProps) => {
     navigateTo("/");
   };
 
-  const isOnlineFriends = onlineFriends.filter((f) => f.isOnline && f.status !== "Playing");
+  const isOnlineFriends = onlineFriends.filter(
+    (f) => f.isOnline && f.status !== "Playing"
+  );
 
   return (
     <div className={styles.wrapper}>
@@ -124,9 +126,13 @@ export const Chat = ({ gameType }: ChatProps) => {
         </footer>
       </div>
 
-      {showInfo && (
-        <GameInfoModal gameType={gameType} onClose={() => setShowInfo(false)} />
-      )}
+      <GameInfoModal
+        isOpen={showInfo}
+        gameType={gameType}
+        onClose={() =>  {setShowInfo(false)
+          console.log("Cerrar modal")
+        }}
+      />
     </div>
   );
 };

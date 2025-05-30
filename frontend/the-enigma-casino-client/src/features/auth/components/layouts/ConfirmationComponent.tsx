@@ -11,6 +11,8 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
   const [isConfirmed, setIsConfirmed] = useState<boolean | null>(null);
 
   useEffect(() => {
+    let closeTimeout: NodeJS.Timeout;
+
     if (token) {
       const toastId = toast.loading("Confirmando tu email...");
 
@@ -22,6 +24,10 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
           });
 
           setIsConfirmed(true);
+
+          closeTimeout = setTimeout(() => {
+            window.close();
+          }, 20000);
         })
         .catch(() => {
           toast.error("No se pudo confirmar el email. 😟", {
@@ -32,6 +38,10 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
           setIsConfirmed(false);
         });
     }
+
+    return () => {
+      if (closeTimeout) clearTimeout(closeTimeout);
+    };
   }, [token]);
 
   return (
@@ -47,7 +57,7 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
             className={`${classes.elf} absolute inset-x-0 bottom-[5vh] z-[2] flex justify-center pointer-events-none`}
           >
             <img
-              src="/img/duende2.png"
+              src="/img/duende2.webp"
               alt="duende"
               className="w-full h-auto object-contain min-w-[600px]
     sm:max-w-[600px]  md:max-w-[900px] lg:max-w-[800px] xl:max-w-[900px]

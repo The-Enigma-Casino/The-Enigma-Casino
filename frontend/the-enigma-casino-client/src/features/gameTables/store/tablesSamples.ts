@@ -1,5 +1,5 @@
 import { sample } from "effector";
-import { clearPendingJoinTableId, countdownCleared, gameStarted, joinTableClicked, sendLeaveTableMessage, tryJoinTable } from "./tablesEvents";
+import { clearPendingJoinTableId, clearWaitingOpponent, countdownCleared, gameStarted, joinTableClicked, sendLeaveTableMessage, tableUpdated, tableWaitingOpponent, tryJoinTable } from "./tablesEvents";
 import { messageSent } from "../../../websocket/store/wsIndex";
 import { $userId } from "../../auth/store/authStore";
 import { navigateTo } from "../../games/shared/router/navigateFx";
@@ -89,4 +89,27 @@ sample({
 sample({
   clock: tryJoinTable,
   target: clearPendingJoinTableId,
+});
+
+
+sample({
+  clock: tableUpdated,
+  filter: (update) => {
+    const isPoker = update.tableId >= 7 && update.tableId <= 12;
+    const activePlayers = update.players.filter((p) => p !== null).length;
+    return isPoker && (activePlayers === 1 || activePlayers >= 2);
+  },
+  fn: (update) => {
+    const playerCount = update.players.filter((p) => p !== null).length;
+    return {
+      tableId: update.tableId,
+      show: playerCount === 1,
+    };
+  },
+}).watch(({ tableId, show }) => {
+  if (show) {
+    tableWaitingOpponent(tableId);
+  } else {
+    clearWaitingOpponent();
+  }
 });

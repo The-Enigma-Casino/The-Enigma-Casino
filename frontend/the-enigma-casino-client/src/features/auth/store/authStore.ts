@@ -32,7 +32,7 @@ export const $name = createStore<string>("");
 export const setName = createEvent<string>();
 export const loadName = createEvent();
 
-export const $image = createStore<string>("user_default.png");
+export const $image = createStore<string>("user_default.webp");
 export const setImage = createEvent<string>();
 export const loadImage = createEvent();
 
@@ -123,9 +123,9 @@ sample({
   fn: (token) => {
     try {
       const decoded: DecodedToken = jwtDecode(token);
-      return decoded?.image || "user_default.png";
+      return decoded?.image || "user_default.webp";
     } catch {
-      return "user_default.png";
+      return "user_default.webp";
     }
   },
   target: $image,
@@ -189,5 +189,5 @@ sample({
 $token.on(logout, () => "");
 $role.on(logout, () => "");
 $name.on(logout, () => "");
-$image.on(logout, () => "user_default.png");
+$image.on(logout, () => "user_default.webp");
 $userId.on(logout, () => "");

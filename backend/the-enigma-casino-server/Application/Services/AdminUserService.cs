@@ -1,11 +1,9 @@
 ﻿using the_enigma_casino_server.Application.Dtos;
-using the_enigma_casino_server.Application.Dtos.Request;
 using the_enigma_casino_server.Application.Mappers;
 using the_enigma_casino_server.Application.Services.Email;
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace the_enigma_casino_server.Application.Services;
 
@@ -39,9 +37,9 @@ public class AdminUserService : BaseService
             throw new Exception("Usuario no existente.");
 
         if (user.Role == Role.User)
-          user = await _userService.SetRoleByUser(user, Role.Admin);
+            user = await _userService.SetRoleByUser(user, Role.Admin);
         else if (user.Role == Role.Admin)
-           user = await _userService.SetRoleByUser(user, Role.User);
+            user = await _userService.SetRoleByUser(user, Role.User);
 
         return user.Role;
     }
@@ -59,7 +57,11 @@ public class AdminUserService : BaseService
             await _emailService.SendBannedEmailAsync(user);
         }
         else if (user.Role == Role.Banned)
-           user = await _userService.SetRoleByUser(user, Role.User);
+        {
+            user = await _userService.SetRoleByUser(user, Role.User);
+            await _emailService.SendUnbannedEmailAsync(user);
+        }
+
 
         return user.Role;
     }

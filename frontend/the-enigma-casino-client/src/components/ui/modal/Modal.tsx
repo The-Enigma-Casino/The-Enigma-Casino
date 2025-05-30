@@ -8,6 +8,7 @@ interface ModalProps {
   children: React.ReactNode;
   size?: "small" | "smallPlus" | "medium" | "large";
   position?: "center" | "top" | "bottom";
+  closePosition?: "top-right" | "top-left";
 }
 
 /**
@@ -31,13 +32,35 @@ interface ModalProps {
  * @returns {JSX.Element | null} Componente `<Modal />` o `null` si está cerrado.
  */
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, size = "medium", position = "center" }) => {
+const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  children,
+  size = "medium",
+  position = "center",
+  closePosition = "top-right"
+}) => {
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
     <div className={classes.overlay} onClick={onClose}>
-      <div className={`${classes.modal} ${classes[size]} ${classes[position]}`} onClick={(e) => e.stopPropagation()}>
-        <button className={classes.close} onClick={onClose}><img src="/svg/close.svg" alt="Cerrar" className={classes.closeIcon} /></button>
+      <div
+        className={`${classes.modal} ${classes[size]} ${classes[position]}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className={`${classes.close} ${
+            classes[closePosition ?? "top-right"]
+          }`}
+          onClick={onClose}
+        >
+          <img
+            src="/svg/close.svg"
+            alt="Cerrar"
+            className={classes.closeIcon}
+          />
+        </button>
+
         {children}
       </div>
     </div>,

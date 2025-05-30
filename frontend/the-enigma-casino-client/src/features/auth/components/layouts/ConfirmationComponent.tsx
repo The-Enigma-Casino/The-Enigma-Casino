@@ -57,7 +57,7 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
             className={`${classes.elf} absolute inset-x-0 bottom-[5vh] z-[2] flex justify-center pointer-events-none`}
           >
             <img
-              src="/img/duende2.png"
+              src="/img/duende2.webp"
               alt="duende"
               className="w-full h-auto object-contain min-w-[600px]
     sm:max-w-[600px]  md:max-w-[900px] lg:max-w-[800px] xl:max-w-[900px]

@@ -15,7 +15,7 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageURL, setImageURL] = useState<string>("");
   const [isDefaultSelected, setIsDefaultSelected] = useState(false);
-  const DEFAULT_IMAGE_PATH = "/img/user_default.png";
+  const DEFAULT_IMAGE_PATH = "/img/user_default.webp";
 
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +86,7 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
             </Button>
 
             <label className="bg-white text-black px-4 py-4 rounded-full cursor-pointer text-center text-2xl w-[20rem] h-[4rem] overflow-hidden text-ellipsis whitespace-nowrap">
-              {imageFile ? imageFile.name : isDefaultSelected ? "user_default.png" : "Seleccionar imagen"}
+              {imageFile ? imageFile.name : isDefaultSelected ? "user_default.webp" : "Seleccionar imagen"}
               <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </label>
           </div>

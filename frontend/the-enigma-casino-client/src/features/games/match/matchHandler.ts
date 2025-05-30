@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { socketMessageReceived } from "../../../websocket/store/wsEvents";
 import { loadCoins } from "../../coins/store/coinsStore";
 import { matchStarted } from "../../gameTables/store/tablesIndex";
@@ -24,6 +25,17 @@ socketMessageReceived.watch((data) => {
     case "return_to_table":
       returnToTableReceived(data.message ?? "Has sido devuelto al lobby.");
       loadCoins();
+      break;
+
+    case "player_left_match":
+      console.log(data.action + "aaaaaaaaaaaaa");
+      toast("👤 " + data.message);
+      break;
+    case "match_cancelled":
+      toast.error(data.message);
+      break;
+    case "match_ready":
+      toast.success(data.message);
       break;
 
     default:

@@ -27,3 +27,5 @@ export const turnCountdownTotalSet = createEvent<number>();
 export const resetPokerGame = createEvent();
 
 export const removedByInactivity = createEvent();
+
+export const opponentLeftReceived = createEvent();

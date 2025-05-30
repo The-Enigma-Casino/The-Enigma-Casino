@@ -16,6 +16,7 @@ import {
   myHandUpdated,
   myTurnEnded,
   myTurnStarted,
+  opponentLeftReceived,
   pokerPhaseChanged,
   resetPokerGame,
   roundResultReceived,
@@ -109,7 +110,6 @@ export const $roundSummary = createStore<RoundResultPayload | null>(null)
   .on(roundResultReceived, (_, payload) => payload)
   .reset(resetPokerGame);
 
-
 // ⏱️ Temporizador de turno
 export const $turnCountdown = createStore<number>(20)
   .on(turnCountdownSet, (_, value) => value)
@@ -119,3 +119,6 @@ export const $turnCountdown = createStore<number>(20)
 export const $turnCountdownTotal = createStore<number>(20)
   .on(turnCountdownTotalSet, (_, value) => value)
   .reset(resetPokerGame);
+
+export const $opponentLeft = createStore(false);
+$opponentLeft.on(opponentLeftReceived, () => true);

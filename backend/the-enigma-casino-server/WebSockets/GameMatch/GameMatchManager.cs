@@ -257,6 +257,12 @@ public class GameMatchManager
             }
         }
 
+        if (match.MatchState == MatchState.Finished)
+        {
+            Console.WriteLine($"⛔ [MatchManager] Match en mesa {tableId} ya estaba finalizado. No se fuerza cierre duplicado.");
+            return true;
+        }
+
         if (match.Players.All(p => p.PlayerState == PlayerState.Left || p.HasAbandoned))
         {
             Console.WriteLine($"🛑 [MatchManager] Todos los jugadores abandonaron el match en mesa {tableId}. Cerrando partida.");
@@ -271,9 +277,8 @@ public class GameMatchManager
                 session.CancelPostMatchTimer();
             }
 
-            return true; 
+            return true;
         }
-
 
 
         return true;

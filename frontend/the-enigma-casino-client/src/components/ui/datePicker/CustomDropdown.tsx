@@ -7,7 +7,12 @@ interface Props {
   onChange: (value: string | number) => void;
 }
 
-const CustomDropdown: React.FC<Props> = ({ label, options, selected, onChange }) => {
+const CustomDropdown: React.FC<Props> = ({
+  label,
+  options,
+  selected,
+  onChange,
+}) => {
   const [open, setOpen] = useState(false);
 
   const handleSelect = (value: string | number) => {
@@ -16,28 +21,26 @@ const CustomDropdown: React.FC<Props> = ({ label, options, selected, onChange })
   };
 
   return (
-    <div className="relative inline-block w-full max-w-[380px]">
+    <div className="relative inline-block w-[80px]">
       <button
-        className="w-full h-[60px] text-[1.5rem] text-black bg-white border border-gray-300 rounded-[20px] pl-10 pr-4 flex items-center justify-between 
-                   max-md:text-[1.2rem] max-md:pl-5 
-                   max-sm:h-[50px] max-sm:text-[1rem] max-sm:pl-4"
+        className="w-full h-[36px] px-3 text-[0.9rem] bg-[var(--Background-Nav)] text-white border border-[var(--Principal)] rounded-md cursor-pointer flex items-center justify-between"
         onClick={() => setOpen((prev) => !prev)}
         type="button"
       >
         <span>{selected}</span>
-        {label && <span className="ml-2 text-sm text-gray-500">{label}</span>}
+        {label && (
+          <span className="ml-2 text-xs text-gray-300">{label}</span>
+        )}
       </button>
 
       {open && (
-        <div
-          className="absolute top-full left-0 z-[1001] mt-1 w-full max-h-[180px] overflow-y-auto rounded-[20px] bg-white text-black shadow-md border border-gray-300"
-        >
+        <div className="absolute top-[110%] left-0 z-[1001] mt-1 w-full max-h-[180px] overflow-y-auto bg-[var(--Background-Nav)] border border-[var(--Principal)] rounded-md shadow-md scrollbar-thin scrollbar-thumb-[var(--Principal)] scrollbar-track-transparent">
           {options.map((option, index) => (
             <div
               key={index}
-              className={`px-6 py-3 cursor-pointer border-b border-gray-200 text-[1.5rem] 
-                hover:bg-gray-100 rounded-[20px] last:border-none 
-                ${option === selected ? "bg-principal font-bold text-black" : ""}`}
+              className={`px-3 py-1 text-[0.9rem] text-white cursor-pointer 
+                ${option === selected ? "bg-[var(--Principal)] font-bold text-black" : ""}
+                hover:bg-[var(--Principal)] hover:text-black`}
               onClick={() => handleSelect(option)}
             >
               {option}

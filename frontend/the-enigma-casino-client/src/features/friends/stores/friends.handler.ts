@@ -109,7 +109,16 @@ socketMessageReceived.watch((data) => {
       } as SimpleAlert<"game_invite">);
 
       bellNewAlert();
-      setTimeout(() => bellNotification(), 19000);
+      setTimeout(() => {
+        const currentAlerts = $simpleAlerts.getState();
+        const stillExists = currentAlerts.some((a) => a.id === alertId);
+
+        if (stillExists) {
+          bellNotification();
+        } else if (currentAlerts.length === 0) {
+          bellReset();
+        }
+      }, 19000)
       break;
     }
     case "gameInviteAccepted": {

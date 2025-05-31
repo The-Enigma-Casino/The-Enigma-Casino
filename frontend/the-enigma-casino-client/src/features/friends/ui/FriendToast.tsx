@@ -35,7 +35,7 @@ export const FriendToast: React.FC<FriendToastProps> = ({
           </div>
           <div className="ml-3 flex-1">
             <p className="text-2xl font-medium text-gray-900">{nickname}</p>
-            <p className="mt-1 text-base text-gray-500">{message}</p>
+            <p className="mt-1 text-xl text-gray-500">{message}</p>
           </div>
         </div>
       </div>
@@ -46,7 +46,7 @@ export const FriendToast: React.FC<FriendToastProps> = ({
               onAccept();
               toast.dismiss(id);
             }}
-            className="w-full border border-transparent p-2 flex items-center justify-center text-sm font-medium text-green-600 hover:text-green-800"
+            className="w-full border border-transparent p-2 flex items-center justify-center text-base font-medium text-Principal hover:text-green-800"
           >
             Aceptar
           </button>
@@ -57,7 +57,7 @@ export const FriendToast: React.FC<FriendToastProps> = ({
               onReject();
               toast.dismiss(id);
             }}
-            className="w-full border-t border-gray-300 p-2 flex items-center justify-center text-sm font-medium text-red-500 hover:text-red-700"
+            className="w-full border-t border-gray-300 p-2 flex items-center justify-center text-base font-medium text-red-500 hover:text-red-700"
           >
             Rechazar
           </button>
@@ -67,7 +67,7 @@ export const FriendToast: React.FC<FriendToastProps> = ({
             if (onClose) onClose();
             toast.dismiss(id);
           }}
-          className="w-full border-t border-gray-300 p-2 flex items-center justify-center text-sm text-gray-500 hover:text-gray-800"
+          className="w-full border-t border-gray-300 p-2 flex items-center justify-center text-base text-gray-500 hover:text-gray-800"
         >
           Cerrar
         </button>

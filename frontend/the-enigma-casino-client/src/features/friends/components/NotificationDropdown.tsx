@@ -17,7 +17,7 @@ export const NotificationDropdown = () => {
 
   return (
     <div className="bg-Background-Overlay shadow-sm shadow-black rounded-xl overflow-hidden w-[28rem]">
-      <div className="p-4 border-b">
+      <div className="p-4 border-b border-Grey-color">
         <h3 className="text-2xl font-bold">Notificaciones</h3>
       </div>
       <ul>
@@ -30,7 +30,7 @@ export const NotificationDropdown = () => {
           if (alert.type === "friend_request") {
             const meta = alert.meta as { senderId: number };
             return (
-              <li key={alert.id} className="flex flex-col gap-2 p-4 border-b">
+              <li key={alert.id} className="flex flex-col gap-2 p-4 border-b border-Grey-color">
                 <div className="flex items-center gap-3">
                   <img
                     src={`${IMAGE_PROFILE_URL}${alert.image}`}
@@ -52,7 +52,7 @@ export const NotificationDropdown = () => {
                 </div>
                 <div className="flex justify-end gap-2 text-xl">
                   <button
-                    className="text-Principal hover:text-green-800"
+                    className="text-Principal hover:text-green-600"
                     onClick={() => {
                       acceptFriendRequest({ senderId: meta.senderId });
                       removeSimpleAlert(alert.id);
@@ -82,7 +82,7 @@ export const NotificationDropdown = () => {
               toastId?: string;
             };
             return (
-              <li key={alert.id} className="flex flex-col gap-2 p-4 border-b">
+              <li key={alert.id} className="flex flex-col gap-2 p-4 border-b border-Grey-color">
                 <div className="flex items-center gap-3">
                   <img
                     src={`${IMAGE_PROFILE_URL}${alert.image}`}

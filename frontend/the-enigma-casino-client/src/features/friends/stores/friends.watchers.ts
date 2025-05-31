@@ -1,11 +1,10 @@
-import { friendRemoved, friendRequestAccepted, friendRequestReceived, getOnlineFriendsRequested, requestAccepted, sendFriendRequest, setSearchResults } from "./friends.events";
+import { fetchReceivedRequests, friendRemoved, friendRequestAccepted, getOnlineFriendsRequested, requestAccepted, setSearchResults, userSessionInitialized } from "./friends.events";
 import {
   acceptFriendRequestFx,
   cancelFriendRequestFx,
   fetchFriendsFx,
   fetchReceivedRequestsFx,
   searchUserFx,
-  sendFriendRequestFx,
 } from "./friends.effects";
 
 // Al aceptar, actualiza amigos y solicitudes
@@ -14,10 +13,6 @@ acceptFriendRequestFx.done.watch(() => {
   fetchFriendsFx().finally(() => {
     getOnlineFriendsRequested();
   });
-});
-
-friendRequestReceived.watch(() => {
-  fetchReceivedRequestsFx();
 });
 
 // Cuando otro usuario acepta nuestra solicitud
@@ -45,3 +40,7 @@ friendRemoved.watch(() => {
 
 // Actualiza resultados de busqueda
 searchUserFx.doneData.watch(setSearchResults);
+
+userSessionInitialized.watch(() => {
+  fetchReceivedRequests({ isInitial: true });
+});

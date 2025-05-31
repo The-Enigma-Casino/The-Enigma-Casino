@@ -390,14 +390,16 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 {
                     type = Type,
                     action = "inviteExpired",
-                    friendId = friendId
+                    friendId = friendId,
+                    tableId = tableId,
                 });
 
                 await ((IWebSocketSender)this).SendToUserAsync(friendId.ToString(), new
                 {
                     type = Type,
                     action = "inviteExpired",
-                    inviterId = info.inviterId
+                    inviterId = info.inviterId,
+                    tableId = tableId,
                 });
             }
         });

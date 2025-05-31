@@ -4,6 +4,7 @@ import {
   $friends,
   $searchResults,
   $receivedRequests,
+  $simpleAlerts,
 } from "../stores/friends.store";
 import {
   searchUserFx,
@@ -18,6 +19,7 @@ import {
   inviteFriendFromList,
   removeFriend,
   removeReceivedRequest,
+  removeSimpleAlert,
   removeUserFromSearchResults,
   resetReceivedRequests,
   resetSearchResults,
@@ -40,7 +42,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
   const searchResults = useUnit($searchResults);
   const receivedRequests = useUnit($receivedRequests);
   const navigate = useNavigate();
-
+  const simpleAlerts = useUnit($simpleAlerts);
   // Cargar amigos y sus estados online
   useEffect(() => {
     fetchFriendsFx().finally(() => {
@@ -73,11 +75,25 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
     return () => clearTimeout(delay);
   }, [searchQuery, tab]);
 
+  const removeAlertBySenderId = (senderId: number) => {
+    const alertToRemove = simpleAlerts.find(
+      (a) =>
+        a.type === "friend_request" &&
+        "senderId" in a.meta &&
+        a.meta.senderId === senderId
+    );
+    if (alertToRemove) {
+      removeSimpleAlert(alertToRemove.id);
+    }
+  };
+
+
   const filteredFriends = friends
     .filter((f) =>
       f.nickName.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => (b.isOnline ? 1 : 0) - (a.isOnline ? 1 : 0));
+
 
 
   return (
@@ -175,27 +191,32 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ onClose }) => {
         )}
 
         {receivedRequests.length > 0 && (
-          <div className="mt-4 pt-3  ml-10">
-            <p className="text-white text-xl mb-2">Solicitudes recibidas</p>
+          <div className="mt-4 pt-3  ">
+            <p className="text-white text-xl mb-2 ml-10">Solicitudes recibidas</p>
             {receivedRequests.map((req) => (
-              <FriendItem
-                key={req.senderId}
-                id={req.senderId}
-                nickname={req.nickName}
-                image={req.image}
-                isFriend={false}
-                canSend={false}
-                mode="search"
-                onAcceptRequestClick={() => {
-                  acceptFriendRequest({ senderId: req.senderId });
-                  removeReceivedRequest(req.senderId);
-                  setTab("friends");
-                }}
-                onRejectRequestClick={() => {
-                  cancelFriendRequestFx({ senderId: req.senderId });
-                  removeReceivedRequest(req.senderId);
-                }}
-              />
+              <div className="mt-5">
+                <FriendItem
+                  key={req.senderId}
+                  id={req.senderId}
+                  nickname={req.nickName}
+                  image={req.image}
+                  isFriend={false}
+                  canSend={false}
+                  mode="search"
+                  onAcceptRequestClick={() => {
+                    acceptFriendRequest({ senderId: req.senderId });
+                    removeReceivedRequest(req.senderId);
+                    removeAlertBySenderId(req.senderId);
+                    setTab("friends");
+                  }}
+                  onRejectRequestClick={() => {
+                    cancelFriendRequestFx({ senderId: req.senderId });
+                    removeReceivedRequest(req.senderId);
+                    removeAlertBySenderId(req.senderId);
+                  }}
+
+                />
+              </div>
             ))}
           </div>
         )}

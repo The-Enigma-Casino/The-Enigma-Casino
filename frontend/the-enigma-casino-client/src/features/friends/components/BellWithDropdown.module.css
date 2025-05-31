@@ -1,0 +1,17 @@
+.dropdownMobile {
+  position: absolute;
+  top: 4rem;
+  right: 0;
+  transform: translateX(-1%);
+  width: 92vw;
+  max-width: 22rem;
+  z-index: 1000;
+}
+
+.dropdownDesktop {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  width: 40rem;
+  z-index: 1000;
+}

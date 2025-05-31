@@ -16,6 +16,7 @@ import { $userImage } from "../../../features/profile/store/profile/profileStore
 import { getUserImageFx } from "../../../features/profile/store/profile/profileEffects";
 import { USER_IMAGES } from "../../../config";
 import { FriendsModal } from "../../../features/friends/modal/FriendsModal";
+import { BellWithDropdown } from "../../../features/friends/components/BellWithDropdown";
 
 function HeaderMobile() {
   const navigate = useNavigate();
@@ -80,12 +81,8 @@ function HeaderMobile() {
               <img src="/svg/coins.svg" alt="Fichas" className="w-8 h-8" />
             </button>
 
-            <img
-              src="/svg/notification-bell.svg"
-              alt="Notificaciones"
-              className="w-16 h-16 cursor-pointer"
-              onClick={() => navigate("/")}
-            />
+
+            <BellWithDropdown direction="mobile" />
           </div>
         )}
       </header>

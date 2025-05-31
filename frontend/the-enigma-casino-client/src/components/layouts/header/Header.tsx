@@ -76,7 +76,7 @@ function Header() {
 
           {role && (
             <div className="absolute top-[3.4rem] left-[22.2rem] z-50">
-              <BellWithDropdown />
+              <BellWithDropdown direction="desktop" />
             </div>
           )}
         </div>

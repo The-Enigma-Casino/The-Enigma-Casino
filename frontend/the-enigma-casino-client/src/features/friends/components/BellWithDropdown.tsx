@@ -1,10 +1,19 @@
 import { useState } from "react";
-
 import { Bell } from "../ui/Bell";
 import { NotificationDropdown } from "./NotificationDropdown";
+import classes from "./BellWithDropdown.module.css";
 
-export const BellWithDropdown = () => {
+type BellWithDropdownProps = {
+  direction?: "mobile" | "desktop";
+};
+
+export const BellWithDropdown = ({ direction = "desktop" }: BellWithDropdownProps) => {
   const [open, setOpen] = useState(false);
+
+  const dropdownClass =
+    direction === "mobile"
+      ? classes.dropdownMobile
+      : classes.dropdownDesktop;
 
   return (
     <div className="relative">
@@ -12,7 +21,7 @@ export const BellWithDropdown = () => {
         <Bell />
       </button>
       {open && (
-        <div className="absolute left-0 mt-2 w-[40rem] z-[1000]">
+        <div className={dropdownClass}>
           <NotificationDropdown />
         </div>
       )}

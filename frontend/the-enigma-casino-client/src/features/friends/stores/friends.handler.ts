@@ -28,8 +28,6 @@ socketMessageReceived.watch((data) => {
 
   if (data.type !== "friend") return;
 
-  console.log("[WSFRIEND[ - DATA", data);
-
   switch (data.action) {
     case "friendRequestReceived": {
 

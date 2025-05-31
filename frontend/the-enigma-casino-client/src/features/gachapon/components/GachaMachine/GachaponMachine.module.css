@@ -1,23 +1,40 @@
-.gachapon {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+@media (orientation: landscape) {
+  .gachapon-rotate-wrapper {
+    transform: rotate(90deg);
+    transform-origin: center center;
+    width: 100vh;
+    height: 100vw;
+    overflow: hidden;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
   }
-  
+}
+
+
+
 .switch {
-  width: 70px;
   position: absolute;
-  bottom: 75px;
-  left: 120px;
+  bottom: 50px; 
+  left: 50%;    
+  transform: translateX(-50%) rotate(0deg); 
+  width: 60px;
   transition: transform 0.3s linear;
   cursor: pointer;
-  transform: rotate(0deg);
 }
 
 .switch.active {
-  transform: rotate(-90deg);
+  transform: translateX(-50%) rotate(-90deg); 
 }
+
+@media (min-width: 640px) {
+  .switch {
+    width: 70px;
+    bottom: 75px;
+  }
+}
+
 
 .mask {
   position: absolute;

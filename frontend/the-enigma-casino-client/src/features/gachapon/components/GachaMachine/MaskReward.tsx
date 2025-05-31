@@ -1,5 +1,4 @@
 import { FC } from "react";
-import styles from "./GachaponMachine.module.css";
 
 interface MaskRewardProps {
   isVisible: boolean;
@@ -21,8 +20,8 @@ const MaskReward: FC<MaskRewardProps> = ({
 
   const wrapperStyle = `fixed inset-0 z-50 bg-[rgba(138,139,140,0.8)] flex flex-col justify-center items-center animate-fadeIn`;
 
-const baseWinnerStyle =
-  "w-auto max-w-[95vw] sm:max-w-[650px] md:max-w-[800px] lg:max-w-[900px] min-w-[280px] px-6 sm:px-10 py-6 sm:py-8 mb-16 text-xl sm:text-3xl md:text-4xl text-center leading-snug font-[Reddit Sans] rounded-2xl flex justify-center items-center break-words text-balance transition-all duration-500 ease-in-out";
+  const baseWinnerStyle =
+    "w-auto max-w-[95vw] sm:max-w-[650px] md:max-w-[800px] lg:max-w-[900px] min-w-[280px] px-6 sm:px-10 py-6 sm:py-8 mb-16 text-xl sm:text-3xl md:text-4xl text-center leading-snug font-[Reddit Sans] rounded-2xl flex justify-center items-center break-words text-balance transition-all duration-500 ease-in-out";
 
 
   const normalStyle =

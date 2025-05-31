@@ -1,4 +1,4 @@
-import { fetchReceivedRequests, friendRemoved, friendRequestAccepted, getOnlineFriendsRequested, onlineFriendsUpdated, requestAccepted, setSearchResults, userSessionInitialized } from "./friends.events";
+import { fetchReceivedRequests, friendRemoved, friendRequestAccepted, getOnlineFriendsRequested, requestAccepted, setSearchResults, userSessionInitialized } from "./friends.events";
 import {
   acceptFriendRequestFx,
   cancelFriendRequestFx,

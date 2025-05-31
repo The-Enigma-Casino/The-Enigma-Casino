@@ -122,18 +122,17 @@ export const LocalPlayerCard = ({
             <div
               className="transition-transform origin-center inline-flex"
               style={{
-                transform: `scale(${
-                  visibleCards.length <= 2
+                transform: `scale(${visibleCards.length <= 2
                     ? 1
                     : visibleCards.length <= 4
-                    ? 1
-                    : visibleCards.length === 5
-                    ? 0.8
-                    : 0.7
-                })`,
+                      ? 1
+                      : visibleCards.length === 5
+                        ? 0.8
+                        : 0.7
+                  })`,
               }}
             >
-              <CardStack cards={visibleCards} />
+              <CardStack cards={visibleCards} gameType="blackjack" />
             </div>
           </div>
         </div>
@@ -148,9 +147,8 @@ export const LocalPlayerCard = ({
         {/* Turno */}
         {player.isTurn && (
           <p
-            className={`text-xl font-semibold text-center h-6 ${
-              player.isTurn ? "text-Principal" : "text-transparent"
-            }`}
+            className={`text-xl font-semibold text-center h-6 ${player.isTurn ? "text-Principal" : "text-transparent"
+              }`}
           >
             Turno de {player.nickName}
           </p>

@@ -22,6 +22,7 @@ import { joinTableClicked } from "../../gameTables/store/tablesEvents";
 import { navigateTo } from "../../games/shared/router/navigateFx";
 import { $currentTableId } from "../../gameTables/store/tablesStores";
 import { SimpleAlert } from "./friends.types";
+import { $simpleAlerts } from "./friends.store";
 
 socketMessageReceived.watch((data) => {
 
@@ -54,7 +55,14 @@ socketMessageReceived.watch((data) => {
       newFriendRequestsDetected([alert]);
       bellNewAlert();
       setTimeout(() => {
-        bellNotification();
+        const currentAlerts = $simpleAlerts.getState();
+        const stillExists = currentAlerts.some((a) => a.id === alert.id);
+
+        if (stillExists) {
+          bellNotification();
+        } else if (currentAlerts.length === 0) {
+          bellReset();
+        }
       }, 5000);
       break;
     }
@@ -65,7 +73,6 @@ socketMessageReceived.watch((data) => {
         nickname: data.nickname,
         image: data.image,
       });
-      bellNewAlert();
       break;
 
     case "friendRemoved":
@@ -148,7 +155,6 @@ socketMessageReceived.watch((data) => {
     case "friendRequestCanceled":
       removeReceivedRequest(data.senderId); // Quitar del store
       toast(`${data.nickname} canceló su solicitud de amistad.`, { duration: 2000 });
-      bellNewAlert();
       break;
 
     case "requestSent":

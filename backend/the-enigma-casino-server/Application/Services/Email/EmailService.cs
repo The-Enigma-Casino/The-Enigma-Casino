@@ -127,5 +127,20 @@ public class EmailService
     }
 
 
+    public async Task SendAutoUnbanEmailAsync(User user)
+    {
+        string emailContent = await GetEmailTemplateAsync("autounban_notification.html");
+
+        emailContent = emailContent.Replace("{UserName}", user.NickName);
+
+        await EmailHelper.SendEmailAsync(
+            user.Email,
+            "Tu cuenta ha sido reactivada",
+            emailContent,
+            isHtml: true
+        );
+    }
+
+
 }
 

@@ -32,22 +32,22 @@ const RouletteDescription = ({ isMobile }: { isMobile: boolean }) => (
       <h3 className="text-[2rem] font-bold text-[var(--Principal)]">
         🧮 ¿Cómo realizar una apuesta?
       </h3>
-      <p>
+      <ul className="list-disc list-inside">
         {isMobile ? (
           <>
-            - Pulsa sobre las fichas para elegir una cantidad y luego pulsa en
-            el tablero para apostar. <br />
-            - Si pulsas donde ya hay una apuesta, sumarás más fichas. <br />- Si
-            mantienes pulsado sobre una apuesta, la quitarás.
+            <li>Pulsa sobre las fichas para elegir una cantidad.</li>
+            <li>Pulsa en el tablero para colocar tu apuesta.</li>
+            <li>Pulsa donde ya haya fichas para sumar más.</li>
+            <li>Mantén pulsado sobre una apuesta para quitarla.</li>
           </>
         ) : (
           <>
-            - Usa clic izquierdo sobre el tablero para apostar. <br />
-            - Si haces clic donde ya hay fichas, añadirás más. <br />- Haz clic
-            derecho para eliminar la apuesta.
+            <li>Haz clic izquierdo sobre el tablero para apostar.</li>
+            <li>Clic en una apuesta existente para añadir más fichas.</li>
+            <li>Haz clic derecho para eliminar la apuesta.</li>
           </>
         )}
-      </p>
+      </ul>
     </section>
 
     <section>

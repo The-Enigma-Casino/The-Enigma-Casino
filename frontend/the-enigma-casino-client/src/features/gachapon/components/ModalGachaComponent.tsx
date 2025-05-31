@@ -40,11 +40,12 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70">
       <div
         className="relative 
-      w-[95vw] max-w-[650px] 
-      h-[auto] sm:h-[90vh] 
-      bg-[var(--Background-Overlay)] border-2 border-[var(--Principal)] rounded-lg 
-      px-2 pt-2 pb-4 sm:px-6 sm:pt-6 sm:pb-6 
-      flex flex-col justify-between items-center"
+    w-[92vw] max-w-[640px] 
+    max-h-[95vh] 
+    bg-[var(--Background-Overlay)] border-2 border-[var(--Principal)] rounded-2xl 
+    px-4 pt-4 pb-6 sm:px-6 sm:pt-6 sm:pb-6 
+    flex flex-col items-center 
+    overflow-y-auto"
       >
         {/* Botón cerrar */}
         <img

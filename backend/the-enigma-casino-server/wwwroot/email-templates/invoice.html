@@ -4,8 +4,8 @@
       body {
         font-family: Arial, sans-serif;
         background-color: #f9f9f9;
-        margin: 0;
         padding: 20px;
+        margin: 0;
         color: #333333 !important;
       }
 
@@ -33,38 +33,38 @@
         margin-bottom: 20px;
       }
 
-      .item-line {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-        border-bottom: 1px solid #e0e0e0;
-        font-size: 1rem;
-        color: #333333 !important;
+      .info-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
       }
 
-      .item-line .label {
+      .info-table td {
+        padding: 12px 0;
+        font-size: 1rem;
+        vertical-align: top;
+      }
+
+      .info-table .label {
         font-weight: bold;
         color: #555555 !important;
+        text-align: left;
+        width: 50%;
       }
 
-      .item-line .value {
-        font-weight: normal;
+      .info-table .value {
+        text-align: right;
         color: #333333 !important;
       }
 
-      .highlight {
+      .info-table .highlight {
         color: #ffdf31 !important;
         font-weight: bold;
       }
 
-      .summary {
-        margin-top: 20px;
-        font-size: 1rem;
-        color: #333333 !important;
-      }
-
-      .summary p {
-        margin: 8px 0;
+      .info-table .divider td {
+        padding: 0;
+        border-top: 1px solid #e0e0e0;
       }
 
       .footer {
@@ -80,28 +80,36 @@
       <h2>¡Gracias por tu compra, {UserName}!</h2>
       <div class="subtitle">Factura electrónica · Enigma Casino</div>
 
-      <div class="item-line">
-        <span class="label">Producto: </span>
-        <span class="value">{OrderPack}</span>
-      </div>
-      <div class="item-line">
-        <span class="label">Precio: </span>
-        <span class="value">{OrderPrice} €</span>
-      </div>
-      <div class="item-line">
-        <span class="label">Fichas: </span>
-        <span class="value highlight color: #ffdf31 !important;">{OrderCoins}</span>
-      </div>
-
-      <div class="summary">
-        <p style="color: #333333 !important;">
-          <strong style="color: #333333 !important;">Total pagado: </strong> {OrderPrice} €
-        </p>
-        <p style="color: #333333 !important;">
-          <strong style="color: #333333 !important;">Pagado con: </strong> {PaymentMethod}
-        </p>
-        <p style="color: #333333 !important;">{PaymentMethodSpecificInfo}</p>
-      </div>
+      <table class="info-table">
+        <tr>
+          <td class="label">Producto:</td>
+          <td class="value">{OrderPack}</td>
+        </tr>
+        <tr>
+          <td class="label">Precio:</td>
+          <td class="value">{OrderPrice} €</td>
+        </tr>
+        <tr>
+          <td class="label">Fichas:</td>
+          <td class="value highlight">{OrderCoins}</td>
+        </tr>
+        <tr class="divider">
+          <td colspan="2"></td>
+        </tr>
+        <tr>
+          <td class="label">Total pagado:</td>
+          <td class="value">{OrderPrice} €</td>
+        </tr>
+        <tr>
+          <td class="label">Pagado con:</td>
+          <td class="value">{PaymentMethod}</td>
+        </tr>
+        <tr>
+          <td colspan="2" class="value" style="text-align: right">
+            {PaymentMethodSpecificInfo}
+          </td>
+        </tr>
+      </table>
 
       <div class="footer">
         &copy; 2025 The Enigma Casino · Todos los derechos reservados.

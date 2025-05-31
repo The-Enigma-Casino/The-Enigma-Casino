@@ -19,25 +19,27 @@ const MaskReward: FC<MaskRewardProps> = ({
   if (!isVisible) return null;
   const isSpecial = benefit === 10000;
 
+  const wrapperStyle = `fixed inset-0 z-50 bg-[rgba(138,139,140,0.8)] flex flex-col justify-center items-center animate-fadeIn`;
+
+const baseWinnerStyle =
+  "w-auto max-w-[95vw] sm:max-w-[650px] md:max-w-[800px] lg:max-w-[900px] min-w-[280px] px-6 sm:px-10 py-6 sm:py-8 mb-16 text-xl sm:text-3xl md:text-4xl text-center leading-snug font-[Reddit Sans] rounded-2xl flex justify-center items-center break-words text-balance transition-all duration-500 ease-in-out";
+
+
+  const normalStyle =
+    "bg-white text-[var(--Black-color)] border-[3px] border-[#74c410] shadow-md shadow-[#74c41040]";
+  const specialStyle =
+    "bg-white text-[var(--Black-color)] font-bold border-[3px] border-[var(--Coins)] shadow-[0_0_6px_var(--Coins),0_0_12px_var(--Coins),0_0_20px_#fff273] animate-glow-soft";
+
   return (
-    <div className={styles.mask} onClick={onClick}>
-      <div
-        className={`${styles.winner} ${
-          isSpecial ? styles["winner--special"] : styles["winner--normal"]
-        }`}
-      >
+    <div className={wrapperStyle} onClick={onClick}>
+      <div className={`${baseWinnerStyle} ${isSpecial ? specialStyle : normalStyle}`}>
         {winner}
       </div>
       <svg
         viewBox="0 0 439 215"
         xmlns="http://www.w3.org/2000/svg"
-        width="200"
-        style={{
-          filter:
-            color === "#FFD700"
-              ? "drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 15px #ffeb3b)"
-              : "none",
-        }}
+        width="180"
+        className={color === "#FFD700" ? "filter drop-shadow-[0_0_8px_#FFD700] drop-shadow-[0_0_15px_#ffeb3b]" : ""}
       >
         <path
           d="M295.5 14.0103C400.3 15.2103 429.167 117.51 430.5 168.51C338.1 208.51 207.667 185.177 154 168.51C157.5 116.51 190.7 12.8103 295.5 14.0103Z"
@@ -63,5 +65,6 @@ const MaskReward: FC<MaskRewardProps> = ({
     </div>
   );
 };
+
 
 export default MaskReward;

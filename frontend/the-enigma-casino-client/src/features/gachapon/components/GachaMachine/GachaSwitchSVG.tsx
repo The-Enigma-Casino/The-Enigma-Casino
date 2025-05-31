@@ -1,5 +1,5 @@
-import React from 'react';
-import clsx from 'clsx';
+import React from "react";
+import clsx from "clsx";
 
 interface Props {
   isActive?: boolean;
@@ -13,12 +13,13 @@ const GachaSwitchSVG: React.FC<Props> = ({ isActive, onClick }) => {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       onClick={onClick}
-      className={clsx('transition-transform duration-300 cursor-pointer', {
-        'rotate-[-90deg]': isActive,
+      className={clsx("transition-transform duration-300 cursor-pointer", {
+        "rotate-[-90deg]": isActive,
       })}
       style={{
-        width: '70px',
-        transformOrigin: 'center center',
+        width: "100%",
+        height: "auto",
+        transformOrigin: "center center",
       }}
     >
       <circle

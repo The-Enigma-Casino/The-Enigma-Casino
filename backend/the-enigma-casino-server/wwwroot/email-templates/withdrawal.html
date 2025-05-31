@@ -33,35 +33,32 @@
         margin-bottom: 20px;
       }
 
-      .item-line {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-        border-bottom: 1px solid #eee;
+      table {
+        width: 100%;
         font-size: 1rem;
+        margin-bottom: 20px;
+        border-collapse: collapse;
       }
 
-      .item-line .label {
+      td {
+        padding: 12px 0;
+      }
+
+      .label {
         font-weight: bold;
         color: #555;
+        text-align: left;
+        width: 50%;
       }
 
-      .item-line .value {
-        font-weight: normal;
+      .value {
+        text-align: right;
+        color: #333;
       }
 
-      .fichas-highlight {
+      .highlight {
         color: #ffdf31;
         font-weight: bold;
-      }
-
-      .summary {
-        margin-top: 20px;
-        font-size: 1rem;
-      }
-
-      .summary p {
-        margin: 8px 0;
       }
 
       .footer {
@@ -77,25 +74,27 @@
       <h2>¡Confirmación de retirada, {UserName}!</h2>
       <div class="subtitle">Solicitud procesada correctamente</div>
 
-      <div class="item-line">
-        <span class="label">Fichas retiradas</span>
-        <span class="value fichas-highlight">{OrderCoins}</span>
-      </div>
-      <div class="item-line">
-        <span class="label">Valor en euros</span>
-        <span class="value">{OrderPrice} €</span>
-      </div>
-      <div class="item-line">
-        <span class="label">Método de pago</span>
-        <span class="value">{PaymentMethod}</span>
-      </div>
-      <div class="item-line">
-        <span class="label">Equivalente en ETH</span>
-        <span class="value">{EthereumPrice}</span>
-      </div>
+      <table>
+        <tr>
+          <td class="label">Fichas retiradas</td>
+          <td class="value highlight">{OrderCoins}</td>
+        </tr>
+        <tr>
+          <td class="label">Valor en euros</td>
+          <td class="value">{OrderPrice} €</td>
+        </tr>
+        <tr>
+          <td class="label">Método de pago</td>
+          <td class="value">{PaymentMethod}</td>
+        </tr>
+        <tr>
+          <td class="label">Equivalente en ETH</td>
+          <td class="value">{EthereumPrice}</td>
+        </tr>
+      </table>
 
-      <div class="summary">
-        <p>
+      <div style="font-size: 1rem; color: #333">
+        <p style="margin: 8px 0">
           Gracias por usar Enigma Casino. Si tienes alguna duda, no dudes en
           contactarnos.
         </p>

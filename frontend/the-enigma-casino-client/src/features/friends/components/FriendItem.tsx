@@ -28,6 +28,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
   nickname,
   image,
   isFriend,
+  isOnline,
   status = "Online",
   mode,
   canSend,
@@ -39,7 +40,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
   onRemoveFriendClick,
 }) => {
   const isPlayingStatus = status === "Playing";
-  const isOnlineStatus = status === "Online";
+  const isOnlineStatus = !isPlayingStatus && isOnline;
   return (
     <div className="friend-item flex w-full gap-4">
 

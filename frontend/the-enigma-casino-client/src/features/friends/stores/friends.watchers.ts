@@ -38,12 +38,6 @@ friendRemoved.watch(() => {
   });
 });
 
-onlineFriendsUpdated.watch(() => {
-  fetchFriendsFx().finally(() => {
-    getOnlineFriendsRequested();
-  });
-});
-
 // Actualiza resultados de busqueda
 searchUserFx.doneData.watch(setSearchResults);
 

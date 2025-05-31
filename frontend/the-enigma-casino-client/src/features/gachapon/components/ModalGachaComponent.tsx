@@ -27,11 +27,19 @@ const ModalGachaComponent: React.FC<ModalGachaComponentProps> = ({
 
   if (isTooSmall) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-black/90 text-white text-center text-xl font-bold flex items-center justify-center p-6">
-        El gachapón no puede usarse en horizontal si la pantalla es muy pequeña.
-        📵
-        <br />
-        Gira tu dispositivo a vertical o usa una pantalla más grande.
+      <div
+        className="fixed inset-0 z-[9999] bg-black/90 text-white text-center text-xl font-bold flex flex-col items-center justify-center p-6 cursor-pointer"
+        onClick={closeModal}
+      >
+        <p className="text-balance max-w-[500px]">
+          El gachapón no puede usarse en horizontal si la pantalla es muy
+          pequeña. 📵
+          <br />
+          Gira tu dispositivo a vertical o usa una pantalla más grande.
+        </p>
+        <div className="text-sm font-normal mt-4 text-white/80">
+          (Pulsa para volver atrás)
+        </div>
       </div>
     );
   }

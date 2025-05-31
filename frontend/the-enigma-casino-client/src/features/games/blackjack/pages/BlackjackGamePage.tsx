@@ -111,19 +111,19 @@ export const BlackjackGamePage = () => {
 
 
   const otherPlayers = players
-  .filter((p) => p.id !== Number(userId))
-  .map((p) => {
-    const bet = p.bet > 0 ? p.bet : persistedBets[p.id] ?? 0;
-    return {
-      id: p.id,
-      nickName: p.name,
-      hand: p.hand,
-      total: calculateHandTotal(p.hand),
-      bets: bet > 0 ? [{ bet: "Blackjack", amount: bet }] : [],
-      isTurn: p.id === currentTurnUserId,
-      coins: bet,
-    };
-  });
+    .filter((p) => p.id !== Number(userId))
+    .map((p) => {
+      const bet = p.bet > 0 ? p.bet : persistedBets[p.id] ?? 0;
+      return {
+        id: p.id,
+        nickName: p.name,
+        hand: p.hand,
+        total: calculateHandTotal(p.hand),
+        bets: bet > 0 ? [{ bet: "Blackjack", amount: bet }] : [],
+        isTurn: p.id === currentTurnUserId,
+        coins: bet,
+      };
+    });
 
 
   const handlePlaceBet = () => {
@@ -135,7 +135,8 @@ export const BlackjackGamePage = () => {
 
 
   return (
-    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">
+    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white w-full overflow-x-hidden">
+
       <div className="max-w-full-2xl mx-auto flex flex-row gap-6 items-start">
         {/* Columna central: contenido principal */}
         <div className="flex-1 flex flex-col items-center">

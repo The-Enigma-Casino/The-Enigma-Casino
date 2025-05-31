@@ -80,13 +80,14 @@ export const LocalPlayerCard = ({
 
   const cardCount = visibleCards.length;
 
-  const containerWidth = cardCount <= 2
-    ? "w-[300px]"
-    : cardCount <= 4
-      ? "w-[420px]"
-      : cardCount <= 6
-        ? "w-[420px]"
-        : "w-[480px]";
+  const containerWidth =
+    cardCount <= 2
+      ? "w-full sm:w-[300px]"
+      : cardCount <= 4
+        ? "w-full sm:w-[420px]"
+        : cardCount <= 6
+          ? "w-full sm:w-[420px]"
+          : "w-full sm:w-[480px]";
 
 
   return (

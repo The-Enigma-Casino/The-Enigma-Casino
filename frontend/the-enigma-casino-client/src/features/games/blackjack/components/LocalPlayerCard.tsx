@@ -78,10 +78,24 @@ export const LocalPlayerCard = ({
 
   const total = typeof player.total === "number" ? player.total : "-";
 
+  const cardCount = visibleCards.length;
+
+  const containerWidth = cardCount <= 2
+    ? "w-[300px]"
+    : cardCount <= 4
+      ? "w-[420px]"
+      : cardCount <= 6
+        ? "w-[420px]"
+        : "w-[480px]";
+
+
   return (
-    <div className="bg-black/40 rounded-xl p-4 w-[300px] flex flex-col">
+    <div className={`bg-black/40 rounded-xl p-4 flex flex-col transition-all duration-300 ease-in-out ${containerWidth}`}>
+
+
+
       <div
-        className={`relative bg-black/30 p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3
+        className={`relative  p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3
           }`}
       >
         {/* Header: avatar + nombre + bandera */}
@@ -123,12 +137,12 @@ export const LocalPlayerCard = ({
               className="transition-transform origin-center inline-flex"
               style={{
                 transform: `scale(${visibleCards.length <= 2
+                  ? 1
+                  : visibleCards.length <= 4
                     ? 1
-                    : visibleCards.length <= 4
-                      ? 1
-                      : visibleCards.length === 5
-                        ? 0.8
-                        : 0.7
+                    : visibleCards.length === 5
+                      ? 0.8
+                      : 0.7
                   })`,
               }}
             >

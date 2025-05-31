@@ -26,7 +26,8 @@ export const CardStack = ({
 }: Props) => {
   return (
     <div className="w-full overflow-x-auto">
-      <div className="flex justify-center items-end gap-2 min-w-fit px-2">
+      <div className="flex justify-center items-end min-w-fit px-2 gap-2 sm:gap-3 md:gap-4">
+
         {cards.map((card, index) => {
           const imageUrl = getCardImageUrl(card);
           const backImageUrl = getCardBackImage(gameType);

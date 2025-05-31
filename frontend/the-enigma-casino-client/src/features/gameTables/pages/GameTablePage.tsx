@@ -84,7 +84,7 @@ function GameTablePage() {
           <img
             key={i}
             src={
-              IMAGE_PROFILE_URL + players[i]?.avatar || "/img/user_default.png"
+              IMAGE_PROFILE_URL + players[i]?.avatar || "/img/user_default.webp"
             }
             alt={`Jugador ${players[i]?.name}`}
             className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full"
@@ -166,7 +166,7 @@ function GameTablePage() {
                 </button>
               )}
               <img
-                src="/img/mesa_lobby.jpg"
+                src="/img/mesa_lobby.webp"
                 alt="Mesa de casino"
                 className="absolute inset-0 w-full h-full object-cover opacity-70"
               />

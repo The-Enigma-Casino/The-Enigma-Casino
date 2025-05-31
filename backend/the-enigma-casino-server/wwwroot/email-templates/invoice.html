@@ -1,112 +1,111 @@
 ﻿<html>
-<head>
+  <head>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 20px;
+        color: #333333 !important;
+      }
 
-        .container {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
-            max-width: 600px;
-            margin: auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
+      .container {
+        background-color: #ffffff !important;
+        border-radius: 10px;
+        padding: 30px;
+        max-width: 600px;
+        margin: auto;
+        color: #333333 !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(0, 0, 0, 0.15);
+      }
 
-        h2 {
-            color: #74c410;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+      h2 {
+        color: #74c410 !important;
+        text-align: center;
+        margin-bottom: 6px;
+      }
 
-        p {
-            font-size: 16px;
-            line-height: 1.5;
-            color: #333;
-            text-align: justify; 
-        }
+      .subtitle {
+        text-align: center;
+        font-size: 1.05em;
+        color: #666666 !important;
+        margin-bottom: 20px;
+      }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            text-align: right; 
-        }
+      .item-line {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 1rem;
+        color: #333333 !important;
+      }
 
-        table, th, td {
-            border: 1px solid #ddd;
-        }
+      .item-line .label {
+        font-weight: bold;
+        color: #555555 !important;
+      }
 
-        th, td {
-            text-align: right; 
-            padding: 8px;
-        }
+      .item-line .value {
+        font-weight: normal;
+        color: #333333 !important;
+      }
 
-        th {
-            background-color: #f4f4f4;
-        }
+      .highlight {
+        color: #ffdf31 !important;
+        font-weight: bold;
+      }
 
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+      .summary {
+        margin-top: 20px;
+        font-size: 1rem;
+        color: #333333 !important;
+      }
 
-        .total {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
-            text-align: right; 
-        }
+      .summary p {
+        margin: 8px 0;
+      }
 
-        .footer {
-            margin-top: 30px;
-            text-align: center; 
-            font-size: 0.9em;
-            color: #888;
-        }
-
-        .tfooter {
-            text-align: center;
-            align-items: center;
-            align-content: center;
-        }
-
+      .footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 0.9em;
+        color: #999999 !important;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h2>¡Gracias por tu compra, {UserName}!</h2>
-        <p>Confirmación de compra:</p>
+      <h2>¡Gracias por tu compra, {UserName}!</h2>
+      <div class="subtitle">Factura electrónica · Enigma Casino</div>
 
-        <table>
-            <tr>
-                <th>Imagen</th>
-                <th>Nombre</th>
-                <th>Precio Total</th>
-                <th>Cantidad de fichas</th>
-            </tr>
-            <tr>
-                <td><img src="{OrderImage}" alt="Pack de fichas" style="width:100px; border-radius:5px;" /></td>
-                <td>{OrderPack}</td>
-                <td>{OrderPrice} €</td>
-                <td>{OrderCoins}</td>
-            </tr>
-        </table>
+      <div class="item-line">
+        <span class="label">Producto: </span>
+        <span class="value">{OrderPack}</span>
+      </div>
+      <div class="item-line">
+        <span class="label">Precio: </span>
+        <span class="value">{OrderPrice} €</span>
+      </div>
+      <div class="item-line">
+        <span class="label">Fichas: </span>
+        <span class="value highlight color: #ffdf31 !important;">{OrderCoins}</span>
+      </div>
 
-        <p><strong>Total pagado:</strong> {OrderPrice} €</p>
+      <div class="summary">
+        <p style="color: #333333 !important;">
+          <strong style="color: #333333 !important;">Total pagado: </strong> {OrderPrice} €
+        </p>
+        <p style="color: #333333 !important;">
+          <strong style="color: #333333 !important;">Pagado con: </strong> {PaymentMethod}
+        </p>
+        <p style="color: #333333 !important;">{PaymentMethodSpecificInfo}</p>
+      </div>
 
-        <p><strong>Pagado con:</strong> {PaymentMethod}</p>
-
-        {PaymentMethodSpecificInfo}
-
-        <div class="footer">
-            <p class="tfooter">&copy; 2025 The Enigma Casino. Todos los derechos reservados.</p>
-        </div>
+      <div class="footer">
+        &copy; 2025 The Enigma Casino · Todos los derechos reservados.
+      </div>
     </div>
-</body>
+  </body>
 </html>

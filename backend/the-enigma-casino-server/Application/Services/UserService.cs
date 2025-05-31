@@ -349,6 +349,8 @@ public class UserService : BaseService
 
         _unitOfWork.UserRepository.Update(user);
         await _unitOfWork.SaveAsync();
+
+        await _emailService.SendAutoBanEmailAsync(user);
     }
 
     private string ValidateUpdateRequest(UpdateUserReq request)

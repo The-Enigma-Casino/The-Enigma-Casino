@@ -66,7 +66,7 @@ const LandingPage: React.FC = () => {
     <section className="relative w-full h-screen min-h-screen overflow-hidden flex justify-center items-center">
       <div className="absolute inset-x-0 bottom-0 z-[2] flex justify-center pointer-events-none">
         <img
-          src="/img/duende.png"
+          src="/img/duende.webp"
           alt="duende"
           className="w-full h-auto object-contain
             max-w-[450px] sm:max-w-[500px] md:max-w-[550px] lg:max-w-[600px] xl:max-w-[700px]

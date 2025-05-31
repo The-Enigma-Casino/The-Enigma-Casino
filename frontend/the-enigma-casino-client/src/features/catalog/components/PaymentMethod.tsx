@@ -40,7 +40,7 @@ const PaymentMethod: React.FC = () => {
             }`}
           onClick={() => handlePaymentSelection("Stripe")}
         >
-          <img src="/img/Tarjeta.png" alt="Stripe" />
+          <img src="/img/Tarjeta.webp" alt="Stripe" />
           <input type="radio" checked={selectedPayment === "Stripe"} readOnly className="mr-3 w-5 h-5" />
           <span className="text-white text-lg">Pagar con Tarjeta</span>
         </div>

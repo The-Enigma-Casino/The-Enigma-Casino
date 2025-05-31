@@ -44,7 +44,7 @@ socketMessageReceived.watch((data) => {
             const avatarData = avatars.find((a) => a.nickName === nick);
             const player = {
               name: nick,
-              avatar: avatarData?.image ?? "/img/user_default.png",
+              avatar: avatarData?.image ?? "/img/user_default.webp",
             };
             console.log(`🎨 Avatar aplicado a ${nick}:`, player.avatar);
             return player;

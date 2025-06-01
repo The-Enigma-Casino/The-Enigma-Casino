@@ -63,7 +63,6 @@ export const PokerGamePage = () => {
 
   const opponentLeft = useUnit($opponentLeft);
 
-
   const handleAction = (
     move: "fold" | "call" | "check" | "raise" | "all-in",
     amount?: number
@@ -73,8 +72,8 @@ export const PokerGamePage = () => {
 
   useEffect(() => {
     if (players.length > 0) {
-      const nicknames = players.map((p) => p.nickname);
-      getPlayerAvatarsFx(nicknames);
+      const uniqueNicks = Array.from(new Set(players.map((p) => p.nickname)));
+      getPlayerAvatarsFx(uniqueNicks);
     }
   }, [players]);
 

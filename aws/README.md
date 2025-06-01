@@ -60,3 +60,41 @@ O dejarlo corriendo en segundo plano:
 ```bash
 nohup ./start-backend.sh &
 ```
+
+**move_sftp_back_uploads.sh**  
+ 📦 _Mueve archivos subidos mediante SFTP (usuario sftp-back) a la carpeta del backend._
+
+- Mueve todos los archivos desde `/sftp/back` a `/home/ubuntu/The-Enigma-Casino/backend/`.
+- Cambia el propietario de los archivos a `ubuntu` para evitar problemas de permisos.
+- Útil para incorporar configuraciones u otros archivos.
+
+Para hacerlo ejecutable:
+
+```bash
+chmod +x move_sftp_back_uploads.sh
+```
+
+Ejecutarlo:
+
+```bash
+sudo ./move_sftp_back_uploads.sh
+```
+
+**move_sftp_front_uploads.sh**  
+ 📦 _Mueve archivos subidos mediante SFTP (usuario sftp-front) a la carpeta del backend._
+
+- Mueve todos los archivos desde `/sftp/front` a `/home/ubuntu/The-Enigma-Casino/frontend/`.
+- Cambia el propietario de los archivos a `ubuntu` para evitar problemas de permisos.
+- Útil para incorporar configuraciones u otros archivos.
+
+Para hacerlo ejecutable:
+
+```bash
+chmod +x move_sftp_front_uploads.sh
+```
+
+Ejecutarlo:
+
+```bash
+sudo ./move_sftp_front_uploads.sh
+```

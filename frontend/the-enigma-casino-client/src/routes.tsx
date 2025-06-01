@@ -17,6 +17,7 @@ import routeAdmin from "./features/admin/routes";
 import PoliciesPage from "./features/policies/pages/PoliciesPrivacyPage";
 import { AuthGuard } from "./guards/AuthGuard";
 import AboutPage from "./features/about/pages/AboutPage";
+import ServerPage from "./features/server/pages/ServerPage";
 
 const router = createBrowserRouter([
   {
@@ -75,6 +76,10 @@ const router = createBrowserRouter([
       {
         path: "about",
         element: <AboutPage />
+      },
+      {
+        path: "server",
+        element: <ServerPage />,
       }
     ],
   },

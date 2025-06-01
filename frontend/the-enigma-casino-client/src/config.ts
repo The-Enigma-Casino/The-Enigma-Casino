@@ -3,6 +3,8 @@ export const BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
 export const WS_BASE_URL: string = import.meta.env.VITE_WS_BASE_URL;
 export const API_BASE_URL: string = `${BASE_URL}api/`;
 
+export const DEPLOY_ENV: string = import.meta.env.VITE_DEPLOY_ENV;
+
 /* URL IMAGEN PERFIL */
 export const IMAGE_PROFILE_URL: string = `${BASE_URL}images/profile/`;
 

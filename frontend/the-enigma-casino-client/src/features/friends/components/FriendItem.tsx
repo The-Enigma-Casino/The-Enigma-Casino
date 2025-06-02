@@ -51,7 +51,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
           src={`${IMAGE_PROFILE_URL}${image}`}
           className="w-16 h-16 rounded-full object-cover"
         />
-        <p className="text-white text-2xl">{nickname}</p>
+        <p className="text-white text-3xl">{nickname}</p>
       </div>
 
       {/* Derecha */}
@@ -64,7 +64,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
                 className={`w-2.5 h-2.5 rounded-full ${isPlayingStatus ? "bg-yellow-400" : isOnlineStatus ? "bg-Principal" : "bg-red-500"
                   }`}
               ></span>
-              <span className="text-gray-400 font-light text-base self-start">
+              <span className="text-gray-400 font-light text-lg self-start">
                 {isPlayingStatus ? "EN PARTIDA" : isOnlineStatus ? "EN LÍNEA" : "DESCONECTADO"}
               </span>
             </div>
@@ -77,7 +77,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
         <div className="flex gap-2 ml-10">
           {(mode === "friend-list" || mode === "search") && (
             <button onClick={onProfileClick} title="Ver perfil">
-              <img src="/svg/friendProfile.svg" className="w-8 h-8" />
+              <img src="/svg/friendProfile.svg" className="w-10 h-10" />
             </button>
           )}
 
@@ -94,7 +94,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
                 >
                   <img
                     src="/svg/invite_friend_table.svg"
-                    className="w-8 h-8"
+                    className="w-10 h-10"
                     alt="Invitar"
                   />
                 </summary>
@@ -117,13 +117,13 @@ export const FriendItem: React.FC<FriendItemProps> = ({
 
           {mode === "friend-list" && isFriend && (
             <button onClick={onRemoveFriendClick} title="Eliminar amigo">
-              <img src="/svg/reject-friend.svg" className="w-8 h-8" />
+              <img src="/svg/reject-friend.svg" className="w-10 h-10" />
             </button>
           )}
 
           {mode === "search" && onAddFriendClick && canSend && (
             <button onClick={onAddFriendClick} title="Enviar solicitud">
-              <img src="/svg/add-friend.svg" className="w-8 h-8" />
+              <img src="/svg/add-friend.svg" className="w-10 h-10" />
             </button>
           )}
 
@@ -135,7 +135,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
                     onClick={onAcceptRequestClick}
                     title="Aceptar solicitud"
                   >
-                    <img src="/svg/accept.svg" className="w-8 h-8" />
+                    <img src="/svg/accept.svg" className="w-10 h-10" />
                   </button>
                 )}
                 {onRejectRequestClick && (
@@ -143,7 +143,7 @@ export const FriendItem: React.FC<FriendItemProps> = ({
                     onClick={onRejectRequestClick}
                     title="Rechazar solicitud"
                   >
-                    <img src="/svg/delete.svg" className="w-8 h-8" />
+                    <img src="/svg/delete.svg" className="w-10 h-10" />
                   </button>
                 )}
               </>

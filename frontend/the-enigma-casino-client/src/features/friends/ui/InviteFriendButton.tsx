@@ -72,7 +72,7 @@ export const InviteFriendButton = ({ onlineFriends, onInvite }: Props) => {
                   onInvite(friend.id);
                   setOpen(false);
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-zinc-700 transition text-white text-lg text-left"
+                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-zinc-700 transition text-white text-2xl text-left"
               >
                 <img
                   src={`${IMAGE_PROFILE_URL}${friend.image}`}

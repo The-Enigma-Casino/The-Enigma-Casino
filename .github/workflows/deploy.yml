@@ -64,22 +64,22 @@ jobs:
 
           # === BACKEND ===
           echo " Subiendo backend a BACKEND_IP"
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no backend-deploy.zip user-deploy@BACKEND_IP:/home/user-deploy/deploy/
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@BACKEND_IP "
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no backend-deploy.zip user-deploy@${{ secrets.BACKEND_IP }}:/home/user-deploy/deploy/
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@${{ secrets.BACKEND_IP }}"
             aws s3 cp /home/user-deploy/deploy/backend-deploy.zip s3://enigma-deployments/backend-deploy.zip --acl public-read
           "
 
           # === FRONTEND 1 ===
           echo " Subiendo frontend a FRONTEND_IP_1"
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@FRONTEND_IP_1:/home/user-deploy/deploy/
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@FRONTEND_IP_1 "
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_1 }}:/home/user-deploy/deploy/
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@${{ secrets.FRONTEND_IP_1 }} "
             aws s3 cp /home/user-deploy/deploy/frontend-deploy.zip s3://enigma-deployments/frontend-deploy.zip --acl public-read
           "
 
           # ===  FRONTEND 2 ===
           echo " Subiendo frontend a FRONTEND_IP_2"
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@FRONTEND_IP_2:/home/user-deploy/deploy/
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@FRONTEND_IP_2 "
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_2 }}:/home/user-deploy/deploy/
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@${{ secrets.FRONTEND_IP_2 }} "
             aws s3 cp /home/user-deploy/deploy/frontend-deploy.zip s3://enigma-deployments/frontend-deploy.zip --acl public-read
           "
         env:

@@ -99,7 +99,8 @@ export const FriendItem: React.FC<FriendItemProps> = ({
                   />
                 </summary>
                 {!isPlayingStatus && (
-                  <ul className="absolute z-10 top-6 right-0 bg-gray-800 border border-gray-600 text-white rounded shadow-lg text-sm min-w-[120px]">
+                  <ul className="absolute z-10 top-8 right-5 bg-gray-800 border border-gray-600 text-white rounded shadow-lg text-xl min-w-[120px]">
+                    <li className="px-3 py-1 text-gray-400 cursor-default">Invitar a:</li>
                     {["BlackJack", "Poker", "Roulette"].map((game) => (
                       <li
                         key={game}

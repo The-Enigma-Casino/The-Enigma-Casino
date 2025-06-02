@@ -1,0 +1,88 @@
+name: Deploy Enigma Casino
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js (frontend)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Build frontend con Vite
+        working-directory: frontend/the-enigma-casino-client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copiar build al paquete de despliegue
+        run: |
+          mkdir -p deploy/frontend/build
+          cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend/build/
+
+      - name: 🔧 Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restaurar dependencias backend
+        working-directory: backend/the-enigma-casino-server
+        run: dotnet restore
+
+      - name: Compilar y publicar backend
+        working-directory: backend/the-enigma-casino-server
+        run: dotnet publish -c Release -o ../../deploy/backend/publish
+
+      - name: Confirmar contenido publicado
+        run: ls -la deploy/backend/publish
+
+      - name: Empaquetar frontend
+        run: |
+          cd deploy/frontend
+          zip -r ../../frontend-deploy.zip ./*
+
+      - name: Empaquetar backend
+        run: |
+          cd deploy/backend
+          zip -r ../../backend-deploy.zip ./*
+
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Subir frontend a S3
+        run: aws s3 cp frontend-deploy.zip s3://enigma-deployments/frontend-deploy.zip --acl public-read
+
+      - name: Subir backend a S3
+        run: aws s3 cp backend-deploy.zip s3://enigma-deployments/backend-deploy.zip --acl public-read
+
+      - name: Lanzar CodeDeploy para backend
+        run: |
+          aws deploy create-deployment \
+            --application-name EnigmaCasinoApp \
+            --deployment-group-name EnigmaBackendGroup \
+            --s3-location bucket=enigma-deployments,key=backend-deploy.zip,bundleType=zip \
+            --deployment-config-name CodeDeployDefault.AllAtOnce
+            
+      - name: Lanzar CodeDeploy para frontend
+        run: |
+          aws deploy create-deployment \
+            --application-name EnigmaFrontendApp \
+            --deployment-group-name EnigmaFrontendGroup \
+            --s3-location bucket=enigma-deployments,key=frontend-deploy.zip,bundleType=zip \
+            --deployment-config-name CodeDeployDefault.AllAtOnce

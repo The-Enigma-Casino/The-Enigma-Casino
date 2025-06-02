@@ -73,8 +73,29 @@ export const GamePlayerCardList = ({
 
   if (players.length === 0) return null;
 
+
+  const cardCountMax = Math.max(...players.map(p => p.hand.length), 0);
+  const containerWidth =
+    cardCountMax <= 2
+      ? "w-full sm:w-[260px]"
+      : cardCountMax <= 4
+        ? "w-full sm:w-[340px]"
+        : cardCountMax <= 6
+          ? "w-full sm:w-[360px]"
+          : "w-full sm:w-[380px]";
+
+  const getScale = (count: number) => {
+    if (count <= 2) return 1;
+    if (count <= 3) return 0.9;
+    if (count === 4) return 0.8;
+    if (count === 5) return 0.7;
+    if (count === 6) return 0.58;
+    return 0.68;
+  };
+
+
   return (
-    <div className="bg-black/40 rounded-xl p-4 w-[300px] flex flex-col gap-12">
+    <div className={`bg-black/40 rounded-xl p-3 flex flex-col gap-6 ${containerWidth} max-w-[95vw] sm:max-w-none`}>
       <h2 className="text-3xl font-bold text-white mb-4 text-center shadow-xl-white">
         Jugadores en la partida
       </h2>
@@ -123,9 +144,8 @@ export const GamePlayerCardList = ({
           return (
             <div
               key={player.id}
-              className={`relative bg-black/30 p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3 ${
-                player.isTurn ? "animate-pulseGlow" : ""
-              }`}
+              className={`relative bg-black/30 p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3 ${player.isTurn ? "animate-pulseGlow" : ""
+                }`}
             >
               {/* Header: avatar + nombre + bandera */}
               <div className="flex items-center justify-between mb-3">
@@ -216,56 +236,50 @@ export const GamePlayerCardList = ({
                 )}
               </div>
 
-              {/* Cartas */}
-              <div className="overflow-hidden">
-                <div className="flex justify-center w-full">
-                  <div
-                    className="transition-transform origin-center inline-flex"
-                    style={{
-                      transform: `scale(${
-                        visibleCards.length <= 2
-                          ? 1.0
-                          : visibleCards.length <= 4
-                          ? 1
-                          : visibleCards.length === 5
-                          ? 0.8
-                          : 0.7
-                      })`,
-                    }}
-                  >
-                    <CardStack
-                      cards={visibleCards}
-                      hideAll={
-                        gameType === "Poker" &&
-                        !revealedHands?.some((h) => h.userId === player.id)
-                      }
-                      gameType="poker"
-                    />
-                  </div>
+              <div className="flex justify-center w-full overflow-hidden">
+                <div
+                  className="transition-transform origin-center inline-flex"
+                  style={{
+                    transform: `scale(${getScale(visibleCards.length)})`,
+                  }}
+                >
+                  <CardStack
+                    cards={visibleCards}
+                    hideAll={
+                      gameType === "Poker" &&
+                      !revealedHands?.some((h) => h.userId === player.id)
+                    }
+                    gameType="poker"
+                  />
                 </div>
               </div>
 
+
+
               {/* Total */}
-              {gameType === "Blackjack" && (
-                <p className="text-2xl font-bold text-yellow-300 text-center">
-                  Total: {total}
-                </p>
-              )}
+              {
+                gameType === "Blackjack" && (
+                  <p className="text-2xl font-bold text-yellow-300 text-center">
+                    Total: {total}
+                  </p>
+                )
+              }
 
               {/* Turno */}
-              {player.isTurn && (
-                <p
-                  className={`text-xl font-semibold text-center h-6 ${
-                    player.isTurn ? "text-Principal" : "text-transparent"
-                  }`}
-                >
-                  Turno de {player.nickName}
-                </p>
-              )}
+              {
+                player.isTurn && (
+                  <p
+                    className={`text-xl font-semibold text-center h-6 ${player.isTurn ? "text-Principal" : "text-transparent"
+                      }`}
+                  >
+                    Turno de {player.nickName}
+                  </p>
+                )
+              }
             </div>
           );
         })}
       </div>
-    </div>
+    </div >
   );
 };

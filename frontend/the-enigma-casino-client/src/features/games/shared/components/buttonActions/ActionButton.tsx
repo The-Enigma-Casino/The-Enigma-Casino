@@ -24,7 +24,8 @@ export const ActionButton = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-6 py-2 rounded font-bold border transition-all duration-150 disabled:opacity-50 ${baseColors[color]} ${className}`}
+      className={`px-6 py-3 sm:px-8 sm:py-4 rounded-lg font-bold text-base sm:text-lg md:text-xl border transition-all duration-150 disabled:opacity-50 ${baseColors[color]} ${className}`}
+
     >
       {label}
     </button>

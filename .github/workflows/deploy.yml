@@ -31,7 +31,7 @@ jobs:
           mkdir -p deploy/frontend/build
           cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend/build/
 
-      - name: 🔧 Setup .NET SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
@@ -57,19 +57,33 @@ jobs:
           cd deploy/backend
           zip -r ../../backend-deploy.zip ./*
 
-      - name: Configurar credenciales de AWS
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Subir artefactos a EC2 (backend y frontend)
+        run: |
+          echo "$EC2_PRIVATE_KEY" > ec2_key.pem
+          chmod 600 ec2_key.pem
 
-      - name: Subir frontend a S3
-        run: aws s3 cp frontend-deploy.zip s3://enigma-deployments/frontend-deploy.zip --acl public-read
+          # === BACKEND ===
+          echo " Subiendo backend a BACKEND_IP"
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no backend-deploy.zip user-deploy@BACKEND_IP:/home/user-deploy/deploy/
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@BACKEND_IP "
+            aws s3 cp /home/user-deploy/deploy/backend-deploy.zip s3://enigma-deployments/backend-deploy.zip --acl public-read
+          "
 
-      - name: Subir backend a S3
-        run: aws s3 cp backend-deploy.zip s3://enigma-deployments/backend-deploy.zip --acl public-read
+          # === FRONTEND 1 ===
+          echo " Subiendo frontend a FRONTEND_IP_1"
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@FRONTEND_IP_1:/home/user-deploy/deploy/
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@FRONTEND_IP_1 "
+            aws s3 cp /home/user-deploy/deploy/frontend-deploy.zip s3://enigma-deployments/frontend-deploy.zip --acl public-read
+          "
+
+          # ===  FRONTEND 2 ===
+          echo " Subiendo frontend a FRONTEND_IP_2"
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@FRONTEND_IP_2:/home/user-deploy/deploy/
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@FRONTEND_IP_2 "
+            aws s3 cp /home/user-deploy/deploy/frontend-deploy.zip s3://enigma-deployments/frontend-deploy.zip --acl public-read
+          "
+        env:
+          EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
 
       - name: Lanzar CodeDeploy para backend
         run: |

@@ -8,8 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
       - name: Checkout del código
@@ -57,60 +55,33 @@ jobs:
           cd deploy/backend
           zip -r ../../backend-deploy.zip ./*
 
-      - name: Subir artefactos a EC2 (backend y frontend)
+      - name: Subir artefactos a EC2 vía SFTP
         run: |
           echo "$EC2_PRIVATE_KEY" > ec2_key.pem
           chmod 600 ec2_key.pem
 
           # === BACKEND ===
-          echo "Subiendo backend a ${{ secrets.BACKEND_IP }}"
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no backend-deploy.zip user-deploy@${{ secrets.BACKEND_IP }}:/home/user-deploy/deploy/
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@${{ secrets.BACKEND_IP }} "
-            export AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY_ID }}' &&
-            export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}' &&
-            export AWS_SESSION_TOKEN='${{ secrets.AWS_SESSION_TOKEN }}' &&
-            export AWS_REGION='${{ secrets.AWS_REGION }}' &&
-            aws s3 cp /home/user-deploy/deploy/backend-deploy.zip s3://enigma-deployments/backend-deploy.zip --acl public-read
-          "
+          echo "Subiendo backend-deploy.zip a ${{ secrets.BACKEND_IP }}"
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no backend-deploy.zip user-deploy@${{ secrets.BACKEND_IP }}:/home/user-deploy/zips/
 
           # === FRONTEND 1 ===
-          echo "Subiendo frontend a ${{ secrets.FRONTEND_IP_1 }}"
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_1 }}:/home/user-deploy/deploy/
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@${{ secrets.FRONTEND_IP_1 }} "
-            export AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY_ID }}' &&
-            export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}' &&
-            export AWS_SESSION_TOKEN='${{ secrets.AWS_SESSION_TOKEN }}' &&
-            export AWS_REGION='${{ secrets.AWS_REGION }}' &&
-            aws s3 cp /home/user-deploy/deploy/frontend-deploy.zip s3://enigma-deployments/frontend-deploy.zip --acl public-read
-          "
+          echo "Subiendo frontend-deploy.zip a ${{ secrets.FRONTEND_IP_1 }}"
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_1 }}:/home/user-deploy/zips/
 
           # === FRONTEND 2 ===
-          echo "Subiendo frontend a ${{ secrets.FRONTEND_IP_2 }}"
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_2 }}:/home/user-deploy/deploy/
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no user-deploy@${{ secrets.FRONTEND_IP_2 }} "
-            export AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY_ID }}' &&
-            export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}' &&
-            export AWS_SESSION_TOKEN='${{ secrets.AWS_SESSION_TOKEN }}' &&
-            export AWS_REGION='${{ secrets.AWS_REGION }}' &&
-            aws s3 cp /home/user-deploy/deploy/frontend-deploy.zip s3://enigma-deployments/frontend-deploy.zip --acl public-read
-          "
+          echo "Subiendo frontend-deploy.zip a ${{ secrets.FRONTEND_IP_2 }}"
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_2 }}:/home/user-deploy/zips/
         env:
           EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
 
+      - name: Publicar artefactos para descarga manual
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-deploy
+          path: backend-deploy.zip
 
-
-      - name: Lanzar CodeDeploy para backend
-        run: |
-          aws deploy create-deployment \
-            --application-name EnigmaCasinoApp \
-            --deployment-group-name EnigmaBackendGroup \
-            --s3-location bucket=enigma-deployments,key=backend-deploy.zip,bundleType=zip \
-            --deployment-config-name CodeDeployDefault.AllAtOnce
-            
-      - name: Lanzar CodeDeploy para frontend
-        run: |
-          aws deploy create-deployment \
-            --application-name EnigmaFrontendApp \
-            --deployment-group-name EnigmaFrontendGroup \
-            --s3-location bucket=enigma-deployments,key=frontend-deploy.zip,bundleType=zip \
-            --deployment-config-name CodeDeployDefault.AllAtOnce
+      - name: Publicar artefactos para descarga manual (frontend)
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-deploy
+          path: frontend-deploy.zip

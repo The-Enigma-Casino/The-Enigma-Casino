@@ -1,0 +1,20 @@
+version: 0.0
+os: linux
+
+files:
+  - source: build/
+    destination: /var/www/theenigmacasino/
+
+hooks:
+  BeforeInstall:
+    - location: scripts/stop.sh
+      timeout: 15
+      runas: ubuntu
+  AfterInstall:
+    - location: scripts/install.sh
+      timeout: 30
+      runas: ubuntu
+  ApplicationStart:
+    - location: scripts/start.sh
+      timeout: 15
+      runas: ubuntu

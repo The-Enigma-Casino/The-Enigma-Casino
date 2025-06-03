@@ -39,7 +39,8 @@ jobs:
         run: |
           mkdir -p deploy/frontend1/build
           cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend1/build/
-          cp frontend/the-enigma-casino-client/appspec.yml deploy/frontend1/
+          cp deploy/frontend/appspec.yml deploy/frontend1/
+          cp -r deploy/frontend/scripts deploy/frontend1/scripts
           cp -r frontend/the-enigma-casino-client/scripts deploy/frontend1/
           cd deploy/frontend1
           zip -r ../../frontend1-deploy.zip ./*
@@ -63,7 +64,8 @@ jobs:
         run: |
           mkdir -p deploy/frontend2/build
           cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend2/build/
-          cp frontend/the-enigma-casino-client/appspec.yml deploy/frontend2/
+          cp deploy/frontend/appspec.yml deploy/frontend2/
+          cp -r deploy/frontend/scripts deploy/frontend2/scripts
           cp -r frontend/the-enigma-casino-client/scripts deploy/frontend2/
           cd deploy/frontend2
           zip -r ../../frontend2-deploy.zip ./*

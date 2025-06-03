@@ -82,19 +82,16 @@ export const LocalPlayerCard = ({
 
   const containerWidth =
     cardCount <= 2
-      ? "w-full sm:w-[300px]"
+      ? "w-full max-w-[320px] md:max-w-[360px] lg:max-w-[400px]"
       : cardCount <= 4
-        ? "w-full sm:w-[420px]"
+        ? "w-full max-w-[360px] md:max-w-[400px] lg:max-w-[440px]"
         : cardCount <= 6
-          ? "w-full sm:w-[420px]"
-          : "w-full sm:w-[480px]";
+          ? "w-full max-w-[380px] md:max-w-[420px] lg:max-w-[460px]"
+          : "w-full max-w-[400px] md:max-w-[440px] lg:max-w-[480px]";
 
 
   return (
     <div className={`bg-black/40 rounded-xl p-4 flex flex-col transition-all duration-300 ease-in-out ${containerWidth}`}>
-
-
-
       <div
         className={`relative  p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3
           }`}
@@ -140,10 +137,12 @@ export const LocalPlayerCard = ({
                 transform: `scale(${visibleCards.length <= 2
                   ? 1
                   : visibleCards.length <= 4
-                    ? 1
+                    ? 0.95
                     : visibleCards.length === 5
                       ? 0.8
-                      : 0.7
+                      : visibleCards.length === 6
+                        ? 0.68
+                        : 0.68
                   })`,
               }}
             >

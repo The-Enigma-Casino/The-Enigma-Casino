@@ -14,10 +14,12 @@ import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand, resetRou
 import { CardRank, Suit } from "../../shared/types/gameCard.type";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
 import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar";
-import { GamePlayerCardList } from "../../shared/components/playerCards/GameCardPlayerList";
+
 import { LocalPlayerCard } from "../components/LocalPlayerCard";
 import { BetChipsPanel } from "../../shared/components/betChipsPanel/BetChipsPanel";
 import { ActionButton } from "../../shared/components/buttonActions/ActionButton";
+import { ResponsivePlayerList } from "../../shared/components/playerCards/ResponsivePlayerList";
+import toast from "react-hot-toast";
 export const BlackjackGamePage = () => {
 
   const gamePhaseLabels: Record<string, string> = {
@@ -127,20 +129,29 @@ export const BlackjackGamePage = () => {
 
 
   const handlePlaceBet = () => {
+    if (betAmount < 50) {
+      toast.error("La apuesta mínima es de 50 fichas.");
+      return;
+    }
+
+    if (betAmount > 5000) {
+      toast.error("La apuesta máxima es de 5000 fichas.");
+      return;
+    }
     playerPlaceBet(betAmount);
     localBetPlaced(betAmount);
     setBetSubmitted(true);
     setShowConfirmation(true);
   };
-
+  const isBetInvalid = betAmount < 50 || betAmount > 5000;
 
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white w-full overflow-x-hidden">
 
       <div className="max-w-full-2xl mx-auto flex flex-row gap-6 items-start">
         {/* Columna central: contenido principal */}
-        <div className="flex-1 flex flex-col items-center">
-          <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">
+        <div className="flex-1 flex flex-col items-center w-full max-w-full overflow-hidden">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-center font-bold mb-6 drop-shadow">
             ♠️ Blackjack
           </h1>
 
@@ -200,7 +211,7 @@ export const BlackjackGamePage = () => {
                 ) : null}
 
                 {showShuffling && (
-                  <div className="mt-4 text-3xl text-Coins font-bold animate-pulse">
+                  <div className="mt-4 text-xl sm:text-2xl md:text-3xl text-Coins font-bold animate-pulse text-center max-w-xs sm:max-w-md mx-auto px-2">
                     🃏 Barajando cartas para la próxima ronda...
                   </div>
                 )}
@@ -229,9 +240,8 @@ export const BlackjackGamePage = () => {
 
                   <ActionButton
                     onClick={handlePlaceBet}
-                    disabled={betAmount < 50 || betAmount > 5000}
                     label="Apostar"
-                    color="purple"
+                    color={isBetInvalid ? "gray" : "purple"}
                     className="w-full max-w-[150px] text-xl py-4"
                   />
                 </div>
@@ -267,11 +277,13 @@ export const BlackjackGamePage = () => {
           )}
         </div>
 
-        {/* Lista de jugadores en la mesa */}
-        <GamePlayerCardList
-          players={otherPlayers}
-          gameType="Blackjack"
-        />
+        {otherPlayers.length > 0 && (
+
+          <ResponsivePlayerList
+            players={otherPlayers}
+            gameType="Blackjack"
+          />
+        )}
       </div>
     </div>
   );

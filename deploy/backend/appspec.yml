@@ -3,7 +3,7 @@ os: linux
 
 files:
   - source: publish/
-    destination: /home/ubuntu/enigma-backend/
+    destination: /home/ubuntu/backend-code-deploy/
 
 hooks:
   BeforeInstall:

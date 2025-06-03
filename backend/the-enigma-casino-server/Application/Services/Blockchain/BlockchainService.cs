@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Globalization;
+using System.Numerics;
 using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
 using Nethereum.RPC.Eth.DTOs;
@@ -115,7 +116,8 @@ public class BlockchainService
     {
         string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
 
-        if (string.IsNullOrEmpty(coinValueStr) || !decimal.TryParse(coinValueStr, out decimal coinValueInEuros))
+        if (string.IsNullOrEmpty(coinValueStr) ||
+            !decimal.TryParse(coinValueStr, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal coinValueInEuros))
         {
             throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
         }
@@ -129,7 +131,8 @@ public class BlockchainService
     {
         string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
 
-        if (string.IsNullOrEmpty(coinValueStr) || !decimal.TryParse(coinValueStr, out decimal coinValueInEuros))
+        if (string.IsNullOrEmpty(coinValueStr) ||
+            !decimal.TryParse(coinValueStr, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal coinValueInEuros))
         {
             throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
         }

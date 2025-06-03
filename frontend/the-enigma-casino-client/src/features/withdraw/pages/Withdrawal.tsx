@@ -187,10 +187,9 @@ const Withdrawal: React.FC = () => {
             disabled={isConverted}
             placeholder=""
             className={`peer w-full py-4 pl-3 pr-3 text-lg border-2 rounded-md transition-all
-              ${
-                isConverted
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-gray-100 text-white border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-gray-50"
+              ${isConverted
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-gray-100 text-white border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-gray-50"
               }`}
           />
           <span className={classes.label}>Cantidad de Fichas</span>
@@ -202,7 +201,7 @@ const Withdrawal: React.FC = () => {
             <>
               <div className="flex justify-center items-center gap-2">
                 <p className="text-4xl font-bold text-white">
-                  {conversionResult.euros.toFixed(2)}
+                  {conversionResult.euros.toFixed(2).replace(".", ",")}
                 </p>
                 <img
                   src="/svg/euro.svg"
@@ -213,7 +212,7 @@ const Withdrawal: React.FC = () => {
 
               <div className="flex justify-center items-center gap-2">
                 <p className="text-4xl font-bold text-white">
-                  {conversionResult.eth.toFixed(6)} ETH
+                  {conversionResult.eth.toFixed(6).replace(".", ",")} ETH
                 </p>
                 <img
                   src="/svg/ethereum.svg"
@@ -238,10 +237,10 @@ const Withdrawal: React.FC = () => {
           {isConverting
             ? "Convirtiendo..."
             : loading
-            ? "Procesando Retiro..."
-            : isConverted
-            ? "Realizar Retirada"
-            : "Realizar Conversión"}
+              ? "Procesando Retiro..."
+              : isConverted
+                ? "Realizar Retirada"
+                : "Realizar Conversión"}
         </Button>
       </div>
     </div>

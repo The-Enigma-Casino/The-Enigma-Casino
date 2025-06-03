@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "→ Restaurando .env.production del frontend"
-
-cd /var/www/theenigmacasino || exit 1
-mv /tmp/frontend-env.production .env.production || true
+echo "📦 Instalando frontend en /var/www/theenigmacasino..."
+sudo rm -rf /var/www/theenigmacasino/*
+sudo cp -r build/* /var/www/theenigmacasino/
+sudo chown -R www-data:www-data /var/www/theenigmacasino

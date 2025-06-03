@@ -35,10 +35,12 @@ jobs:
           npm ci
           npm run build
 
-      - name: Empaquetar frontend 1
+      - name: Empaquetar frontend 1 con appspec.yml y scripts
         run: |
-          mkdir -p deploy/frontend1
-          cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend1/
+          mkdir -p deploy/frontend1/build
+          cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend1/build/
+          cp frontend/the-enigma-casino-client/appspec.yml deploy/frontend1/
+          cp -r frontend/the-enigma-casino-client/scripts deploy/frontend1/
           cd deploy/frontend1
           zip -r ../../frontend1-deploy.zip ./*
 
@@ -57,10 +59,12 @@ jobs:
         working-directory: frontend/the-enigma-casino-client
         run: npm run build
 
-      - name: Empaquetar frontend 2
+      - name: Empaquetar frontend 2 con appspec.yml y scripts
         run: |
-          mkdir -p deploy/frontend2
-          cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend2/
+          mkdir -p deploy/frontend2/build
+          cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend2/build/
+          cp frontend/the-enigma-casino-client/appspec.yml deploy/frontend2/
+          cp -r frontend/the-enigma-casino-client/scripts deploy/frontend2/
           cd deploy/frontend2
           zip -r ../../frontend2-deploy.zip ./*
 
@@ -80,47 +84,58 @@ jobs:
         working-directory: backend/the-enigma-casino-server
         run: dotnet publish -c Release -o ../../deploy/backend/publish
 
-      - name: Empaquetar backend
+      - name: Empaquetar backend con appspec.yml y scripts
         run: |
+          cp backend/the-enigma-casino-server/appspec.yml deploy/backend/
+          cp -r backend/the-enigma-casino-server/scripts deploy/backend/
           cd deploy/backend
           zip -r ../../backend-deploy.zip ./*
 
       ########################################
-      # 🔹 SUBIR A SERVIDORES
+      # 🔐 CONFIGURAR AWS
       ########################################
-      - name: Subir artefactos a EC2 vía SFTP
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      ########################################
+      # 🚀 SUBIR ZIPs A S3
+      ########################################
+      - name: Subir artefactos a S3
         run: |
-          echo "$EC2_PRIVATE_KEY" > ec2_key.pem
-          chmod 600 ec2_key.pem
-
-          # === BACKEND ===
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no backend-deploy.zip user-deploy@${{ secrets.BACKEND_IP }}:/home/user-deploy/zips/
-
-          # === FRONTEND 1 ===
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend1-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_1 }}:/home/user-deploy/zips/frontend-deploy.zip
-
-          # === FRONTEND 2 ===
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend2-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_2 }}:/home/user-deploy/zips/frontend-deploy.zip
-        env:
-          EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+          aws s3 cp frontend1-deploy.zip s3://${{ secrets.S3_BUCKET }}/frontend1-deploy.zip
+          aws s3 cp frontend2-deploy.zip s3://${{ secrets.S3_BUCKET }}/frontend2-deploy.zip
+          aws s3 cp backend-deploy.zip s3://${{ secrets.S3_BUCKET }}/backend-deploy.zip
 
       ########################################
-      # 🔹 Artefactos manuales (opcional)
+      # 🚀 CREAR DEPLOYMENTS EN CODEDEPLOY
       ########################################
-      - name: Publicar artefactos manuales
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-deploy
-          path: backend-deploy.zip
+      - name: Desplegar backend
+        run: |
+          aws deploy create-deployment \
+            --application-name EnigmaBackendApp \
+            --deployment-group-name EnigmaBackendGroup \
+            --s3-location bucket=${{ secrets.S3_BUCKET }},bundleType=zip,key=backend-deploy.zip \
+            --file-exists-behavior OVERWRITE \
+            --deployment-config-name CodeDeployDefault.AllAtOnce
 
-      - name: Publicar frontend 1
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend1-deploy
-          path: frontend1-deploy.zip
+      - name: Desplegar frontend 1
+        run: |
+          aws deploy create-deployment \
+            --application-name EnigmaFrontendApp1 \
+            --deployment-group-name EnigmaFrontendGroup1 \
+            --s3-location bucket=${{ secrets.S3_BUCKET }},bundleType=zip,key=frontend1-deploy.zip \
+            --file-exists-behavior OVERWRITE \
+            --deployment-config-name CodeDeployDefault.AllAtOnce
 
-      - name: Publicar frontend 2
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend2-deploy
-          path: frontend2-deploy.zip
+      - name: Desplegar frontend 2
+        run: |
+          aws deploy create-deployment \
+            --application-name EnigmaFrontendApp2 \
+            --deployment-group-name EnigmaFrontendGroup2 \
+            --s3-location bucket=${{ secrets.S3_BUCKET }},bundleType=zip,key=frontend2-deploy.zip \
+            --file-exists-behavior OVERWRITE \
+            --deployment-config-name CodeDeployDefault.AllAtOnce

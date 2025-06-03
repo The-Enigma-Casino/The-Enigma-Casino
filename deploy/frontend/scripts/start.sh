@@ -1,2 +1,4 @@
 #!/bin/bash
-echo "→ Frontend servido por nginx, no se lanza proceso."
+echo "🚀 Iniciando Nginx..."
+sudo systemctl start nginx
+el ba

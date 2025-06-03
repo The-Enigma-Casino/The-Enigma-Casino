@@ -1,10 +1,6 @@
 version: 0.0
 os: linux
 
-files:
-  - source: publish/
-    destination: /home/ubuntu/backend-code-deploy/
-
 hooks:
   BeforeInstall:
     - location: scripts/stop.sh

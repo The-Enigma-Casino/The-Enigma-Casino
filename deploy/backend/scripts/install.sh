@@ -1,17 +1,14 @@
 #!/bin/bash
-echo "→ Preparando entorno backend"
 
-cd /home/ubuntu/backend-code-deploy || exit 1
+ZIP_DIR="$(pwd)"
+TARGET_DIR="/home/ubuntu/backend-code-deploy"
 
-mv /tmp/.env.production . || true
-mv /tmp/credentials.json . || true
-mv /tmp/tokens ./ || true
+echo "📦 Instalando nueva versión del backend..."
 
-if [ -f ".env.production" ]; then
-  echo "→ Cargando variables de entorno..."
-  set -o allexport
-  source .env.production
-  set +o allexport
-else
-  echo "⚠️ No se encontró .env.production en /home/ubuntu/backend-code-deploy"
-fi
+# Solo borramos contenido generado (build), no archivos persistentes
+rm -rf "$TARGET_DIR/bin" "$TARGET_DIR/obj" "$TARGET_DIR/wwwroot"
+mkdir -p "$TARGET_DIR"
+
+cp -r "$ZIP_DIR/publish/"* "$TARGET_DIR"
+
+echo "✅ Código actualizado sin borrar variables ni configuraciones."

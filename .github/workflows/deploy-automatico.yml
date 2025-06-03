@@ -114,3 +114,134 @@
 #             --deployment-group-name EnigmaFrontendGroup \
 #             --s3-location bucket=enigma-deployments,key=frontend-deploy.zip,bundleType=zip \
 #             --deployment-config-name CodeDeployDefault.AllAtOnce
+
+
+
+# otra version
+
+# name: Deploy Enigma Casino
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout del código
+#         uses: actions/checkout@v3
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 18
+
+#       ########################################
+#       # 🔹 FRONTEND 1
+#       ########################################
+#       - name: Generar .env.production para Frontend 1
+#         working-directory: frontend/the-enigma-casino-client
+#         run: |
+#           echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production
+#           echo "VITE_WS_BASE_URL=${{ secrets.VITE_WS_BASE_URL }}" >> .env.production
+#           echo "VITE_STRIPE_PUBLIC_KEY=${{ secrets.VITE_STRIPE_PUBLIC_KEY }}" >> .env.production
+#           echo "VITE_DEPLOY_ENV=aws-frontend-1" >> .env.production
+
+#       - name: Build Frontend 1
+#         working-directory: frontend/the-enigma-casino-client
+#         run: |
+#           npm ci
+#           npm run build
+
+#       - name: Empaquetar frontend 1
+#         run: |
+#           mkdir -p deploy/frontend1
+#           cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend1/
+#           cd deploy/frontend1
+#           zip -r ../../frontend1-deploy.zip ./*
+
+#       ########################################
+#       # 🔹 FRONTEND 2
+#       ########################################
+#       - name: Generar .env.production para Frontend 2
+#         working-directory: frontend/the-enigma-casino-client
+#         run: |
+#           echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production
+#           echo "VITE_WS_BASE_URL=${{ secrets.VITE_WS_BASE_URL }}" >> .env.production
+#           echo "VITE_STRIPE_PUBLIC_KEY=${{ secrets.VITE_STRIPE_PUBLIC_KEY }}" >> .env.production
+#           echo "VITE_DEPLOY_ENV=aws-frontend-2" >> .env.production
+
+#       - name: Build Frontend 2
+#         working-directory: frontend/the-enigma-casino-client
+#         run: npm run build
+
+#       - name: Empaquetar frontend 2
+#         run: |
+#           mkdir -p deploy/frontend2
+#           cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend2/
+#           cd deploy/frontend2
+#           zip -r ../../frontend2-deploy.zip ./*
+
+#       ########################################
+#       # 🔹 BACKEND
+#       ########################################
+#       - name: Setup .NET SDK
+#         uses: actions/setup-dotnet@v3
+#         with:
+#           dotnet-version: 8.0.x
+
+#       - name: Restaurar dependencias backend
+#         working-directory: backend/the-enigma-casino-server
+#         run: dotnet restore
+
+#       - name: Compilar y publicar backend
+#         working-directory: backend/the-enigma-casino-server
+#         run: dotnet publish -c Release -o ../../deploy/backend/publish
+
+#       - name: Empaquetar backend
+#         run: |
+#           cd deploy/backend
+#           zip -r ../../backend-deploy.zip ./*
+
+#       ########################################
+#       # 🔹 SUBIR A SERVIDORES
+#       ########################################
+#       - name: Subir artefactos a EC2 vía SFTP
+#         run: |
+#           echo "$EC2_PRIVATE_KEY" > ec2_key.pem
+#           chmod 600 ec2_key.pem
+
+#           # === BACKEND ===
+#           scp -i ec2_key.pem -o StrictHostKeyChecking=no backend-deploy.zip user-deploy@${{ secrets.BACKEND_IP }}:/home/user-deploy/zips/
+
+#           # === FRONTEND 1 ===
+#           scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend1-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_1 }}:/home/user-deploy/zips/frontend-deploy.zip
+
+#           # === FRONTEND 2 ===
+#           scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend2-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_2 }}:/home/user-deploy/zips/frontend-deploy.zip
+#         env:
+#           EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+
+#       ########################################
+#       # 🔹 Artefactos manuales (opcional)
+#       ########################################
+#       - name: Publicar artefactos manuales
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: backend-deploy
+#           path: backend-deploy.zip
+
+#       - name: Publicar frontend 1
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: frontend1-deploy
+#           path: frontend1-deploy.zip
+
+#       - name: Publicar frontend 2
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: frontend2-deploy
+#           path: frontend2-deploy.zip

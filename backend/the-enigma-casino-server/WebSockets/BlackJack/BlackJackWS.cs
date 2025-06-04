@@ -652,28 +652,39 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
                 await ((IWebSocketSender)this).SendToUserAsync(p.UserId.ToString(), roundResultPayload);
             }
 
+            foreach (var p in match.Players)
+            {
+                await ((IWebSocketSender)this).SendToUserAsync(p.UserId.ToString(), roundResultPayload);
+            }
+
             // ⏱️ Esperar 20 segundos antes de cerrar el match
             Console.WriteLine("⏱️ Iniciando temporizador de fin de ronda...");
 
             if (ActiveGameSessionStore.TryGet(tableId, out var session))
             {
-                Console.WriteLine($"🕰️ [DEBUG] StartPostMatchTimer iniciado para mesa {tableId} en {DateTime.Now:HH:mm:ss.fff}");
+                {
+                    var gameMatchWS = GetScopedService<GameMatchWS>(out var scope);
+                    using (scope)
+                    {
+                        Console.WriteLine($"🧾 [GameMatchWS] FinalizeMatchAsync llamado inmediatamente para mesa {tableId}");
+                        await gameMatchWS.FinalizeMatchAsync(tableId);
+                    }
+                }
 
                 session.StartPostMatchTimer(20_000, async () =>
                 {
                     var gameMatchWS = GetScopedService<GameMatchWS>(out var scope);
                     using (scope)
                     {
-                        Console.WriteLine($"🧾 [GameMatchWS] EndMatchForAllPlayersAsync llamado para mesa {tableId} (desde temporizador)");
-                        await gameMatchWS.FinalizeAndEvaluateMatchAsync(tableId);
+                        Console.WriteLine($"🧾 [GameMatchWS] EvaluatePostMatchAsync llamado tras delay para mesa {tableId}");
+                        await gameMatchWS.EvaluatePostMatchAsync(tableId);
                     }
                 });
-            }
 
+            }
             Console.WriteLine("✅ Ronda evaluada. Resultados enviados y partida finalizada.");
         }
     }
-
 
     private async Task BroadcastGameStateAsync(Match match, BlackjackGame blackjackGame)
     {

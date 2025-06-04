@@ -10,9 +10,11 @@ import "./features/friends/stores/friends.watchers";
 import "./features/friends/stores/friends.samples";
 import { useEffect } from "react";
 import { connectSocket } from "./websocket/store/wsIndex";
+import { initAuth } from "./features/auth/utils/initAuth";
 
 function App() {
   useEffect(() => {
+    initAuth(); 
     connectSocket();
   }, []);
 

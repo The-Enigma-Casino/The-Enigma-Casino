@@ -171,7 +171,7 @@ public class RouletteGame
                 Color = LastColor,
                 Bet = bet,
                 Won = won,
-                Payout = payout,
+                Payout = won ? payout + bet.Amount : 0,
                 RemainingCoins = player.User.Coins
             });
         }

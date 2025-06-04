@@ -11,8 +11,10 @@ public class PokerJoinHelper : IGameJoinHelper
     public bool ShouldSendMatchReady(Player player, Match match)
     {
         return player.PlayerState == PlayerState.Spectating
-               && match.Players.All(p => p.Hand == null || p.Hand.Cards.Count == 0);
+               && match.MatchState == MatchState.InProgress
+               && match.Players.Any(p => p.UserId == player.UserId);
     }
+
 
     public async Task NotifyPlayerCanJoinCurrentMatchIfPossible(int userId, Table table, IWebSocketSender sender)
     {
@@ -36,11 +38,18 @@ public class PokerJoinHelper : IGameJoinHelper
         }
     }
 
-    public Task NotifyPlayerJoinedNextMatch(int userId, IWebSocketSender sender)
+    public async Task NotifyPlayerJoinedNextMatch(int userId, IWebSocketSender sender)
     {
-        // En Poker aún no se envía nada en este punto
-        return Task.CompletedTask;
+        Console.WriteLine($"📩 [PokerJoinHelper] Enviando 'match_ready' a jugador promovido (userId={userId})");
+
+        await sender.SendToUserAsync(userId.ToString(), new
+        {
+            type = "poker",
+            action = "match_ready",
+            message = "¡La siguiente ronda de Poker comienza y estás dentro! Prepárate para jugar."
+        });
     }
+
 
     public void ResetPlayerStateForMatch(Player player)
     {

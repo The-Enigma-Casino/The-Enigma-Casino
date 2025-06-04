@@ -117,6 +117,7 @@ jobs:
           echo "VITE_DEPLOY_ENV=aws-frontend-1" >> .env.production
 
       - name: Build frontend 1
+        working-directory: frontend/the-enigma-casino-client
         run: |
           npm install
           npm run build
@@ -135,6 +136,7 @@ jobs:
           echo "VITE_DEPLOY_ENV=aws-frontend-2" >> .env.production
 
       - name: Build frontend 2
+        working-directory: frontend/the-enigma-casino-client
         run: |
           npm run build
 

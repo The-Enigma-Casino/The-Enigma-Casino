@@ -1,130 +1,133 @@
 name: Deploy Enigma Casino
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build-backend:
     runs-on: ubuntu-latest
-
+    outputs:
+      zip-name: enigma-backend.zip
     steps:
-      - name: Checkout del código
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish backend
+        run: |
+          dotnet publish ./the-enigma-casino-server/the-enigma-casino-server.csproj \
+            -c Release -o publish
+
+      - name: Crear ZIP para CodeDeploy
+        run: |
+          zip -r enigma-backend.zip appspec.yml install.sh start.sh stop.sh publish/
+
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Subir artefacto a S3
+        run: |
+          aws s3 cp enigma-backend.zip s3://enigma-deployments/enigma-backend.zip
+
+  deploy-backend:
+    needs: build-backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lanzar despliegue CodeDeploy (backend)
+        run: |
+          aws deploy create-deployment \
+            --application-name enigma-backend \
+            --deployment-group-name BackendGroup \
+            --s3-location bucket=enigma-deployments,key=enigma-backend.zip,bundleType=zip \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --description "Despliegue backend desde GitHub"
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    outputs:
+      zip-name1: enigma-frontend1.zip
+      zip-name2: enigma-frontend2.zip
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Instalar Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      ########################################
-      # 🔹 FRONTEND 1
-      ########################################
-      - name: Generar .env.production para Frontend 1
-        working-directory: frontend/the-enigma-casino-client
+      - name: Generar .env.production para frontend 1
         run: |
-          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env.production
           echo "VITE_WS_BASE_URL=${{ secrets.VITE_WS_BASE_URL }}" >> .env.production
           echo "VITE_STRIPE_PUBLIC_KEY=${{ secrets.VITE_STRIPE_PUBLIC_KEY }}" >> .env.production
           echo "VITE_DEPLOY_ENV=aws-frontend-1" >> .env.production
 
-      - name: Build Frontend 1
-        working-directory: frontend/the-enigma-casino-client
+      - name: Build frontend 1
         run: |
           npm ci
           npm run build
 
-      - name: Empaquetar frontend 1
+      - name: Preparar ZIP Frontend 1
         run: |
-          mkdir -p deploy/frontend1/build
-          cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend1/build/
-          cp deploy/frontend/appspec.yml deploy/frontend1/
-          cp -r deploy/frontend/scripts deploy/frontend1/scripts
-          cd deploy/frontend1
-          zip -r ../../frontend1-deploy.zip ./*
+          zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh build/
 
-      ########################################
-      # 🔹 FRONTEND 2
-      ########################################
-      - name: Generar .env.production para Frontend 2
-        working-directory: frontend/the-enigma-casino-client
+      - name: Guardar build y regenerar .env.production para frontend 2
         run: |
+          mv build build1
           echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production
           echo "VITE_WS_BASE_URL=${{ secrets.VITE_WS_BASE_URL }}" >> .env.production
           echo "VITE_STRIPE_PUBLIC_KEY=${{ secrets.VITE_STRIPE_PUBLIC_KEY }}" >> .env.production
           echo "VITE_DEPLOY_ENV=aws-frontend-2" >> .env.production
 
-      - name: Build Frontend 2
-        working-directory: frontend/the-enigma-casino-client
-        run: npm run build
-
-      - name: Empaquetar frontend 2
+      - name: Build frontend 2
         run: |
-          mkdir -p deploy/frontend2/build
-          cp -r frontend/the-enigma-casino-client/dist/* deploy/frontend2/build/
-          cp deploy/frontend/appspec.yml deploy/frontend2/
-          cp -r deploy/frontend/scripts deploy/frontend2/scripts
-          cd deploy/frontend2
-          zip -r ../../frontend2-deploy.zip ./*
+          npm run build
 
-      ########################################
-      # 🔹 BACKEND
-      ########################################
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Restaurar dependencias backend
-        working-directory: backend/the-enigma-casino-server
-        run: dotnet restore
-
-      - name: Compilar y publicar backend
-        working-directory: backend/the-enigma-casino-server
-        run: dotnet publish -c Release -o ../../deploy/backend/publish
-
-      - name: Empaquetar backend
+      - name: Preparar ZIP Frontend 2
         run: |
-          cd deploy/backend
-          zip -r ../../backend-deploy.zip ./*
+          zip -r enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh build/
 
-      ########################################
-      # 🔹 SUBIR A SERVIDORES
-      ########################################
-      - name: Subir artefactos a EC2 vía SFTP
+      - name: Subir ZIP Frontend 1 a S3
         run: |
-          echo "$EC2_PRIVATE_KEY" > ec2_key.pem
-          chmod 600 ec2_key.pem
+          mv build1 build
+          aws s3 cp enigma-frontend1.zip s3://enigma-deployments/enigma-frontend1.zip
 
-          # === BACKEND ===
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no backend-deploy.zip user-deploy@${{ secrets.BACKEND_IP }}:/home/user-deploy/zips/
+      - name: Subir ZIP Frontend 2 a S3
+        run: |
+          aws s3 cp enigma-frontend2.zip s3://enigma-deployments/enigma-frontend2.zip
 
-          # === FRONTEND 1 ===
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend1-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_1 }}:/home/user-deploy/zips/frontend-deploy.zip
+  deploy-frontend1:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lanzar despliegue CodeDeploy (frontend 1)
+        run: |
+          aws deploy create-deployment \
+            --application-name enigma-frontend-1 \
+            --deployment-group-name FrontendGroup1 \
+            --s3-location bucket=enigma-deployments,key=enigma-frontend1.zip,bundleType=zip \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --description "Despliegue frontend 1"
 
-          # === FRONTEND 2 ===
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no frontend2-deploy.zip user-deploy@${{ secrets.FRONTEND_IP_2 }}:/home/user-deploy/zips/frontend-deploy.zip
-        env:
-          EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
-
-      ########################################
-      # 🔹 Artefactos manuales (opcional)
-      ########################################
-      - name: Publicar artefactos backend
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-deploy
-          path: backend-deploy.zip
-
-      - name: Publicar frontend 1
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend1-deploy
-          path: frontend1-deploy.zip
-
-      - name: Publicar frontend 2
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend2-deploy
-          path: frontend2-deploy.zip
+  deploy-frontend2:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lanzar despliegue CodeDeploy (frontend 2)
+        run: |
+          aws deploy create-deployment \
+            --application-name enigma-frontend-2 \
+            --deployment-group-name FrontendGroup2 \
+            --s3-location bucket=enigma-deployments,key=enigma-frontend2.zip,bundleType=zip \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --description "Despliegue frontend 2"

@@ -124,6 +124,11 @@ jobs:
 
       - name: Preparar ZIP Frontend 1
         run: |
+          cp deploy/frontend/appspec.yml frontend/the-enigma-casino-client/
+          cp deploy/frontend/install.sh frontend/the-enigma-casino-client/
+          cp deploy/frontend/start.sh frontend/the-enigma-casino-client/
+          cp deploy/frontend/stop.sh frontend/the-enigma-casino-client/
+          cd frontend/the-enigma-casino-client
           zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh build/
 
       - name: Guardar build y regenerar .env.production para frontend 2
@@ -142,6 +147,11 @@ jobs:
 
       - name: Preparar ZIP Frontend 2
         run: |
+          cp deploy/frontend/appspec.yml frontend/the-enigma-casino-client/
+          cp deploy/frontend/install.sh frontend/the-enigma-casino-client/
+          cp deploy/frontend/start.sh frontend/the-enigma-casino-client/
+          cp deploy/frontend/stop.sh frontend/the-enigma-casino-client/
+          cd frontend/the-enigma-casino-client
           zip -r enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh build/
 
       - name: Subir ZIP Frontend 1 a S3

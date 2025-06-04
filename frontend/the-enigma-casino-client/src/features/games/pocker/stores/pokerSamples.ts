@@ -1,7 +1,7 @@
 import { sample } from "effector";
 import { $currentTableId } from "../../../gameTables/store/tablesIndex";
 import { messageSent } from "../../../../websocket/store/wsIndex";
-import { removedByInactivity, sendPokerAction } from "./pokerIndex";
+import { matchReadyReceived, removedByInactivity, sendPokerAction } from "./pokerIndex";
 import toast from "react-hot-toast";
 import { navigateTo } from "../../shared/router/navigateFx";
 
@@ -35,4 +35,10 @@ sample({
     return "/";
   },
   target: navigateTo
+});
+
+sample({
+  clock: matchReadyReceived,
+  fn: (tableId) => `/game/poker/${tableId}`,
+  target: navigateTo,
 });

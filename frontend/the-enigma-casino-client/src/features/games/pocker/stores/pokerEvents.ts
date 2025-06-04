@@ -29,3 +29,5 @@ export const resetPokerGame = createEvent();
 export const removedByInactivity = createEvent();
 
 export const opponentLeftReceived = createEvent();
+
+export const matchReadyReceived = createEvent<number>();

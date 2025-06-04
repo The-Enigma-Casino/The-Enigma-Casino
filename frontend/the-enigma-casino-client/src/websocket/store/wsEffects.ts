@@ -62,3 +62,9 @@ export const sendMessageFx = createEffect(
     }
   }
 );
+
+socketMessageReceived.watch((data) => {
+  if (data.type === "poker") {
+    console.log("📩 [WS] Mensaje de poker:", data.action, data);
+  }
+});

@@ -124,15 +124,15 @@ jobs:
           echo "📁 Contenido tras build:"
           ls -l
           echo "✅ ¿Existe build?"; [ -d build ] && echo "🟢 Sí existe" || echo "🔴 No existe"
-          mv build ../build1
+          mv dist ../dist1
 
       - name: Preparar ZIP Frontend 1
         run: |
           cp deploy/frontend/appspec.yml frontend/the-enigma-casino-client/
           cp deploy/frontend/scripts/*.sh frontend/the-enigma-casino-client/
-          mv frontend/build1 frontend/the-enigma-casino-client/build
+          mv frontend/dist1 frontend/the-enigma-casino-client/dist
           cd frontend/the-enigma-casino-client
-          zip -r ../../../enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh build/
+          zip -r ../../../enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh dist/
 
 
       - name: Guardar build y regenerar .env.production para frontend 2
@@ -147,7 +147,7 @@ jobs:
         working-directory: frontend/the-enigma-casino-client
         run: |
           npm run build
-          mv build ../build1
+          mv dist ../dist1
 
       - name: Preparar ZIP Frontend 2
         run: |
@@ -156,7 +156,7 @@ jobs:
           cp deploy/frontend/scripts/start.sh frontend/the-enigma-casino-client/
           cp deploy/frontend/scripts/stop.sh frontend/the-enigma-casino-client/
           cd frontend/the-enigma-casino-client
-          zip -r ../../../enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh build/
+          zip -r ../../../enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh dist/
 
 
       - name: Subir ZIP Frontend 1 a S3

@@ -122,6 +122,9 @@ jobs:
         run: |
           npm install
           npm run build
+          echo "📁 Contenido tras build:"
+          ls -l
+          echo "✅ ¿Existe build?"; [ -d build ] && echo "🟢 Sí existe" || echo "🔴 No existe"
 
       - name: Preparar ZIP Frontend 1
         run: |

@@ -129,8 +129,8 @@ jobs:
           cp deploy/frontend/scripts/*.sh frontend/the-enigma-casino-client/
           mv dist_frontend1 frontend/the-enigma-casino-client/dist
           cd frontend/the-enigma-casino-client
-          zip -r ../../../enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh dist/
-
+          zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh dist/
+          mv enigma-frontend1.zip ../../../
 
       - name: Guardar build y regenerar .env.production para frontend 2
         working-directory: frontend/the-enigma-casino-client
@@ -152,8 +152,8 @@ jobs:
           cp deploy/frontend/scripts/*.sh frontend/the-enigma-casino-client/
           mv dist_frontend2 frontend/the-enigma-casino-client/dist
           cd frontend/the-enigma-casino-client
-          zip -r ../../../enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh dist/
-
+          zip -r enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh dist/
+          mv enigma-frontend2.zip ../../../
 
       - name: Subir ZIP Frontend 1 a S3
         run: |

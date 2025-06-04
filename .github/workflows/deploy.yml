@@ -131,6 +131,9 @@ jobs:
           cd frontend/the-enigma-casino-client
           zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh dist/
           mv enigma-frontend1.zip ../../../
+          echo "📦 ZIP movido a raíz:"
+          ls -l ../../../
+
 
       - name: Guardar build y regenerar .env.production para frontend 2
         working-directory: frontend/the-enigma-casino-client
@@ -157,6 +160,8 @@ jobs:
 
       - name: Subir ZIP Frontend 1 a S3
         run: |
+          echo "📁 Archivos en raíz antes del upload:"
+          ls -l
           aws s3 cp enigma-frontend1.zip s3://enigma-deployments/enigma-frontend1.zip
 
       - name: Subir ZIP Frontend 2 a S3

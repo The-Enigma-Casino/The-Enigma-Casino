@@ -28,7 +28,7 @@ jobs:
 
       - name: Crear ZIP para CodeDeploy
         run: |
-          zip -r enigma-backend.zip appspec.yml install.sh start.sh stop.sh publish/
+          zip -r ../../enigma-backend.zip appspec.yml install.sh start.sh stop.sh publish/
 
       - name: Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v2

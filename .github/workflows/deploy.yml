@@ -121,10 +121,7 @@ jobs:
         run: |
           npm install
           npm run build
-          echo "📁 Contenido tras build:"
-          ls -l
-          echo "✅ ¿Existe build?"; [ -d build ] && echo "🟢 Sí existe" || echo "🔴 No existe"
-          mv dist ../dist1
+          mv dist ../../dist1
 
       - name: Preparar ZIP Frontend 1
         run: |
@@ -147,7 +144,7 @@ jobs:
         working-directory: frontend/the-enigma-casino-client
         run: |
           npm run build
-          mv dist ../dist1
+          mv dist ../../dist1
 
       - name: Preparar ZIP Frontend 2
         run: |

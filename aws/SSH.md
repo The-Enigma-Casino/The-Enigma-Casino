@@ -4,17 +4,19 @@ Durante el desarrollo del proyecto, se utilizaron diferentes instancias EC2 en A
 
 | Alias SSH  | Rol                    | Descripción                                                 |
 |------------|------------------------|-------------------------------------------------------------|
-| `balancer` | Balanceador de carga   | Encargado de distribuir el tráfico entre los frontends      |
+| `balancer-front` | Balanceador de carga   | Encargado de distribuir el tráfico entre los frontends      |
 | `front`    | Frontend principal     | Instancia que sirve la aplicación React                     |
 | `front2`   | Frontend réplica       | Segunda instancia idéntica al frontend para balanceo        |
+| `balancer-back` | Balanceador de carga   | Encargado de distribuir el tráfico entre los backends      |
 | `back`     | Backend (API)          | Instancia que ejecuta el servidor backend desarrollado en C#|
+| `back2`     | Backend (API)          | Instancia que ejecuta el servidor backend desarrollado en C#|
 
 ### 🧭 Configuración local sugerida
 
 Para facilitar la conexión vía SSH durante el desarrollo, se puede definir un archivo `~/.ssh/config` con la siguiente estructura:
 
 ```sshconfig
-Host balancer
+Host balancer-front
   HostName <ip-del-balanceador>
   User ubuntu
   IdentityFile <ruta-a-tu-clave.pem>
@@ -29,7 +31,18 @@ Host front2
   User ubuntu
   IdentityFile <ruta-a-tu-clave.pem>
 
+Host balancer-back
+  HostName <ip-del-balanceador>
+  User ubuntu
+  IdentityFile <ruta-a-tu-clave.pem>
+
 Host back
   HostName <ip-del-backend>
   User ubuntu
   IdentityFile <ruta-a-tu-clave.pem>
+
+Host back2
+  HostName <ip-del-backend>
+  User ubuntu
+  IdentityFile <ruta-a-tu-clave.pem>
+```

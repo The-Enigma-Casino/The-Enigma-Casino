@@ -57,7 +57,9 @@ jobs:
             --deployment-group-name BackendGroup \
             --s3-location bucket=enigma-deployments,key=enigma-backend.zip,bundleType=zip \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --description "Despliegue backend desde GitHub"
+            --description "Despliegue backend desde GitHub" \
+            --region ${{ secrets.AWS_REGION }}
+
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -128,6 +130,8 @@ jobs:
             --s3-location bucket=enigma-deployments,key=enigma-frontend1.zip,bundleType=zip \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --description "Despliegue frontend 1"
+            --region ${{ secrets.AWS_REGION }}
+
 
   deploy-frontend2:
     needs: build-frontend
@@ -141,3 +145,5 @@ jobs:
             --s3-location bucket=enigma-deployments,key=enigma-frontend2.zip,bundleType=zip \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --description "Despliegue frontend 2"
+            --region ${{ secrets.AWS_REGION }}
+

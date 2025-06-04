@@ -118,7 +118,7 @@ jobs:
 
       - name: Build frontend 1
         run: |
-          npm ci
+          npm install
           npm run build
 
       - name: Preparar ZIP Frontend 1

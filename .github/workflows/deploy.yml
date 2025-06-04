@@ -125,16 +125,16 @@ jobs:
       - name: Preparar ZIP Frontend 1
         run: |
           cp deploy/frontend/appspec.yml frontend/the-enigma-casino-client/
-          cp deploy/frontend/scripts/install.sh frontend/the-enigma-casino-client/
-          cp deploy/frontend/scripts/start.sh frontend/the-enigma-casino-client/
-          cp deploy/frontend/scripts/stop.sh frontend/the-enigma-casino-client/
+          cp deploy/frontend/scripts/*.sh frontend/the-enigma-casino-client/
+          mv frontend/build1 frontend/the-enigma-casino-client/build
           cd frontend/the-enigma-casino-client
-          zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh build/
+          zip -r ../../../enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh build/
+
 
       - name: Guardar build y regenerar .env.production para frontend 2
         working-directory: frontend/the-enigma-casino-client
         run: |
-          mv build build1
+          mv build ../build1
           echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production
           echo "VITE_WS_BASE_URL=${{ secrets.VITE_WS_BASE_URL }}" >> .env.production
           echo "VITE_STRIPE_PUBLIC_KEY=${{ secrets.VITE_STRIPE_PUBLIC_KEY }}" >> .env.production
@@ -152,11 +152,11 @@ jobs:
           cp deploy/frontend/scripts/start.sh frontend/the-enigma-casino-client/
           cp deploy/frontend/scripts/stop.sh frontend/the-enigma-casino-client/
           cd frontend/the-enigma-casino-client
-          zip -r enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh build/
+          zip -r ../../../enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh build/
+
 
       - name: Subir ZIP Frontend 1 a S3
         run: |
-          mv build1 build
           aws s3 cp enigma-frontend1.zip s3://enigma-deployments/enigma-frontend1.zip
 
       - name: Subir ZIP Frontend 2 a S3

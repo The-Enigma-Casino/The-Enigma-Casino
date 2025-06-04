@@ -46,7 +46,7 @@ jobs:
         run: |
           aws s3 cp enigma-backend.zip s3://enigma-deployments/enigma-backend.zip
 
-    deploy-backend:
+  deploy-backend:
     needs: build-backend
     runs-on: ubuntu-latest
     env:

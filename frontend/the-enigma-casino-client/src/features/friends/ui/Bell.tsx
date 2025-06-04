@@ -1,6 +1,6 @@
 import { useUnit } from "effector-react";
 import { $bellType } from "../stores/friends.store";
-
+import classes from "./Bell.module.css";
 
 
 export const Bell = () => {
@@ -10,5 +10,10 @@ export const Bell = () => {
   if (bellType === "new") icon = "/svg/bell-ringing.svg";
   if (bellType === "notification") icon = "/svg/notification-bell.svg";
 
-  return <img src={icon} alt="Notificaciones" className="w-18 h-18" />;
+  return <img src={icon} alt="Notificaciones" className={`w-18 h-18 ${bellType === "new"
+      ? classes.bellAnimate
+      : bellType === "notification"
+        ? classes.bellPulse
+        : ""
+    }`} />;
 };

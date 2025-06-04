@@ -9,9 +9,9 @@ interface ModalEditUserProps {
   onSave: () => void;
 }
 
-const ModalEditUser: React.FC<ModalEditUserProps> = ({ onCancel, onSave}) => {
+const ModalEditUser: React.FC<ModalEditUserProps> = ({ onCancel, onSave }) => {
   const { formData, handleChange, handleCountrySelect, handleSubmit } =
-    useEditForm(onCancel);
+    useEditForm(onSave);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
@@ -37,7 +37,7 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({ onCancel, onSave}) => {
             <strong>Nombre de Usuario:</strong>
             <Input
               type="text"
-              name="fullname"
+              name="fullName"
               id="fullname"
               placeholder="Nombre completo"
               value={formData.fullName}
@@ -94,7 +94,7 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({ onCancel, onSave}) => {
               Cancelar
             </Button>
 
-            <Button type="submit" variant="shortPlus" color="green" font="bold" onClick={onSave}>
+            <Button type="submit" variant="shortPlus" color="green" font="bold">
               Aceptar
             </Button>
           </div>

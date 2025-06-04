@@ -3,12 +3,13 @@
 ZIP_DIR="$(pwd)"
 TARGET_DIR="/home/ubuntu/backend-code-deploy"
 
-echo "📦 Instalando nueva versión del backend..."
+echo "📦 Instalando nueva versión del backend sin borrar archivos sensibles..."
 
-# Solo borramos contenido generado (build), no archivos persistentes
-rm -rf "$TARGET_DIR/bin" "$TARGET_DIR/obj" "$TARGET_DIR/wwwroot"
 mkdir -p "$TARGET_DIR"
 
-cp -r "$ZIP_DIR/publish/"* "$TARGET_DIR"
+rsync -av --exclude='.env.production' \
+          --exclude='credentials.json' \
+          --exclude='tokens' \
+          "$ZIP_DIR/publish/" "$TARGET_DIR/"
 
-echo "✅ Código actualizado sin borrar variables ni configuraciones."
+echo "✅ Backend actualizado con archivos sensibles preservados."

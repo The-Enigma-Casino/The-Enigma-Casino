@@ -27,7 +27,11 @@ jobs:
           dotnet publish -c Release -o ../../deploy/backend/publish
 
       - name: Crear ZIP para CodeDeploy
+        working-directory: deploy/backend
         run: |
+          cp scripts/install.sh .
+          cp scripts/start.sh .
+          cp scripts/stop.sh .
           zip -r ../../enigma-backend.zip appspec.yml install.sh start.sh stop.sh publish/
 
       - name: Configurar credenciales AWS

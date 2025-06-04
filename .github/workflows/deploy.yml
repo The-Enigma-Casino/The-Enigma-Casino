@@ -177,8 +177,44 @@ jobs:
         run: |
           aws s3 cp enigma-frontend2.zip s3://enigma-deployments/enigma-frontend2.zip
 
-  deploy-frontend1:
+
+  init-frontend1:
     needs: build-frontend
+    runs-on: ubuntu-latest
+    env:
+      CD_APP_NAME: "enigma-frontend-1"
+      CD_GROUP_NAME: "FrontendGroup1"
+      IAM_ROLE: ${{ secrets.IAM_ROLE }}
+      EC2_TAG_KEY: "Name"
+      EC2_TAG_VALUE: "frontend-instance-1"
+    steps:
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Crear aplicación y grupo de despliegue (frontend 1)
+        run: |
+          aws deploy get-application --application-name $CD_APP_NAME || \
+          aws deploy create-application \
+            --application-name $CD_APP_NAME \
+            --compute-platform "Server"
+
+          aws deploy get-deployment-group \
+            --application-name $CD_APP_NAME \
+            --deployment-group-name $CD_GROUP_NAME || \
+          aws deploy create-deployment-group \
+            --application-name $CD_APP_NAME \
+            --deployment-group-name $CD_GROUP_NAME \
+            --service-role-arn $IAM_ROLE \
+            --deployment-style deploymentType="IN_PLACE",deploymentOption="WITHOUT_TRAFFIC_CONTROL" \
+            --ec2-tag-filters Key=$EC2_TAG_KEY,Value=$EC2_TAG_VALUE,Type=KEY_AND_VALUE
+
+  deploy-frontend1:
+    needs: init-frontend1
     runs-on: ubuntu-latest
     steps:
       - name: Configurar credenciales AWS
@@ -199,8 +235,43 @@ jobs:
             --description "Despliegue frontend 1" \
             --region ${{ secrets.AWS_REGION }}
 
-  deploy-frontend2:
+  init-frontend2:
     needs: build-frontend
+    runs-on: ubuntu-latest
+    env:
+      CD_APP_NAME: "enigma-frontend-2"
+      CD_GROUP_NAME: "FrontendGroup2"
+      IAM_ROLE: ${{ secrets.IAM_ROLE }}
+      EC2_TAG_KEY: "Name"
+      EC2_TAG_VALUE: "frontend-instance-2"
+    steps:
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Crear aplicación y grupo de despliegue (frontend 2)
+        run: |
+          aws deploy get-application --application-name $CD_APP_NAME || \
+          aws deploy create-application \
+            --application-name $CD_APP_NAME \
+            --compute-platform "Server"
+
+          aws deploy get-deployment-group \
+            --application-name $CD_APP_NAME \
+            --deployment-group-name $CD_GROUP_NAME || \
+          aws deploy create-deployment-group \
+            --application-name $CD_APP_NAME \
+            --deployment-group-name $CD_GROUP_NAME \
+            --service-role-arn $IAM_ROLE \
+            --deployment-style deploymentType="IN_PLACE",deploymentOption="WITHOUT_TRAFFIC_CONTROL" \
+            --ec2-tag-filters Key=$EC2_TAG_KEY,Value=$EC2_TAG_VALUE,Type=KEY_AND_VALUE
+
+  deploy-frontend2:
+    needs: init-frontend2
     runs-on: ubuntu-latest
     steps:
       - name: Configurar credenciales AWS

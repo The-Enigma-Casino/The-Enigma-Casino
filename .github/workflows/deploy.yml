@@ -149,13 +149,15 @@ jobs:
           mv dist ../../dist_frontend2
 
       - name: Preparar ZIP Frontend 2
+        working-directory: frontend/the-enigma-casino-client
         run: |
-          cp deploy/frontend/appspec.yml frontend/the-enigma-casino-client/
-          cp deploy/frontend/scripts/*.sh frontend/the-enigma-casino-client/
-          mv dist_frontend2 frontend/the-enigma-casino-client/dist
-          cd frontend/the-enigma-casino-client
+          cp ../../deploy/frontend/appspec.yml .
+          cp ../../deploy/frontend/scripts/*.sh .
+          mv ../../dist_frontend2 dist
           zip -r enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh dist/
-          mv enigma-frontend2.zip ../../../
+          echo "📦 Archivos en cliente tras zip:"
+          ls -l
+          mv enigma-frontend2.zip ../../
 
       - name: Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v2

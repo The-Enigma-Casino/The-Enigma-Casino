@@ -1,7 +1,6 @@
 import Button from "../../ui/button/Button";
 import { useNavigate } from "react-router-dom";
 import {
-  $name,
   $token,
   loadName,
 } from "../../../features/auth/store/authStore";
@@ -10,8 +9,9 @@ import { useUnit } from "effector-react";
 import { USER_IMAGES } from "../../../config";
 import FriendsPanel from "../../../features/friends/components/layouts/FriendsPanel";
 import UserLiveCounter from "../../ui/userLive/UserLiveCounter";
-import { $userImage } from "../../../features/profile/store/profile/profileStores";
+import { $userImage, $userProfile } from "../../../features/profile/store/profile/profileStores";
 import { getUserImageFx } from "../../../features/profile/store/profile/profileEffects";
+import { loadUserProfile } from "../../../features/profile/store/profile/profileEvents";
 
 interface SidebarMenuProps {
   onOpenFriendsModal?: () => void;
@@ -19,13 +19,15 @@ interface SidebarMenuProps {
 
 function SidebarMenu({ onOpenFriendsModal }: SidebarMenuProps) {
   const token = useUnit($token);
-  const name = useUnit($name);
+  const profile = useUnit($userProfile);
+  const name = profile?.nickname;
   const userImage = useUnit($userImage);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadName();
     getUserImageFx();
+    loadUserProfile();
   }, [token]);
 
   const profileImage =

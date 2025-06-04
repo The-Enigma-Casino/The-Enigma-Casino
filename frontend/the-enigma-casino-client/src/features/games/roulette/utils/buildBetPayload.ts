@@ -1,6 +1,5 @@
 import { PlaceRouletteBetPayload } from "../types/placeRouletteBetPayload.type";
 
-
 // Función para construir la apuesta a enviar
 export function buildBetPayload(
   tableId: string,
@@ -31,16 +30,15 @@ export function buildBetPayload(
   if (key === "sector_6")
     return { tableId, amount, betType: "Dozen", dozen: 3 };
   if (key === "sector_1")
-    return { tableId, amount, betType: "Column", column: 1 };
+    return { tableId, amount, betType: "Column", column: 3 };
   if (key === "sector_2")
     return { tableId, amount, betType: "Column", column: 2 };
   if (key === "sector_3")
-    return { tableId, amount, betType: "Column", column: 3 };
+    return { tableId, amount, betType: "Column", column: 1 };
 
   console.warn("[Ruleta] Sector no reconocido:", key);
   return undefined;
 }
-
 
 export function mapBetLabelToKey(label: string): string {
   if (label.startsWith("Pleno al ")) {
@@ -57,9 +55,9 @@ export function mapBetLabelToKey(label: string): string {
     "Docena: 1": "sector_4",
     "Docena: 2": "sector_5",
     "Docena: 3": "sector_6",
-    "Columna: 1": "sector_1",
+    "Columna: 1": "sector_3",
     "Columna: 2": "sector_2",
-    "Columna: 3": "sector_3",
+    "Columna: 3": "sector_1",
   };
   return map[label as keyof typeof map] ?? label;
 }

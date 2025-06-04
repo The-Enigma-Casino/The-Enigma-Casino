@@ -1,6 +1,6 @@
 ![banner](https://github.com/The-Enigma-Casino/.github/blob/main/img/Portada.png?raw=true)
 
-# 🎰 The Enigma Casino – Frontend
+# The Enigma Casino – Frontend
 
 Este directorio contiene el código fuente del frontend principal de **The Enigma Casino**, una plataforma multijugador online con juegos de casino en tiempo real: **Blackjack**, **Póker**, **Ruleta**, y más.
 
@@ -102,6 +102,12 @@ npm run dev
 ├── tsconfig.json             # Configuración TypeScript
 └── vite.config.ts            # Configuración Vite
 ```
+
+---
+
+## 🌍 API externa utilizada
+
+Este proyecto utiliza la API pública [REST Countries v3.1](https://restcountries.com/) para obtener información de los países, como nombres oficiales, códigos y banderas. Esto permite mostrar de forma visual la nacionalidad de los jugadores en distintas partes de la interfaz.
 
 ---
 

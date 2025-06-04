@@ -20,9 +20,9 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish backend
+        working-directory: backend/the-enigma-casino-server
         run: |
-          dotnet publish ./the-enigma-casino-server/the-enigma-casino-server.csproj \
-            -c Release -o publish
+          dotnet publish -c Release -o ../../publish
 
       - name: Crear ZIP para CodeDeploy
         run: |
@@ -68,8 +68,9 @@ jobs:
           node-version: 18
 
       - name: Generar .env.production para frontend 1
+        working-directory: frontend/the-enigma-casino-client
         run: |
-          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env.production
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production
           echo "VITE_WS_BASE_URL=${{ secrets.VITE_WS_BASE_URL }}" >> .env.production
           echo "VITE_STRIPE_PUBLIC_KEY=${{ secrets.VITE_STRIPE_PUBLIC_KEY }}" >> .env.production
           echo "VITE_DEPLOY_ENV=aws-frontend-1" >> .env.production
@@ -84,6 +85,7 @@ jobs:
           zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh build/
 
       - name: Guardar build y regenerar .env.production para frontend 2
+        working-directory: frontend/the-enigma-casino-client
         run: |
           mv build build1
           echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production

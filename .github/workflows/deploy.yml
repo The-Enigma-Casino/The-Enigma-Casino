@@ -2,8 +2,9 @@ name: Deploy Enigma Casino
 
 on:
   push:
-     branches:
-       - main
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build-backend:

@@ -46,9 +46,15 @@ jobs:
         run: |
           aws s3 cp enigma-backend.zip s3://enigma-deployments/enigma-backend.zip
 
-  deploy-backend:
+    deploy-backend:
     needs: build-backend
     runs-on: ubuntu-latest
+    env:
+      CD_APP_NAME: "enigma-backend"
+      CD_GROUP_NAME: "BackendGroup"
+      IAM_ROLE: ${{ secrets.IAM_ROLE }}
+      EC2_TAG_KEY: "Name"
+      EC2_TAG_VALUE: "backend-instance"
     steps:
       - name: Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v2
@@ -58,15 +64,35 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Crear aplicación CodeDeploy (si no existe)
+        run: |
+          aws deploy get-application --application-name $CD_APP_NAME || \
+          aws deploy create-application \
+            --application-name $CD_APP_NAME \
+            --compute-platform "Server"
+
+      - name: Crear grupo de despliegue (si no existe)
+        run: |
+          aws deploy get-deployment-group \
+            --application-name $CD_APP_NAME \
+            --deployment-group-name $CD_GROUP_NAME || \
+          aws deploy create-deployment-group \
+            --application-name $CD_APP_NAME \
+            --deployment-group-name $CD_GROUP_NAME \
+            --service-role-arn $IAM_ROLE \
+            --deployment-style deploymentType="IN_PLACE",deploymentOption="WITHOUT_TRAFFIC_CONTROL" \
+            --ec2-tag-filters Key=$EC2_TAG_KEY,Value=$EC2_TAG_VALUE,Type=KEY_AND_VALUE
+
       - name: Lanzar despliegue CodeDeploy (backend)
         run: |
           aws deploy create-deployment \
-            --application-name enigma-backend \
-            --deployment-group-name BackendGroup \
+            --application-name $CD_APP_NAME \
+            --deployment-group-name $CD_GROUP_NAME \
             --s3-location bucket=enigma-deployments,key=enigma-backend.zip,bundleType=zip \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --description "Despliegue backend desde GitHub" \
             --region ${{ secrets.AWS_REGION }}
+
 
   build-frontend:
     runs-on: ubuntu-latest

@@ -42,7 +42,7 @@ function SidebarMenu({ onOpenFriendsModal }: SidebarMenuProps) {
           <img
             src={profileImage}
             alt="Imagen de Perfil"
-            className="absolute top-[-3rem] w-24 h-24 rounded-full bg-white"
+            className="absolute top-[-3rem] w-24 h-24 rounded-full bg-transparent hover:border-Principal "
           />
           {token ? (
             <>

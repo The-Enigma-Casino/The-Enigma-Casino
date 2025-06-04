@@ -23,7 +23,8 @@ jobs:
       - name: Publish backend
         working-directory: backend/the-enigma-casino-server
         run: |
-          dotnet publish -c Release -o ../../publish
+          dotnet restore
+          dotnet publish -c Release -o ../../deploy/backend/publish
 
       - name: Crear ZIP para CodeDeploy
         run: |

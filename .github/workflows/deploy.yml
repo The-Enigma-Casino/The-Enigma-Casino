@@ -157,6 +157,14 @@ jobs:
           zip -r enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh dist/
           mv enigma-frontend2.zip ../../../
 
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Subir ZIP Frontend 1 a S3
         run: |
           echo "📁 Archivos en raíz antes del upload:"

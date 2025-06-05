@@ -150,9 +150,9 @@ jobs:
         run: |
           cp ../../deploy/frontend/appspec.yml .
           cp ../../deploy/frontend/scripts/*.sh .
-          zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh dist/
-          mv enigma-frontend1.zip ../../
-          mv dist ../../dist_frontend1
+          zip -r enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh dist/
+          mv enigma-frontend2.zip ../../
+          mv dist ../../dist_frontend2
 
       - name: Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v2

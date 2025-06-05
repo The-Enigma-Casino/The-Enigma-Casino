@@ -21,6 +21,7 @@ import {
   fetchLastOrderWithdrawalFx,
 } from "../actions/withdrawalActions";
 import classes from "./Withdrawal.module.css";
+import { useMediaQuery } from "../../../utils/useMediaQuery";
 
 const Withdrawal: React.FC = () => {
   const navigate = useNavigate();
@@ -39,7 +40,11 @@ const Withdrawal: React.FC = () => {
     eth: number;
   } | null>(null);
 
+  const isSmallScreen = useMediaQuery("(max-width: 1023px)");
+
   useEffect(() => {
+    if (isSmallScreen) return;
+
     const viewer = MetaMaskLogo({
       pxNotRatio: true,
       width: 160,
@@ -54,7 +59,7 @@ const Withdrawal: React.FC = () => {
     return () => {
       viewer.stopAnimation();
     };
-  }, []);
+  }, [isSmallScreen]);
 
   useEffect(() => {
     setTransactionEnd(false);
@@ -160,7 +165,7 @@ const Withdrawal: React.FC = () => {
   };
 
   return (
-    <div className="bg-Background-Page flex flex-col min-h-screen m-0 pt-6">
+    <div className="bg-Background-Page flex flex-col m-0 pt-6">
       <h2
         className="text-8xl font-bold text-center mb-6 text-white inline-block"
         style={{ textShadow: "0px 4px 8px rgba(255, 255, 255, 0.4)" }}
@@ -168,15 +173,23 @@ const Withdrawal: React.FC = () => {
         RETIRADA DE FICHAS
       </h2>
 
-      <div className="flex flex-col items-center mx-auto mt-12 p-5 text-center gap-7 text-white border-2 rounded-2xl border-Principal w-[34rem] h-[50rem] bg-Background-Overlay">
+      <div className="flex flex-col items-center mx-auto mt-12 p-5 text-center gap-7 text-white border-2 rounded-2xl border-Principal w-[34rem] h-[50rem] bg-Background-Overlay mb-10 md:mb-0">
         <h1 className="text-3xl font-semibold text-gray-300 tracking-wide drop-shadow-md">
           Cambia fichas por Ethereum
         </h1>
 
-        <div
-          className="flex justify-center items-center my-5"
-          ref={logoRef}
-        ></div>
+        {isSmallScreen ? (
+          <img
+            src="/img/metamask_static.webp"
+            alt="MetaMask Logo"
+            className="w-[13rem] my-5"
+          />
+        ) : (
+          <div
+            className="flex justify-center items-center my-5"
+            ref={logoRef}
+          ></div>
+        )}
 
         <label htmlFor="inp" className={classes.inp}>
           <input

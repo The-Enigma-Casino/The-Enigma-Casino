@@ -121,7 +121,6 @@ jobs:
         run: |
           npm install
           npm run build
-          mv dist ../../dist_frontend1
 
       - name: Preparar ZIP Frontend 1
         working-directory: frontend/the-enigma-casino-client
@@ -129,10 +128,8 @@ jobs:
           cp ../../deploy/frontend/appspec.yml .
           cp ../../deploy/frontend/scripts/*.sh .
           zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh dist/
-          echo "📦 Archivos en cliente tras zip:"
-          ls -l
           mv enigma-frontend1.zip ../../
-
+          mv dist ../../dist_frontend1
 
       - name: Guardar build y regenerar .env.production para frontend 2
         working-directory: frontend/the-enigma-casino-client

@@ -127,6 +127,7 @@ jobs:
         run: |
           cp ../../deploy/frontend/appspec.yml .
           cp ../../deploy/frontend/scripts/*.sh .
+          chmod +x install.sh start.sh stop.sh
           zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh dist/
           mv enigma-frontend1.zip ../../
           mv dist ../../dist_frontend1
@@ -150,6 +151,7 @@ jobs:
         run: |
           cp ../../deploy/frontend/appspec.yml .
           cp ../../deploy/frontend/scripts/*.sh .
+          chmod +x install.sh start.sh stop.sh
           zip -r enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh dist/
           mv enigma-frontend2.zip ../../
           mv dist ../../dist_frontend2
@@ -178,10 +180,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CD_APP_NAME: "the-enigma-casino-client"
-      CD_GROUP_NAME: "enigma-frontend-1"
+      CD_GROUP_NAME: "frontend-client-1"
       IAM_ROLE: ${{ secrets.IAM_ROLE }}
       EC2_TAG_KEY: "Name"
       EC2_TAG_VALUE: "the-enigma-casino-client"
+
     steps:
       - name: Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v2
@@ -223,19 +226,19 @@ jobs:
       - name: Lanzar despliegue CodeDeploy (frontend 1)
         run: |
           aws deploy create-deployment \
-            --application-name enigma-frontend-1 \
-            --deployment-group-name FrontendGroup1 \
-            --s3-location bucket=enigma-deployments,key=enigma-frontend1.zip,bundleType=zip \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --description "Despliegue frontend 1" \
-            --region ${{ secrets.AWS_REGION }}
+          --application-name the-enigma-casino-client \
+          --deployment-group-name frontend-client-1 \
+          --s3-location bucket=enigma-deployments,key=enigma-frontend1.zip,bundleType=zip \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
+          --description "Despliegue frontend 1" \
+          --region ${{ secrets.AWS_REGION }}
 
   init-frontend2:
     needs: build-frontend
     runs-on: ubuntu-latest
     env:
       CD_APP_NAME: "the-enigma-casino-client-2"
-      CD_GROUP_NAME: "enigma-frontend-2"
+      CD_GROUP_NAME: "frontend-client-2"
       IAM_ROLE: ${{ secrets.IAM_ROLE }}
       EC2_TAG_KEY: "Name"
       EC2_TAG_VALUE: "the-enigma-casino-client-2"
@@ -280,9 +283,10 @@ jobs:
       - name: Lanzar despliegue CodeDeploy (frontend 2)
         run: |
           aws deploy create-deployment \
-            --application-name enigma-frontend-2 \
-            --deployment-group-name FrontendGroup2 \
-            --s3-location bucket=enigma-deployments,key=enigma-frontend2.zip,bundleType=zip \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --description "Despliegue frontend 2" \
-            --region ${{ secrets.AWS_REGION }}
+          --application-name the-enigma-casino-client-2 \
+          --deployment-group-name frontend-client-2 \
+          --s3-location bucket=enigma-deployments,key=enigma-frontend2.zip,bundleType=zip \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
+          --description "Despliegue frontend 2" \
+          --region ${{ secrets.AWS_REGION }}
+

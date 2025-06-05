@@ -4,19 +4,33 @@ export function translatePokerHandDescription(description: string): string {
   const cardName = (rank: string): string => {
     const map: Record<string, string> = {
       Ace: "As",
+      Aces: "Ases",
       King: "Rey",
+      Kings: "Reyes",
       Queen: "Reina",
+      Queens: "Reinas",
       Jack: "Jota",
+      Jacks: "Jotas",
       Ten: "Diez",
+      Tens: "Dieces",
       Nine: "Nueve",
+      Nines: "Nueves",
       Eight: "Ocho",
+      Eights: "Ochos",
       Seven: "Siete",
+      Sevens: "Sietes",
       Six: "Seis",
+      Sixes: "Seises",
       Five: "Cinco",
+      Fives: "Cincos",
       Four: "Cuatro",
+      Fours: "Cuatros",
       Three: "Tres",
+      Threes: "Treses",
       Two: "Dos",
+      Twos: "Doses",
     };
+
     return map[rank] ?? rank;
   };
 
@@ -57,11 +71,11 @@ export function translatePokerHandDescription(description: string): string {
         (_, rank) => `carta alta: ${cardName(rank)}`
       );
 
-  if (description.startsWith("Trio de :"))
-    return description
-      .replace("Trio de :", "Trío de")
-      .replace(/s$/, "")
-      .replace(/\b(\w+)\b/, (_, rank) => cardName(rank));
+  if (description.startsWith("Trío de") || description.startsWith("Trio de"))
+    return description.replace(
+      /Tr[íi]o de (\w+)/,
+      (_, rank) => `Trío de ${cardName(rank)}`
+    );
 
   if (description.startsWith("DOBLE PAREJA"))
     return description
@@ -89,6 +103,17 @@ export function translatePokerHandDescription(description: string): string {
 
   if (description.includes("Ganador automático"))
     return "Ganador automático (único jugador activo)";
+
+  description = description.replace(
+    /con kicker[s]? ([\w,\s]+)/,
+    (_, kickers) => {
+      const translated = kickers
+        .split(",")
+        .map((k: string) => cardName(k.trim()))
+        .join(", ");
+      return `con kickers ${translated}`;
+    }
+  );
 
   return description;
 }

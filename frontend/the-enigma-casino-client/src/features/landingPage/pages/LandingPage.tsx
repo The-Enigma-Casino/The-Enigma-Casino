@@ -76,7 +76,7 @@ const LandingPage: React.FC = () => {
 
       <header className="fixed top-0 left-0 z-[1000] w-full px-4 sm:px-6 md:px-10 py-4 bg-transparent flex justify-between items-start sm:items-center">
         <div className="text-2xl sm:text-3xl md:text-5xl font-bold text-white tracking-wide">
-          PROYECTO NO EDUCATIVO
+          PROYECTO EDUCATIVO
         </div>
 
         <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-6 md:gap-12 text-right sm:text-left">

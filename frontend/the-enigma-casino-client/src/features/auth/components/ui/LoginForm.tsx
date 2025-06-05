@@ -70,7 +70,7 @@ function LoginForm({
           />
         </div>
 
-        <div className="flex justify-start font-extrabold text-lg sm:text-xl col-span-2 mt-5">
+        <div className="w-full flex justify-center sm:justify-start font-extrabold text-lg sm:text-xl col-span-2 mt-5">
           <Button
             onClick={onSubmit}
             variant="outline"

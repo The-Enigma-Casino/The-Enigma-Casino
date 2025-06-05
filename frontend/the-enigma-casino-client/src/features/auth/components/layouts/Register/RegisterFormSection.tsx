@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import classes from "../Register/RegisterForm.module.css";
@@ -21,104 +22,112 @@ function RegisterFormSection() {
     setAcceptPrivacy,
   } = useRegisterForm();
 
+  const [step, setStep] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   registerLocale("es", es);
+
+  const nextStep = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStep(2);
+  };
+
+  const prevStep = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStep(1);
+  };
 
   return (
     <>
       <h1 className="text-[6rem] text-Principal text-center mb-12">REGISTRO</h1>
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={isMobile && step === 1 ? nextStep : handleSubmit}
         className="w-full flex flex-col items-center gap-6 px-4
-            sm:grid sm:grid-cols-2 sm:gap-x-8 sm:gap-y-6 sm:items-start
-           max-w-4xl"
+          sm:grid sm:grid-cols-2 sm:gap-x-8 sm:gap-y-6 sm:items-start max-w-4xl"
       >
-        <div className="flex flex-col w-full max-w-[380px] mx-auto">
-          {" "}
-          <label
-            htmlFor="nickName"
-            className="text-white text-xl font-bold mb-2"
-          >
-            Nombre de usuario
-          </label>
-          <Input
-            type="text"
-            name="nickName"
-            id="nickName"
-            placeholder="Nombre de usuario"
-            value={formData.nickName}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="flex flex-col w-full max-w-[380px] mx-auto">
-          {" "}
-          <label
-            htmlFor="fullname"
-            className="text-white text-xl font-bold mb-2"
-          >
-            Nombre completo
-          </label>
-          <Input
-            type="text"
-            name="fullname"
-            id="fullname"
-            placeholder="Nombre completo"
-            value={formData.fullname}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="flex flex-col w-full max-w-[380px] mx-auto">
-          {" "}
-          <label htmlFor="email" className="text-white text-xl font-bold mb-2">
-            Correo electrónico
-          </label>
-          <Input
-            type="email"
-            name="email"
-            id="email"
-            placeholder="Correo electrónico"
-            value={formData.email}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div
-          className={`${classes.datePickerContainer} w-full max-w-[380px] mx-auto sm:col-span-2`}
-        >
-          <label
-            htmlFor="dateOfBirth"
-            className="text-white text-xl font-bold mb-2"
-          >
-            Fecha de nacimiento
-          </label>
-          <DatePicker
-            selected={
-              formData.dateOfBirth ? new Date(formData.dateOfBirth) : null
-            }
-            onChange={handleDateChange}
-            maxDate={new Date()}
-            minDate={new Date("1920-01-01")}
-            dateFormat="dd-MM-yyyy"
-            placeholderText="Selecciona tu fecha"
-            className="w-full max-w-[380px] h-[60px] bg-white text-black rounded-[20px] border border-black box-border placeholder-gray-400 focus:outline-none focus:border-grey-color
-             pl-10 text-[1.5rem] 
-             max-md:pl-5 max-md:text-[1.2rem] 
-             max-sm:h-[50px] max-sm:text-[1rem] max-sm:pl-4"
-            locale="es"
-            renderCustomHeader={(props) => (
-              <CustomDatePickerHeader {...props} />
-            )}
-          />
-        </div>
+        {/* Paso 1 */}
+        <div className={`${step === 1 || !isMobile ? "block" : "hidden"} w-full contents`}>
+          <div className="flex flex-col w-full max-w-[380px] mx-auto">
+            <label htmlFor="nickName" className="text-white text-xl font-bold mb-2">
+              Nombre de usuario
+            </label>
+            <Input
+              type="text"
+              name="nickName"
+              id="nickName"
+              placeholder="Nombre de usuario"
+              value={formData.nickName}
+              onChange={handleChange}
+            />
+          </div>
 
           <div className="flex flex-col w-full max-w-[380px] mx-auto">
-            {" "}
-            <label
-              htmlFor="password"
-              className="text-white text-xl font-bold mb-2"
-            >
+            <label htmlFor="fullname" className="text-white text-xl font-bold mb-2">
+              Nombre completo
+            </label>
+            <Input
+              type="text"
+              name="fullname"
+              id="fullname"
+              placeholder="Nombre completo"
+              value={formData.fullname}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="flex flex-col w-full max-w-[380px] mx-auto">
+            <label htmlFor="email" className="text-white text-xl font-bold mb-2">
+              Correo electrónico
+            </label>
+            <Input
+              type="email"
+              name="email"
+              id="email"
+              placeholder="Correo electrónico"
+              value={formData.email}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className={`${classes.datePickerContainer} w-full max-w-[380px] mx-auto sm:col-span-2`}>
+            <label htmlFor="dateOfBirth" className="text-white text-xl font-bold mb-2">
+              Fecha de nacimiento
+            </label>
+            <DatePicker
+              selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null}
+              onChange={handleDateChange}
+              maxDate={new Date()}
+              minDate={new Date("1920-01-01")}
+              dateFormat="dd-MM-yyyy"
+              placeholderText="Selecciona tu fecha"
+              className="w-full max-w-[380px] h-[60px] bg-white text-black rounded-[20px] border border-black box-border placeholder-gray-400 focus:outline-none focus:border-grey-color
+                pl-10 text-[1.5rem] max-md:pl-5 max-md:text-[1.2rem] max-sm:h-[50px] max-sm:text-[1rem] max-sm:pl-4"
+              locale="es"
+              renderCustomHeader={(props) => <CustomDatePickerHeader {...props} />}
+            />
+          </div>
+
+          {isMobile && (
+            <div className="flex justify-center col-span-2 mt-4 mb-8 sm:mb-4">
+              <Button type="submit" variant="outline" color="green" font="short">
+                Continuar
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Paso 2 */}
+        <div className={`${step === 2 || !isMobile ? "block" : "hidden"} w-full contents`}>
+          <div className="flex flex-col w-full max-w-[380px] mx-auto">
+            <label htmlFor="password" className="text-white text-xl font-bold mb-2">
               Contraseña
             </label>
             <Input
@@ -133,10 +142,7 @@ function RegisterFormSection() {
           </div>
 
           <div className="flex flex-col w-full max-w-[380px] mx-auto">
-            <label
-              htmlFor="confirmPassword"
-              className="text-white text-xl font-bold mb-2"
-            >
+            <label htmlFor="confirmPassword" className="text-white text-xl font-bold mb-2">
               Confirmar contraseña
             </label>
             <Input
@@ -149,49 +155,45 @@ function RegisterFormSection() {
               showToggle
             />
           </div>
- 
 
-        <div className="flex flex-col w-full max-w-[380px] mx-auto">
-          {" "}
-          <label
-            htmlFor="address"
-            className="text-white text-xl font-bold mb-2"
-          >
-            Dirección
-          </label>
-          <Input
-            type="text"
-            name="address"
-            id="address"
-            placeholder="Dirección"
-            value={formData.address}
-            onChange={handleChange}
-          />
-        </div>
+          <div className="flex flex-col w-full max-w-[380px] mx-auto">
+            <label htmlFor="address" className="text-white text-xl font-bold mb-2">
+              Dirección
+            </label>
+            <Input
+              type="text"
+              name="address"
+              id="address"
+              placeholder="Dirección"
+              value={formData.address}
+              onChange={handleChange}
+            />
+          </div>
 
-        <div className="flex flex-col w-full max-w-[380px] mx-auto">
-          <label className="text-white text-xl font-bold mb-2">
-            Nacionalidad
-          </label>
-          <InputDebounce
-            placeholder="Nacionalidad"
-            onSelect={handleCountrySelect}
-          />
-        </div>
+          <div className="flex flex-col w-full max-w-[380px] mx-auto">
+            <label className="text-white text-xl font-bold mb-2">Nacionalidad</label>
+            <InputDebounce placeholder="Nacionalidad" onSelect={handleCountrySelect} />
+          </div>
 
-        <div className="flex flex-col col-span-2 mt-4">
-          <Checkbox
-            labelText="Acepto la política de privacidad"
-            checked={acceptPrivacy}
-            linkHref="/policies"
-            onChange={() => setAcceptPrivacy(!acceptPrivacy)}
-          />
-        </div>
+          <div className="flex flex-col col-span-2 mt-4">
+            <Checkbox
+              labelText="Acepto la política de privacidad"
+              checked={acceptPrivacy}
+              linkHref="/policies"
+              onChange={() => setAcceptPrivacy(!acceptPrivacy)}
+            />
+          </div>
 
-        <div className="flex justify-center col-span-2 mt-4 mb-8 sm:mb-4">
-          <Button type="submit" variant="outline" color="green" font="large">
-            Registrarse
-          </Button>
+          <div className="flex justify-center col-span-2 mt-4 mb-8 sm:mb-4 gap-4">
+            {isMobile && (
+              <Button type="button" variant="outline" color="selectedProfile" font="short" onClick={prevStep}>
+                Volver
+              </Button>
+            )}
+            <Button type="submit" variant="outline" color="green" font="short">
+              Registrarse
+            </Button>
+          </div>
         </div>
       </form>
     </>

@@ -120,5 +120,7 @@ export const $turnCountdownTotal = createStore<number>(20)
   .on(turnCountdownTotalSet, (_, value) => value)
   .reset(resetPokerGame);
 
-export const $opponentLeft = createStore(false);
-$opponentLeft.on(opponentLeftReceived, () => true);
+export const $opponentLeft = createStore(false)
+  .on(opponentLeftReceived, () => true)
+  .on(matchPlayersInitialized, () => false)
+

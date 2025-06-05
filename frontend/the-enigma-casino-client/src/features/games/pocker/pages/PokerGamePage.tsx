@@ -63,7 +63,6 @@ export const PokerGamePage = () => {
 
   const opponentLeft = useUnit($opponentLeft);
 
-
   const handleAction = (
     move: "fold" | "call" | "check" | "raise" | "all-in",
     amount?: number
@@ -84,6 +83,14 @@ export const PokerGamePage = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, [decrement]);
+
+  //BORRAR
+  console.log("🧠 Render PokerGamePage");
+  console.log(" - userId:", userId);
+  console.log(" - currentTurnUserId:", currentTurnUserId);
+  console.log(" - isMyTurn:", isMyTurn);
+  console.log(" - validMoves:", validMoves);
+  console.log(" - opponentLeft:", opponentLeft);
 
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">

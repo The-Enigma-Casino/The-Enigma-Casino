@@ -1,3 +1,4 @@
 #!/bin/bash
-echo "🛑 Deteniendo Nginx..."
-sudo systemctl stop nginx
+echo "stop"
+# echo "🛑 Deteniendo Nginx..."
+# sudo systemctl stop nginx

@@ -15,14 +15,13 @@ function AuthLayout() {
   }, []);
 
   return (
-    
-      <div className="grid grid-rows-[auto_1fr_auto] min-h-screen w-full max-w-full overflow-x-clip">
-          <div className="row-start-1 row-end-2">
+    <div className="h-screen w-full overflow-hidden grid grid-rows-[auto_1fr]">
+      <div className="row-start-1 row-end-2 shrink-0">
         {isMobile ? <HeaderMobile /> : <Header />}
       </div>
-      <main className="w-full max-w-full h-full min-h-0 overflow-x-clip">
-          <Outlet />
-        </main>
+      <main className="row-start-2 row-end-3 overflow-hidden">
+        <Outlet />
+      </main>
     </div>
   );
 }

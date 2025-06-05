@@ -1,20 +1,15 @@
 version: 0.0
 os: linux
-
 files:
-  - source: build/
-    destination: /var/www/theenigmacasino/
-
+  - source: /
+    destination: /home/ubuntu/frontend-code-deploy
 hooks:
   BeforeInstall:
-    - location: scripts/stop.sh
-      timeout: 15
-      runas: ubuntu
-  AfterInstall:
-    - location: scripts/install.sh
+    - location: stop.sh
       timeout: 30
-      runas: ubuntu
+  AfterInstall:
+    - location: install.sh
+      timeout: 60
   ApplicationStart:
-    - location: scripts/start.sh
-      timeout: 15
-      runas: ubuntu
+    - location: start.sh
+      timeout: 30

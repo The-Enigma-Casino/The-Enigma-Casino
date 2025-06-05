@@ -1,0 +1,23 @@
+@keyframes bell-ring {
+  0%   { transform: rotate(0); }
+  15%  { transform: rotate(-15deg); }
+  30%  { transform: rotate(10deg); }
+  45%  { transform: rotate(-10deg); }
+  60%  { transform: rotate(6deg); }
+  75%  { transform: rotate(-4deg); }
+  100% { transform: rotate(0); }
+}
+
+.bellAnimate {
+  animation: bell-ring 0.8s ease-in-out infinite;
+}
+
+@keyframes bell-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.bellPulse {
+  animation: bell-pulse 1.5s ease-in-out infinite;
+}

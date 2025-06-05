@@ -51,7 +51,9 @@ export const FriendItem: React.FC<FriendItemProps> = ({
           src={`${IMAGE_PROFILE_URL}${image}`}
           className="w-16 h-16 rounded-full object-cover"
         />
-        <p className="text-white text-3xl">{nickname}</p>
+        <p className="text-white text-3xl truncate max-w-[180px] overflow-hidden whitespace-nowrap">
+          {nickname}
+        </p>
       </div>
 
       {/* Derecha */}

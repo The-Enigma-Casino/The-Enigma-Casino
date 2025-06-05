@@ -25,10 +25,14 @@ function FriendsPanel() {
             const encoded = encodeId(friend.id);
             return (
               <div key={friend.id} className={classes.friend}>
-                <Link to={`/profile/${encoded}`}>
-                  <img src={`${IMAGE_PROFILE_URL}${friend.image}`} alt={`Imagen de ${friend.nickName}`} />
+                <Link to={`/profile/${encoded}`} className={classes.avatar}>
+                  <img
+                    src={`${IMAGE_PROFILE_URL}${friend.image}`}
+                    alt={`Imagen de ${friend.nickName}`}
+                    className={classes.avatarImage}
+                  />
                 </Link>
-                <h3>{friend.nickName}</h3>
+                <h3 title={friend.nickName}>{friend.nickName}</h3>
               </div>
             );
           })}

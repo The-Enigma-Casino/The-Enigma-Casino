@@ -50,11 +50,11 @@ jobs:
     needs: build-backend
     runs-on: ubuntu-latest
     env:
-      CD_APP_NAME: "enigma-backend"
-      CD_GROUP_NAME: "BackendGroup"
+      CD_APP_NAME: "the-enigma-casino-serverd"
+      CD_GROUP_NAME: "enigma-backend"
       IAM_ROLE: ${{ secrets.IAM_ROLE }}
       EC2_TAG_KEY: "Name"
-      EC2_TAG_VALUE: "backend-instance"
+      EC2_TAG_VALUE: "the-enigma-casino-server"
     steps:
       - name: Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v2
@@ -142,19 +142,17 @@ jobs:
       - name: Build frontend 2
         working-directory: frontend/the-enigma-casino-client
         run: |
+          npm install
           npm run build
-          mv dist ../../dist_frontend2
 
       - name: Preparar ZIP Frontend 2
         working-directory: frontend/the-enigma-casino-client
         run: |
           cp ../../deploy/frontend/appspec.yml .
           cp ../../deploy/frontend/scripts/*.sh .
-          mv ../../dist_frontend2 dist
-          zip -r enigma-frontend2.zip appspec.yml install.sh start.sh stop.sh dist/
-          echo "📦 Archivos en cliente tras zip:"
-          ls -l
-          mv enigma-frontend2.zip ../../
+          zip -r enigma-frontend1.zip appspec.yml install.sh start.sh stop.sh dist/
+          mv enigma-frontend1.zip ../../
+          mv dist ../../dist_frontend1
 
       - name: Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v2
@@ -179,11 +177,11 @@ jobs:
     needs: build-frontend
     runs-on: ubuntu-latest
     env:
-      CD_APP_NAME: "enigma-frontend-1"
-      CD_GROUP_NAME: "FrontendGroup1"
+      CD_APP_NAME: "the-enigma-casino-client"
+      CD_GROUP_NAME: "enigma-frontend-1"
       IAM_ROLE: ${{ secrets.IAM_ROLE }}
       EC2_TAG_KEY: "Name"
-      EC2_TAG_VALUE: "frontend-instance-1"
+      EC2_TAG_VALUE: "the-enigma-casino-client"
     steps:
       - name: Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v2
@@ -236,11 +234,11 @@ jobs:
     needs: build-frontend
     runs-on: ubuntu-latest
     env:
-      CD_APP_NAME: "enigma-frontend-2"
-      CD_GROUP_NAME: "FrontendGroup2"
+      CD_APP_NAME: "the-enigma-casino-client-2"
+      CD_GROUP_NAME: "enigma-frontend-2"
       IAM_ROLE: ${{ secrets.IAM_ROLE }}
       EC2_TAG_KEY: "Name"
-      EC2_TAG_VALUE: "frontend-instance-2"
+      EC2_TAG_VALUE: "the-enigma-casino-client-2"
     steps:
       - name: Configurar credenciales AWS
         uses: aws-actions/configure-aws-credentials@v2

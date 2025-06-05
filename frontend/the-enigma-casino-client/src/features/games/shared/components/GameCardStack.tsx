@@ -35,7 +35,7 @@ export const CardStack = ({
           return (
             <div
               key={index}
-              className="h-40 sm:h-44 md:h-48 aspect-[5/7] bg-white border border-gray-600 rounded-md flex items-center justify-center text-lg font-bold shadow flex-shrink-0"
+              className="h-40 sm:h-44 md:h-48 aspect-[5/7] rounded-md flex items-center justify-center text-lg font-bold shadow flex-shrink-0"
             >
               {hideAll || (hidden && index === 0) ? (
                 <img

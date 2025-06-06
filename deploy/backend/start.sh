@@ -12,6 +12,11 @@ cd "$APP_DIR" || {
   exit 1
 }
 
+echo "📦 Cargando variables de entorno (.env.production)..." | tee -a "$LOG_FILE"
+set -o allexport
+source /home/ubuntu/backend-code-deploy/.env.production
+set +o allexport
+
 echo "🟢 Lanzando backend con dotnet $APP_DLL..." | tee -a "$LOG_FILE"
 nohup dotnet "$APP_DLL" > "$APP_DIR/logs.txt" 2>&1 &
 

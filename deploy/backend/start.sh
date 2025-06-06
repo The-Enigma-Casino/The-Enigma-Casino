@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Detectar si esta instancia es de backend
-if [ ! -f "./The-Enigma-Casino/backend/the-enigma-casino-server.csproj" ]; then
-  echo "⛔ Esta no es una instancia de backend. Abortando start.sh backend." >> /tmp/backend-start.log
+if [ "$(cat /etc/instance-type 2>/dev/null)" != "backend" ]; then
+  echo "⛔ Esta instancia no es de backend. Abortando install.sh." | tee -a "$LOG_FILE"
   exit 0
 fi
 

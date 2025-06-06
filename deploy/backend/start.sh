@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Detectar si esta instancia es de backend
+if [ ! -f "./The-Enigma-Casino/backend/the-enigma-casino-server.csproj" ]; then
+  echo "⛔ Esta no es una instancia de backend. Abortando start.sh backend." >> /tmp/backend-start.log
+  exit 0
+fi
+
 echo "✅ install.sh backend ejecutado correctamente - $(date)" >> /tmp/codedeploy-backend-install.log
 
 LOG_FILE="/tmp/backend-start.log"

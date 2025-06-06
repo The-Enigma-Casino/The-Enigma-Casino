@@ -8,6 +8,13 @@ echo "" >> "$LOG_FILE"
 echo "🕐 Ejecutando install.sh - $(date)" | tee -a "$LOG_FILE"
 echo "📂 Directorio actual: $(pwd)" | tee -a "$LOG_FILE"
 
+if [ ! -f "./The-Enigma-Casino/backend/the-enigma-casino-server.csproj" ]; then
+  echo "❌ No es instancia de backend, saliendo sin hacer nada." | tee -a "$LOG_FILE"
+  exit 0
+fi
+
+echo "✅ Detectado entorno backend. Continuando..." | tee -a "$LOG_FILE"
+
 mkdir -p "$DEPLOY_DIR"
 mkdir -p "$PUBLISH_TEMP_DIR"
 

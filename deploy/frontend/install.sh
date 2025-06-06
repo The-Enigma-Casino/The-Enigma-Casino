@@ -9,6 +9,13 @@ echo "" >> "$LOG_FILE"
 echo "🕐 Ejecutando install.sh - $(date)" | tee -a "$LOG_FILE"
 echo "📂 Directorio actual: $(pwd)" | tee -a "$LOG_FILE"
 
+if [ ! -f "vite.config.ts" ] && [ ! -f "vite.config.js" ]; then
+  echo "❌ No es instancia de frontend, saliendo sin hacer nada." | tee -a "$LOG_FILE"
+  exit 0
+fi
+
+echo "✅ Detectado entorno frontend. Continuando..." | tee -a "$LOG_FILE"
+
 cd "$EXTRACT_DIR" || {
   echo "❌ ERROR: No se pudo acceder a $EXTRACT_DIR" | tee -a "$LOG_FILE"
   exit 1

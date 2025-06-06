@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  modsec-waf:
+    image: owasp/modsecurity-crs:nginx
+    container_name: enigma-waf
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+
+# /home/ubuntu/enigma-waf/docker-compose.yml
+# docker compose up -d

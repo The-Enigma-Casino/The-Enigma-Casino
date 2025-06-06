@@ -1,0 +1,23 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/ubuntu/frontend-code-deploy
+  - source: /
+    destination: /home/ubuntu/backend-code-deploy
+hooks:
+  BeforeInstall:
+    - location: /deploy/backend/stop.sh
+      timeout: 60
+    - location: /deploy/frontend/stop.sh
+      timeout: 60
+  AfterInstall:
+    - location: /deploy/backend/install.sh
+      timeout: 60
+    - location: /deploy/frontend/install.sh
+      timeout: 60
+  ApplicationStart:
+    - location: /deploy/backend/start.sh
+      timeout: 60
+    - location: /deploy/frontend/start.sh
+      timeout: 60

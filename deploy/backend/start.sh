@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "✅ install.sh backend ejecutado correctamente - $(date)" >> /tmp/codedeploy-backend-install.log
+
 LOG_FILE="/tmp/backend-start.log"
 APP_DIR="/home/ubuntu/backend-code-deploy/publish"
 APP_DLL="the-enigma-casino-server.dll"

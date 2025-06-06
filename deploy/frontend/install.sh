@@ -21,6 +21,9 @@ cd "$EXTRACT_DIR" || {
   exit 1
 }
 
+echo "📄 Copiando .env.production a la raíz del proyecto..." | tee -a "$LOG_FILE"
+cp /home/ubuntu/.env.production "$EXTRACT_DIR"/
+
 echo "📦 Instalando dependencias npm..." | tee -a "$LOG_FILE"
 npm install >> "$LOG_FILE" 2>&1
 

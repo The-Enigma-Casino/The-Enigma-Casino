@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
-# Si cualquier comando falla para el script.”
+# Si cualquier comando falla para el script
+
+# chmod +x setup-modsecurity-nginx.sh
 
 # 1. Instalar dependencias
 sudo apt update
@@ -13,8 +15,7 @@ git clone --depth 1 -b v3/master https://github.com/SpiderLabs/ModSecurity
 cd ModSecurity
 git submodule init && git submodule update
 ./build.sh
-./configure
-make
+./configure --disable-pcre2
 sudo make install
 
 # 3. Descargar y compilar

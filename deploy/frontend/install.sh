@@ -9,8 +9,8 @@ echo "" >> "$LOG_FILE"
 echo "🕐 Ejecutando install.sh - $(date)" | tee -a "$LOG_FILE"
 echo "📂 Directorio actual: $(pwd)" | tee -a "$LOG_FILE"
 
-if [ ! -f "vite.config.ts" ] && [ ! -f "vite.config.js" ]; then
-  echo "❌ No es instancia de frontend, saliendo sin hacer nada." | tee -a "$LOG_FILE"
+if [ "$(cat /etc/instance-type 2>/dev/null)" != "frontend" ]; then
+  echo "⛔ Esta instancia no es de backend. Abortando install.sh." | tee -a "$LOG_FILE"
   exit 0
 fi
 

@@ -17,7 +17,10 @@ import {
   sendFriendRequestWs,
   startGameLoading,
 } from "../../friends/stores/friends.events";
-import { $friends, $onlineFriendsMap } from "../../friends/stores/friends.store";
+import {
+  $friends,
+  $onlineFriendsMap,
+} from "../../friends/stores/friends.store";
 
 interface UserData {
   id?: number;
@@ -44,7 +47,6 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
   const isStatusFriend = useUnit($friends);
 
   const isPlaying = isStatusFriend.find((f) => f.status === "Playing");
-
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -89,10 +91,11 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
 
   return (
     <>
-      <div className="bg-Background-Page px-4 pt-40 sm:pt-44 md:pt-48 pb-10 flex flex-col items-center">
+      <div className="bg-Background-Page px-4 pt-40 md:pt-48 pb-10 flex flex-col items-center">
         <div
-          className={`relative bg-Background-Overlay border ${isFriend || isStranger ? "border-Principal" : "border-Principal"
-            } rounded-xl px-6 py-20 w-full max-w-6xl text-white mb-20 flex flex-col items-center`}
+          className={`relative bg-Background-Overlay border ${
+            isFriend || isStranger ? "border-Principal" : "border-Principal"
+          } rounded-xl px-6 py-20 w-full max-w-6xl text-white mb-20 flex flex-col items-center`}
         >
           {/* Avatar */}
           <div
@@ -119,17 +122,19 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
 
           {/* Contenido */}
           <div
-            className={`${isStranger || isFriend
-              ? "mt-28 text-center flex flex-col gap-6 items-center"
-              : "flex flex-col lg:flex-row justify-between items-center lg:items-start mt-24 sm:mt-32 gap-10 w-full p-10"
-              }`}
+            className={`${
+              isStranger || isFriend
+                ? "mt-28 text-center flex flex-col gap-6 items-center"
+                : "flex flex-col sm:flex-row justify-between items-center sm:items-start mt-24 sm:mt-32 gap-10 w-full p-10"
+            }`}
           >
             {/* Info */}
             <div
-              className={`flex flex-col gap-4 ${isStranger || isFriend
-                ? "text-3xl font-bold items-center"
-                : "text-xl sm:text-2xl lg:text-3xl w-full text-center lg:text-left items-center lg:items-start"
-                }`}
+              className={`flex flex-col gap-4 ${
+                isStranger || isFriend
+                  ? "text-3xl font-bold items-center"
+                  : "text-xl sm:text-2xl lg:text-3xl w-full text-center sm:text-left items-center sm:items-start"
+              }`}
             >
               <p className={!isSelf ? "text-5xl" : ""}>
                 {isSelf && "Nickname: "}
@@ -199,7 +204,6 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
             )}
 
             {isFriend && isOnline && !isPlaying && (
-
               <div className="relative" ref={dropdownRef}>
                 <Button
                   variant="bigPlus"
@@ -240,11 +244,15 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
             )}
 
             {isFriend && isPlaying && (
-              <p className="text-yellow-400 text-4xl">Tu amigo está en una partida</p>
+              <p className="text-yellow-400 text-4xl">
+                Tu amigo está en una partida
+              </p>
             )}
 
             {isFriend && !isOnline && (
-              <p className="text-gray-400 text-4xl">Tu amigo está desconectado</p>
+              <p className="text-gray-400 text-4xl">
+                Tu amigo está desconectado
+              </p>
             )}
 
             {isStranger && user.id !== undefined && (
@@ -264,7 +272,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
           {/* Coins */}
           {isSelf && coins !== undefined && (
             <div className="flex justify-center items-center gap-3 mt-10 text-center">
-              <h2 className="font-bold text-4xl sm:text-5xl text-Coins">
+              <h2 className="font-bold text-4xl md:text-5xl text-Coins">
                 {coins.toLocaleString()}
               </h2>
               <img

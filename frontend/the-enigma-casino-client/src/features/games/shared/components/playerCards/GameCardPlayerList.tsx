@@ -45,7 +45,7 @@ export const GamePlayerCardList = ({
     return avatars.find((a) => a.nickName === nickName);
   };
 
-  const suitMap: Suit[] = ["Spades", "Hearts", "Clubs", "Diamonds"];
+  const suitMap: Suit[] = ["Hearts", "Diamonds", "Clubs", "Spades"];
   const rankMap: CardRank[] = [
     "Two",
     "Three",

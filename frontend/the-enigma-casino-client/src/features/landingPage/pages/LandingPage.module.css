@@ -72,11 +72,17 @@
 
 
 .buttonMid {
-  animation: blink 1s infinite, pulse 1.5s infinite ease-in-out;
-  display: flex;
-  background-color: var(--Coins);
+  animation: none;
   border-radius: 28px;
   margin-top: 5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.buttonMid button {
+  animation: blink 1s infinite, pulse 1.5s infinite ease-in-out;
+  box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.8);
+  border-radius: 28px;
 }
 
 @keyframes blink {

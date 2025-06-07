@@ -72,14 +72,18 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (IsUserBusyInAnotherTable(userIdInt))
         {
-            await ((IWebSocketSender)this).SendToUserAsync(userId, new
+            if (!IsAlreadyInTargetTable(userIdInt, tableId))
             {
-                type = Type,
-                action = "error",
-                message = "No puedes unirte a otra mesa mientras participas en una partida activa."
-            });
-            return;
+                await ((IWebSocketSender)this).SendToUserAsync(userId, new
+                {
+                    type = Type,
+                    action = "error",
+                    message = "No puedes unirte a otra mesa mientras participas en una partida activa."
+                });
+                return;
+            }
         }
+
 
         IServiceScope scope;
         UnitOfWork unitOfWork = GetScopedService<UnitOfWork>(out scope);
@@ -604,6 +608,18 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     message = "Estás listo para jugar, pero necesitas al menos un oponente. Esperando más jugadores..."
                 });
             }
+        }
+
+        return false;
+    }
+    private bool IsAlreadyInTargetTable(int userId, int tableId)
+    {
+        if (ActiveGameSessionStore.TryGet(tableId, out var session))
+        {
+            return session.Table.Players.Any(p =>
+                p.UserId == userId &&
+                p.PlayerState != PlayerState.Left &&
+                p.PlayerState != PlayerState.Spectating);
         }
 
         return false;

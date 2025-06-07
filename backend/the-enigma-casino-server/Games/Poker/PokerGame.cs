@@ -409,27 +409,59 @@ public class PokerGame
                 winner.Player.Win(winnings);
                 PokerBetTracker.RegisterWinnings(winner.Player.GameTableId, winner.Player.UserId, winnings);
 
+                string finalDescription = GetSmartHandDescription(winner, eligibleHands);
+
                 summary.Add(new
                 {
                     potType = label,
                     userId = winner.Player.UserId,
                     nickname = winner.Player.User.NickName,
                     amount = winnings,
-                    description = winner.Description,
+                    description = finalDescription,
                     kicker = winner.RankList.Count > 1 ? winner.RankList[1].ToString() : null,
-                    hand = winner.Player.Hand.Cards.Select(c => new {
+                    hand = winner.Player.Hand.Cards.Select(c => new
+                    {
                         suit = c.Suit.ToString(),
                         rank = c.Rank.ToString(),
                         value = c.Value
                     })
                 });
 
-                Console.WriteLine($"✅ {winner.Player.User.NickName} gana {winnings} del {label} con: {winner.Description}");
+                Console.WriteLine($"✅ {winner.Player.User.NickName} gana {winnings} del {label} con: {finalDescription}");
+
             }
         }
 
         return summary;
     }
+
+    private string GetSmartHandDescription(EvaluatedHand hand, List<EvaluatedHand> allEligibleHands)
+    {
+        var tiedHands = allEligibleHands
+            .Where(e => e.Strength == hand.Strength && e.HighCard == hand.HighCard)
+            .ToList();
+
+        if (tiedHands.Count <= 1)
+            return hand.Description;
+
+        foreach (var other in tiedHands)
+        {
+            if (other == hand || other.RankList.Count != hand.RankList.Count)
+                continue;
+
+            for (int i = 1; i < hand.RankList.Count; i++)
+            {
+                int cmp = hand.RankList[i].CompareTo(other.RankList[i]);
+                if (cmp > 0)
+                    return $"{hand.Description} con kicker {hand.RankList[i]}";
+                if (cmp < 0)
+                    return hand.Description;
+            }
+        }
+
+        return hand.Description;
+    }
+
 
     public void Showdown()
     {

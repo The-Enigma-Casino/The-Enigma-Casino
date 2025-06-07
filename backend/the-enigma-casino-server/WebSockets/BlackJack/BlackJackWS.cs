@@ -184,6 +184,12 @@ public class BlackjackWS : BaseWebSocketHandler, IWebSocketMessageHandler, IGame
         {
             session.StartBettingTimer(30_000, async () =>
             {
+                if (!ActiveGameSessionStore.TryGet(match.GameTableId, out _))
+                {
+                    Console.WriteLine($"⚠️ [BlackjackWS] Timer de apuestas ignorado: la sesión de mesa {match.GameTableId} fue eliminada.");
+                    return;
+                }
+
                 Console.WriteLine($"⏰ [BlackjackWS] Tiempo de apuestas agotado en mesa {match.GameTableId}. Evaluando estado...");
                 await HandleNoBetsTimeoutAsync(match.GameTableId);
             });

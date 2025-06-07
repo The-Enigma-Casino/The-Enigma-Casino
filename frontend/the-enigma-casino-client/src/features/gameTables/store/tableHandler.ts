@@ -7,6 +7,7 @@ import {
   markLeftTable,
   resetTableId,
   setPendingJoinTableId,
+  tableCleanupCompleted,
   tableUpdated,
   tableWaitingOpponent,
 } from "./tablesEvents";
@@ -14,6 +15,7 @@ import {
 import { stopGameLoading } from "../../friends/stores/friends.events";
 import { getPlayerAvatarsFx } from "../../games/actions/playerAvatarsAction";
 import { navigateTo } from "../../games/shared/router/navigateFx";
+import { clearJoinProtection } from "./tablesIndex";
 
 const errorMessageMap: Record<string, string> = {
   already_left:
@@ -133,6 +135,8 @@ socketMessageReceived.watch((data) => {
     case "leave_success": {
       resetTableId();
       markLeftTable();
+      tableCleanupCompleted();
+      clearJoinProtection();
       break;
     }
     default:

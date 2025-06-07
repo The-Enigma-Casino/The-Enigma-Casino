@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Header from "../../../components/layouts/header/Header";
 import { useEffect } from "react";
 import { useMediaQuery } from "../../../utils/useMediaQuery";
@@ -6,6 +6,11 @@ import HeaderMobile from "../../../components/layouts/header/HeaderMobile";
 
 function AuthLayout() {
   const isMobile = useMediaQuery("(max-width: 767px)");
+
+  const location = useLocation();
+  const isConfirmationPage = location.pathname.includes(
+    "/auth/email-confirmation"
+  );
 
   useEffect(() => {
     const flag = "__hasVisitedEnigma__";
@@ -15,11 +20,19 @@ function AuthLayout() {
   }, []);
 
   return (
-    <div className="h-screen w-full overflow-hidden grid grid-rows-[auto_1fr]">
+    <div
+      className={`h-screen w-full grid grid-rows-[auto_1fr] ${
+        isConfirmationPage ? "overflow-hidden" : ""
+      }`}
+    >
       <div className="row-start-1 row-end-2 shrink-0">
         {isMobile ? <HeaderMobile /> : <Header />}
       </div>
-      <main className="row-start-2 row-end-3 overflow-hidden">
+      <main
+        className={`row-start-2 row-end-3 ${
+          isConfirmationPage ? "overflow-hidden" : ""
+        }`}
+      >
         <Outlet />
       </main>
     </div>

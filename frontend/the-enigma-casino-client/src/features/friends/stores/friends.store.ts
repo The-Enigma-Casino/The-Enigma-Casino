@@ -22,6 +22,7 @@ import {
   fetchFriendsFx,
   fetchReceivedRequestsFx,
 } from "./friends.effects";
+import { tableCleanupCompleted } from "../../gameTables/store/tablesIndex";
 
 
 
@@ -85,7 +86,8 @@ export const $lastRequestIds = createStore<number[]>([]);
 
 export const $isGameLoading = createStore(false)
   .on(startGameLoading, () => true)
-  .on(stopGameLoading, () => false);
+  .on(stopGameLoading, () => false)
+  .reset([tableCleanupCompleted]);
 
 
 export type BellType = "none" | "new" | "notification";
@@ -109,3 +111,4 @@ export const $simpleAlerts = createStore<SimpleAlert[]>([])
 
 export const $isInitialFetch = createStore(true)
   .on(fetchReceivedRequests, (_, { isInitial }) => isInitial);
+

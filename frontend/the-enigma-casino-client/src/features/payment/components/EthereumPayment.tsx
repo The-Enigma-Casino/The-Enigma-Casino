@@ -206,7 +206,6 @@ const Ethereum: React.FC = () => {
           ></div>
         )}
 
-        {loading && <p className="text-3xl">Procesando pago...</p>}
         {transactionEnd && (
           <p className="text-green-500 text-3xl">
             Transacción completada con éxito
@@ -236,10 +235,18 @@ const Ethereum: React.FC = () => {
               variant="default"
               color="green"
               font="large"
-              className="mt-6 px-6 py-2 "
+              className="mt-6 px-6 py-2 flex items-center justify-center gap-2"
+              disabled={loading}
             >
-              Completar pago
+              {loading ? (
+                <>
+                  Procesando Pago
+                </>
+              ) : (
+                "Completar pago"
+              )}
             </Button>
+
           </div>
         ) : error ? (
           <>

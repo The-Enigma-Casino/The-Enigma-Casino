@@ -15,6 +15,7 @@ import {
   resetTableId,
   setGameType,
   setPendingJoinTableId,
+  tableCleanupCompleted,
   tableUpdated,
   tableWaitingOpponent,
 } from "./tablesEvents";
@@ -102,7 +103,7 @@ export const $waitingOpponentTableId = createStore<number | null>(null)
 
 export const $joiningTableId = createStore<number | null>(null)
   .on(joinTableClicked, (_, id) => id)
-  .reset([resetTableId, markLeftTable, leaveTableClicked]);
+  .reset([resetTableId, markLeftTable, leaveTableClicked, tableCleanupCompleted]);
 
   
 // Protección contra doble join

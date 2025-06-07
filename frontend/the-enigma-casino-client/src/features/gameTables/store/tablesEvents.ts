@@ -31,7 +31,16 @@ export const exitLobbyPage = createEvent();
 export const tableWaitingOpponent = createEvent<number>();
 export const clearWaitingOpponent = createEvent();
 
+export const tableCleanupCompleted = createEvent();
+
+
 // Friend
 export const setPendingJoinTableId = createEvent<number>();
 export const clearPendingJoinTableId = createEvent();
+
+
+joinTableClicked.watch((id) => {
+  console.log("🟢 joinTableClicked:", id);
+});
+
 

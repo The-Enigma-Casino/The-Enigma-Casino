@@ -3,9 +3,10 @@ import Modal from "../../../components/ui/modal/Modal";
 import { $isGameLoading, stopGameLoading } from "../stores";
 import Button from "../../../components/ui/button/Button";
 import { useEffect, useRef, useState } from "react";
-import { clearJoinProtection, sendLeaveTableMessage } from "../../gameTables/store/tablesIndex";
-
-
+import {
+  clearJoinProtection,
+  sendLeaveTableMessage,
+} from "../../gameTables/store/tablesIndex";
 
 const JoinGameModal = () => {
   const isOpenGame = useUnit($isGameLoading);
@@ -51,9 +52,17 @@ const JoinGameModal = () => {
   };
 
   return (
-    <Modal isOpen={isOpenGame} onClose={stopGameLoading} size="smallPlus" position="center">
+    <Modal
+      isOpen={isOpenGame}
+      onClose={stopGameLoading}
+      size="smallPlus"
+      position="center"
+    >
       <div className="relative flex flex-col items-center justify-center gap-4 text-white p-4">
-        <button onClick={toggleMute} className="absolute top-0 left-0 hover:opacity-80 transition">
+        <button
+          onClick={toggleMute}
+          className="absolute top-0 left-0 hover:opacity-80 transition"
+        >
           <img
             src={muted ? "/svg/speaker-off.svg" : "/svg/speaker-on.svg"}
             alt={muted ? "Sonido desactivado" : "Sonido activado"}
@@ -67,6 +76,7 @@ const JoinGameModal = () => {
           color="red"
           font="bold"
           onClick={() => {
+            console.log("🛑 Botón CANCELAR pulsado");
             setMuted(false);
             clearJoinProtection();
             stopGameLoading();
@@ -78,7 +88,6 @@ const JoinGameModal = () => {
       </div>
     </Modal>
   );
-}
-
+};
 
 export default JoinGameModal;

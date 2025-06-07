@@ -40,6 +40,39 @@ nohup ./start-backend.sh &
 
 ---
 
+### start-backend-and-waf.sh
+
+🔧 *Lanza el WAF (ModSecurity) y el backend en orden correcto.*
+
+* Levanta el contenedor Docker del WAF con `docker compose`.
+* Espera a que el WAF esté activo (escuchando en el puerto 8080).
+* Lanza el backend usando `dotnet` con `nohup`, dejando logs en `logs.txt`.
+* Se recomienda configurar este script con `@reboot` en `crontab` para que se inicie automáticamente al arrancar la máquina:
+
+```bash
+crontab -e
+```
+
+Y añadir:
+
+```bash
+@reboot /home/ubuntu/start-backend-and-waf.sh
+```
+
+Para hacerlo ejecutable:
+
+```bash
+chmod +x start-backend-and-waf.sh
+```
+
+Ejecutarlo manualmente:
+
+```bash
+./start-backend-and-waf.sh
+```
+
+---
+
 ### move_sftp_back_uploads.sh
  📦 _Mueve archivos subidos mediante SFTP (usuario sftp-back) a la carpeta del backend._
 

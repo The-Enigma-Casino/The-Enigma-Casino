@@ -38,11 +38,11 @@ function SidebarMenu({ onOpenFriendsModal }: SidebarMenuProps) {
       {/* Parte superior: perfil + botones */}
       <div className="flex flex-col items-center w-full gap-4 px-4">
         {/* Perfil */}
-        <div className="relative flex flex-col items-center w-[20rem] h-[13rem] gap-4 bg-[var(--Background-Overlay)] rounded-3xl border border-[var(--Green-lines)] pt-16">
+        <div className="relative flex flex-col items-center w-[20rem] h-[13rem] gap-4 bg-[var(--Background-Overlay)] rounded-3xl border-2 border-[var(--Green-lines)] pt-16 shadow-md shadow-gray-700">
           <img
             src={profileImage}
             alt="Imagen de Perfil"
-            className="absolute top-[-3rem] w-24 h-24 rounded-full bg-transparent hover:border-Principal "
+            className="absolute top-[-3rem] w-24 h-24 rounded-full bg-transparent hover:border-Principal transform transition-transform duration-300 hover:scale-110"
           />
           {token ? (
             <>

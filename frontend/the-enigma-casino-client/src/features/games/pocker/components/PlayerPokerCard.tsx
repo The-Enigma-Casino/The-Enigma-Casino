@@ -20,7 +20,7 @@ type Props = {
 
 export const PlayerPokerCard = ({ player }: Props) => {
   return (
-    <div className="bg-black/30 rounded-xl p-4 w-[300px] flex flex-col gap-3 text-white shadow-md">
+    <div className="bg-black/30 rounded-xl p-5 w-[300px] flex flex-col gap-4 text-white shadow-md">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -28,32 +28,39 @@ export const PlayerPokerCard = ({ player }: Props) => {
           {player.role && <RoleChip role={player.role} />}
         </div>
         {player.isTurn && (
-          <span className="text-green-300 font-semibold text-sm">
+          <span className="text-Principal font-semibold text-base">
             Tu turno
           </span>
         )}
       </div>
 
       {/* Apuestas */}
-      <div className="text-sm space-y-1">
-        <p>Fichas: <span className="font-semibold">{player.coins}</span></p>
-        <p>Apuesta actual: <span className="text-yellow-300">{player.currentBet}</span></p>
-        <p>Total apostado: <span className="text-yellow-300">{player.totalBet}</span></p>
+      <div className="text-lg space-y-2 leading-tight">
+        <p>
+          Fichas: <span className="font-bold text-Coins">{player.coins}</span>
+        </p>
+        <p>
+          Apuesta actual: <span className="font-bold text-Coins">{player.currentBet}</span>
+        </p>
+        <p>
+          Total apostado: <span className="font-bold text-Coins">{player.totalBet}</span>
+        </p>
       </div>
 
       {/* Cartas */}
       <div>
-      <CardStack cards={player.hand ?? []} gameType="poker" />
+        <CardStack cards={player.hand ?? []} gameType="poker" />
       </div>
 
       {/* Estado */}
       {player.state === "Fold" && (
-        <p className="text-red-400 font-semibold text-center">Te has retirado</p>
+        <p className="text-Color-Cancel text-lg font-semibold text-center">
+          Te has retirado
+        </p>
       )}
       {player.state === "AllIn" && (
-        <p className="text-yellow-300 font-semibold text-center">All-In</p>
+        <p className="text-Coins text-lg font-semibold text-center">All-In</p>
       )}
     </div>
   );
 };
-

@@ -8,14 +8,14 @@ export const CountdownBar = ({ countdown, total = 30 }: CountdownBarProps) => {
 
   const getBarColor = () => {
     if (countdown <= 5) return "bg-Color-Cancel";
-    if (countdown <= 10) return "bg-orange-400";
+    if (countdown <= 10) return "bg-Chip-Orange";
     return "bg-Coins";
   };
 
   return (
     <div className="flex flex-col items-center mb-6 w-full max-w-md">
       <p className="text-white text-lg font-bold mb-1">
-        Tiempo restante: <span className="text-yellow-300">{countdown}s</span>
+        Tiempo restante: <span className="text-Coins">{countdown}s</span>
       </p>
       <div className="w-full h-6 rounded-full overflow-hidden bg-black/30">
         <div

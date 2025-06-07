@@ -177,24 +177,24 @@ export const GamePlayerCardList = ({
               <div className="flex flex-col gap-1">
                 {gameType === "Poker" ? (
                   <>
-                    <p className="text-sm text-white/80">
+                    <p className="text-base text-white/80">
                       Fichas disponibles:{" "}
                       <span className="font-semibold text-Coins">
                         {player.coins}
                       </span>
                     </p>
                     {player.currentBet !== undefined && (
-                      <p className="text-sm text-white/80">
+                      <p className="text-base text-white/80">
                         Apuesta actual:{" "}
-                        <span className="font-semibold text-yellow-300">
+                        <span className="font-semibold text-Coins">
                           {player.currentBet}
                         </span>
                       </p>
                     )}
                     {player.totalBet !== undefined && (
-                      <p className="text-sm text-white/80">
+                      <p className="text-base text-white/80">
                         Total apostado:{" "}
-                        <span className="font-semibold text-yellow-300">
+                        <span className="font-semibold text-Coins">
                           {player.totalBet}
                         </span>
                       </p>
@@ -216,18 +216,18 @@ export const GamePlayerCardList = ({
                     </div>
 
                     {player.currentBet !== undefined && (
-                      <p className="text-sm text-white/80">
+                      <p className="text-base text-white/80">
                         Apuesta actual:{" "}
-                        <span className="font-semibold text-yellow-300">
+                        <span className="font-semibold text-Coins">
                           {player.currentBet}
                         </span>
                       </p>
                     )}
 
                     {player.totalBet !== undefined && (
-                      <p className="text-sm text-white/80">
+                      <p className="text-base text-white/80">
                         Total apostado:{" "}
-                        <span className="font-semibold text-yellow-300">
+                        <span className="font-semibold text-Coins">
                           {player.totalBet}
                         </span>
                       </p>
@@ -259,7 +259,7 @@ export const GamePlayerCardList = ({
               {/* Total */}
               {
                 gameType === "Blackjack" && (
-                  <p className="text-2xl font-bold text-yellow-300 text-center">
+                  <p className="text-2xl font-bold text-Coins text-center">
                     Total: {total}
                   </p>
                 )

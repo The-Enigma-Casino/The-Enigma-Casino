@@ -172,7 +172,7 @@ function RouletteGamePage() {
   };
 
   return (
-    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono flex flex-col gap-6">
+    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white font-mono flex flex-col gap-6 overflow-x-hidden">
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-8 flex-grow">
         <div className="flex flex-col items-center gap-6">
           <Roulette />

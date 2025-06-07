@@ -1,5 +1,15 @@
 import { sample } from "effector";
-import { clearPendingJoinTableId, clearWaitingOpponent, countdownCleared, gameStarted, joinTableClicked, sendLeaveTableMessage, tableUpdated, tableWaitingOpponent, tryJoinTable } from "./tablesEvents";
+import {
+  clearPendingJoinTableId,
+  clearWaitingOpponent,
+  countdownCleared,
+  gameStarted,
+  joinTableClicked,
+  sendLeaveTableMessage,
+  tableUpdated,
+  tableWaitingOpponent,
+  tryJoinTable,
+} from "./tablesEvents";
 import { messageSent } from "../../../websocket/store/wsIndex";
 import { $userId } from "../../auth/store/authStore";
 import { navigateTo } from "../../games/shared/router/navigateFx";
@@ -7,6 +17,7 @@ import { $coins } from "../../coins/store/coinsStore";
 import toast from "react-hot-toast";
 import { $currentTableId, $pendingJoinTableId } from "./tablesStores";
 
+import { hasUserAlreadyJoined, markUserAsJoining } from "./tablesStores";
 
 const getGamePathByTableId = (tableId: number): string => {
   if (tableId >= 1 && tableId <= 6) return "blackjack";
@@ -15,20 +26,23 @@ const getGamePathByTableId = (tableId: number): string => {
   return "unknown";
 };
 
-
 sample({
+  source: $userId,
   clock: joinTableClicked,
-  fn: (tableId) => {
-    const msg = JSON.stringify({
+  filter: (userId) => {
+    const numericId = Number(userId);
+    if (!numericId || hasUserAlreadyJoined(numericId)) return false;
+    markUserAsJoining(numericId);
+    return true;
+  },
+  fn: (_userId, tableId) =>
+    JSON.stringify({
       type: "game_table",
       action: "join_table",
       tableId: String(tableId),
-    });
-    return msg;
-  },
+    }),
   target: messageSent,
 });
-
 
 sample({
   clock: sendLeaveTableMessage,
@@ -78,7 +92,6 @@ sample({
   },
 });
 
-
 sample({
   source: $pendingJoinTableId,
   filter: (tableId) =>
@@ -90,7 +103,6 @@ sample({
   clock: tryJoinTable,
   target: clearPendingJoinTableId,
 });
-
 
 sample({
   clock: tableUpdated,

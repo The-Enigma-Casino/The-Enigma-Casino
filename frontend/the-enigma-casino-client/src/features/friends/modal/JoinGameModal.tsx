@@ -3,6 +3,7 @@ import Modal from "../../../components/ui/modal/Modal";
 import { $isGameLoading, stopGameLoading } from "../stores";
 import Button from "../../../components/ui/button/Button";
 import { useEffect, useRef, useState } from "react";
+import { clearJoinProtection, sendLeaveTableMessage } from "../../gameTables/store/tablesIndex";
 
 
 
@@ -67,7 +68,9 @@ const JoinGameModal = () => {
           font="bold"
           onClick={() => {
             setMuted(false);
+            clearJoinProtection();
             stopGameLoading();
+            sendLeaveTableMessage();
           }}
         >
           Cancelar

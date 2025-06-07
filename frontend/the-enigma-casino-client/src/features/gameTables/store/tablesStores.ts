@@ -103,3 +103,19 @@ export const $waitingOpponentTableId = createStore<number | null>(null)
 export const $joiningTableId = createStore<number | null>(null)
   .on(joinTableClicked, (_, id) => id)
   .reset([resetTableId, markLeftTable, leaveTableClicked]);
+
+  
+// Protección contra doble join
+const joinedTableUsers = new Set<number>();
+
+export function markUserAsJoining(userId: number) {
+  joinedTableUsers.add(userId);
+}
+
+export function hasUserAlreadyJoined(userId: number): boolean {
+  return joinedTableUsers.has(userId);
+}
+
+export function clearJoinProtection() {
+  joinedTableUsers.clear();
+}

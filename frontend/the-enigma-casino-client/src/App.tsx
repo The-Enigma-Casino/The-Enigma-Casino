@@ -24,9 +24,11 @@ function App() {
         position="top-left"
         reverseOrder={false}
         toastOptions={{
+          duration: 3000,
           style: {
             fontSize: "1.5rem",
             marginTop: "10rem",
+            touchAction: "manipulation",
           },
         }}
       />

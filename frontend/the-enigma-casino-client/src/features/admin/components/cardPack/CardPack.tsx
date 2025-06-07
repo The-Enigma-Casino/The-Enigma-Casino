@@ -60,7 +60,7 @@ export const CardPack = ({ pack }: Props) => {
             <img
               src={displayImage}
               alt="Pack"
-              className="w-[80px] aspect-square rounded-lg object-contain"
+              className="w-[80px] aspect-square rounded-lg object-cover"
             />
           </div>
 

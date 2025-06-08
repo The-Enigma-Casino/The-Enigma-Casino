@@ -5,7 +5,9 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        //"EMAIL_KEY": "",
+        "SERVER_URL": "http://localhost:7186"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5057"
@@ -15,11 +17,11 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
         // "JWT_KEY": "",
         // "EMAIL_KEY": "",
-        // "SERVER_URL": "",
-        // "CLIENT_URL": "",
+        "SERVER_URL": "https://localhost:7186",
+        "CLIENT_URL": "http://localhost:5173"
         // "STRIPE_KEY": "",
         // "NETWORKURL": "",
         // "METAMASK_WALLET": "",

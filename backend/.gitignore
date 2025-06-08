@@ -1,5 +1,4 @@
 .env*
-launchSettings.json
 credentials.json
 tokens/
 

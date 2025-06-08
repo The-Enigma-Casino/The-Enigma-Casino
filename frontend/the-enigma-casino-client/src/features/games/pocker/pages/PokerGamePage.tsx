@@ -85,12 +85,12 @@ export const PokerGamePage = () => {
   }, [decrement]);
 
   //BORRAR
-  console.log("🧠 Render PokerGamePage");
-  console.log(" - userId:", userId);
+  // console.log("🧠 Render PokerGamePage");
+  // console.log(" - userId:", userId);
   console.log(" - currentTurnUserId:", currentTurnUserId);
   console.log(" - isMyTurn:", isMyTurn);
-  console.log(" - validMoves:", validMoves);
-  console.log(" - opponentLeft:", opponentLeft);
+  // console.log(" - validMoves:", validMoves);
+  // console.log(" - opponentLeft:", opponentLeft);
 
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">
@@ -150,8 +150,8 @@ export const PokerGamePage = () => {
               coins: me.coins,
               state:
                 me.state === "Playing" ||
-                me.state === "Fold" ||
-                me.state === "AllIn"
+                  me.state === "Fold" ||
+                  me.state === "AllIn"
                   ? me.state
                   : undefined,
               role:
@@ -183,25 +183,25 @@ export const PokerGamePage = () => {
             nickName: p.nickname,
             hand: p.hand?.length
               ? p.hand.map((card) => ({
-                  suit: card.suit as Suit,
-                  rank: card.rank as CardRank,
-                  value: card.value,
-                  gameType: "Poker" as const,
-                }))
+                suit: card.suit as Suit,
+                rank: card.rank as CardRank,
+                value: card.value,
+                gameType: "Poker" as const,
+              }))
               : [
-                  {
-                    rank: "X" as CardRank,
-                    suit: "X" as Suit,
-                    value: 0,
-                    gameType: "Poker" as const,
-                  },
-                  {
-                    rank: "X" as CardRank,
-                    suit: "X" as Suit,
-                    value: 0,
-                    gameType: "Poker" as const,
-                  },
-                ],
+                {
+                  rank: "X" as CardRank,
+                  suit: "X" as Suit,
+                  value: 0,
+                  gameType: "Poker" as const,
+                },
+                {
+                  rank: "X" as CardRank,
+                  suit: "X" as Suit,
+                  value: 0,
+                  gameType: "Poker" as const,
+                },
+              ],
 
             bets: [],
             isTurn: p.id === currentTurnUserId,

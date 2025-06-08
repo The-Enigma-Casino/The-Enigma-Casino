@@ -80,8 +80,13 @@ public class UserService : BaseService
 
     public string GenerateToken(User user)
     {
+        string issuer = Environment.GetEnvironmentVariable("SERVER_URL");
+        string audience = Environment.GetEnvironmentVariable("CLIENT_URL");
+
         SecurityTokenDescriptor securityTokenDescriptor = new SecurityTokenDescriptor
         {
+            Issuer = issuer,
+            Audience = audience,
             Claims = new Dictionary<string, object>
             {
                 { "id", user.Id },
@@ -91,7 +96,7 @@ public class UserService : BaseService
             },
 
             //Cambiar tiempo a 3 minutos al acabar proyecto --> 3000 segundos
-            Expires = DateTime.UtcNow.AddHours(8),
+            Expires = DateTime.UtcNow.AddHours(4),
             SigningCredentials = new SigningCredentials(_tokenParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha256Signature)
         };
 

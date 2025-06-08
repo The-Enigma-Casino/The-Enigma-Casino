@@ -221,14 +221,19 @@ public class Program
             throw new InvalidOperationException("JWT_KEY is not configured in environment variables.");
         }
 
+        var issuer = Environment.GetEnvironmentVariable("SERVER_URL");
+        var audience = Environment.GetEnvironmentVariable("CLIENT_URL");
+
         builder.Services.AddAuthentication()
             .AddJwtBearer(options =>
             {
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    ValidateIssuer = true,
+                    ValidIssuer = issuer,
+                    ValidateAudience = true,
+                    ValidAudience = audience,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
                     ValidateLifetime = true,

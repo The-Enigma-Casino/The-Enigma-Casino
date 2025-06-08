@@ -158,19 +158,29 @@ sample({
 });
 
 export const logoutWithReason = createEvent<string>();
+let logoutInProgress = false;
+let lastLogoutReason: string | null = null;
 
 logoutWithReason.watch((reason) => {
-  console.error("Sesión inválida:", reason);
+  if (logoutInProgress) return;
+  if (lastLogoutReason === reason) return;
 
-  if (reason === "Cuenta baneada") {
-    toast.error("Tu cuenta ha sido baneada por un administrador.");
-  } else if (reason === "Auto-expulsión") {
-    toast.success("Has activado la auto expulsión. 💚");
-  } else if (reason === "Token expirado") {
-    toast("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
-  }
+  logoutInProgress = true;
+  lastLogoutReason = reason;
 
   logoutUser();
+
+  if (reason === "Token expirado") {
+    sessionStorage.setItem("logoutReason", reason);
+    window.location.href = "/auth/login";
+  } else {
+    if (reason === "Cuenta baneada") {
+      toast.error("Tu cuenta ha sido baneada por un administrador.");
+    } else if (reason === "Auto-expulsión") {
+      toast.success("Has activado la auto expulsión. 💚");
+    }
+    logoutInProgress = false;
+  }
 });
 
 sample({

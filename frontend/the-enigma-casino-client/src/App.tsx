@@ -11,6 +11,7 @@ import "./features/friends/stores/friends.samples";
 import { useEffect } from "react";
 import { connectSocket } from "./websocket/store/wsIndex";
 import { initAuth } from "./features/auth/utils/initAuth";
+import "./features/auth/interceptor/axiosSetup";
 
 function App() {
   useEffect(() => {

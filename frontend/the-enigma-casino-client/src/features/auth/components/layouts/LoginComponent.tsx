@@ -37,6 +37,17 @@ function LoginComponent() {
     }
   }, [authError]);
 
+  useEffect(() => {
+  const reason = sessionStorage.getItem("logoutReason");
+  if (reason) {
+    if (reason === "Token expirado") {
+      toast("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+    }
+
+    sessionStorage.removeItem("logoutReason");
+  }
+}, []);
+
   return (
     <>
       <div className="flex flex-col lg:flex-row w-full h-full lg:h-screen bg-background-page">

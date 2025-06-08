@@ -152,7 +152,7 @@ public class OrderService : BaseService
             throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
         }
 
-        decimal eurosConvertion = coinsWithdrawal * coinValueInEuros * 100;
+        decimal eurosConvertion = coinsWithdrawal * coinValueInEuros;
 
         int eurosConvertionInt = (int)eurosConvertion;
 

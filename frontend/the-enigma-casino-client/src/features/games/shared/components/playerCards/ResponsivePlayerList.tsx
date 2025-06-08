@@ -18,9 +18,13 @@ type GamePlayer = {
 type Props = {
   players: GamePlayer[];
   gameType: "Blackjack" | "Poker";
+  revealedHands?: {
+    userId: number;
+    cards: { rank: number; suit: number }[];
+  }[];
 };
 
-export const ResponsivePlayerList = ({ players, gameType }: Props) => {
+export const ResponsivePlayerList = ({ players, gameType, revealedHands }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -37,7 +41,7 @@ export const ResponsivePlayerList = ({ players, gameType }: Props) => {
   return (
     <>
       <div className="hidden lg:block">
-        <GamePlayerCardList players={players} gameType={gameType} />
+        <GamePlayerCardList players={players} gameType={gameType} revealedHands={revealedHands} />
       </div>
 
       <div className="block lg:hidden fixed top-4 right-4 z-1">
@@ -73,7 +77,7 @@ export const ResponsivePlayerList = ({ players, gameType }: Props) => {
 
             <div className="w-full flex justify-center">
               <div className={`${isMobile ? "scale-[0.92]" : ""} origin-top`}>
-                <GamePlayerCardList players={players} gameType={gameType} />
+                <GamePlayerCardList players={players} gameType={gameType} revealedHands={revealedHands} />
               </div>
             </div>
           </div>

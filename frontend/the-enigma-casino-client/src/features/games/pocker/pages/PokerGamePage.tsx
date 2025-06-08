@@ -29,7 +29,20 @@ import { PlayerPokerCard } from "../components/PlayerPokerCard";
 import { $playerAvatars } from "../../stores/gamesStore";
 import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
 import { RoundResult } from "../components/RoundResult";
-
+import { ResponsivePlayerList } from "../../shared/components/playerCards/ResponsivePlayerList";
+import { GameCard } from "../../shared/interfaces/gameCard.interface";
+type GamePlayer = {
+  id: number;
+  nickName: string;
+  hand: GameCard[];
+  total?: number;
+  bets?: { bet: string; amount: number }[];
+  isTurn?: boolean;
+  coins: number;
+  currentBet?: number;
+  totalBet?: number;
+  role?: "dealer" | "sb" | "bb";
+};
 export const PokerGamePage = () => {
   const pokerPhase = useUnit($pokerPhase);
 
@@ -70,6 +83,27 @@ export const PokerGamePage = () => {
     sendPokerAction({ move, amount });
   };
 
+  const formattedPlayers: GamePlayer[] = otherPlayersWithAvatar.map((p) => ({
+    id: p.id,
+    nickName: p.nickname ?? "Jugador desconocido",
+    hand: p.hand?.length
+      ? p.hand.map((card) => ({
+        suit: card.suit as Suit,
+        rank: card.rank as CardRank,
+        value: card.value,
+        gameType: "Poker" as const,
+      }))
+      : [
+        { rank: "X" as CardRank, suit: "X" as Suit, value: 0, gameType: "Poker" },
+        { rank: "X" as CardRank, suit: "X" as Suit, value: 0, gameType: "Poker" },
+      ],
+    bets: [],
+    isTurn: p.id === currentTurnUserId,
+    coins: p.coins,
+    currentBet: p.currentBet,
+    totalBet: p.totalBet,
+    role: ["dealer", "sb", "bb"].includes(p.role ?? "") ? (p.role as "dealer" | "sb" | "bb") : undefined,
+  }));
   useEffect(() => {
     if (players.length > 0) {
       const nicknames = players.map((p) => p.nickname);
@@ -83,14 +117,6 @@ export const PokerGamePage = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, [decrement]);
-
-  //BORRAR
-  // console.log("🧠 Render PokerGamePage");
-  // console.log(" - userId:", userId);
-  console.log(" - currentTurnUserId:", currentTurnUserId);
-  console.log(" - isMyTurn:", isMyTurn);
-  // console.log(" - validMoves:", validMoves);
-  // console.log(" - opponentLeft:", opponentLeft);
 
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">
@@ -177,42 +203,8 @@ export const PokerGamePage = () => {
       {/* Jugadores visibles */}
       <h2 className="text-2xl font-bold text-center mt-6 mb-4">Jugadores</h2>
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
-        <GamePlayerCardList
-          players={otherPlayersWithAvatar.map((p) => ({
-            id: p.id,
-            nickName: p.nickname,
-            hand: p.hand?.length
-              ? p.hand.map((card) => ({
-                suit: card.suit as Suit,
-                rank: card.rank as CardRank,
-                value: card.value,
-                gameType: "Poker" as const,
-              }))
-              : [
-                {
-                  rank: "X" as CardRank,
-                  suit: "X" as Suit,
-                  value: 0,
-                  gameType: "Poker" as const,
-                },
-                {
-                  rank: "X" as CardRank,
-                  suit: "X" as Suit,
-                  value: 0,
-                  gameType: "Poker" as const,
-                },
-              ],
-
-            bets: [],
-            isTurn: p.id === currentTurnUserId,
-            coins: p.coins,
-            currentBet: p.currentBet,
-            totalBet: p.totalBet,
-            role:
-              p.role === "dealer" || p.role === "sb" || p.role === "bb"
-                ? p.role
-                : undefined,
-          }))}
+        <ResponsivePlayerList
+          players={formattedPlayers}
           gameType="Poker"
           revealedHands={roundSummary?.revealedHands}
         />

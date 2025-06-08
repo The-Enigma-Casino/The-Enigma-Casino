@@ -1,0 +1,52 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5057"
+    },
+    "https": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+        // "JWT_KEY": "",
+        // "EMAIL_KEY": "",
+        // "SERVER_URL": "",
+        // "CLIENT_URL": "",
+        // "STRIPE_KEY": "",
+        // "NETWORKURL": "",
+        // "METAMASK_WALLET": "",
+        // "METAMASK_PRIVATE_WALLET": "",
+        // "COIN_VALUE_IN_EUROS": "",
+        // "DB_CONFIG": "",
+        // "USE_GMAIL_API": ""
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7186;http://localhost:5057"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:40224",
+      "sslPort": 44304
+    }
+  }
+}

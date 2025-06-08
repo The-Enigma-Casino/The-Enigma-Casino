@@ -1,5 +1,5 @@
 .env*
-
+launchSettings.json
 credentials.json
 tokens/
 
@@ -9,6 +9,7 @@ tokens/
 *.user
 *.userosscache
 *.sln.docstates
+
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

@@ -71,6 +71,6 @@ source "$ENV_TEMP"
 set +a
 
 echo "🟢 Lanzando $APP_DLL " | tee -a "$LOG_FILE"
-echo "🔍 Matando procesos viejos de backend (si hay)..."
+echo "🔍 Matando procesos viejos de backend"
 pkill -f the-enigma-casino-server.dll || true
 exec "$DOTNET_PATH" "$APP_DLL" --urls "http://0.0.0.0:5000"

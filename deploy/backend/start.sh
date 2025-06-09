@@ -32,7 +32,7 @@ PID=$!
 sleep 1
 
 if ps -p $PID > /dev/null; then
-  echo "✅ Backend iniciado correctamente (PID $PID)" | tee -a "$LOG_FILE"
+  echo "✅ Backend iniciado correctamente si (PID $PID)" | tee -a "$LOG_FILE"
 else
   echo "❌ Error al iniciar el backend." | tee -a "$LOG_FILE"
   exit 1

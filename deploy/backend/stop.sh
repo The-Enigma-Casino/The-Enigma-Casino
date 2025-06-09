@@ -7,6 +7,6 @@ echo "" >> "$LOG_FILE"
 echo "🛑 Ejecutando stop.sh - $(date)" | tee -a "$LOG_FILE"
 
 echo "🔍 Buscando procesos dotnet que contengan $APP_NAME..." | tee -a "$LOG_FILE"
-pkill -f "$APP_NAME" && echo "✅ Backend detenido." | tee -a "$LOG_FILE" || {
+sudo pkill -f "$APP_NAME" && echo "✅ Backend detenido." | tee -a "$LOG_FILE" || {
   echo "⚠️ No se encontró ningún proceso para detener." | tee -a "$LOG_FILE"
 }

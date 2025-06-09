@@ -171,12 +171,19 @@ public class BlackjackGame
                 player.Win(originalBet * 2);
                 Console.WriteLine($"{player.User.NickName} ha ganado.");
             }
-            else if (playerTotal == croupierTotal)
+            else if (playerTotal == croupierTotal && !(dealerHasBlackjack && !playerHasBlackjack))
             {
                 coinsChange = 0;
                 result = "draw";
                 player.Draw();
                 Console.WriteLine($"{player.User.NickName} ha empatado.");
+            }
+            else if (dealerHasBlackjack && !playerHasBlackjack)
+            {
+                coinsChange = -originalBet;
+                result = "lose";
+                player.Lose();
+                Console.WriteLine($"{player.User.NickName} pierde contra Blackjack del crupier.");
             }
 
             results.Add(new

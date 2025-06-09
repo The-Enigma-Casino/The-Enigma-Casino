@@ -72,7 +72,7 @@ set +a
 
 echo "🟢 Lanzando $APP_DLL " | tee -a "$LOG_FILE"
 if sudo lsof -i :5000; then
-  echo "Puerto 5000 ocupado, matando proceso...."
+  echo "Puerto 5000 ocupado, matando proceso..."
   sudo pkill -f the-enigma-casino-server.dll || true
   sleep 3
 fi

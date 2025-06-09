@@ -70,14 +70,7 @@ set -a
 source "$ENV_TEMP"
 set +a
 
-echo "🟢 Lanzando $APP_DLL con nohup..." | tee -a "$LOG_FILE"
+echo "🟢 Lanzando $APP_DLL " | tee -a "$LOG_FILE"
+echo "🔍 Matando procesos viejos de backend (si hay)..."
+pkill -f the-enigma-casino-server.dll || true
 exec "$DOTNET_PATH" "$APP_DLL" --urls "http://0.0.0.0:5000"
-PID=$!
-sleep 2
-
-if ps -p $PID > /dev/null; then
-  echo "✅ Backend lanzado correctamente (PID $PID)" | tee -a "$LOG_FILE"
-else
-  echo "❌ Error al lanzar el backend" | tee -a "$LOG_FILE"
-  exit 1
-fi

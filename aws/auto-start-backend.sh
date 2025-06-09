@@ -71,6 +71,9 @@ source "$ENV_TEMP"
 set +a
 
 echo "🟢 Lanzando $APP_DLL " | tee -a "$LOG_FILE"
-echo "🔍 Matando procesos viejos de backend"
-pkill -f the-enigma-casino-server.dll || true
+if sudo lsof -i :5000; then
+  echo "Puerto 5000 ocupado, matando proceso..."
+  sudo pkill -f the-enigma-casino-server.dll || true
+  sleep 3
+fi
 exec "$DOTNET_PATH" "$APP_DLL" --urls "http://0.0.0.0:5000"

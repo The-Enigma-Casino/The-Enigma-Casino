@@ -267,3 +267,10 @@ export const $persistedBets = createStore<Record<number, number>>({})
     return updated;
   })
   .on(resetPlayers, () => ({}));
+
+
+  export const $localPlayerRoundResult = createStore<{
+  result: string;
+  coinsChange: number;
+  finalTotal: number;
+} | null>(null);

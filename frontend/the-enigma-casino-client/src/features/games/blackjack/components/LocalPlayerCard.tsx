@@ -11,6 +11,7 @@ import { ActionButton } from "../../shared/components/buttonActions/ActionButton
 import { loadCoins } from "../../../coins/store/coinsStore";
 import { GameCard } from "../../shared/interfaces/gameCard.interface";
 import { CardRank, GameType, Suit } from "../../shared/types/gameCard.type";
+import { $localPlayerRoundResult } from "../store/bjIndex";
 
 type GamePlayer = {
   id: number;
@@ -20,7 +21,15 @@ type GamePlayer = {
   bets: { bet: string; amount: number }[];
   isTurn?: boolean;
   coins: number;
-  state?: "Playing" | "Bust" | "Stand" | "Lose" | "Win" | "Draw" | "Waiting" | "Blackjack";
+  state?:
+    | "Playing"
+    | "Bust"
+    | "Stand"
+    | "Lose"
+    | "Win"
+    | "Draw"
+    | "Waiting"
+    | "Blackjack";
 };
 
 type Props = {
@@ -42,6 +51,7 @@ export const LocalPlayerCard = ({
 }: Props) => {
   const avatars = useUnit($playerAvatars);
   const countryCache = useUnit($countryCache);
+  const result = useUnit($localPlayerRoundResult);
 
   const avatar = avatars.find((a) => a.nickName === player.nickName);
   const countryCode = avatar?.country?.toUpperCase();
@@ -84,14 +94,17 @@ export const LocalPlayerCard = ({
     cardCount <= 2
       ? "w-full max-w-[320px] md:max-w-[360px] lg:max-w-[400px]"
       : cardCount <= 4
-        ? "w-full max-w-[360px] md:max-w-[400px] lg:max-w-[440px]"
-        : cardCount <= 6
-          ? "w-full max-w-[380px] md:max-w-[420px] lg:max-w-[460px]"
-          : "w-full max-w-[400px] md:max-w-[440px] lg:max-w-[480px]";
+      ? "w-full max-w-[360px] md:max-w-[400px] lg:max-w-[440px]"
+      : cardCount <= 6
+      ? "w-full max-w-[380px] md:max-w-[420px] lg:max-w-[460px]"
+      : "w-full max-w-[400px] md:max-w-[440px] lg:max-w-[480px]";
 
+  console.log("[🔍 result desde $localPlayerRoundResult]", result);
 
   return (
-    <div className={`bg-black/40 rounded-xl p-4 flex flex-col transition-all duration-300 ease-in-out ${containerWidth}`}>
+    <div
+      className={`bg-black/40 rounded-xl p-4 flex flex-col transition-all duration-300 ease-in-out ${containerWidth}`}
+    >
       <div
         className={`relative  p-4 rounded-xl text-white shadow-md transition-shadow flex flex-col gap-3
           }`}
@@ -134,16 +147,17 @@ export const LocalPlayerCard = ({
             <div
               className="transition-transform origin-center inline-flex"
               style={{
-                transform: `scale(${visibleCards.length <= 2
-                  ? 1
-                  : visibleCards.length <= 4
+                transform: `scale(${
+                  visibleCards.length <= 2
+                    ? 1
+                    : visibleCards.length <= 4
                     ? 0.95
                     : visibleCards.length === 5
-                      ? 0.8
-                      : visibleCards.length === 6
-                        ? 0.68
-                        : 0.68
-                  })`,
+                    ? 0.8
+                    : visibleCards.length === 6
+                    ? 0.68
+                    : 0.68
+                })`,
               }}
             >
               <CardStack cards={visibleCards} gameType="blackjack" />
@@ -153,7 +167,7 @@ export const LocalPlayerCard = ({
 
         {/* Total */}
         {gameType === "Blackjack" && (
-          <p className="text-2xl font-bold text-yellow-300 text-center">
+          <p className="text-2xl font-bold text-Coins text-center">
             Total: {total}
           </p>
         )}
@@ -161,8 +175,9 @@ export const LocalPlayerCard = ({
         {/* Turno */}
         {player.isTurn && (
           <p
-            className={`text-xl font-semibold text-center h-6 ${player.isTurn ? "text-Principal" : "text-transparent"
-              }`}
+            className={`text-xl font-semibold text-center h-6 ${
+              player.isTurn ? "text-Principal" : "text-transparent"
+            }`}
           >
             Turno de {player.nickName}
           </p>
@@ -179,14 +194,22 @@ export const LocalPlayerCard = ({
             </div>
           )}
 
-        {/* Estado textual */}
         {gameState === "InProgress" && player.state !== "Playing" && (
-          <p className="text-2xl italic text-white/70 mt-2 text-center">
+          <p
+            className={`text-2xl mt-2 text-center transition-all duration-300 ease-in-out ${
+              player.state === "Win" || player.state === "Blackjack"
+                ? "text-Coins animate-pulse"
+                : "text-white/70"
+            }`}
+          >
             {player.state === "Bust" && "💥 Te pasaste de 21!"}
             {player.state === "Stand" && "🧍 Te plantaste. Esperando..."}
             {player.state === "Draw" && "🤝 Empate"}
             {player.state === "Lose" && "❌ Has perdido esta ronda."}
-            {player.state === "Win" && "🏆 ¡Victoria!"}
+            {(player.state === "Win" || player.state === "Blackjack") &&
+              `🏆 ¡Victoria! ${
+                result?.coinsChange ? `+${result.coinsChange} fichas` : ""
+              }`}
           </p>
         )}
       </div>

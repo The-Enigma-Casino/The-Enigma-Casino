@@ -96,3 +96,5 @@ export const CAN_SEND_REQUEST = `${API_BASE_URL}FriendRequest/can-send`;
 export const IS_FRIEND = `${API_BASE_URL}FriendRequest/is-friend`;
 export const SEARCH_USERS = `${API_BASE_URL}User/search-user`;
 
+/* ENDPOINTS DE USUARIOS ONLINES */
+export const ONLINE_USERS = `${API_BASE_URL}OnlineUsers/count`;

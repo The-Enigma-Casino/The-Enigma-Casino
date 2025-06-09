@@ -7,7 +7,7 @@ import {
   socketMessageReceived,
   updateOnlineUsers,
 } from "./wsIndex";
-import { WS_BASE_URL } from "../../config";
+import { ONLINE_USERS, WS_BASE_URL } from "../../config";
 
 export const connectWebSocketFx = createEffect(async (token: string) => {
   const decoded = jwtDecode<{ id: string }>(token);
@@ -67,4 +67,17 @@ socketMessageReceived.watch((data) => {
   if (data.type === "poker") {
     console.log("📩 [WS] Mensaje de poker:", data.action, data);
   }
+});
+
+// Obtener el numero de usuarios online en caso de que no haya WebSocket
+
+export const fetchOnlineUsersFx = createEffect(async () => {
+  const res = await fetch(ONLINE_USERS);
+  if (!res.ok) throw new Error("No se pudo obtener el número de usuarios online");
+  const data = await res.json();
+  return data.onlineUsers;
+});
+
+fetchOnlineUsersFx.done.watch(({ result }) => {
+  updateOnlineUsers(result);
 });

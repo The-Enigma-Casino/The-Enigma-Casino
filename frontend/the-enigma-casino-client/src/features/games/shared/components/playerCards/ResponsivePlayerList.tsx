@@ -56,12 +56,11 @@ export const ResponsivePlayerList = ({ players, gameType, revealedHands }: Props
       {isOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-black/20"
             onClick={() => setIsOpen(false)}
           />
 
           <div className="ml-auto h-full w-full max-w-[340px] bg-green-950 text-white shadow-lg p-4 overflow-y-auto overflow-x-hidden flex flex-col items-center animate-slide-in">
-
             <div className="flex justify-between items-center mb-4 z-50 relative">
               <button
                 className="bg-[var(--Color-Cancel)] p-4 rounded-full shadow-lg z-50 relative"

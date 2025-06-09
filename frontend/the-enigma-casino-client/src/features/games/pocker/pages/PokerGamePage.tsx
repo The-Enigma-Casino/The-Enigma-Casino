@@ -125,7 +125,7 @@ export const PokerGamePage = () => {
         {/* Columna central: contenido principal */}
         <div className="flex-1 flex flex-col items-center w-full max-w-full overflow-hidden">
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-center font-bold mb-6 drop-shadow">
+          <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl text-center font-bold mt-2 mb-6 drop-shadow">
             ♣️ Poker
           </h1>
 
@@ -145,10 +145,12 @@ export const PokerGamePage = () => {
 
           {/* Cartas comunitarias */}
           <div className="flex justify-center items-center flex-col gap-4 mb-8">
-            {communityCards.length === 0 ? (
-              <p className="text-xl text-white/80">
-                Sin cartas comunitarias todavía.
-              </p>
+            {communityCards.length === 0 && !roundSummary ? (
+              (
+                <p className="text-2xl text-white/80">
+                  Sin cartas comunitarias todavía.
+                </p>
+              )
             ) : (
               <div
                 className="transition-transform origin-center inline-flex"
@@ -176,7 +178,11 @@ export const PokerGamePage = () => {
               </div>
             )}
           </div>
-
+          {roundSummary && (
+            <div className="mb-6 text-2xl sm:text-2xl md:text-3xl text-Coins font-bold animate-pulse text-center max-w-xs sm:max-w-md mx-auto px-2">
+              🃏 Barajando cartas para la próxima ronda...
+            </div>
+          )}
           {/* Mano del jugador local */}
           {me && (
             <div className="flex justify-center mb-10">

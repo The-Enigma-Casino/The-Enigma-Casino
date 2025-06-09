@@ -37,7 +37,7 @@ export const ActionControls: FC<Props> = ({
           <div className="flex gap-2 items-center">
             <input
               type="number"
-              className="w-24 px-2 py-1 text-black rounded"
+              className="flex-grow px-4 py-3 rounded-lg text-black font-bold text-base sm:text-lg md:text-xl border border-gray-700"
               min={1}
               max={maxRaise}
               value={raiseAmount}

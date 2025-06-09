@@ -4,6 +4,12 @@ let x = GAME_WIDTH;
 let speed = OBSTACLE.speed;
 let treasure = false;
 
+const treasureImg = new Image();
+treasureImg.src = "/img/treasure.webp";
+
+const cloverImg = new Image();
+cloverImg.src = "/img/clover.webp";
+
 export function initObstacle() {
   x = GAME_WIDTH + 100;
   speed = OBSTACLE.speed;
@@ -22,13 +28,9 @@ export function updateObstacle(score: number) {
 
 export function drawObstacle(ctx: CanvasRenderingContext2D) {
   if (treasure) {
-    const treasureImg = new Image();
-    treasureImg.src = "/img/treasure.webp";
-    ctx.drawImage(treasureImg, GAME_WIDTH, GAME_HEIGHT, 50, 50);
+    ctx.drawImage(treasureImg, x, GAME_HEIGHT - 50, 50, 50);
   } else {
-    const img = new Image();
-    img.src = "/img/clover.webp";
-    ctx.drawImage(img, x, GAME_HEIGHT - 48, 51, 48);
+    ctx.drawImage(cloverImg, x, GAME_HEIGHT - 48, 51, 48);
   }
 }
 

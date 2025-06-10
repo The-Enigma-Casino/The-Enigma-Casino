@@ -1,17 +1,12 @@
+version: '3'
+
 services:
   modsec-waf:
-    image: owasp/modsecurity-crs:nginx
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: enigma-waf
     ports:
       - "8080:80"
     volumes:
-      - ./modsecurity/modsecurity-override.conf:/etc/modsecurity.d/override.conf:ro
       - ./logs:/var/log
-    environment:
-      - DISABLE_ENVSUBST=true
-
-
-# https://github.com/coreruleset/modsecurity-crs-docker
-# /home/ubuntu/enigma-waf/docker-compose.yml
-# docker compose down
-# docker compose up -d

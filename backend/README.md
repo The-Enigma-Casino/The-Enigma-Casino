@@ -122,13 +122,13 @@ dotnet run
 
 ## 🔍 Swagger en desarrollo
 
-Al ejecutar el backend en modo Development, se activa automáticamente la documentación interactiva de la API REST mediante Swagger:
+La documentación interactiva de la API REST está disponible en producción mediante Swagger, accesible desde:
 
 ```url
-https://localhost:7186/swagger/index.html
+https://theenigmacasino.runasp.net/swagger/index.html
 ```
 
-Desde ahí puedes explorar y probar todos los endpoints disponibles sin necesidad de herramientas externas como Postman.
+Desde ahí puedes explorar y probar todos los endpoints disponibles sin necesidad de herramientas externas como Postman. 
 
 Para pruebas con WebSockets, puedes utilizar plataformas como:
 - [WebSocket King](https://websocketking.com/)

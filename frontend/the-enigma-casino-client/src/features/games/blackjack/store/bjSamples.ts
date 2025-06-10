@@ -2,6 +2,8 @@ import { sample } from "effector";
 import { playerPlaceBet, playerStand, doubleDown, playerHit } from "./bjEvents";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { messageSent } from "../../../../websocket/store/wsIndex";
+import { $localPlayerRoundResult, $roundResults } from "./bjStores";
+import { $userId } from "../../../auth/store/authStore";
 
 sample({
   clock: playerPlaceBet,
@@ -55,4 +57,20 @@ sample({
 
 messageSent.watch((msg) => {
   console.log("Mensaje enviado al WS:", msg);
+});
+
+
+sample({
+  source: { results: $roundResults, uid: $userId },
+  fn: ({ results, uid }) => {
+    const r = results.find((res) => res.userId === Number(uid));
+    return r
+      ? {
+          result: r.result,
+          coinsChange: r.coinsChange,
+          finalTotal: r.finalTotal,
+        }
+      : null;
+  },
+  target: $localPlayerRoundResult,
 });

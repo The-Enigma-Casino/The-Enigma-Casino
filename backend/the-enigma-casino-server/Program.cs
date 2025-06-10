@@ -288,13 +288,15 @@ public class Program
 
         app.UseRouting();
 
-        // Middleware de desarrollo (Swagger y CORS)
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
+        //// Middleware de desarrollo (Swagger y CORS)
+        //if (app.Environment.IsDevelopment())
+        //{
+        //    app.UseSwagger();
+        //    app.UseSwaggerUI();
 
-        }
+        // Swagger publico para presentación 
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
         app.UseCors("MyPolicy");
 

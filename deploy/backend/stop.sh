@@ -6,7 +6,16 @@ APP_NAME="the-enigma-casino-server.dll"
 echo "" >> "$LOG_FILE"
 echo "🛑 Ejecutando stop.sh - $(date)" | tee -a "$LOG_FILE"
 
-echo "🔍 Buscando procesos dotnet que contengan $APP_NAME..." | tee -a "$LOG_FILE"
-pkill -f "$APP_NAME" && echo "✅ Backend detenido." | tee -a "$LOG_FILE" || {
-  echo "⚠️ No se encontró ningún proceso para detener." | tee -a "$LOG_FILE"
-}
+echo "🧨 Parando servicio enigma-backend.service..." | tee -a "$LOG_FILE"
+sudo systemctl stop enigma-backend.service
+
+echo "🔍 Verificando si hay procesos .NET en puerto 5000..." | tee -a "$LOG_FILE"
+sleep 5
+
+PID=$(sudo lsof -t -i:5000)
+if [ -n "$PID" ]; then
+  echo "⚠️ Proceso aún activo en el puerto 5000 (PID $PID). Matando..." | tee -a "$LOG_FILE"
+  sudo kill -9 $PID
+else
+  echo "✅ Puerto 5000 libre." | tee -a "$LOG_FILE"
+fi

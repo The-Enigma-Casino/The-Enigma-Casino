@@ -1,0 +1,14 @@
+[Unit]
+Description=Deploy and start Enigma WAF
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/enigma-waf
+ExecStart=/bin/bash /home/ubuntu/enigma-waf/deploy-waf.sh
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

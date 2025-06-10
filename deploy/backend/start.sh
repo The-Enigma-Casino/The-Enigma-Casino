@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Detectar si esta instancia es de backend
+if [ "$(cat /etc/instance-type 2>/dev/null)" != "backend" ]; then
+  echo "⛔ Esta instancia no es de backend. Abortando install.sh." | tee -a "$LOG_FILE"
+  exit 0
+fi
+
 LOG_FILE="/tmp/backend-start.log"
 APP_ENV="/home/ubuntu/backend-code-deploy/.env.production"
 
@@ -18,7 +24,7 @@ fi
 
 # Asegurar que no hay procesos sueltos
 echo "🧼 Deteniendo backend si estaba activo..." | tee -a "$LOG_FILE"
-sudo systemctl stop enigma-backend.service
+sudo systemctl stop enigma-backend.service 2>/dev/null || true
 
 # Recargar definición del servicio (por si se actualizó el .service)
 echo "🔁 Recargando systemd..." | tee -a "$LOG_FILE"

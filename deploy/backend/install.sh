@@ -40,3 +40,11 @@ rsync -av --exclude='.env.production' \
           "$PUBLISH_TEMP_DIR/" "$DEPLOY_DIR/" 2>&1 | tee -a "$LOG_FILE"
 
 echo "✅ Backend actualizado correctamente en $DEPLOY_DIR." | tee -a "$LOG_FILE"
+
+echo "🔁 Recargando systemd para asegurar visibilidad del servicio..." | tee -a "$LOG_FILE"
+sudo systemctl daemon-reload
+
+echo "🔐 Habilitando servicio si no lo está..." | tee -a "$LOG_FILE"
+sudo systemctl enable enigma-backend.service || {
+  echo "⚠️ El servicio no pudo habilitarse. Verifica si existe correctamente en /etc/systemd/system." | tee -a "$LOG_FILE"
+}

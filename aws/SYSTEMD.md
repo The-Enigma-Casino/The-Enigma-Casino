@@ -16,8 +16,11 @@ After=network.target
 [Service]
 Type=simple
 User=ubuntu
-ExecStart=/bin/bash /home/ubuntu/auto-start-backend.sh
 WorkingDirectory=/home/ubuntu
+ExecStart=/bin/bash /home/ubuntu/auto-start-backend.sh
+ExecStop=/bin/bash /home/ubuntu/stop-backend.sh
+KillSignal=SIGINT
+TimeoutStopSec=10
 StandardOutput=journal
 StandardError=journal
 Restart=on-failure

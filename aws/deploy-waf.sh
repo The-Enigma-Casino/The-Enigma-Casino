@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#  El script de despliegue para el WAF de Enigma Casino
+
 # === DEFINICIÓN DE BACKENDS ===
 BACKEND1="172.31.83.190"
 BACKEND2="172.31.26.208"

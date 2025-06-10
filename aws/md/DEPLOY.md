@@ -1,8 +1,7 @@
-# 🚀 The Enigma Casino – Backend Deployment Guide
+# 🚀 Backend Deployment Guide
 
 Este documento detalla el proceso de despliegue del backend de **The Enigma Casino** en una instancia EC2 de AWS, usando **GitHub Actions + AWS CodeDeploy**, con ejecución gestionada mediante `systemd`.
 
----
 
 ## 📂 Estructura general
 
@@ -15,7 +14,6 @@ Este documento detalla el proceso de despliegue del backend de **The Enigma Casi
 └── .env.production    # Variables de entorno privadas (no se sube al repo)
 ```
 
----
 
 ## ⚙️ Servicio systemd
 
@@ -35,8 +33,11 @@ After=network.target
 [Service]
 Type=simple
 User=ubuntu
-ExecStart=/bin/bash /home/ubuntu/auto-start-backend.sh
 WorkingDirectory=/home/ubuntu
+ExecStart=/bin/bash /home/ubuntu/auto-start-backend.sh
+ExecStop=/bin/bash /home/ubuntu/stop-backend.sh
+KillSignal=SIGINT
+TimeoutStopSec=10
 StandardOutput=journal
 StandardError=journal
 Restart=on-failure
@@ -53,7 +54,6 @@ sudo systemctl daemon-reload
 sudo systemctl enable enigma-backend.service
 ```
 
----
 
 ## 🔁 Flujo de despliegue CodeDeploy
 
@@ -75,7 +75,7 @@ sudo systemctl enable enigma-backend.service
    * Hace `systemctl stop` y `start` del servicio
    * Verifica que se haya iniciado correctamente
 
----
+
 
 ## 📄 Logs útiles
 
@@ -103,7 +103,6 @@ sudo systemctl enable enigma-backend.service
 sudo journalctl -u enigma-backend.service
 ```
 
----
 
 ## 🧪 Comprobaciones rápidas
 
@@ -125,10 +124,10 @@ sudo lsof -i :5000
 sudo tail -n 100 /opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log
 ```
 
----
 
 ## ☝️ Notas finales
 
 * Asegúrate de que `.env.production` está presente en `/home/ubuntu/backend-code-deploy/`
 * Este flujo asume que el servicio ya ha sido creado manualmente
 * Los scripts están preparados para ser ejecutados varias veces sin causar conflictos
+

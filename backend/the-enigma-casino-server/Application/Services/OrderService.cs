@@ -146,14 +146,14 @@ public class OrderService : BaseService
         }
 
         string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
-
+        coinValueStr = coinValueStr.Replace(',', '.');
         // Transforma fichas retiradas a euros
         if (string.IsNullOrEmpty(coinValueStr) || !decimal.TryParse(coinValueStr, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal coinValueInEuros))
         {
             throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
         }
 
-        decimal eurosConvertion = coinsWithdrawal * coinValueInEuros;
+        decimal eurosConvertion = coinsWithdrawal * coinValueInEuros * 100;
 
         int eurosConvertionInt = (int)eurosConvertion;
 

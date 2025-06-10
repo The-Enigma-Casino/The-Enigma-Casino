@@ -101,7 +101,7 @@ function Header() {
                   className="cursor-pointer text-[var(--Coins)] text-[2.4rem] font-bold inline-flex items-center gap-2 truncate max-w-[12ch]"
                   onClick={() => navigate("/catalog")}
                 >
-                  {coins} <img src="/svg/coins.svg" alt="Fichas" />
+                  {coins} <img src="/svg/coins.svg" alt="Fichas" className={`${classes.coinflip}`} />
                 </button>
                 <img
                   src="/svg/exit.svg"

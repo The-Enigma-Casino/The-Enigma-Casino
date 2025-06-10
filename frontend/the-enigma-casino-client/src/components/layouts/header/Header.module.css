@@ -143,3 +143,25 @@
 .rotatingClose {
   animation: rotateClose 0.5s ease forwards;
 }
+
+
+@keyframes coinFlip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.coinflip {
+  animation: coinFlip 1s ease-in-out;
+  transform-style: preserve-3d;
+}
+
+.coinflip {
+  transition: transform 0.6s;
+}
+button:hover .coinflip {
+  transform: rotateY(360deg);
+}

@@ -1,4 +1,5 @@
-﻿using the_enigma_casino_server.Application.Dtos;
+﻿using System.Globalization;
+using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Application.Mappers;
 using the_enigma_casino_server.Application.Services.Blockchain;
 using the_enigma_casino_server.Application.Services.Email;
@@ -147,7 +148,7 @@ public class OrderService : BaseService
         string coinValueStr = Environment.GetEnvironmentVariable("COIN_VALUE_IN_EUROS");
 
         // Transforma fichas retiradas a euros
-        if (string.IsNullOrEmpty(coinValueStr) || !decimal.TryParse(coinValueStr, out decimal coinValueInEuros))
+        if (string.IsNullOrEmpty(coinValueStr) || !decimal.TryParse(coinValueStr, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal coinValueInEuros))
         {
             throw new InvalidOperationException("La variable de entorno 'COIN_VALUE_IN_EUROS' no está configurada correctamente.");
         }

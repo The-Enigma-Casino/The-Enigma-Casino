@@ -40,36 +40,18 @@ nohup ./start-backend.sh &
 
 ---
 
-### start-backend-and-waf.sh
+### auto-start-backend.sh
 
-🔧 *Lanza el WAF (ModSecurity) y el backend en orden correcto.*
+🔄 _Script de arranque automático para el backend .NET de The Enigma Casino._
 
-* Levanta el contenedor Docker del WAF con `docker compose`.
-* Espera a que el WAF esté activo (escuchando en el puerto 8080).
-* Lanza el backend usando `dotnet` con `nohup`, dejando logs en `logs.txt`.
-* Se recomienda configurar este script con `@reboot` en `crontab` para que se inicie automáticamente al arrancar la máquina:
+Este script se ejecuta como servicio del sistema mediante `systemd` y permite iniciar el backend en segundo plano al arrancar la instancia EC2.
 
-```bash
-crontab -e
-```
+Está vinculado al servicio: `Enigma Backend .NET Service`
 
-Y añadir:
-
-```bash
-@reboot /home/ubuntu/start-backend-and-waf.sh
-```
-
-Para hacerlo ejecutable:
-
-```bash
-chmod +x start-backend-and-waf.sh
-```
-
-Ejecutarlo manualmente:
-
-```bash
-./start-backend-and-waf.sh
-```
+- Valida y carga las variables de entorno desde .env.production.
+- Mata cualquier proceso anterior que esté ocupando el puerto 5000.
+- Lanza el backend con dotnet usando el archivo the-enigma-casino-server.dll.
+- Registra actividad en /tmp/startup-backend.log y debug en /tmp/debug-cron.log.
 
 ---
 
@@ -112,3 +94,37 @@ Ejecutarlo:
 ```bash
 sudo ./move_sftp_front_uploads.sh
 ```
+
+---
+
+### deploy-waf.sh
+
+🐋 _Script de despliegue automático para el contenedor WAF (enigma-waf) de The Enigma Casino._
+
+Este script detecta automáticamente el backend activo y ajusta la configuración de Nginx para enrutar el tráfico correctamente. Luego reinicia el contenedor Docker del WAF aplicando los cambios.
+
+- Detecta cuál de los dos backends configurados está en línea.
+- Genera los archivos de configuración de Nginx (default.conf, proxy_backend.conf) desde plantillas.
+- Sustituye puertos internos (8080/8443 → 80/443) en la configuración de Nginx.
+- Actualiza la IP del backend activo en la directiva proxy_pass.
+- Reinicia el contenedor Docker `enigma-waf` y recarga Nginx para aplicar cambios.
+
+---
+
+### waf-watchdog.sh
+
+👁️ _Script watchdog que monitorea continuamente los backends y reinicia automáticamente el WAF si el backend principal deja de responder._
+
+Este script corre en segundo plano como servicio systemd y supervisa la salud de los backends para garantizar la disponibilidad del WAF.
+
+- Comprueba cada 15 segundos cuál backend está activo.
+- Detecta cambios en el backend activo.
+- Reinicia el servicio `waf-deploy.service` al detectar un cambio para actualizar la configuración y mantener el enrutamiento correcto.
+
+
+
+
+
+
+
+

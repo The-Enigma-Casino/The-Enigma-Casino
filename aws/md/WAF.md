@@ -1,6 +1,4 @@
-# 📘 README — Enigma WAF Deployment & Failover Setup
-
-## 🎯 Objetivo
+# 🔐 Web Application Firewall (WAF)
 
 Este sistema protege el frontend del casino mediante un **Web Application Firewall (WAF)** basado en:
 
@@ -10,13 +8,12 @@ Este sistema protege el frontend del casino mediante un **Web Application Firewa
 * Scripts personalizados en bash
 * Supervisión automática y failover entre backends
 
----
 
 ## 📂 Estructura de archivos
 
 ```
 /home/ubuntu/enigma-waf/
-├── deploy-waf.sh                       # Script principal de despliegue
+├── deploy-waf.sh                      # Script principal de despliegue
 ├── waf-watchdog.sh                    # Script que supervisa el backend
 ├── nginx/
 │   ├── conf.d/default.conf.template   # Plantilla de configuración base
@@ -25,14 +22,9 @@ Este sistema protege el frontend del casino mediante un **Web Application Firewa
 └── docker-compose.yml                 # Define el contenedor enigma-waf
 ```
 
----
-
 ## ⚙️ Servicios systemd
 
-| Servicio               | Descripción                                                                   |
-| ---------------------- | ----------------------------------------------------------------------------- |
-| `waf-deploy.service`   | Ejecuta `deploy-waf.sh` al iniciar la instancia                               |
-| `waf-watchdog.service` | Verifica qué backend está disponible y relanza el `waf-deploy` si hay cambios |
+Ejecutan `deploy-waf.sh` al iniciar la instancia y verifican qué backend está disponible y relanza el `waf-deploy` si hay cambios.
 
 Ver estado:
 
@@ -41,7 +33,45 @@ systemctl status waf-deploy.service
 systemctl status waf-watchdog.service
 ```
 
----
+### waf-deploy.service
+
+Ejecuta `deploy-waf.sh` al iniciar la instancia.
+
+```bash
+[Unit]
+Description=Deploy and start Enigma WAF
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/enigma-waf
+ExecStart=/bin/bash /home/ubuntu/enigma-waf/deploy-waf.sh
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### waf-watchdog.service
+
+Verifica qué backend está disponible y relanza el `waf-deploy` si hay cambios
+
+```bash
+[Unit]
+Description=WAF Backend Watchdog
+After=network.target docker.service
+
+[Service]
+User=ubuntu
+ExecStart=/bin/bash /home/ubuntu/enigma-waf/waf-watchdog.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
 
 ## 🧠 Cómo funciona
 
@@ -59,8 +89,6 @@ systemctl status waf-watchdog.service
 * Llama a `systemctl restart waf-deploy.service`
 * Nginx se actualiza con la nueva IP backend
 
----
-
 ## 🧪 Prueba de ataques (desde consola del navegador)
 
 ```js
@@ -73,7 +101,8 @@ fetch("https://theenigmacasino.duckdns.org/?q=<script>alert(1)</script>")
 
 Esperado: `403 Forbidden` — WAF bloquea el ataque.
 
----
+![403](/aws/img/image.png)
+
 
 ## 🚨 Recuperación manual
 
@@ -95,11 +124,3 @@ docker exec enigma-waf tail -n 50 /var/log/modsec_audit.log
 docker exec enigma-waf tail -n 50 /var/log/nginx/error.log
 ```
 
----
-
-## ✅ Último test superado
-
-🟢 Auto-failover
-🟢 Recarga sin intervención
-🟢 ModSecurity bloqueando ataques reales
-🟢 HTTPS accesible desde dominio `.duckdns.org`

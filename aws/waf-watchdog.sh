@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Este script monitorea dos servidores backend y reinicia el servicio waf-deploy.service en caso del backend principal caiga.
+
 ACTIVE_BACKEND=""
 
 while true; do

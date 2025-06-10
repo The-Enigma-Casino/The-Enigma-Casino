@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Este script se ejecuta desde systemd para iniciar el backend .NET  
+
 echo "$(date) - SYSTEMD está intentando ejecutar este script" >> /tmp/sustemd-test.log
 set -e
 

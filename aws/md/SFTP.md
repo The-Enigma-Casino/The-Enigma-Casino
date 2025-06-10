@@ -1,4 +1,4 @@
-# 📁 Transferencia de archivos por SFTP – The Enigma Casino
+# 📁 Transferencia de archivos por SFTP
 
 Durante el despliegue y mantenimiento de _The Enigma Casino_, se ha habilitado acceso seguro mediante **SFTP (SSH File Transfer Protocol)** para subir archivos a las instancias.
 

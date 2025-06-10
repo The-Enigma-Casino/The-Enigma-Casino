@@ -8,16 +8,16 @@ files:
 hooks:
   BeforeInstall:
     - location: /deploy/backend/stop.sh
-      timeout: 60
+      timeout: 300
     - location: /deploy/frontend/stop.sh
-      timeout: 60
+      timeout: 300
   AfterInstall:
     - location: /deploy/backend/install.sh
-      timeout: 60
+      timeout: 300
     - location: /deploy/frontend/install.sh
-      timeout: 60
+      timeout: 300
   ApplicationStart:
     - location: /deploy/backend/start.sh
-      timeout: 60
+      timeout: 300
     - location: /deploy/frontend/start.sh
-      timeout: 60
+      timeout: 300

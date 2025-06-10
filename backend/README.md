@@ -118,6 +118,8 @@ dotnet run
 * MySQL en producción
 * SQLite para pruebas automáticas
 
+📎 Documentación completa, diagrama entidad-relación (ER) y script SQL están disponibles en [`db/`](./db).
+
 ---
 
 ## 🔍 Swagger en desarrollo

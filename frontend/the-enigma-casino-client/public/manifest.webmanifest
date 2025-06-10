@@ -1,0 +1,24 @@
+{
+  "name": "The Enigma Casino",
+  "short_name": "Enigma",
+  "start_url": "/landing",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#2e2e2e",
+  "orientation": "portrait",
+  "description": "Casino online multijugador con Poker, Blackjack, Ruleta y mini juegos.",
+  "lang": "es",
+  "categories": ["casino", "education", "multiplayer"],
+  "icons": [
+    {
+      "src": "/img/icono.webp",
+      "sizes": "192x192",
+      "type": "image/webp"
+    },
+    {
+      "src": "/img/icono.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}

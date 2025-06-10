@@ -14,7 +14,7 @@ export default defineConfig({
         start_url: "/landing",
         display: "standalone",
         background_color: "#0f0f0f",
-        theme_color: "#2e2e2e",
+        theme_color: "#1c1c1c",
         orientation: "portrait",
         description:
           "Casino online multijugador con Poker, Blackjack, Ruleta y mini juegos.",

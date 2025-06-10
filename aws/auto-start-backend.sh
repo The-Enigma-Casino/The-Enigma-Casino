@@ -70,14 +70,10 @@ set -a
 source "$ENV_TEMP"
 set +a
 
-echo "🟢 Lanzando $APP_DLL con nohup..." | tee -a "$LOG_FILE"
-exec "$DOTNET_PATH" "$APP_DLL" --urls "http://0.0.0.0:5000"
-PID=$!
-sleep 2
-
-if ps -p $PID > /dev/null; then
-  echo "✅ Backend lanzado correctamente (PID $PID)" | tee -a "$LOG_FILE"
-else
-  echo "❌ Error al lanzar el backend" | tee -a "$LOG_FILE"
-  exit 1
+echo "🟢 Lanzando $APP_DLL " | tee -a "$LOG_FILE"
+if sudo lsof -i :5000; then
+  echo "Puerto 5000 ocupado, matando proceso..."
+  sudo pkill -f the-enigma-casino-server.dll || true
+  sleep 3
 fi
+exec "$DOTNET_PATH" "$APP_DLL" --urls "http://0.0.0.0:5000"

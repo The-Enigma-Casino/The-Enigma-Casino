@@ -11,12 +11,12 @@
   "categories": ["casino", "education", "multiplayer"],
   "icons": [
     {
-      "src": "/img/icono.webp",
+      "src": "/img/logo192x192.png",
       "sizes": "192x192",
       "type": "image/webp"
     },
     {
-      "src": "/img/icono.webp",
+      "src": "/img/logo512x512.png",
       "sizes": "512x512",
       "type": "image/webp"
     }

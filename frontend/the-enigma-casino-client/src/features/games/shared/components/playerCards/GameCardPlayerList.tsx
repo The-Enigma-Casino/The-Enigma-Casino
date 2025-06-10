@@ -10,6 +10,7 @@ import { CardStack } from "../GameCardStack";
 import { RoleChip } from "../../../pocker/components/RoleChip";
 import { GameCard } from "../../interfaces/gameCard.interface";
 import { CardRank, GameType, Suit } from "../../types/gameCard.type";
+import classes from "./GameCardPlayerList.module.css"
 
 type GamePlayer = {
   id: number;
@@ -95,12 +96,12 @@ export const GamePlayerCardList = ({
 
 
   return (
-    <div className={`bg-black/40 rounded-xl p-3 flex flex-col gap-6 ${containerWidth} max-w-[95vw] sm:max-w-none`}>
+    <div className={`bg-gray/30 rounded-xl p-3 flex flex-col gap-6 ${containerWidth} max-w-[95vw] sm:max-w-none`}>
       <h2 className="text-3xl font-bold text-white mb-4 text-center shadow-xl-white">
         Jugadores en la partida
       </h2>
 
-      <div className="grid grid-cols-1 gap-y-6">
+      <div className={`grid grid-cols-1 gap-y-6 overflow-y-auto max-h-[80vh] p-1 ${classes.customScroll}`}>
         {players.map((player) => {
           const avatar = getAvatar(player.nickName);
           if (!avatar) return null;
@@ -156,7 +157,7 @@ export const GamePlayerCardList = ({
                     className="w-16 h-16 rounded-full border border-white object-cover"
                   />
                   <div className="flex items-center gap-2">
-                    <p className="text-white font-semibold text-2xl">
+                    <p className="text-white font-semibold text-lg sm:text-xl md:text-2xl">
                       {player.nickName}
                     </p>
                     {player.role && <RoleChip role={player.role} />}
@@ -174,17 +175,17 @@ export const GamePlayerCardList = ({
               </div>
 
               {/* Apuestas */}
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 text-xl sm:text-xl md:text-2xl">
                 {gameType === "Poker" ? (
                   <>
-                    <p className="text-base text-white/80">
+                    <p className="text-white/80">
                       Fichas disponibles:{" "}
                       <span className="font-semibold text-Coins">
                         {player.coins}
                       </span>
                     </p>
                     {player.currentBet !== undefined && (
-                      <p className="text-base text-white/80">
+                      <p className=" text-white/80">
                         Apuesta actual:{" "}
                         <span className="font-semibold text-Coins">
                           {player.currentBet}
@@ -192,7 +193,7 @@ export const GamePlayerCardList = ({
                       </p>
                     )}
                     {player.totalBet !== undefined && (
-                      <p className="text-base text-white/80">
+                      <p className=" text-white/80">
                         Total apostado:{" "}
                         <span className="font-semibold text-Coins">
                           {player.totalBet}
@@ -203,20 +204,20 @@ export const GamePlayerCardList = ({
                 ) : (
                   <>
                     <div className="flex gap-2 items-baseline">
-                      <p className="text-xl font-bold text-white">Apuesta:</p>
+                      <p className="font-bold text-white">Apuesta:</p>
                       {player.coins === 0 || !player.bets?.length ? (
-                        <p className="text-xl text-Coins">
+                        <p className=" text-Coins">
                           Sin apuestas activas
                         </p>
                       ) : (
-                        <p className="text-xl text-Coins">
+                        <p className="text-Coins">
                           {player.bets[0].amount}
                         </p>
                       )}
                     </div>
 
                     {player.currentBet !== undefined && (
-                      <p className="text-base text-white/80">
+                      <p className="text-white/80">
                         Apuesta actual:{" "}
                         <span className="font-semibold text-Coins">
                           {player.currentBet}
@@ -225,7 +226,7 @@ export const GamePlayerCardList = ({
                     )}
 
                     {player.totalBet !== undefined && (
-                      <p className="text-base text-white/80">
+                      <p className=" text-white/80">
                         Total apostado:{" "}
                         <span className="font-semibold text-Coins">
                           {player.totalBet}

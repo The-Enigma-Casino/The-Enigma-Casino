@@ -24,12 +24,24 @@ import {
   sendPokerAction,
 } from "../stores/pokerIndex";
 import { $userId } from "../../../auth/store/authStore";
-import { GamePlayerCardList } from "../../shared/components/playerCards/GameCardPlayerList";
 import { PlayerPokerCard } from "../components/PlayerPokerCard";
 import { $playerAvatars } from "../../stores/gamesStore";
 import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
 import { RoundResult } from "../components/RoundResult";
-
+import { ResponsivePlayerList } from "../../shared/components/playerCards/ResponsivePlayerList";
+import { GameCard } from "../../shared/interfaces/gameCard.interface";
+type GamePlayer = {
+  id: number;
+  nickName: string;
+  hand: GameCard[];
+  total?: number;
+  bets?: { bet: string; amount: number }[];
+  isTurn?: boolean;
+  coins: number;
+  currentBet?: number;
+  totalBet?: number;
+  role?: "dealer" | "sb" | "bb";
+};
 export const PokerGamePage = () => {
   const pokerPhase = useUnit($pokerPhase);
 
@@ -70,6 +82,27 @@ export const PokerGamePage = () => {
     sendPokerAction({ move, amount });
   };
 
+  const formattedPlayers: GamePlayer[] = otherPlayersWithAvatar.map((p) => ({
+    id: p.id,
+    nickName: p.nickname ?? "Jugador desconocido",
+    hand: p.hand?.length
+      ? p.hand.map((card) => ({
+        suit: card.suit as Suit,
+        rank: card.rank as CardRank,
+        value: card.value,
+        gameType: "Poker" as const,
+      }))
+      : [
+        { rank: "X" as CardRank, suit: "X" as Suit, value: 0, gameType: "Poker" },
+        { rank: "X" as CardRank, suit: "X" as Suit, value: 0, gameType: "Poker" },
+      ],
+    bets: [],
+    isTurn: p.id === currentTurnUserId,
+    coins: p.coins,
+    currentBet: p.currentBet,
+    totalBet: p.totalBet,
+    role: ["dealer", "sb", "bb"].includes(p.role ?? "") ? (p.role as "dealer" | "sb" | "bb") : undefined,
+  }));
   useEffect(() => {
     if (players.length > 0) {
       const nicknames = players.map((p) => p.nickname);
@@ -84,138 +117,125 @@ export const PokerGamePage = () => {
     return () => clearInterval(interval);
   }, [decrement]);
 
-  //BORRAR
-  console.log("🧠 Render PokerGamePage");
-  console.log(" - userId:", userId);
-  console.log(" - currentTurnUserId:", currentTurnUserId);
-  console.log(" - isMyTurn:", isMyTurn);
-  console.log(" - validMoves:", validMoves);
-  console.log(" - opponentLeft:", opponentLeft);
-
   return (
-    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white">
-      <h1 className="text-7xl text-center font-bold mb-6 drop-shadow">
-        ♣️ Poker
-      </h1>
+    <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white w-full overflow-x-hidden">
 
-      <p className="text-center mb-4 text-3xl">
-        Fase: <span className="font-bold text-green-300">{pokerPhase}</span>
-      </p>
+      <div className="max-w-full-2xl mx-auto flex flex-row gap-6 items-start">
 
-      {roundSummary && (
-        <div className="animate-fade-in mb-6">
-          <RoundResult summary={roundSummary?.summary ?? []} />
-        </div>
-      )}
+        {/* Columna central: contenido principal */}
+        <div className="flex-1 flex flex-col items-center w-full max-w-full overflow-hidden">
 
-      {isMyTurn && !opponentLeft && (
-        <div className="w-full flex justify-center mb-4">
-          <CountdownBar countdown={countdown} total={total} />
-        </div>
-      )}
+          <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl text-center font-bold mt-2 mb-6 drop-shadow">
+            ♣️ Poker
+          </h1>
 
-      {/* Cartas comunitarias */}
-      <div className="flex justify-center gap-4 mb-8">
-        {communityCards.length === 0 ? (
-          <p className="text-xl text-white/80">
-            Sin cartas comunitarias todavía.
+          <p className="text-center mb-4 text-3xl">
+            Fase: <span className="font-bold text-green-300">{pokerPhase}</span>
           </p>
-        ) : (
-          <CardStack
-            cards={communityCards.map((card) => ({
-              rank: card.rank as CardRank,
-              suit: card.suit as Suit,
-              value: card.value,
-              gameType: "Poker",
-            }))}
-            hidden={false}
-            gameType="poker"
+
+          {roundSummary && (
+            <div className="animate-fade-in mb-6">
+              <RoundResult summary={roundSummary?.summary ?? []} />
+            </div>
+          )}
+
+          {isMyTurn && !opponentLeft && (
+            <CountdownBar countdown={countdown} total={total} />
+          )}
+
+          {/* Cartas comunitarias */}
+          <div className="flex justify-center items-center flex-col gap-4 mb-8">
+            {communityCards.length === 0 && !roundSummary ? (
+              (
+                <p className="text-2xl text-white/80">
+                  Sin cartas comunitarias todavía.
+                </p>
+              )
+            ) : (
+              <div
+                className="transition-transform origin-center inline-flex"
+                style={{
+                  transform: `scale(${communityCards.length <= 2
+                    ? 1
+                    : communityCards.length <= 4
+                      ? 0.95
+                      : communityCards.length === 5
+                        ? 0.8
+                        : 0.8
+                    })`,
+                }}
+              >
+                <CardStack
+                  cards={communityCards.map((card) => ({
+                    rank: card.rank as CardRank,
+                    suit: card.suit as Suit,
+                    value: card.value,
+                    gameType: "Poker",
+                  }))}
+                  hidden={false}
+                  gameType="poker"
+                />
+              </div>
+            )}
+          </div>
+          {roundSummary && (
+            <div className="mb-6 text-2xl sm:text-2xl md:text-3xl text-Coins font-bold animate-pulse text-center max-w-xs sm:max-w-md mx-auto px-2">
+              🃏 Barajando cartas para la próxima ronda...
+            </div>
+          )}
+          {/* Mano del jugador local */}
+          {me && (
+            <div className="flex justify-center mb-10">
+              <PlayerPokerCard
+                player={{
+                  id: me.id,
+                  nickname: me.nickname,
+                  hand: hand.map((card) => ({
+                    suit: card.suit as Suit,
+                    rank: card.rank as CardRank,
+                    value: card.value,
+                    gameType: "Poker" as const,
+                  })),
+                  coins: me.coins,
+                  state:
+                    me.state === "Playing" ||
+                      me.state === "Fold" ||
+                      me.state === "AllIn"
+                      ? me.state
+                      : undefined,
+                  role:
+                    me.role === "dealer" || me.role === "sb" || me.role === "bb"
+                      ? me.role
+                      : undefined,
+                  currentBet: me.currentBet ?? 0,
+                  totalBet: me.totalBet ?? 0,
+                  isTurn: me.id === currentTurnUserId,
+                }}
+              />
+            </div>
+          )}
+
+          {/* Controles de acción para turno local */}
+          {isMyTurn && !opponentLeft && (
+            <ActionControls
+              validMoves={validMoves}
+              callAmount={callAmount}
+              maxRaise={maxRaise}
+              onAction={handleAction}
+            />
+          )}
+
+        </div>
+
+        {/* Lista de otros jugadores */}
+        {formattedPlayers.length > 0 && (
+          <ResponsivePlayerList
+            players={formattedPlayers}
+            gameType="Poker"
+            revealedHands={roundSummary?.revealedHands}
           />
         )}
-      </div>
 
-      {/* Mano del jugador */}
-      {me && (
-        <div className="flex justify-center mb-10">
-          <PlayerPokerCard
-            player={{
-              id: me.id,
-              nickname: me.nickname,
-              hand: hand.map((card) => ({
-                suit: card.suit as Suit,
-                rank: card.rank as CardRank,
-                value: card.value,
-                gameType: "Poker" as const,
-              })),
-              coins: me.coins,
-              state:
-                me.state === "Playing" ||
-                me.state === "Fold" ||
-                me.state === "AllIn"
-                  ? me.state
-                  : undefined,
-              role:
-                me.role === "dealer" || me.role === "sb" || me.role === "bb"
-                  ? me.role
-                  : undefined,
-              currentBet: me.currentBet ?? 0,
-              totalBet: me.totalBet ?? 0,
-            }}
-          />
-        </div>
-      )}
-
-      {isMyTurn && !opponentLeft && (
-        <ActionControls
-          validMoves={validMoves}
-          callAmount={callAmount}
-          maxRaise={maxRaise}
-          onAction={handleAction}
-        />
-      )}
-
-      {/* Jugadores visibles */}
-      <h2 className="text-2xl font-bold text-center mt-6 mb-4">Jugadores</h2>
-      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
-        <GamePlayerCardList
-          players={otherPlayersWithAvatar.map((p) => ({
-            id: p.id,
-            nickName: p.nickname,
-            hand: p.hand?.length
-              ? p.hand.map((card) => ({
-                  suit: card.suit as Suit,
-                  rank: card.rank as CardRank,
-                  value: card.value,
-                  gameType: "Poker" as const,
-                }))
-              : [
-                  {
-                    rank: "X" as CardRank,
-                    suit: "X" as Suit,
-                    value: 0,
-                    gameType: "Poker" as const,
-                  },
-                  {
-                    rank: "X" as CardRank,
-                    suit: "X" as Suit,
-                    value: 0,
-                    gameType: "Poker" as const,
-                  },
-                ],
-
-            bets: [],
-            isTurn: p.id === currentTurnUserId,
-            coins: p.coins,
-            currentBet: p.currentBet,
-            totalBet: p.totalBet,
-            role:
-              p.role === "dealer" || p.role === "sb" || p.role === "bb"
-                ? p.role
-                : undefined,
-          }))}
-          gameType="Poker"
-          revealedHands={roundSummary?.revealedHands}
-        />
       </div>
     </div>
   );

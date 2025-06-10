@@ -35,7 +35,7 @@ export const PlayerPokerCard = ({ player }: Props) => {
       </div>
 
       {/* Apuestas */}
-      <div className="text-lg space-y-2 leading-tight">
+      <div className="text-xl sm:text-xl md:text-2xl space-y-2 leading-tight">
         <p>
           Fichas: <span className="font-bold text-Coins">{player.coins}</span>
         </p>

@@ -1,3 +1,5 @@
+![banner](https://github.com/The-Enigma-Casino/.github/blob/main/img/Portada.png?raw=true)
+
 # ☁️ AWS Deployment – The Enigma Casino
 
 Este directorio contiene la documentación relacionada con la infraestructura de despliegue en **AWS** para el proyecto _The Enigma Casino_, incluyendo frontend, backend, balanceadores y conexiones internas.

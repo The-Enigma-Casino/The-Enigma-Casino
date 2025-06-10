@@ -21,6 +21,7 @@ import {
   removedByInactivity,
   opponentLeftReceived,
   matchReadyReceived,
+  currentTurnChanged,
 } from "../stores/pokerIndex";
 
 let reentryAttempts = 0;
@@ -108,6 +109,11 @@ socketMessageReceived.watch((data) => {
       validMovesUpdated(data.validMoves);
       callAmountUpdated(data.callAmount ?? 0);
       maxRaiseUpdated(data.maxRaise ?? 0);
+      break;
+    }
+
+    case "turn_started": {
+      currentTurnChanged(data.currentTurnUserId);
       break;
     }
 

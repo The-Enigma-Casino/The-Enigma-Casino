@@ -124,6 +124,19 @@ public class PokerNotifier : IPokerNotifier
         await _sender.SendToUserAsync(player.UserId.ToString(), response);
 
         Console.WriteLine($"🌀 Notificado turno a {player.User.NickName}. Puede: {string.Join(", ", validMoves)}");
+        var connectedUserIds = match.Players
+        .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn || p.PlayerState == PlayerState.Fold)
+        .Select(p => p.UserId.ToString())
+        .ToList();
+
+        await _sender.BroadcastToUsersAsync(connectedUserIds, new
+        {
+            type = "poker",
+            action = "turn_started",
+            tableId = match.GameTableId,
+            currentTurnUserId = player.UserId,
+            turnDuration = 20,
+        });
     }
 
     public async Task NotifyPlayerActionAsync(Player player, string move)

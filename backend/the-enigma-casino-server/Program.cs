@@ -42,11 +42,6 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.WebHost.ConfigureKestrel(serverOptions =>
-        {
-            serverOptions.Limits.MaxRequestBodySize = 52428800;
-        });
-
         ConfigureServices(builder);
 
         var app = builder.Build();

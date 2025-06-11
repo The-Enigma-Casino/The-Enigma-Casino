@@ -1,5 +1,6 @@
-﻿using System.Text;
+﻿using the_enigma_casino_server.Application.Dtos;
 using the_enigma_casino_server.Application.Services.Blockchain;
+using the_enigma_casino_server.Application.Services.Invoices;
 using the_enigma_casino_server.Core.Entities;
 using the_enigma_casino_server.Core.Entities.Enum;
 using the_enigma_casino_server.Infrastructure.Database;
@@ -12,12 +13,18 @@ public class EmailService
     private readonly IWebHostEnvironment _env;
     private readonly UnitOfWork _unitOfWork;
     private readonly BlockchainService _blockchainService;
+    private readonly IInvoiceGenerator _invoiceService;
+    private readonly IWithdrawalInvoiceGenerator _withdrawalInvoiceGenerator;
 
-    public EmailService(UnitOfWork unitOfWork, BlockchainService blockchainService, IWebHostEnvironment env)
+
+
+    public EmailService(UnitOfWork unitOfWork, BlockchainService blockchainService, IWebHostEnvironment env, IInvoiceGenerator invoiceService, IWithdrawalInvoiceGenerator withdrawalInvoiceGenerator)
     {
         _unitOfWork = unitOfWork;
         _blockchainService = blockchainService;
         _env = env;
+        _invoiceService = invoiceService;
+        _withdrawalInvoiceGenerator = withdrawalInvoiceGenerator;
     }
 
     private async Task<string> GetEmailTemplateAsync(string templateName)
@@ -64,7 +71,20 @@ public class EmailService
             emailContent = emailContent.Replace("{PaymentMethodSpecificInfo}", "");
         }
 
-        await EmailHelper.SendEmailAsync(user.Email, "Confirmación de compra", emailContent, true);
+        byte[] pdfData = _invoiceService.GeneratePurchaseInvoice(order);
+
+        string fileName = BuildInvoiceFileName(order.PaidDate, user.FullName);
+
+        await EmailHelper.SendEmailAsync(
+            to: user.Email,
+            subject: "Confirmación de compra",
+            body: emailContent,
+            isHtml: true,
+            attachments: new Dictionary<string, byte[]>
+            {
+                { fileName, pdfData }
+            }
+        );
     }
 
 
@@ -81,11 +101,34 @@ public class EmailService
         emailContent = emailContent.Replace("{OrderPrice}", (order.Price / 100.0).ToString("0.00"));
         emailContent = emailContent.Replace("{OrderCoins}", order.Coins.ToString());
         emailContent = emailContent.Replace("{PaymentMethod}", "Ethereum");
-        emailContent = emailContent.Replace("{EthereumPrice}", $"{equivalentEth.ToString("0.000000")} ETH");
+        emailContent = emailContent.Replace("{EthereumPrice}", $"{equivalentEth:0.000000} ETH");
 
-        await EmailHelper.SendEmailAsync(user.Email, "Confirmación de retirada", emailContent, true);
+        var dto = new OrderWithdrawalDto
+        {
+            Id = order.Id,
+            PaidDate = order.PaidDate,
+            Coins = order.Coins,
+            Price = order.Price,
+            PayMode = PayMode.Ethereum,
+            EthereumPrice = equivalentEth,
+            EthereumTransactionHash = order.EthereumTransactionHash
+        };
 
+        byte[] pdfData = _withdrawalInvoiceGenerator.GenerateWithdrawalInvoice(dto, user);
+        string fileName = BuildInvoiceFileName(order.PaidDate, user.FullName, "Retiro");
+
+        await EmailHelper.SendEmailAsync(
+            to: user.Email,
+            subject: "Confirmación de retirada",
+            body: emailContent,
+            isHtml: true,
+            attachments: new Dictionary<string, byte[]>
+            {
+            { fileName, pdfData }
+            }
+        );
     }
+
 
     public async Task SendBannedEmailAsync(User user)
     {
@@ -140,7 +183,15 @@ public class EmailService
             isHtml: true
         );
     }
+    private string BuildInvoiceFileName(DateTime paidDate, string fullName, string prefix = "Factura")
+    {
+        string formattedDate = paidDate.ToString("dd-MM-yyyy");
+        string sanitizedUser = fullName
+            .Replace(" ", "_")
+            .Replace("á", "a").Replace("é", "e").Replace("í", "i")
+            .Replace("ó", "o").Replace("ú", "u").Replace("ñ", "n");
 
-
+        return $"{prefix}_{formattedDate}_{sanitizedUser}.pdf";
+    }
 }
 

@@ -11,6 +11,7 @@ using the_enigma_casino_server.Application.Services;
 using the_enigma_casino_server.Application.Services.Blockchain;
 using the_enigma_casino_server.Application.Services.Email;
 using the_enigma_casino_server.Application.Services.Friendship;
+using the_enigma_casino_server.Application.Services.Invoices;
 using the_enigma_casino_server.Infrastructure.Database;
 using the_enigma_casino_server.Infrastructure.Database.Seeder;
 using the_enigma_casino_server.Middleware;
@@ -81,6 +82,7 @@ public class Program
         builder.Services.AddScoped<GameService>();
         builder.Services.AddScoped<UserFriendService>();
         builder.Services.AddScoped<FriendRequestService>();
+        builder.Services.AddScoped<IInvoiceGenerator, InvoiceGenerator>();
 
         // --- Validaciones ---
         builder.Services.AddSingleton<ValidationService>();

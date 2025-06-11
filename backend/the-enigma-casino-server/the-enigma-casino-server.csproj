@@ -58,6 +58,9 @@
 		<None Update="Templates\factura_compra_enigma.docx">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Templates\factura_retirada_enigma.docx">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>

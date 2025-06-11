@@ -15,7 +15,7 @@ import { $userId } from "../../auth/store/authStore";
 import { navigateTo } from "../../games/shared/router/navigateFx";
 import { $coins } from "../../coins/store/coinsStore";
 import toast from "react-hot-toast";
-import { $currentTableId, $pendingJoinTableId } from "./tablesStores";
+import { $currentTableId, $pendingJoinTableId, unmarkUserAsJoined } from "./tablesStores";
 
 import { hasUserAlreadyJoined, markUserAsJoining } from "./tablesStores";
 
@@ -124,4 +124,14 @@ sample({
   } else {
     clearWaitingOpponent();
   }
+});
+
+sample({
+  clock: sendLeaveTableMessage,
+  source: $userId,
+  filter: (userId) => !!userId,
+  fn: (userId) => {
+    unmarkUserAsJoined(Number(userId));
+    return userId;
+  },
 });

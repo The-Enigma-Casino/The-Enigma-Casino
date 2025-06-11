@@ -120,3 +120,7 @@ export function hasUserAlreadyJoined(userId: number): boolean {
 export function clearJoinProtection() {
   joinedTableUsers.clear();
 }
+
+export function unmarkUserAsJoined(userId: number) {
+  joinedTableUsers.delete(userId);
+}

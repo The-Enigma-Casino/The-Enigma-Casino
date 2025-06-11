@@ -1,23 +1,30 @@
 #!/bin/bash
 
-#  El script de despliegue para el WAF de Enigma Casino
-
 # === DEFINICIÓN DE BACKENDS ===
 BACKEND1="172.31.83.190"
 BACKEND2="172.31.26.208"
 
-# === DETECCIÓN DE BACKEND ACTIVO ===
-echo "🔍 Probando $BACKEND1..."
-if curl -s --connect-timeout 2 "http://$BACKEND1:5000/api" | grep -q "The Enigma Casino"; then
-  ACTIVE_BACKEND=$BACKEND1
-else
-  echo "🔍 Probando $BACKEND2..."
+# === DETECCIÓN ROBUSTA DE BACKEND ACTIVO ===
+echo "🔍 Buscando backend activo..."
+for i in {1..10}; do
+  echo "🔁 Intento $i: probando $BACKEND1..."
+  if curl -s --connect-timeout 2 "http://$BACKEND1:5000/api" | grep -q "The Enigma Casino"; then
+    ACTIVE_BACKEND=$BACKEND1
+    break
+  fi
+
+  echo "🔁 Intento $i: probando $BACKEND2..."
   if curl -s --connect-timeout 2 "http://$BACKEND2:5000/api" | grep -q "The Enigma Casino"; then
     ACTIVE_BACKEND=$BACKEND2
-  else
-    echo "❌ Ningún backend está respondiendo."
-    exit 1
+    break
   fi
+
+  sleep 3
+done
+
+if [ -z "$ACTIVE_BACKEND" ]; then
+  echo "❌ Ningún backend respondió tras varios intentos."
+  exit 1
 fi
 
 echo "📡 Backend activo detectado: $ACTIVE_BACKEND"
@@ -62,15 +69,20 @@ docker exec enigma-waf sed -i -e 's/listen 8080 default_server;/listen 80 defaul
 
 # --- Corregir proxy_pass en proxy_backend.conf ---
 echo "🔧 Corrigiendo IP en proxy_backend.conf..."
-
-# 1️⃣ Primera vez (plantilla por defecto)
 docker exec enigma-waf sed -i "s|proxy_pass http://localhost:80;|proxy_pass http://$ACTIVE_BACKEND:5000;|" \
   /etc/nginx/includes/proxy_backend.conf
-
-# 2️⃣ Si ya había sido modificado antes
 docker exec enigma-waf sed -i "s|proxy_pass http://.*:5000;|proxy_pass http://$ACTIVE_BACKEND:5000;|" \
   /etc/nginx/includes/proxy_backend.conf
 
+# --- Corregir CORS en cors.conf ---
+echo "🔧 Corrigiendo CORS en cors.conf..."
+docker exec enigma-waf sed -i \
+  "s|Access-Control-Allow-Origin: \*|Access-Control-Allow-Origin: https://the-enigma-casino.duckdns.org|g" \
+  /etc/nginx/includes/cors.conf
+
+docker exec enigma-waf sed -i \
+  "s|Access-Control-Allow-Headers: \*|Access-Control-Allow-Headers: Authorization, Content-Type|g" \
+  /etc/nginx/includes/cors.conf
 
 # --- Recargar Nginx para aplicar todo ---
 echo "🔁 Recargando Nginx..."

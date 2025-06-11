@@ -64,12 +64,12 @@ function Footer() {
           </a>
 
           <a
-            href="/policies"
+            href="/install-app"
             target="_blank"
             rel="noopener noreferrer"
             className="text-white hover:underline"
           >
-            Acuerdo con el usuario
+            Instalar aplicación
           </a>
         </div>
 

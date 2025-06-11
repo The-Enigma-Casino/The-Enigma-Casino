@@ -28,25 +28,40 @@ namespace the_enigma_casino_server.Utilities
             });
         }
 
-        public async Task SendEmailAsync(string to, string subject, string body)
+        public async Task SendEmailAsync(string to, string subject, string body, Dictionary<string, byte[]>? attachments = null)
         {
-            MimeMessage message = new MimeMessage();
+            var message = new MimeMessage();
             message.From.Add(new MailboxAddress("The Enigma Casino", "theenigmacasino@gmail.com"));
             message.To.Add(MailboxAddress.Parse(to));
             message.Subject = subject;
-            message.Body = new TextPart("html") { Text = body };
 
-            using MemoryStream stream = new MemoryStream();
+            var builder = new BodyBuilder
+            {
+                HtmlBody = body
+            };
+
+            if (attachments != null)
+            {
+                foreach (var attachment in attachments)
+                {
+                    builder.Attachments.Add(attachment.Key, attachment.Value);
+                }
+            }
+
+            message.Body = builder.ToMessageBody();
+
+            using var stream = new MemoryStream();
             message.WriteTo(stream);
-            var rawMessage = Convert.ToBase64String(stream.ToArray())
+            string rawMessage = Convert.ToBase64String(stream.ToArray())
                 .Replace("+", "-")
                 .Replace("/", "_")
                 .Replace("=", "");
 
-            Message gmailMessage = new Message { Raw = rawMessage };
+            var gmailMessage = new Message { Raw = rawMessage };
             await _gmailService.Users.Messages.Send(gmailMessage, "me").ExecuteAsync();
 
             Console.WriteLine($"📧 Correo enviado con Gmail API a {to}");
         }
+
     }
 }

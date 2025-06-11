@@ -18,6 +18,7 @@ import PoliciesPage from "./features/policies/pages/PoliciesPrivacyPage";
 import { AuthGuard } from "./guards/AuthGuard";
 import AboutPage from "./features/about/pages/AboutPage";
 import ServerPage from "./features/server/pages/ServerPage";
+import InstallPage from "./features/install/pages/InstallPage";
 
 const router = createBrowserRouter([
   {
@@ -80,6 +81,10 @@ const router = createBrowserRouter([
       {
         path: "server",
         element: <ServerPage />,
+      },
+      {
+        path: "install-app",
+        element: <InstallPage />,
       }
     ],
   },

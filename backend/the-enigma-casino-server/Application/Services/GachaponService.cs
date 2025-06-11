@@ -88,7 +88,7 @@ public class GachaponService : BaseService
     {
         HashSet<string> allowedNickNames = new()
     {
-        "josago97", "rlopdav392", "davidhormigoramirez", "jsangar251"
+        "josago97", "rlopdav392", "davidhormigoramirez", "jsangar251", "roro"
     };
 
         return allowedNickNames.Contains(nickName.ToLower());

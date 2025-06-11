@@ -42,6 +42,11 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.Limits.MaxRequestBodySize = 50 * 1024 * 1024;
+        });
+
         ConfigureServices(builder);
 
         var app = builder.Build();
@@ -56,6 +61,7 @@ public class Program
 
         app.Run();
     }
+
 
     private static void ConfigureServices(WebApplicationBuilder builder)
     {

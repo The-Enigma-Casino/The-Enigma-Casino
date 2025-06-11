@@ -74,6 +74,16 @@ docker exec enigma-waf sed -i "s|proxy_pass http://localhost:80;|proxy_pass http
 docker exec enigma-waf sed -i "s|proxy_pass http://.*:5000;|proxy_pass http://$ACTIVE_BACKEND:5000;|" \
   /etc/nginx/includes/proxy_backend.conf
 
+# --- Corregir CORS en cors.conf ---
+echo "🔧 Corrigiendo CORS en cors.conf..."
+docker exec enigma-waf sed -i \
+  "s|Access-Control-Allow-Origin: \*|Access-Control-Allow-Origin: https://the-enigma-casino.duckdns.org|g" \
+  /etc/nginx/includes/cors.conf
+
+docker exec enigma-waf sed -i \
+  "s|Access-Control-Allow-Headers: \*|Access-Control-Allow-Headers: Authorization, Content-Type|g" \
+  /etc/nginx/includes/cors.conf
+
 # --- Recargar Nginx para aplicar todo ---
 echo "🔁 Recargando Nginx..."
 docker exec enigma-waf nginx -s reload || docker exec enigma-waf nginx

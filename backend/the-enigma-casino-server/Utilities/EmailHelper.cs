@@ -11,7 +11,7 @@ public class EmailHelper
     private const string PASSWORD_EMAIL_FROM = "EMAIL_KEY";
     private const string USE_GMAIL_API = "USE_GMAIL_API";
 
-    public static async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
+    public static async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false, Dictionary<string, byte[]>? attachments = null)
     {
         string useGmail = Environment.GetEnvironmentVariable(USE_GMAIL_API)?.Trim().ToLower();
         if (useGmail == "true")
@@ -19,7 +19,7 @@ public class EmailHelper
             try
             {
                 GmailApiHelper gmail = new GmailApiHelper("credentials.json", "tokens");
-                await gmail.SendEmailAsync(to, subject, body);
+                await gmail.SendEmailAsync(to, subject, body, attachments);
                 return;
             }
             catch (Exception ex)
@@ -52,6 +52,16 @@ public class EmailHelper
             {
                 IsBodyHtml = isHtml
             };
+
+            if (attachments != null)
+            {
+                foreach (var kvp in attachments)
+                {
+                    var stream = new MemoryStream(kvp.Value);
+                    var attachment = new Attachment(stream, kvp.Key);
+                    mail.Attachments.Add(attachment);
+                }
+            }
 
             await client.SendMailAsync(mail);
             Console.WriteLine($"📧 Enviado por SMTP a {to}");

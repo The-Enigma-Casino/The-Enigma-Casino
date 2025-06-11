@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const slides = [
   { href: "/", img: "/img/home-banner.webp", alt: "Home" },
-  { href: "/", img: "/img/install-banner.webp", alt: "Games" },
+  { href: "/install-app", img: "/img/install-banner.webp", alt: "Install" },
   { href: "/catalog", img: "/img/paymenth-banner.webp", alt: "Paymenth" },
 ];
 

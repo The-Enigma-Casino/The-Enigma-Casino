@@ -6,7 +6,7 @@ const InstallPage = () => {
           Instalar The Enigma Casino
         </h1>
 
-        <div className="space-y-16 text-xl sm:text-2xl leading-relaxed">
+        <div className="space-y-12 text-lg sm:text-xl md:text-2xl leading-loose">
           {/* Introducción */}
           <section>
             <h2 className="text-3xl font-bold text-Principal mb-3 border-l-4 border-Principal pl-4">
@@ -39,6 +39,7 @@ const InstallPage = () => {
                   <img
                     src="/svg/android.svg"
                     alt="Android"
+                    aria-label="Icono de Android"
                     className="w-full h-full object-contain"
                   />
                 </span>
@@ -65,6 +66,7 @@ const InstallPage = () => {
                   <img
                     src="/svg/ios.svg"
                     alt="iOS"
+                    aria-label="Icono de iOS"
                     className="w-full h-full object-contain"
                   />
                 </span>
@@ -102,6 +104,7 @@ const InstallPage = () => {
                   <img
                     src="/svg/desktop.svg"
                     alt="Desktop"
+                    aria-label="Icono de Desktop"
                     className="w-full h-full object-contain"
                   />
                 </span>

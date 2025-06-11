@@ -83,6 +83,7 @@ public class Program
         builder.Services.AddScoped<UserFriendService>();
         builder.Services.AddScoped<FriendRequestService>();
         builder.Services.AddScoped<IInvoiceGenerator, InvoiceGenerator>();
+        builder.Services.AddScoped<IWithdrawalInvoiceGenerator, WithdrawalInvoiceGenerator>();
 
         // --- Validaciones ---
         builder.Services.AddSingleton<ValidationService>();

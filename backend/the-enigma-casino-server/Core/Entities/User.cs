@@ -27,16 +27,27 @@ public class User
     [NotMapped]
     public UserStatus Status { get; set; } = UserStatus.Offline;
 
-
-
-    // FALTAN COSAS
-
     public User()
     {
         Coins = 0;
         IsSelfBanned = false;
         EmailConfirm = false;
         ConfirmationToken = null;
+        Role = Role.User;
+        Image = "user_default.webp";
+    }
+
+    public User(string nickName, string fullName, string email, string hashPassword, DateTime dateOfBirth, string country, string address)
+    {
+        NickName = nickName;
+        FullName = fullName;
+        Email = email;
+        HashPassword = hashPassword;
+        DateOfBirth = dateOfBirth;
+        Country = country;
+        Address = address;
+        Coins = 1000;
+        EmailConfirm = true;
         Role = Role.User;
         Image = "user_default.webp";
     }

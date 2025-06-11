@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Error from "../error/pages/Error";
 import EmailConfirmation from "./pages/EmailConfirmation";
+import GoogleRegisterPage from "./pages/GoogleRegisterPage";
 
 const routeAuth: RouteObject[] = [
   {
@@ -18,6 +19,7 @@ const routeAuth: RouteObject[] = [
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "email-confirmation/:token", element: <EmailConfirmation /> },
+      { path: "google-register", element: <GoogleRegisterPage/> },
     ],
   },
 ];

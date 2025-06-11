@@ -98,3 +98,8 @@ export const SEARCH_USERS = `${API_BASE_URL}User/search-user`;
 
 /* ENDPOINTS DE USUARIOS ONLINES */
 export const ONLINE_USERS = `${API_BASE_URL}OnlineUsers/count`;
+
+
+/* ENDPOINTS DE GOOGLE */
+export const GOOGLE_LOGIN = `${API_BASE_URL}AuthGoogle/login`;
+export const GOOGLE_REGISTER = `${API_BASE_URL}AuthGoogle/register`;

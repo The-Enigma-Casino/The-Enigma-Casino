@@ -13,14 +13,17 @@ import { connectSocket } from "./websocket/store/wsIndex";
 import { initAuth } from "./features/auth/utils/initAuth";
 import "./features/auth/interceptor/axiosSetup";
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 function App() {
   useEffect(() => {
-    initAuth(); 
+    initAuth();
     connectSocket();
   }, []);
 
   return (
     <>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <Toaster
         position="top-left"
         reverseOrder={false}
@@ -34,6 +37,7 @@ function App() {
         }}
       />
       <RouterProvider router={router} />
+      </GoogleOAuthProvider>
     </>
   );
 }

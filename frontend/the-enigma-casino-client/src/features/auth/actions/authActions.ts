@@ -3,11 +3,15 @@ import { createEffect } from "effector";
 
 import {
   CONFIRM_EMAIL_ENDPOINT,
+  GOOGLE_LOGIN,
+  GOOGLE_REGISTER,
   LOGIN_ENDPOINT,
   REGISTER_ENDPOINT,
 } from "../../../config";
 import { LoginReq } from "../models/LoginReq.interface";
 import { RegisterReq } from "../models/RegisterReq.interface";
+import { setGoogleIdToken, setToken } from "../store/authStore";
+import { connectSocket } from "../../../websocket/store/wsEvents";
 
 // LOGIN
 export const loginFx = createEffect<LoginReq, string, string>(
@@ -66,3 +70,35 @@ export const confirmEmailFx = createEffect<string, string, string>(
     }
   }
 );
+
+export const loginWithGoogleFx = createEffect(async ({ idToken }: { idToken: string }) => {
+  try {
+    const response = await axios.post(GOOGLE_LOGIN, { idToken });
+
+    const { jwt } = response.data;
+    setToken({ token: jwt, rememberMe: true });
+    connectSocket();
+    window.location.href = "/";
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      setGoogleIdToken(idToken);
+      window.location.href = "/auth/google-register";
+    } else {
+      console.error("Error al hacer login con Google");
+    }
+  }
+});
+
+
+export const registerWithGoogleFx = createEffect(async (data: {
+  idToken: string;
+  dateOfBirth: string;
+  country?: string;
+  address?: string;
+}) => {
+  const response = await axios.post(GOOGLE_REGISTER, data);
+  const { jwt } = response.data;
+
+  setToken({ token: jwt, rememberMe: true });
+  connectSocket();
+});

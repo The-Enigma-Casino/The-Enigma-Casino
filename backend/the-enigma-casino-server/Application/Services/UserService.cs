@@ -467,5 +467,114 @@ public class UserService : BaseService
         return await _unitOfWork.UserRepository.SearchAddableUsersAsync(query, currentUserId, excludedIds);
     }
 
+    private async Task<string> DownloadAndSaveGoogleProfilePictureAsync(string url, int userId)
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var imageBytes = await httpClient.GetByteArrayAsync(url);
+
+            using var inputStream = new MemoryStream(imageBytes);
+            using var image = await Image.LoadAsync(inputStream);
+
+            image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Size = new Size(170, 170),
+                Mode = ResizeMode.Crop,
+                Position = AnchorPositionMode.Center
+            }));
+
+            string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "profile");
+
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            string fileName = $"user_{userId}.webp";
+            string filePath = Path.Combine(folderPath, fileName);
+
+            var encoder = new WebpEncoder { Quality = 100 };
+            await image.SaveAsync(filePath, encoder);
+
+            return fileName;
+        }
+        catch
+        {
+            return DefaultProfileImage;
+        }
+    }
+
+
+    public async Task<User> LoginWithGoogleAsync(string idToken)
+    {
+        var googleService = new GoogleAuthService("tokens/credentials.json");
+        var payload = await googleService.VerifyIdTokenAsync(idToken);
+
+        string email = payload.Email;
+        var user = await _unitOfWork.UserRepository.GetByEmail(email);
+
+        if (user == null)
+            throw new KeyNotFoundException("Usuario no registrado con Google.");
+
+        if (user.IsSelfBanned || user.Role == Role.Banned)
+            throw new UnauthorizedAccessException("Tu cuenta está restringida.");
+
+        return user;
+    }
+
+
+    public async Task<User> RegisterWithGoogleAsync(GoogleRegisterRequest request)
+    {
+        var googleService = new GoogleAuthService("tokens/credentials.json");
+        var payload = await googleService.VerifyIdTokenAsync(request.IdToken);
+
+        string email = payload.Email;
+        string name = payload.Name ?? email;
+
+        if (await _unitOfWork.UserRepository.ExistEmail(email))
+            throw new ArgumentException("El email ya está registrado.");
+
+        string baseNick = email.Split('@')[0];
+
+        if (await _unitOfWork.UserRepository.ExistNickName(baseNick))
+            throw new ArgumentException("El nickname ya está en uso.");
+
+        string finalNick = baseNick;
+        int suffix = 1;
+
+        while (await _unitOfWork.UserRepository.ExistNickName(finalNick))
+        {
+            finalNick = $"{baseNick}{suffix}";
+            suffix++;
+        }
+
+        var user = new User
+        {
+            NickName = finalNick,
+            FullName = name,
+            Email = email,
+            EmailConfirm = true,
+            Coins = 1000,
+            Role = Role.User,
+            DateOfBirth = request.DateOfBirth,
+            Country = request.Country ?? "ESP",
+            Address = request.Address ?? "Desconocido"
+        };
+
+        await _unitOfWork.UserRepository.InsertAsync(user);
+        await _unitOfWork.SaveAsync();
+
+        string imageFile = await DownloadAndSaveGoogleProfilePictureAsync(payload.Picture, user.Id);
+        user.Image = imageFile;
+
+        _unitOfWork.UserRepository.Update(user);
+        await _unitOfWork.SaveAsync();
+
+        return user;
+    }
+
+
+
+
+
 
 }

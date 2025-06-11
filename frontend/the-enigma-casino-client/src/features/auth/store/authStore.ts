@@ -201,3 +201,11 @@ $role.on(logout, () => "");
 $name.on(logout, () => "");
 $image.on(logout, () => "user_default.webp");
 $userId.on(logout, () => "");
+
+
+export const setGoogleIdToken = createEvent<string>();
+export const clearGoogleIdToken = createEvent();
+
+export const $googleIdToken = createStore<string | null>(null)
+  .on(setGoogleIdToken, (_, token) => token)
+  .reset(clearGoogleIdToken);

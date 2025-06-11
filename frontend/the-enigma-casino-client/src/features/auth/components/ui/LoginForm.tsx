@@ -3,6 +3,8 @@
 import Input from "../../../../components/ui/input/CustomInput";
 import Button from "../../../../components/ui/button/Button";
 import Checkbox from "../ui/Checkbox";
+import { GoogleLogin } from "@react-oauth/google";
+import { loginWithGoogleFx } from "../../actions/authActions";
 
 interface LoginFormProps {
   identifier: string;
@@ -80,6 +82,21 @@ function LoginForm({
           >
             {isLoading ? "Cargando..." : "Iniciar Sesión"}
           </Button>
+        </div>
+
+        <div className="mt-6">
+          <GoogleLogin
+            onSuccess={(credentialResponse) => {
+              if (credentialResponse.credential) {
+                loginWithGoogleFx({ idToken: credentialResponse.credential });
+              }
+            }}
+            onError={() => {
+              console.error("❌ Error al iniciar sesión con Google");
+            }}
+            width="100%"
+            useOneTap
+          />
         </div>
       </form>
     </>

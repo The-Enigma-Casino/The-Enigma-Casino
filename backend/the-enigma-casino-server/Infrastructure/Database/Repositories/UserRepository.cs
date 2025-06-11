@@ -53,6 +53,14 @@ public class UserRepository : Repository<User, int>
         return true;
     }
 
+    public async Task<User> GetByEmail(string email)
+    {
+        email = email.ToLower();
+
+        return await GetQueryable()
+            .FirstOrDefaultAsync(user => user.Email.ToLower() == email);
+    }
+
     public async Task<bool> ExistNickName(string nickName)
     {
         nickName = nickName.ToLower();

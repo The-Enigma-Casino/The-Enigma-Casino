@@ -1,54 +1,45 @@
 #!/bin/bash
 
-LOG_FILE="/tmp/startup-backend.log"
-APP_DLL="the-enigma-casino-server.dll"
-DEPLOY_DIR="/home/ubuntu/backend-runtime"
-ENV_FILE="/home/ubuntu/backend-code-deploy/.env.production"
-TEMP_ENV="/tmp/backend-env"
+LOG_FILE="/tmp/backend-start.log"
+APP_ENV="/home/ubuntu/backend-code-deploy/.env.production"
+SERVICE_NAME="enigma-backend.service"
 
 echo "" >> "$LOG_FILE"
-echo "🚀 Lanzando backend - $(date)" | tee -a "$LOG_FILE"
+echo "🚀 Ejecutando start.sh - $(date)" | tee -a "$LOG_FILE"
 
-# Comprobación básica
-if [ ! -f "$DEPLOY_DIR/$APP_DLL" ]; then
-  echo "❌ ERROR: No se encontró $APP_DLL en $DEPLOY_DIR" | tee -a "$LOG_FILE"
-  exit 1
+# Comprobación de tipo de instancia
+if [ "$(cat /etc/instance-type 2>/dev/null)" != "backend" ]; then
+  echo "⛔ Esta instancia no es de backend. Abortando start.sh." | tee -a "$LOG_FILE"
+  exit 0
 fi
 
-# Exportar variables
-echo "📦 Cargando variables de entorno ($ENV_FILE)..." | tee -a "$LOG_FILE"
-rm -f "$TEMP_ENV"
-touch "$TEMP_ENV"
+# Cargar variables de entorno
+if [ -f "$APP_ENV" ]; then
+  echo "📦 Cargando variables de entorno ($APP_ENV)..." | tee -a "$LOG_FILE"
+  set -o allexport
+  source "$APP_ENV"
+  set +o allexport
+else
+  echo "⚠️ No se encontró archivo .env.production en $APP_ENV" | tee -a "$LOG_FILE"
+fi
 
-while IFS= read -r line || [[ -n "$line" ]]; do
-  [[ "$line" =~ ^#.*$ || -z "${line//[[:space:]]/}" ]] && continue
-  [[ "$line" != *=* ]] && echo "❌ Línea inválida: $line" && exit 1
-
-  key="${line%%=*}"
-  value="${line#*=}"
-  value=$(echo "$value" | sed -E 's/^"(.*)"$/\1/')
-
-  [[ -z "$key" ]] && echo "❌ Clave vacía detectada: $line" && exit 1
-
-  echo "export $key=\"$value\"" >> "$TEMP_ENV"
-done < "$ENV_FILE"
-
-echo "✅ Variables cargadas desde $ENV_FILE" | tee -a "$LOG_FILE"
-
-# Parar backend si ya estuviera corriendo
+# Detener si estaba activo
 echo "🧼 Deteniendo backend si estaba activo..." | tee -a "$LOG_FILE"
-sudo pkill -f "$APP_DLL" || true
-sleep 2
+sudo systemctl stop "$SERVICE_NAME" 2>/dev/null || true
 
-# Recargar systemd (por si ha cambiado algo)
+# Recargar systemd por si ha habido cambios
 echo "🔁 Recargando systemd..." | tee -a "$LOG_FILE"
-sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
 
-# Cargar entorno y lanzar
-echo "🟢 Ejecutando $APP_DLL" | tee -a "$LOG_FILE"
-set -a
-source "$TEMP_ENV"
-set +a
+# Lanzar servicio
+echo "🚀 Iniciando backend con systemctl..." | tee -a "$LOG_FILE"
+sudo systemctl start "$SERVICE_NAME"
 
-exec /usr/bin/dotnet "$DEPLOY_DIR/$APP_DLL" --urls "http://0.0.0.0:5000"
+# Verificar estado
+sleep 2
+if sudo systemctl is-active --quiet "$SERVICE_NAME"; then
+  echo "🟢 Backend iniciado correctamente como servicio systemd." | tee -a "$LOG_FILE"
+else
+  echo "❌ Error al iniciar el backend como servicio." | tee -a "$LOG_FILE"
+  exit 1
+fi

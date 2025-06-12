@@ -21,8 +21,6 @@ import {
   unmarkUserAsJoined,
 } from "./tablesStores";
 
-import { hasUserAlreadyJoined, markUserAsJoining } from "./tablesStores";
-
 const getGamePathByTableId = (tableId: number): string => {
   if (tableId >= 1 && tableId <= 6) return "blackjack";
   if (tableId >= 7 && tableId <= 12) return "poker";

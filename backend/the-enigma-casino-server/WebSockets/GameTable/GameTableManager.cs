@@ -27,22 +27,24 @@ public class GameTableManager
         Console.WriteLine($"🕒 [JoinCooldown] Timestamp actualizado manualmente para {userId}");
     }
 
+    // Comentado para evitar bugs
     public bool CanJoinTable(int userId)
     {
-        if (_lastJoinTimestamps.TryGetValue(userId, out DateTime lastTime))
-        {
-            double elapsed = (DateTime.Now - lastTime).TotalSeconds;
-            Console.WriteLine($"⏱️ [CooldownCheck] Last timestamp: {lastTime:HH:mm:ss.fff}, Now: {DateTime.Now:HH:mm:ss.fff}, Elapsed: {elapsed:0.00}s");
-
-            if (elapsed < JoinCooldownSeconds)
-            {
-                Console.WriteLine($"⏳ [JoinCooldown] Usuario {userId} bloqueado. Tiempo transcurrido: {elapsed:0.00}s");
-                return false;
-            }
-        }
-        Console.WriteLine($"✅ [JoinCooldown] Usuario {userId} puede entrar. Cooldown pasado o no aplicado.");
-        _lastJoinTimestamps[userId] = DateTime.Now;
         return true;
+        //if (_lastJoinTimestamps.TryGetValue(userId, out DateTime lastTime))
+        //{
+        //    double elapsed = (DateTime.Now - lastTime).TotalSeconds;
+        //    Console.WriteLine($"⏱️ [CooldownCheck] Last timestamp: {lastTime:HH:mm:ss.fff}, Now: {DateTime.Now:HH:mm:ss.fff}, Elapsed: {elapsed:0.00}s");
+
+        //    if (elapsed < JoinCooldownSeconds)
+        //    {
+        //        Console.WriteLine($"⏳ [JoinCooldown] Usuario {userId} bloqueado. Tiempo transcurrido: {elapsed:0.00}s");
+        //        return false;
+        //    }
+        //}
+        //Console.WriteLine($"✅ [JoinCooldown] Usuario {userId} puede entrar. Cooldown pasado o no aplicado.");
+        //_lastJoinTimestamps[userId] = DateTime.Now;
+        //return true;
     }
 
 

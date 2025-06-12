@@ -2,11 +2,13 @@
 
 LOG_FILE="/tmp/backend-install.log"
 DEPLOY_DIR="/home/ubuntu/backend-code-deploy"
-PUBLISH_TEMP_DIR="/tmp/publish-temp"
+PUBLISH_TEMP_DIR="/home/ubuntu/deploy-temp-backend"
 
 echo "" >> "$LOG_FILE"
 echo "🕐 Ejecutando install.sh - $(date)" | tee -a "$LOG_FILE"
 echo "📂 Directorio actual: $(pwd)" | tee -a "$LOG_FILE"
+echo "📁 Archivos en la ruta actual:" | tee -a "$LOG_FILE"
+ls -la | tee -a "$LOG_FILE"
 
 if [ "$(cat /etc/instance-type 2>/dev/null)" != "backend" ]; then
   echo "⛔ Esta instancia no es de backend. Abortando install.sh." | tee -a "$LOG_FILE"
@@ -22,7 +24,7 @@ echo "🧹 Limpiando publicación temporal anterior..." | tee -a "$LOG_FILE"
 rm -rf "$PUBLISH_TEMP_DIR"/*
 
 echo "📦 Compilando backend con dotnet publish..." | tee -a "$LOG_FILE"
-dotnet publish ./The-Enigma-Casino/backend/the-enigma-casino-server -c Release -o "$PUBLISH_TEMP_DIR" 2>&1 | tee -a "$LOG_FILE"
+dotnet publish backend/the-enigma-casino-server -c Release -o "$PUBLISH_TEMP_DIR" 2>&1 | tee -a "$LOG_FILE"
 
 PUBLISH_EXIT_CODE=$?
 if [ $PUBLISH_EXIT_CODE -ne 0 ]; then
@@ -30,12 +32,11 @@ if [ $PUBLISH_EXIT_CODE -ne 0 ]; then
   exit 1
 fi
 
-echo "$LOG_FILE" | ls -la | tee -a "$LOG_FILE"
 echo "📁 Contenido generado:" | tee -a "$LOG_FILE"
 ls -la "$PUBLISH_TEMP_DIR" | tee -a "$LOG_FILE"
 
 echo "🔄 Sincronizando archivos (sin borrar archivos sensibles)..." | tee -a "$LOG_FILE"
-rsync -av --delete --exclude='.env.production' \
+rsync -av --exclude='.env.production' \
           --exclude='credentials.json' \
           --exclude='tokens' \
           "$PUBLISH_TEMP_DIR/" "$DEPLOY_DIR/" 2>&1 | tee -a "$LOG_FILE"

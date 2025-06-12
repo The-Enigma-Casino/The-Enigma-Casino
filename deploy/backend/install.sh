@@ -30,6 +30,7 @@ if [ $PUBLISH_EXIT_CODE -ne 0 ]; then
   exit 1
 fi
 
+echo "$LOG_FILE" | ls -la | tee -a "$LOG_FILE"
 echo "📁 Contenido generado:" | tee -a "$LOG_FILE"
 ls -la "$PUBLISH_TEMP_DIR" | tee -a "$LOG_FILE"
 

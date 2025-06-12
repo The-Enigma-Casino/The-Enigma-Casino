@@ -25,13 +25,21 @@ socketMessageReceived.watch((data) => {
 
     case "player_left_match":
       console.log(data.action + "aaaaaaaaaaaaa");
-      toast("👤 " + data.message);
+      toast("👤 " + data.message, {
+        id: "player_left_match",
+      });
       break;
+
     case "match_cancelled":
-      toast.error(data.message);
+      toast.error(data.message, {
+        id: "match_cancelled",
+      });
       break;
+
     case "match_ready":
-      toast.success(data.message);
+      toast.success(data.message, {
+        id: "match_ready",
+      });
       break;
 
     default:

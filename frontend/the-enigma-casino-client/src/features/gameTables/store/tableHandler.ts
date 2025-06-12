@@ -108,7 +108,10 @@ socketMessageReceived.watch((data) => {
     case "waiting_opponent": {
       const tableId = Number(data.tableId);
       toast(
-        data.message ?? "Esperando más jugadores para comenzar la partida..."
+        data.message ?? "Esperando más jugadores para comenzar la partida...",
+        {
+          id: `waiting_opponent_${tableId}`,
+        }
       );
       tableWaitingOpponent(tableId);
       break;
@@ -120,11 +123,15 @@ socketMessageReceived.watch((data) => {
         data.message ||
         "No se pudo procesar tu solicitud.";
 
-      toast.error(userMessage);
+      toast.error(userMessage, {
+        id: `ws_error_${errorKey ?? "default"}`,
+      });
       break;
     }
     case "join_denied":
-      toast.error(data.reason);
+      toast.error("Has salido recientemente de una partida. Debes esperar un momento antes de unirte a otra.", {
+        id: `join_denied`,
+      });
       resetTableId();
       markLeftTable();
       break;

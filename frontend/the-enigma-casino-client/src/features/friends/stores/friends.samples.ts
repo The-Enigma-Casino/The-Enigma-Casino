@@ -125,8 +125,12 @@ sample({
 //Alertas
 sample({
   source: friendRequestAccepted,
-  fn: ({ nickname }) => toast.success(`${nickname} aceptó tu solicitud de amistad.`),
+  fn: ({ nickname }) =>
+    toast.success(`${nickname} aceptó tu solicitud de amistad.`, {
+      id: `friend_accepted_${nickname}`,
+    }),
 });
+
 
 // Aceptar juego
 sample({

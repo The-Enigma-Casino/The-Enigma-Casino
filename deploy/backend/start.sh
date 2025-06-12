@@ -1,18 +1,19 @@
 #!/bin/bash
 
-# Detectar si esta instancia es de backend
-if [ "$(cat /etc/instance-type 2>/dev/null)" != "backend" ]; then
-  echo "⛔ Esta instancia no es de backend. Abortando install.sh." | tee -a "$LOG_FILE"
-  exit 0
-fi
-
 LOG_FILE="/tmp/backend-start.log"
 APP_ENV="/home/ubuntu/backend-code-deploy/.env.production"
+SERVICE_NAME="enigma-backend.service"
 
 echo "" >> "$LOG_FILE"
 echo "🚀 Ejecutando start.sh - $(date)" | tee -a "$LOG_FILE"
 
-# Cargar variables de entorno (por si el servicio las necesita)
+# Comprobación de tipo de instancia
+if [ "$(cat /etc/instance-type 2>/dev/null)" != "backend" ]; then
+  echo "⛔ Esta instancia no es de backend. Abortando start.sh." | tee -a "$LOG_FILE"
+  exit 0
+fi
+
+# Cargar variables de entorno
 if [ -f "$APP_ENV" ]; then
   echo "📦 Cargando variables de entorno ($APP_ENV)..." | tee -a "$LOG_FILE"
   set -o allexport
@@ -22,21 +23,21 @@ else
   echo "⚠️ No se encontró archivo .env.production en $APP_ENV" | tee -a "$LOG_FILE"
 fi
 
-# Asegurar que no hay procesos sueltos
+# Detener si estaba activo
 echo "🧼 Deteniendo backend si estaba activo..." | tee -a "$LOG_FILE"
-sudo systemctl stop enigma-backend.service 2>/dev/null || true
+sudo systemctl stop "$SERVICE_NAME" 2>/dev/null || true
 
-# Recargar definición del servicio (por si se actualizó el .service)
+# Recargar systemd por si ha habido cambios
 echo "🔁 Recargando systemd..." | tee -a "$LOG_FILE"
 sudo systemctl daemon-reload
 
-# Lanzar backend como servicio
+# Lanzar servicio
 echo "🚀 Iniciando backend con systemctl..." | tee -a "$LOG_FILE"
-sudo systemctl start enigma-backend.service
+sudo systemctl start "$SERVICE_NAME"
 
-# Verificación
+# Verificar estado
 sleep 2
-if sudo systemctl is-active --quiet enigma-backend.service; then
+if sudo systemctl is-active --quiet "$SERVICE_NAME"; then
   echo "🟢 Backend iniciado correctamente como servicio systemd." | tee -a "$LOG_FILE"
 else
   echo "❌ Error al iniciar el backend como servicio." | tee -a "$LOG_FILE"

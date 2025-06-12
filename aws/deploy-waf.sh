@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # === DEFINICIÓN DE BACKENDS ===
-BACKEND1="172.31.83.190"
-BACKEND2="172.31.26.208"
+BACKEND1="172.31.90.254"
+BACKEND2="172.31.30.93"
 
 # === DETECCIÓN ROBUSTA DE BACKEND ACTIVO ===
 echo "🔍 Buscando backend activo..."

@@ -1,10 +1,13 @@
 import { sample } from "effector";
 import { $currentTableId } from "../../../gameTables/store/tablesIndex";
 import { messageSent } from "../../../../websocket/store/wsIndex";
-import { matchReadyReceived, removedByInactivity, sendPokerAction } from "./pokerIndex";
+import {
+  matchReadyReceived,
+  removedByInactivity,
+  sendPokerAction,
+} from "./pokerIndex";
 import toast from "react-hot-toast";
 import { navigateTo } from "../../shared/router/navigateFx";
-
 
 sample({
   clock: sendPokerAction,
@@ -15,12 +18,16 @@ sample({
       action: "player_action",
       tableId: String(tableId),
       move,
-      ...(move === "raise" || move === "all-in"
-        ? { amount }
-        : {}),
+      ...(move === "raise" || move === "all-in" ? { amount } : {}),
     };
 
-    const message = JSON.stringify(payload, ["type", "action", "tableId", "move", "amount"]);
+    const message = JSON.stringify(payload, [
+      "type",
+      "action",
+      "tableId",
+      "move",
+      "amount",
+    ]);
     console.log("📤 Enviando al WS:", message);
 
     return message;
@@ -31,10 +38,12 @@ sample({
 sample({
   source: removedByInactivity,
   fn: () => {
-    toast.error("Has sido expulsado de la mesa por inactividad.");
+    toast.error("Has sido expulsado de la mesa por inactividad.", {
+      id: "kicked_for_inactivity",
+    });
     return "/";
   },
-  target: navigateTo
+  target: navigateTo,
 });
 
 sample({

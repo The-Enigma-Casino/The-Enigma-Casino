@@ -1,14 +1,23 @@
 import { sample } from "effector";
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
 import { messageSent } from "../../../../websocket/store/wsIndex";
-import { countdownStart, countdownTick, gameStateReceived, matchReadyReceived, playerKickedReceived, playerPlaceBet, requestGameState, requestWheelState, setRoulettePlayers } from "./index";
+import {
+  countdownStart,
+  countdownTick,
+  gameStateReceived,
+  matchReadyReceived,
+  playerKickedReceived,
+  playerPlaceBet,
+  requestGameState,
+  requestWheelState,
+  setRoulettePlayers,
+} from "./index";
 import toast from "react-hot-toast";
 import { navigateTo } from "../../shared/router/navigateFx";
 import { $name } from "../../../auth/store/authStore";
 import { RoulettePlayer } from "../types/roulettePlayer.type";
 import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
 import { loadCoins } from "../../../coins/store/coinsStore";
-
 
 sample({
   clock: playerPlaceBet,
@@ -18,7 +27,7 @@ sample({
       type: "roulette",
       action: "place_bet",
       tableId: String(tableId),
-      ...bet
+      ...bet,
     }),
   target: messageSent,
 });
@@ -36,28 +45,34 @@ sample({
 
 sample({
   clock: requestWheelState,
-  fn: tableId =>
+  fn: (tableId) =>
     JSON.stringify({
       type: "roulette",
       action: "wheel_state",
-      tableId: String(tableId)
+      tableId: String(tableId),
     }),
-  target: messageSent
+  target: messageSent,
 });
 
 sample({
   source: playerKickedReceived,
   fn: () => {
-    toast.error("Has sido expulsado de la mesa por inactividad.");
+    toast.error("Has sido expulsado de la mesa por inactividad.", {
+      id: "kicked_for_inactivity",
+    });
+
     return "/";
   },
-  target: navigateTo
+  target: navigateTo,
 });
 
 sample({
   clock: gameStateReceived,
   source: $name,
-  fn: (currentName: string, payload: { players: RoulettePlayer[]; }): RoulettePlayer[] => {
+  fn: (
+    currentName: string,
+    payload: { players: RoulettePlayer[] }
+  ): RoulettePlayer[] => {
     if (!payload?.players) return [];
 
     if (!currentName) return payload.players;
@@ -77,7 +92,7 @@ sample({
 
 sample({
   clock: gameStateReceived,
-  target: loadCoins
+  target: loadCoins,
 });
 
 sample({

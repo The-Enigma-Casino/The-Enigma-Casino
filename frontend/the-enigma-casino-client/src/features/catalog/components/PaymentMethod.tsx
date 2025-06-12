@@ -17,18 +17,25 @@ const PaymentMethod: React.FC = () => {
     selectPaymentMethod(method);
   };
 
-  const handlePayment = () => {
-    if (!token) {
-      toast.error("Por favor, inicie sesión para continuar con el pago.");
-      setTimeout(() => {
-        navigate("/auth/login")
-      }, 3000);
-    } else if (selectedPayment && selectedCard) {
-      navigate("/payment", { state: { ...selectedCard, paymentMethod: selectedPayment } });
-    } else {
-      toast.error("Por favor, selecciona una forma de pago y una tarjeta.");
-    }
-  };
+const handlePayment = () => {
+  if (!token) {
+    toast.error("Por favor, inicie sesión para continuar con el pago.", {
+      id: "payment_needs_login",
+    });
+    setTimeout(() => {
+      navigate("/auth/login");
+    }, 3000);
+  } else if (selectedPayment && selectedCard) {
+    navigate("/payment", {
+      state: { ...selectedCard, paymentMethod: selectedPayment },
+    });
+  } else {
+    toast.error("Por favor, selecciona una forma de pago y una tarjeta.", {
+      id: "missing_payment_info",
+    });
+  }
+};
+
 
 
   return (

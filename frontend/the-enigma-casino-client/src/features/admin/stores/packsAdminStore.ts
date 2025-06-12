@@ -34,18 +34,21 @@ sample({
 
 updatePackFx.failData.watch((error) => {
   toast.error(getErrorMessage(error), {
+    id: "update_pack_error",
     className: "text-lg font-bold p-3",
   });
 });
 
 loadPacksFx.failData.watch((error) => {
   toast.error(getErrorMessage(error), {
+    id: "load_packs_error",
     className: "text-lg font-bold p-3",
   });
 });
 
 getPackByIdFx.failData.watch((error) => {
   toast.error(getErrorMessage(error), {
+    id: "get_pack_error",
     className: "text-lg font-bold p-3",
   });
 });

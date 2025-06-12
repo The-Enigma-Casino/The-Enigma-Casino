@@ -6,10 +6,10 @@ ACTIVE_BACKEND=""
 
 while true; do
   NEW_BACKEND=""
-  if curl -s --connect-timeout 2 "http://172.31.83.190:5000/api" | grep -q "The Enigma Casino"; then
-    NEW_BACKEND="172.31.83.190"
-  elif curl -s --connect-timeout 2 "http://172.31.26.208:5000/api" | grep -q "The Enigma Casino"; then
-    NEW_BACKEND="172.31.26.208"
+  if curl -s --connect-timeout 2 "http://172.31.90.254:5000/api" | grep -q "The Enigma Casino"; then
+    NEW_BACKEND="172.31.90.254"
+  elif curl -s --connect-timeout 2 "http://172.31.30.93:5000/api" | grep -q "The Enigma Casino"; then
+    NEW_BACKEND="172.31.30.93"
   fi
 
   if [ "$NEW_BACKEND" != "$ACTIVE_BACKEND" ] && [ -n "$NEW_BACKEND" ]; then

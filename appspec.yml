@@ -1,9 +1,9 @@
 version: 0.0
 os: linux
 files:
-  - source: /
+  - source: frontend/
     destination: /home/ubuntu/frontend-code-deploy
-  - source: /
+  - source: backend/
     destination: /home/ubuntu/backend-code-deploy
 hooks:
   BeforeInstall:

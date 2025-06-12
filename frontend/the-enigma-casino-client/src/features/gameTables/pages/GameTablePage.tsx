@@ -12,6 +12,7 @@ import {
   exitLobbyPage,
   joinTableClicked,
   leaveTableClicked,
+  resetTableImages,
   sendLeaveTableMessage,
   tryJoinTable,
 } from "../store/tablesIndex";
@@ -77,6 +78,7 @@ function GameTablePage() {
     tableId: number
   ) => {
     const isJoining = joiningTableId === tableId;
+    const isDisabled = currentTableId !== null && currentTableId !== tableId;
 
     const slots = Array.from({ length: maxPlayers }).map((_, i) => {
       if (players[i]) {
@@ -94,9 +96,15 @@ function GameTablePage() {
         return (
           <div
             key={i}
-            className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full bg-gray-500 flex justify-center items-center cursor-pointer hover:bg-gray-600"
+            className={`w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full ${
+              isDisabled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-500 cursor-pointer hover:bg-gray-600"
+            } flex justify-center items-center`}
             onClick={() => {
-              if (!isJoining) handleJoinTable(tableId);
+              if (!isJoining && !isDisabled) {
+                handleJoinTable(tableId);
+              }
             }}
           >
             <span className="text-white text-lg font-bold">+</span>
@@ -150,7 +158,8 @@ function GameTablePage() {
                   onClick={() => {
                     sendLeaveTableMessage();
                     leaveTableClicked();
-                    navigate("/");
+                    fetchTables(Number(gameType));;
+                    // navigate("/");
                   }}
                 >
                   <div className="flex items-center gap-2">

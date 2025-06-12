@@ -50,7 +50,7 @@ public class Program
 
         ConfigureStripe(app.Services);
 
-        app.MapGet("/api/", () => "The Enigma Casino! PRUEBA AWS");
+        app.MapGet("/api/", () => "The Enigma Casino!");
 
         Console.WriteLine("The Enigma Casino Server");
 

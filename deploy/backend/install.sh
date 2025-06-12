@@ -34,7 +34,7 @@ echo "📁 Contenido generado:" | tee -a "$LOG_FILE"
 ls -la "$PUBLISH_TEMP_DIR" | tee -a "$LOG_FILE"
 
 echo "🔄 Sincronizando archivos (sin borrar archivos sensibles)..." | tee -a "$LOG_FILE"
-rsync -av --exclude='.env.production' \
+rsync -av --delete --exclude='.env.production' \
           --exclude='credentials.json' \
           --exclude='tokens' \
           "$PUBLISH_TEMP_DIR/" "$DEPLOY_DIR/" 2>&1 | tee -a "$LOG_FILE"

@@ -2,7 +2,7 @@
 
 namespace the_enigma_casino_server.Application.Services.Blockchain;
 
-public class CoinGeckoApi
+public class CoinGeckoApi // SIN USO (solo acepta 5 peticiones/min)
 {
     private const string URL = "https://api.coingecko.com/api/v3/";
 

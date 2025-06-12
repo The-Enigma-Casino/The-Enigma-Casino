@@ -21,6 +21,7 @@ import {
   $friends,
   $onlineFriendsMap,
 } from "../../friends/stores/friends.store";
+import classes from "../../../components/layouts/header/Header.module.css"
 
 interface UserData {
   id?: number;
@@ -278,7 +279,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user, relations }) => {
               <img
                 src="/svg/coins.svg"
                 alt="Coins"
-                className="w-10 h-10 sm:w-12 sm:h-12"
+                className={`w-10 h-10 sm:w-12 sm:h-12 ${classes.coinflip}`}
               />
             </div>
           )}

@@ -11,6 +11,7 @@ function AuthLayout() {
   const isConfirmationPage = location.pathname.includes(
     "/auth/email-confirmation"
   );
+const isAuthPage = location.pathname === "/auth/login" || location.pathname === "/auth/register";
 
   useEffect(() => {
     const flag = "__hasVisitedEnigma__";
@@ -19,24 +20,24 @@ function AuthLayout() {
     }
   }, []);
 
-  return (
-    <div
-      className={`h-screen w-full grid grid-rows-[auto_1fr] ${
-        isConfirmationPage ? "overflow-hidden" : ""
+return (
+  <div
+    className={`h-screen w-full grid grid-rows-[auto_1fr] ${
+      (isConfirmationPage || (!isMobile && isAuthPage)) ? "overflow-hidden" : ""
+    }`}
+  >
+    <div className="row-start-1 row-end-2 shrink-0">
+      {isMobile ? <HeaderMobile /> : <Header />}
+    </div>
+    <main
+      className={`row-start-2 row-end-3 ${
+        (isConfirmationPage || (!isMobile && isAuthPage)) ? "overflow-hidden" : ""
       }`}
     >
-      <div className="row-start-1 row-end-2 shrink-0">
-        {isMobile ? <HeaderMobile /> : <Header />}
-      </div>
-      <main
-        className={`row-start-2 row-end-3 ${
-          isConfirmationPage ? "overflow-hidden" : ""
-        }`}
-      >
-        <Outlet />
-      </main>
-    </div>
-  );
+      <Outlet />
+    </main>
+  </div>
+);
 }
 
 export default AuthLayout;

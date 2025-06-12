@@ -141,13 +141,17 @@ public class PokerNotifier : IPokerNotifier
 
     public async Task NotifyPlayerActionAsync(Player player, string move)
     {
+
+        var totalBet = PokerBetTracker.GetTotalBet(player.GameTableId, player.UserId);
+
         var response = new
         {
             type = "poker",
             action = "player_action",
             userId = player.UserId,
             move,
-            amount = player.CurrentBet
+            amount = player.CurrentBet,
+            totalBet
         };
 
         var userIds = player.GameMatch!.Players

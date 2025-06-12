@@ -1,3 +1,5 @@
+import { GameCard } from "../../shared/interfaces/gameCard.interface";
+
 export type PlayerState = "Playing" | "Fold" | "AllIn" | "Left" | "Win";
 
 export type PlayerRole = "dealer" | "sb" | "bb" | null;
@@ -27,7 +29,6 @@ export interface PotResult {
   }[];
 }
 
-
 export interface Card {
   rank: string;
   suit: string;
@@ -43,3 +44,16 @@ export interface RoundResultPayload {
   summary: PotResult[];
   revealedHands?: RevealedHand[];
 }
+
+export type GamePlayer = {
+  id: number;
+  nickName: string;
+  hand: GameCard[];
+  total?: number;
+  bets?: { bet: string; amount: number }[];
+  isTurn?: boolean;
+  coins: number;
+  currentBet?: number;
+  totalBet?: number;
+  role?: "dealer" | "sb" | "bb";
+};

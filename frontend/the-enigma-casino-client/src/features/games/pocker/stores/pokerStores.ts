@@ -17,6 +17,7 @@ import {
   myTurnEnded,
   myTurnStarted,
   opponentLeftReceived,
+  playerActionReceived,
   pokerPhaseChanged,
   resetPokerGame,
   roundResultReceived,
@@ -122,5 +123,12 @@ export const $turnCountdownTotal = createStore<number>(20)
 
 export const $opponentLeft = createStore(false)
   .on(opponentLeftReceived, () => true)
-  .on(matchPlayersInitialized, () => false)
+  .on(matchPlayersInitialized, () => false);
 
+$pokerPlayers.on(playerActionReceived, (players, { userId, amount, totalBet }) =>
+  players.map((p) =>
+    p.id === userId
+      ? { ...structuredClone(p), currentBet: amount, totalBet }
+      : structuredClone(p)
+  )
+);

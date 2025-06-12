@@ -22,6 +22,7 @@ import {
   opponentLeftReceived,
   matchReadyReceived,
   currentTurnChanged,
+  playerActionReceived,
 } from "../stores/pokerIndex";
 
 let reentryAttempts = 0;
@@ -136,6 +137,12 @@ socketMessageReceived.watch((data) => {
 
     case "player_action":
       console.log("📤 Acción de jugador finalizada");
+      playerActionReceived({
+        userId: data.userId,
+        move: data.move,
+        amount: data.amount,
+        totalBet: data.totalBet,
+      });
       myTurnEnded();
       break;
 

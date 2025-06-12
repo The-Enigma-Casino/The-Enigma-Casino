@@ -29,19 +29,8 @@ import { $playerAvatars } from "../../stores/gamesStore";
 import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
 import { RoundResult } from "../components/RoundResult";
 import { ResponsivePlayerList } from "../../shared/components/playerCards/ResponsivePlayerList";
-import { GameCard } from "../../shared/interfaces/gameCard.interface";
-type GamePlayer = {
-  id: number;
-  nickName: string;
-  hand: GameCard[];
-  total?: number;
-  bets?: { bet: string; amount: number }[];
-  isTurn?: boolean;
-  coins: number;
-  currentBet?: number;
-  totalBet?: number;
-  role?: "dealer" | "sb" | "bb";
-};
+import { GamePlayer } from "../interfaces/poker.interfaces";
+
 export const PokerGamePage = () => {
   const pokerPhase = useUnit($pokerPhase);
 

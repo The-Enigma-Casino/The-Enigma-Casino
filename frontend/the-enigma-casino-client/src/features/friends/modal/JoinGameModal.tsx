@@ -7,6 +7,7 @@ import {
   clearJoinProtection,
   sendLeaveTableMessage,
 } from "../../gameTables/store/tablesIndex";
+import { navigateTo } from "../../games/shared/router/navigateFx";
 
 const JoinGameModal = () => {
   const isOpenGame = useUnit($isGameLoading);
@@ -81,6 +82,7 @@ const JoinGameModal = () => {
             clearJoinProtection();
             stopGameLoading();
             sendLeaveTableMessage();
+            navigateTo("/");
           }}
         >
           Cancelar

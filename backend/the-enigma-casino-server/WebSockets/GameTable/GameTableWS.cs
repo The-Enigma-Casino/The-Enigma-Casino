@@ -398,7 +398,18 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             unitOfWork.GameTableRepository.Update(table);
             await unitOfWork.SaveAsync();
 
-            if (table.Players.All(p => p.PlayerState == PlayerState.Left))
+            //BORRAR CONSOLES
+            Console.WriteLine("🔍 [Debug] Evaluando si la mesa está vacía tras el Leave:");
+            foreach (var p in table.Players)
+            {
+                Console.WriteLine($"👤 Jugador: {p.User.NickName} | Estado: {p.PlayerState} | Abandonado: {p.HasAbandoned}");
+            }
+
+            bool shouldRemove = table.Players.All(p => p.PlayerState == PlayerState.Left);
+            Console.WriteLine($"🔎 Resultado de .All(PlayerState == Left): {shouldRemove}");
+            //
+
+            if (table.Players.All(p => p.PlayerState == PlayerState.Left || p.HasAbandoned))
             {
                 table.TableState = TableState.Waiting;
                 unitOfWork.GameTableRepository.Update(table);
@@ -413,6 +424,9 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 type = "game_table",
                 action = "leave_success"
             });
+
+            UserStatusStore.SetStatus(userId, UserStatus.Online);
+            _connectionManager.RaiseUserStatusChanged(userIdStr);
 
             await TryPromoteSpectatorsAndStartMatchAsync(tableId);
         }

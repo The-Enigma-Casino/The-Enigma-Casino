@@ -15,9 +15,11 @@ import { $userId } from "../../auth/store/authStore";
 import { navigateTo } from "../../games/shared/router/navigateFx";
 import { $coins } from "../../coins/store/coinsStore";
 import toast from "react-hot-toast";
-import { $currentTableId, $pendingJoinTableId, unmarkUserAsJoined } from "./tablesStores";
-
-import { hasUserAlreadyJoined, markUserAsJoining } from "./tablesStores";
+import {
+  $currentTableId,
+  $pendingJoinTableId,
+  unmarkUserAsJoined,
+} from "./tablesStores";
 
 const getGamePathByTableId = (tableId: number): string => {
   if (tableId >= 1 && tableId <= 6) return "blackjack";
@@ -29,12 +31,7 @@ const getGamePathByTableId = (tableId: number): string => {
 sample({
   source: $userId,
   clock: joinTableClicked,
-  filter: (userId) => {
-    const numericId = Number(userId);
-    if (!numericId || hasUserAlreadyJoined(numericId)) return false;
-    markUserAsJoining(numericId);
-    return true;
-  },
+  filter: (userId) => !!userId,
   fn: (_userId, tableId) =>
     JSON.stringify({
       type: "game_table",

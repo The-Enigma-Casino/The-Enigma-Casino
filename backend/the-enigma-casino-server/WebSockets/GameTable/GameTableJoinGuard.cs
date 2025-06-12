@@ -30,24 +30,28 @@ public class GameTableJoinGuard
 
         if (existingPlayer != null)
         {
-            if (existingPlayer.PlayerState is PlayerState.Left)
+            if (existingPlayer.PlayerState == PlayerState.Left)
             {
                 errorReason = "already_left";
-                Console.WriteLine($"[JoinGuard] Usuario {user.NickName} ya se fue de la mesa y no puede volver.");
                 return false;
             }
 
             if (_usesHasAbandoned.Contains(table.GameType) && existingPlayer.HasAbandoned)
             {
                 errorReason = "already_left";
-                Console.WriteLine($"[JoinGuard] Usuario {user.NickName} fue marcado como HasAbandoned. Rechazado.");
                 return false;
             }
 
+            if (existingPlayer.PlayerState == PlayerState.Spectating)
+            {
+                Console.WriteLine($"[JoinGuard] {user.NickName} está spectating. Permitido rejoin.");
+                return true;
+            }
+
             errorReason = "already_joined";
-            Console.WriteLine($"[JoinGuard] Usuario {user.NickName} ya está en la mesa {table.Id}.");
             return false;
         }
+
 
         if (table.Players.Count(p => p.PlayerState != PlayerState.Left && !p.HasAbandoned) >= table.MaxPlayer)
         {

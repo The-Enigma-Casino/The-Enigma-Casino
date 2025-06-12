@@ -149,10 +149,7 @@ socketMessageReceived.watch((data) => {
 
     case "gameInviteRejected":
       stopGameLoading();
-      toast.error(`${data.nickname} rechazó tu invitación.`, {
-        id: `invite_rejected_${data.nickname}`,
-        duration: 2000,
-      });
+      toast.error(`${data.nickname} rechazó tu invitación.`, { duration: 2000 });
       break;
 
     case "inviteExpired": {
@@ -162,11 +159,8 @@ socketMessageReceived.watch((data) => {
     }
 
     case "friendRequestCanceled":
-      removeReceivedRequest(data.senderId); // Quitar del store
-      toast(`${data.nickname} canceló su solicitud de amistad.`, {
-        id: `friend_request_canceled_${data.senderId}`,
-        duration: 2000,
-      });
+      removeReceivedRequest(data.senderId);
+      toast(`${data.nickname} canceló su solicitud de amistad.`, { duration: 2000 });
       break;
 
     case "requestSent":
@@ -192,6 +186,36 @@ socketMessageReceived.watch((data) => {
         duration: 2000,
       });
 
+      break;
+
+    case "navigate_and_join": {
+      const tableId = Number(data.tableId);
+      console.log("🚀 [navigate_and_join] recibido para tableId:", tableId);
+
+      if (!isNaN(tableId)) {
+        const path =
+          tableId >= 1 && tableId <= 6
+            ? "/tables/0"
+            : tableId >= 7 && tableId <= 12
+            ? "/tables/1"
+            : "/tables/2";
+
+        console.log("🧭 [navigate_and_join] navegando a:", path);
+        navigateTo(path);
+
+        setTimeout(() => {
+          console.log(
+            "🎯 [navigate_and_join] haciendo joinTableClicked:",
+            tableId
+          );
+          joinTableClicked(tableId);
+        }, 500);
+      }
+      break;
+    }
+
+    case "error":
+      toast.error(data.message ?? "Error desconocido", { duration: 3000 });
       break;
 
     default:

@@ -436,9 +436,9 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             await ((IWebSocketSender)this).SendToUserAsync(id.ToString(), new
             {
-                type = "game_table",
-                action = "join_table",
-                tableId = tableId.ToString()
+                type = "friend",
+                action = "navigate_and_join",
+                tableId
             });
         }
     }

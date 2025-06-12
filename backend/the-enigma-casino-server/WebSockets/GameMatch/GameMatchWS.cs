@@ -92,6 +92,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
     public async Task StartMatchForTableAsync(int tableId)
     {
+
         if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session)) return;
 
         var existingMatch = ActiveGameMatchStore.TryGetNullable(tableId);
@@ -102,7 +103,13 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         }
 
         Table table = session.Table;
-
+        //BORRAR
+        Console.WriteLine($"🧪 [StartMatch] Jugadores en table.Players antes del match:");
+        foreach (var p in table.Players)
+        {
+            Console.WriteLine($" - {p.User.NickName} | Estado: {p.PlayerState} | Abandonado: {p.HasAbandoned}");
+        }
+        //
         IServiceScope scope;
         GameMatchManager manager = CreateScopedManager(out scope);
         using (scope)
@@ -111,8 +118,15 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             if (match == null) return;
 
             ActiveGameMatchStore.Set(table.Id, match);
+            //BORRAR
+            foreach (var mp in match.Players)
+            {
+                Console.WriteLine($"🎮 Jugador en match: {mp.User.NickName} | Estado actual en tabla: {table.Players.FirstOrDefault(p => p.UserId == mp.UserId)?.PlayerState}");
+            }
 
             Console.WriteLine($"[GameMatchWS] Partida iniciada en mesa {table.Id} con {match.Players.Count} jugadores.");
+            //
+           
 
             string[] userIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
 
@@ -192,6 +206,13 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 var gameTableWS = _serviceProvider.GetRequiredService<GameTableWS>();
                 await gameTableWS.TryPromoteSpectatorsAndStartMatchAsync(tableId);
             }
+
+            await ((IWebSocketSender)this).SendToUserAsync(userId.ToString(), new
+            {
+                type = "game_table",
+                action = "leave_success",
+                userId
+            });
         }
         await GameMatchHelper.CheckGamePostExitLogicAsync(match, tableId, _serviceProvider);
 

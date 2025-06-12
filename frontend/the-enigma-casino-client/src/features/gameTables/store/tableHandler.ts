@@ -15,7 +15,8 @@ import {
 import { stopGameLoading } from "../../friends/stores/friends.events";
 import { getPlayerAvatarsFx } from "../../games/actions/playerAvatarsAction";
 import { navigateTo } from "../../games/shared/router/navigateFx";
-import { clearJoinProtection } from "./tablesIndex";
+import { $currentTableId, clearJoinProtection } from "./tablesIndex";
+import { $userId } from "../../auth/store/authStore";
 
 const errorMessageMap: Record<string, string> = {
   already_left:
@@ -128,24 +129,52 @@ socketMessageReceived.watch((data) => {
       });
       break;
     }
-    case "join_denied":
-      toast.error("Has salido recientemente de una partida. Debes esperar un momento antes de unirte a otra.", {
-        id: `join_denied`,
-      });
-      resetTableId();
-      markLeftTable();
+
+    case "join_denied": {
+      const currentTableId = $currentTableId.getState();
+      const deniedTableId = Number(data.tableId);
+
+      const unrecoverable = [
+        "already_left",
+        "table_full",
+        "maintenance",
+        "not_enough_coins",
+      ];
+
+      if (unrecoverable.includes(data.reason)) {
+        resetTableId();
+        markLeftTable();
+        return;
+      }
+
+      if (data.reason === "already_joined") {
+        if (currentTableId === deniedTableId) {
+          console.log(
+            "⚠️ join_denied (already_joined), pero ya estás en la mesa. No se resetea."
+          );
+          return;
+        }
+      }
+
+      toast.error(data.reason ?? "No se pudo unir a la mesa.");
       break;
+    }
 
     case "table_closed": {
       break;
     }
+
     case "leave_success": {
-      resetTableId();
-      markLeftTable();
+      if (Number(data.userId) === Number($userId.getState())) {
+        resetTableId();
+        markLeftTable();
+      } 
+
       tableCleanupCompleted();
       clearJoinProtection();
       break;
     }
+
     default:
       break;
   }

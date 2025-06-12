@@ -1,5 +1,5 @@
 import { useUnit } from "effector-react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
   $countdowns,
   $currentTableId,
@@ -12,7 +12,6 @@ import {
   exitLobbyPage,
   joinTableClicked,
   leaveTableClicked,
-  resetTableImages,
   sendLeaveTableMessage,
   tryJoinTable,
 } from "../store/tablesIndex";
@@ -26,8 +25,6 @@ import "../../games/match/matchHandler";
 import { IMAGE_PROFILE_URL } from "../../../config";
 
 function GameTablePage() {
-  const navigate = useNavigate();
-
   const { gameType } = useParams<string>();
   const tables = useUnit($tables) as GameTable[];
   const countdowns = useUnit($countdowns);

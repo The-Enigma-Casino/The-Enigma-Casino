@@ -32,12 +32,14 @@ sample({
   source: $userId,
   clock: joinTableClicked,
   filter: (userId) => !!userId,
-  fn: (_userId, tableId) =>
-    JSON.stringify({
+  fn: (_userId, tableId) => {
+    console.log("📡 [sample] Enviando mensaje join_table:", tableId);
+    return JSON.stringify({
       type: "game_table",
       action: "join_table",
       tableId: String(tableId),
-    }),
+    });
+  },
   target: messageSent,
 });
 
@@ -76,7 +78,13 @@ sample({
   source: $coins,
   clock: tryJoinTable,
   filter: (coins) => coins > 0,
-  fn: (_, tableId) => tableId,
+  fn: (_, tableId) => {
+    console.log(
+      "💰 [sample] Usuario tiene coins, lanzando joinTableClicked:",
+      tableId
+    );
+    return tableId;
+  },
   target: joinTableClicked,
 });
 
@@ -95,8 +103,10 @@ sample({
   source: $pendingJoinTableId,
   filter: (tableId) =>
     tableId !== null && window.location.pathname.startsWith("/tables"),
-  fn: (tableId) => tableId!,
-  target: tryJoinTable,
+  fn: (tableId) => {
+    console.log("🎯 [sample] tryJoinTable disparado con:", tableId);
+    return tableId!;
+  },
 });
 sample({
   clock: tryJoinTable,
@@ -133,4 +143,8 @@ sample({
     unmarkUserAsJoined(Number(userId));
     return userId;
   },
+});
+
+joinTableClicked.watch((tableId) => {
+  console.log("🟢 [event] joinTableClicked lanzado:", tableId);
 });

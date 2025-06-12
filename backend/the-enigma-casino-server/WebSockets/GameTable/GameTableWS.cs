@@ -422,7 +422,8 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             await ((IWebSocketSender)this).SendToUserAsync(userIdStr, new
             {
                 type = "game_table",
-                action = "leave_success"
+                action = "leave_success",
+                userId
             });
 
             UserStatusStore.SetStatus(userId, UserStatus.Online);

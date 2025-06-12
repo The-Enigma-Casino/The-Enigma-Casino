@@ -40,7 +40,5 @@ export const clearPendingJoinTableId = createEvent();
 
 
 joinTableClicked.watch((id) => {
-  console.log("🟢 joinTableClicked:", id);
+  console.log("🟢 [Effector] joinTableClicked lanzado con tableId:", id);
 });
-
-

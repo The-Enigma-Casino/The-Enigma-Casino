@@ -28,14 +28,22 @@ public class OrderRepository : Repository<Order, int>
             .FirstOrDefaultAsync();
     }
 
-    public async Task<List<Order>> GetOrdersByUserIdAsync(int userId)
+    public async Task<List<Order>> GetOrdersByUserIdAsync(int userId, int page, int pageSize)
     {
         return await GetQueryable()
             .Where(o => o.UserId == userId && o.IsPaid)
             .Include(o => o.CoinsPack)
+            .OrderByDescending(o => o.PaidDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+    }
 
-
+    public async Task<int> GetOrdersCountByUserIdAsync(int userId)
+    {
+        return await GetQueryable()
+            .Where(o => o.UserId == userId && o.IsPaid)
+            .CountAsync();
     }
 
 }

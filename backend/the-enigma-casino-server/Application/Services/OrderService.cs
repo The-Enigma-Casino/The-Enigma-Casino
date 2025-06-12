@@ -189,21 +189,19 @@ public class OrderService : BaseService
     public async Task<OrderHistoryDto> GetOrdersByUser(int userId, int page)
     {
         User user = await GetUserById(userId);
+        if (user == null)
+            throw new KeyNotFoundException($"Usuario con ID {userId} no encontrado.");
 
-        List<Order> orders = await _unitOfWork.OrderRepository.GetOrdersByUserIdAsync(userId);
+        int totalOrders = await _unitOfWork.OrderRepository.GetOrdersCountByUserIdAsync(userId);
+        if (totalOrders == 0)
+            throw new KeyNotFoundException($"El usuario con ID {userId} no tiene pedidos.");
 
-        if (orders == null || orders.Count == 0)
-            throw new KeyNotFoundException($"El usuario con ID {user.Id} no tiene pedidos.");
-
-        int totalPages = (int)Math.Ceiling(orders.Count / (double)AMOUNT);
+        int totalPages = (int)Math.Ceiling(totalOrders / (double)AMOUNT);
 
         if (page < 1 || page > totalPages)
             throw new ArgumentOutOfRangeException(nameof(page), $"La página {page} está fuera del rango permitido (1 - {totalPages}).");
 
-        List<Order> orderPage = orders
-            .Skip((page - 1) * AMOUNT)
-            .Take(AMOUNT)
-            .ToList();
+        List<Order> orderPage = await _unitOfWork.OrderRepository.GetOrdersByUserIdAsync(userId, page, AMOUNT);
 
         List<OrderHistoryItemDto> orderHistoryItemDtos = _orderMapper.ToListOrderHistoryItemDto(orderPage);
 

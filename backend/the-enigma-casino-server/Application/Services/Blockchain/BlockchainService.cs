@@ -14,10 +14,10 @@ public class BlockchainService
 {
     public async Task<EthereumTransaction> GetEthereumInfoAsync(CreateTransactionRequest data)
     {
-        CoinGeckoApi coinGeckoApi = new CoinGeckoApi();
+        CryptoCompareApi cryptoCompareApi = new CryptoCompareApi();
         EthereumService ethereumService = new EthereumService(data.NetworkUrl);
 
-        decimal ethEurPrice = await coinGeckoApi.GetEthereumPriceAsync();
+        decimal ethEurPrice = await cryptoCompareApi.GetEthereumPriceAsync();
         BigInteger value = ethereumService.ToWei(data.Euros / ethEurPrice);
         HexBigInteger gas = ethereumService.GetGas();
         HexBigInteger gasPrice = await ethereumService.GetGasPriceAsync();
@@ -44,8 +44,9 @@ public class BlockchainService
     }
     public async Task<decimal> GetEthereumPriceInEurosAsync()
     {
-        CoinGeckoApi coinGeckoApi = new CoinGeckoApi();
-        return await coinGeckoApi.GetEthereumPriceAsync();
+        CryptoCompareApi cryptoCompareApi = new CryptoCompareApi();
+
+        return await cryptoCompareApi.GetEthereumPriceAsync();
     }
 
     public Task<bool> CheckTransactionAsync(CheckTransactionRequest data)
@@ -160,9 +161,9 @@ public class BlockchainService
 
     private Task<decimal> GetEthereumPriceAsync()
     {
-        CoinGeckoApi coinGeckoApi = new CoinGeckoApi();
+        CryptoCompareApi cryptoCompareApi = new CryptoCompareApi();
 
-        return coinGeckoApi.GetEthereumPriceAsync();
+        return cryptoCompareApi.GetEthereumPriceAsync();
     }
 }
 

@@ -14,9 +14,7 @@ import {
   newFriendRequestsDetected,
   removeSimpleAlert,
 } from "./friends.events";
-import {
-  showGameInviteToast,
-} from "../ui/friends.toast";
+import { showGameInviteToast } from "../ui/friends.toast";
 import toast from "react-hot-toast";
 import { joinTableClicked } from "../../gameTables/store/tablesEvents";
 import { navigateTo } from "../../games/shared/router/navigateFx";
@@ -25,12 +23,10 @@ import { SimpleAlert } from "./friends.types";
 import { $simpleAlerts } from "./friends.store";
 
 socketMessageReceived.watch((data) => {
-
   if (data.type !== "friend") return;
 
   switch (data.action) {
     case "friendRequestReceived": {
-
       const alert: SimpleAlert<"friend_request"> = {
         id: `friend_request-${data.senderId}`,
         type: "friend_request",
@@ -116,7 +112,7 @@ socketMessageReceived.watch((data) => {
         } else if (currentAlerts.length === 0) {
           bellReset();
         }
-      }, 19000)
+      }, 19000);
       break;
     }
     case "gameInviteAccepted": {
@@ -124,7 +120,10 @@ socketMessageReceived.watch((data) => {
 
       toast.success(
         `¡${data.nickName} ha aceptado tu invitación a la mesa ${tableId}!`,
-        { duration: 2000 }
+        {
+          id: `invitation_accepted_${tableId}_${data.nickName}`,
+          duration: 2000,
+        }
       );
 
       const alreadyInTable = $currentTableId.getState() === tableId;
@@ -150,7 +149,10 @@ socketMessageReceived.watch((data) => {
 
     case "gameInviteRejected":
       stopGameLoading();
-      toast.error(`${data.nickname} rechazó tu invitación.`, { duration: 2000 });
+      toast.error(`${data.nickname} rechazó tu invitación.`, {
+        id: `invite_rejected_${data.nickname}`,
+        duration: 2000,
+      });
       break;
 
     case "inviteExpired": {
@@ -161,23 +163,40 @@ socketMessageReceived.watch((data) => {
 
     case "friendRequestCanceled":
       removeReceivedRequest(data.senderId); // Quitar del store
-      toast(`${data.nickname} canceló su solicitud de amistad.`, { duration: 2000 });
+      toast(`${data.nickname} canceló su solicitud de amistad.`, {
+        id: `friend_request_canceled_${data.senderId}`,
+        duration: 2000,
+      });
       break;
 
     case "requestSent":
-      toast.success("Solicitud enviada correctamente.", { duration: 2000 });
+      toast.success("Solicitud enviada correctamente.", {
+        id: "friend_request_sent",
+        duration: 2000,
+      });
+
       break;
 
     case "requestAccepted":
       requestAccepted({ friendId: data.friendId });
-      toast("Has aceptado la solicitud.", { duration: 2000 });
+      toast("Has aceptado la solicitud.", {
+        id: "friend_request_accepted",
+        duration: 2000,
+      });
+
       break;
 
     case "requestCanceled":
-      toast("Cancelaste la solicitud.", { duration: 2000 });
+      toast("Cancelaste la solicitud.", {
+        id: "friend_request_canceled_by_you",
+        duration: 2000,
+      });
+
       break;
 
     default:
-      console.warn("[WS][Friends] Acción desconocida:", data.action, { duration: 2000 });
+      console.warn("[WS][Friends] Acción desconocida:", data.action, {
+        duration: 2000,
+      });
   }
 });

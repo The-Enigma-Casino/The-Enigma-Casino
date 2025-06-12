@@ -85,7 +85,9 @@ sample({
   clock: tryJoinTable,
   filter: (coins) => coins <= 0,
   fn: () => {
-    toast.error("No tienes suficientes fichas para unirte a una mesa.");
+    toast.error("No tienes suficientes fichas para unirte a una mesa.", {
+      id: "insufficient_coins_join",
+    });
   },
 });
 

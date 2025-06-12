@@ -223,7 +223,9 @@ sample({
 sample({
   source: playerKickedReceived,
   fn: () => {
-    toast.error("Has sido expulsado de la mesa por inactividad.");
+    toast.error("Has sido expulsado de la mesa por inactividad.", {
+      id: "kicked_for_inactivity",
+    });
     return "/";
   },
   target: navigateTo,
@@ -232,11 +234,14 @@ sample({
 sample({
   source: matchCancelled,
   fn: () => {
-    toast("Nadie apostó. La partida ha sido cancelada.");
+    toast("Nadie apostó. La partida ha sido cancelada.", {
+      id: "match_cancelled_no_bets",
+    });
     return "/";
   },
   target: navigateTo,
 });
+
 
 sample({
   clock: matchReadyReceived,

@@ -87,9 +87,9 @@ const Ethereum: React.FC = () => {
       if (!window.ethereum?.isMetaMask) {
         toast.error(
           <span>
-            MetaMask no está instalado en su navegador.{"  "}
+            MetaMask no está instalado en su navegador.{" "}
             <a
-              href="https://metamask.io/" //Enlace Chrome Metamask
+              href="https://metamask.io/"
               className="text-[var(--Principal)] underline"
               target="_blank"
               rel="noopener noreferrer"
@@ -98,7 +98,10 @@ const Ethereum: React.FC = () => {
             </a>
             <br />
             Volviendo al catálogo...
-          </span>
+          </span>,
+          {
+            id: "metamask_not_installed",
+          }
         );
         redirectToCatalog();
         return;
@@ -112,7 +115,10 @@ const Ethereum: React.FC = () => {
 
       if (accounts.length === 0) {
         toast.error(
-          "No tienes cuenta en Metamask. Redirigiendo al catálogo..."
+          "No tienes cuenta en Metamask. Redirigiendo al catálogo...",
+          {
+            id: "metamask_no_account",
+          }
         );
         redirectToCatalog();
         return;
@@ -123,8 +129,12 @@ const Ethereum: React.FC = () => {
 
       if (!transactionData) {
         toast.error(
-          "Datos de transacción no disponibles. Redirigiendo al carrito..."
+          "Datos de transacción no disponibles. Redirigiendo al carrito...",
+          {
+            id: "transaction_data_missing",
+          }
         );
+
         redirectToCatalog();
         return;
       }
@@ -153,22 +163,28 @@ const Ethereum: React.FC = () => {
       const order = await verifyTransactionEthereumFx(verifyData);
       if (order && order.id) {
         setTransactionEnd(true);
+
         if (order.isPaid) {
-          toast.success("Pago confirmado, redirigiendo...");
+          toast.success("Pago confirmado, redirigiendo...", {
+            id: "payment_success",
+          });
           fetchLastOrderFx();
           setTimeout(() => {
             navigate("/payment-confirmation?pagado=true");
           }, 3000);
         } else {
-          toast.error("Error en el pago, redirigiendo...");
+          toast.error("Error en el pago, redirigiendo...", {
+            id: "payment_failed",
+          });
           setTimeout(() => {
             navigate("/payment-confirmation?error=true");
           }, 3000);
         }
       } else {
-        toast.error("La transacción no es válida, volviendo a catálogo.");
+        toast.error("La transacción no es válida, volviendo a catálogo.", {
+          id: "invalid_transaction",
+        });
         redirectToCatalog();
-        return;
       }
     } catch (error) {
       if (
@@ -177,10 +193,16 @@ const Ethereum: React.FC = () => {
           "MetaMask Tx Signature: User denied transaction signature"
         )
       ) {
-        toast.error("La transacción fue rechazada por el usuario.");
+        toast.error("La transacción fue rechazada por el usuario.", {
+          id: "tx_user_rejected",
+        });
+
         redirectToCatalog();
       } else {
-        toast.error("Hubo un error con la transacción. Intenta nuevamente."); //COMPROBAR ESTE ERROR AL PAGAR
+        toast.error("Hubo un error con la transacción. Intenta nuevamente.", {
+          id: "transaction_generic_error",
+        });
+
         redirectToCatalog();
       }
     } finally {
@@ -238,15 +260,8 @@ const Ethereum: React.FC = () => {
               className="mt-6 px-6 py-2 flex items-center justify-center gap-2"
               disabled={loading}
             >
-              {loading ? (
-                <>
-                  Procesando Pago
-                </>
-              ) : (
-                "Completar pago"
-              )}
+              {loading ? <>Procesando Pago</> : "Completar pago"}
             </Button>
-
           </div>
         ) : error ? (
           <>

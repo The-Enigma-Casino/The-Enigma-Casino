@@ -3,14 +3,36 @@ import "../store/bjIndex";
 import "../store/bjGameStateMapper";
 import { useUnit } from "effector-react";
 import {
-  $players, $croupier, $gameState, $currentTurnUserId, resetPlayers, resetCroupier, resetGameState, resetCroupierTotal, playerHit, playerStand, doubleDown,
-  $roundResults, $croupierRoundHand, $croupierTotal, $gamePhase, $turnCountdown, $countdown,
-  $persistedBets
+  $players,
+  $croupier,
+  $gameState,
+  $currentTurnUserId,
+  resetPlayers,
+  resetCroupier,
+  resetGameState,
+  resetCroupierTotal,
+  playerHit,
+  playerStand,
+  doubleDown,
+  $roundResults,
+  $croupierRoundHand,
+  $croupierTotal,
+  $gamePhase,
+  $turnCountdown,
+  $countdown,
+  $persistedBets,
 } from "../store/bjIndex";
 import { $userId } from "../../../auth/store/authStore";
 import { CardStack } from "../../shared/components/GameCardStack";
 import { calculateHandTotal } from "../../shared/utils/gameHand.utils";
-import { playerPlaceBet, getGameStateRequested, resetCroupierRoundHand, resetRoundResults, decrementTurnCountdown, localBetPlaced } from "../store/bjEvents";
+import {
+  playerPlaceBet,
+  getGameStateRequested,
+  resetCroupierRoundHand,
+  resetRoundResults,
+  decrementTurnCountdown,
+  localBetPlaced,
+} from "../store/bjEvents";
 import { CardRank, Suit } from "../../shared/types/gameCard.type";
 import { $coins, loadCoins } from "../../../coins/store/coinsStore";
 import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar";
@@ -21,7 +43,6 @@ import { ActionButton } from "../../shared/components/buttonActions/ActionButton
 import { ResponsivePlayerList } from "../../shared/components/playerCards/ResponsivePlayerList";
 import toast from "react-hot-toast";
 export const BlackjackGamePage = () => {
-
   const gamePhaseLabels: Record<string, string> = {
     betting: "Apuestas abiertas",
     playing: "Ronda en curso",
@@ -61,7 +82,7 @@ export const BlackjackGamePage = () => {
     setBetAmount((prev) => prev * 2);
   };
   const isLocalTurn = currentTurnUserId === Number(userId);
-  const [showTurnCountdown,] = useState(false);
+  const [showTurnCountdown] = useState(false);
   const [betSubmitted, setBetSubmitted] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const currentPhaseLabel = gamePhaseLabels[gamePhase] ?? gamePhase;
@@ -111,7 +132,6 @@ export const BlackjackGamePage = () => {
     }
   }, [gamePhase]);
 
-
   const otherPlayers = players
     .filter((p) => p.id !== Number(userId))
     .map((p) => {
@@ -127,17 +147,21 @@ export const BlackjackGamePage = () => {
       };
     });
 
-
   const handlePlaceBet = () => {
     if (betAmount < 50) {
-      toast.error("La apuesta mínima es de 50 fichas.");
+      toast.error("La apuesta mínima es de 50 fichas.", {
+        id: "min_bet_error",
+      });
       return;
     }
 
     if (betAmount > 5000) {
-      toast.error("La apuesta máxima es de 5000 fichas.");
+      toast.error("La apuesta máxima es de 5000 fichas.", {
+        id: "max_bet_error",
+      });
       return;
     }
+
     playerPlaceBet(betAmount);
     localBetPlaced(betAmount);
     setBetSubmitted(true);
@@ -147,7 +171,6 @@ export const BlackjackGamePage = () => {
 
   return (
     <div className="min-h-screen bg-green-900 bg-repeat p-6 text-white w-full overflow-x-hidden">
-
       <div className="max-w-full-2xl mx-auto flex flex-row gap-6 items-start">
         {/* Columna central: contenido principal */}
         <div className="flex-1 flex flex-col items-center w-full max-w-full overflow-hidden">
@@ -156,17 +179,28 @@ export const BlackjackGamePage = () => {
           </h1>
 
           <p className="text-center mb-4 text-3xl">
-            <span className="font-bold text-green-300">{currentPhaseLabel}</span>
+            <span className="font-bold text-green-300">
+              {currentPhaseLabel}
+            </span>
           </p>
 
-          {gamePhase === "betting" && <CountdownBar countdown={countdown} total={30} />}
-          {gamePhase === "playing" && isLocalTurn && <CountdownBar countdown={turnCountdown} total={20} />}
-          {showTurnCountdown && <CountdownBar countdown={turnCountdown} total={20} />}
+          {gamePhase === "betting" && (
+            <CountdownBar countdown={countdown} total={30} />
+          )}
+          {gamePhase === "playing" && isLocalTurn && (
+            <CountdownBar countdown={turnCountdown} total={20} />
+          )}
+          {showTurnCountdown && (
+            <CountdownBar countdown={turnCountdown} total={20} />
+          )}
 
           {/* Croupier */}
-          {(roundResults.length > 0 || (gameState === "InProgress" && croupier.hand.length === 1)) && (
+          {(roundResults.length > 0 ||
+            (gameState === "InProgress" && croupier.hand.length === 1)) && (
             <>
-              <h2 className="text-2xl font-bold text-center mt-6 mb-2">Croupier</h2>
+              <h2 className="text-2xl font-bold text-center mt-6 mb-2">
+                Croupier
+              </h2>
               <div className="flex justify-center items-center flex-col gap-2">
                 {roundResults.length > 0 && (
                   <CardStack
@@ -206,7 +240,10 @@ export const BlackjackGamePage = () => {
                   </p>
                 ) : croupier.hand.length === 1 ? (
                   <p className="text-xl font-semibold text-white mt-2">
-                    Total: <span className="text-Coins">{croupier.hand[0]?.value ?? "-"}</span>
+                    Total:{" "}
+                    <span className="text-Coins">
+                      {croupier.hand[0]?.value ?? "-"}
+                    </span>
                   </p>
                 ) : null}
 
@@ -222,9 +259,9 @@ export const BlackjackGamePage = () => {
           {/* Apuestas */}
           {players.length > 0 && (
             <h2 className="text-2xl font-bold text-center mt-10 mb-6">
-              Jugadores apostando: <span className="text-Coins">{players.length}</span>
+              Jugadores apostando:{" "}
+              <span className="text-Coins">{players.length}</span>
             </h2>
-
           )}
 
           {gamePhase === "betting" && (
@@ -246,9 +283,12 @@ export const BlackjackGamePage = () => {
                   />
                 </div>
               ) : (
-                showConfirmation && !localPlayer && players.length >= 0 && (
+                showConfirmation &&
+                !localPlayer &&
+                players.length >= 0 && (
                   <div className="text-center mt-4 bg-green-700 px-6 py-3 rounded-lg shadow-md text-2xl font-bold text-white">
-                    ¡Apuesta realizada correctamente! Esperando a los demás jugadores...
+                    ¡Apuesta realizada correctamente! Esperando a los demás
+                    jugadores...
                   </div>
                 )
               )}
@@ -263,7 +303,10 @@ export const BlackjackGamePage = () => {
                 nickName: localPlayer.name,
                 hand: localPlayer.hand,
                 total: calculateHandTotal(localPlayer.hand),
-                bets: localPlayer.bet > 0 ? [{ bet: "Blackjack", amount: localPlayer.bet }] : [],
+                bets:
+                  localPlayer.bet > 0
+                    ? [{ bet: "Blackjack", amount: localPlayer.bet }]
+                    : [],
                 isTurn: localPlayer.id === currentTurnUserId,
                 coins: betAmount,
                 state: localPlayer.state,
@@ -278,11 +321,7 @@ export const BlackjackGamePage = () => {
         </div>
 
         {otherPlayers.length > 0 && (
-
-          <ResponsivePlayerList
-            players={otherPlayers}
-            gameType="Blackjack"
-          />
+          <ResponsivePlayerList players={otherPlayers} gameType="Blackjack" />
         )}
       </div>
     </div>

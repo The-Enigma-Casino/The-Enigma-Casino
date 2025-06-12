@@ -35,15 +35,18 @@ sample({
 
 changeUserRoleFx.failData.watch((error) => {
   toast.error(getErrorMessage(error), {
+    id: "change_user_role_error",
     className: "text-lg font-bold p-3",
   });
 });
 
 banUserFx.failData.watch((error) => {
   toast.error(getErrorMessage(error), {
+    id: "ban_user_error",
     className: "text-lg font-bold p-3",
   });
 });
+
 
 
 export const $adminUsers = createStore<UserAdmin[]>([])

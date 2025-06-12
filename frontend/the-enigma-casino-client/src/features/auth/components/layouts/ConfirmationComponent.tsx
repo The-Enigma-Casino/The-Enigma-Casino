@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import classes from "./ConfirmationComponent.module.css";
 import { confirmEmailFx } from "../../actions/authActions";
 import toast from "react-hot-toast";
+import { setToken } from "../../store/authStore";
+import { connectSocket } from "../../../../websocket/store/wsEvents";
+import { useNavigate } from "react-router-dom";
 
 interface ConfirmationProps {
   token: string;
@@ -9,7 +12,7 @@ interface ConfirmationProps {
 
 const ConfirmationComponent = ({ token }: ConfirmationProps) => {
   const [isConfirmed, setIsConfirmed] = useState<boolean | null>(null);
-
+  const navigate = useNavigate();
   useEffect(() => {
     let closeTimeout: NodeJS.Timeout;
 
@@ -17,17 +20,22 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
       const toastId = toast.loading("Confirmando tu email...");
 
       confirmEmailFx(token)
-        .then(() => {
-          toast.success("Email confirmado exitosamente! 🙂", {
+        .then((accessToken) => {
+          toast.success("Email confirmado exitosamente! 🙂.", {
             id: toastId,
             className: "text-xl font-bold p-4",
           });
 
+          if (token) {
+            setToken({ token: accessToken, rememberMe: false });
+            connectSocket();
+          }
+
           setIsConfirmed(true);
 
-          closeTimeout = setTimeout(() => {
-            window.close();
-          }, 20000);
+          setTimeout(() => {
+            navigate("/");
+          },5000);
         })
         .catch(() => {
           toast.error("No se pudo confirmar el email. 😟", {
@@ -38,10 +46,6 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
           setIsConfirmed(false);
         });
     }
-
-    return () => {
-      if (closeTimeout) clearTimeout(closeTimeout);
-    };
   }, [token]);
 
   return (

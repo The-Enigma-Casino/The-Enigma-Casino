@@ -45,19 +45,21 @@ public class AuthController : BaseController
 
 
     [HttpPut("confirm-email")]
-    public async Task<ActionResult<string>> ConfirmEmail([FromQuery] string token)
+    public async Task<ActionResult<string>> ConfirmEmailAndLogin([FromQuery] string token)
     {
         try
         {
             if (string.IsNullOrEmpty(token))
                 return BadRequest("El token de confirmación es obligatorio.");
 
-            bool result = await _userService.ConfirmUserEmailAsync(token);
+            User user = await _userService.ConfirmEmailAndGetUserAsync(token);
 
-            if (!result)
+            if (user == null)
                 return NotFound("Token de confirmación no válido o expirado.");
 
-            return Ok("Tu cuenta ha sido confirmada exitosamente.");
+            string generatedToken = _userService.GenerateToken(user);
+
+            return Ok(generatedToken);
 
         }
         catch (Exception ex)

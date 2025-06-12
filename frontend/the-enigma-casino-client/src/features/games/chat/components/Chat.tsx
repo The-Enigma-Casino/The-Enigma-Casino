@@ -43,7 +43,9 @@ export const Chat = ({ gameType }: ChatProps) => {
     if (tableId !== null) {
       messageSent({ tableId, text });
     } else {
-      toast.error("No hay una mesa activa para enviar mensajes.");
+      toast.error("No hay una mesa activa para enviar mensajes.", {
+        id: "no_active_table_for_message",
+      });
     }
   };
   const handleLogout = () => {
@@ -129,8 +131,9 @@ export const Chat = ({ gameType }: ChatProps) => {
       <GameInfoModal
         isOpen={showInfo}
         gameType={gameType}
-        onClose={() =>  {setShowInfo(false)
-          console.log("Cerrar modal")
+        onClose={() => {
+          setShowInfo(false);
+          console.log("Cerrar modal");
         }}
       />
     </div>

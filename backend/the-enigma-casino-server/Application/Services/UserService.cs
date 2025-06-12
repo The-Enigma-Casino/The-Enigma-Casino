@@ -136,18 +136,14 @@ public class UserService : BaseService
     }
 
 
-    public async Task<bool> ConfirmUserEmailAsync(string token)
+    public async Task<User> ConfirmEmailAndGetUserAsync(string token)
     {
         try
         {
 
             User user = await _unitOfWork.UserRepository.GetUserByConfirmationTokenAsync(token);
 
-            if (user == null)
-            {
-                return false;
-
-            }
+            if (user == null) return null;
 
             user.EmailConfirm = true;
             user.ConfirmationToken = null;
@@ -155,11 +151,12 @@ public class UserService : BaseService
             _unitOfWork.UserRepository.Update(user);
             await _unitOfWork.SaveAsync();
 
-            return true;
+            return user;
         }
         catch (Exception ex)
         {
-            return false;
+            Console.WriteLine($"Error al generar el usuario: {ex.Message}");
+            throw;
         }
     }
 

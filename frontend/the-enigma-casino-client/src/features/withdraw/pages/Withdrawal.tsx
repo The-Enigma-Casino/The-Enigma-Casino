@@ -70,7 +70,10 @@ const Withdrawal: React.FC = () => {
 
   const handleConversion = async () => {
     if (!coins || coins <= 0) {
-      toast.error("Ingresa una cantidad válida para la conversión.");
+      toast.error("Ingresa una cantidad válida para la conversión.", {
+        id: "invalid_conversion_amount",
+      });
+
       return;
     }
     const converWithdrawalParams = {
@@ -200,9 +203,10 @@ const Withdrawal: React.FC = () => {
             disabled={isConverted}
             placeholder=""
             className={`peer w-full py-4 pl-3 pr-3 text-lg border-2 rounded-md transition-all
-              ${isConverted
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-gray-100 text-white border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-gray-50"
+              ${
+                isConverted
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gray-100 text-white border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-gray-50"
               }`}
           />
           <span className={classes.label}>Cantidad de Fichas</span>
@@ -250,10 +254,10 @@ const Withdrawal: React.FC = () => {
           {isConverting
             ? "Convirtiendo..."
             : loading
-              ? "Procesando Retiro..."
-              : isConverted
-                ? "Realizar Retirada"
-                : "Realizar Conversión"}
+            ? "Procesando Retiro..."
+            : isConverted
+            ? "Realizar Retirada"
+            : "Realizar Conversión"}
         </Button>
       </div>
     </div>

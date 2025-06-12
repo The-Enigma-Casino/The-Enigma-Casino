@@ -33,20 +33,22 @@ function LoginComponent() {
 
   useEffect(() => {
     if (authError) {
-      toast.error(authError.message);
+      toast.error(authError.message, { id: "auth_error" });
     }
   }, [authError]);
 
   useEffect(() => {
-  const reason = sessionStorage.getItem("logoutReason");
-  if (reason) {
-    if (reason === "Token expirado") {
-      toast("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
-    }
+    const reason = sessionStorage.getItem("logoutReason");
+    if (reason) {
+      if (reason === "Token expirado") {
+        toast("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.", {
+          id: "session_expired",
+        });
+      }
 
-    sessionStorage.removeItem("logoutReason");
-  }
-}, []);
+      sessionStorage.removeItem("logoutReason");
+    }
+  }, []);
 
   return (
     <>

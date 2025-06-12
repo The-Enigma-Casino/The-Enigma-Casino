@@ -52,7 +52,7 @@ public class Program
 
         app.MapGet("/api/", () => "The Enigma Casino!");
 
-        Console.WriteLine("The Enigma Casino Server");
+        Console.WriteLine("The Enigma Casino Server PRUEBA AWS");
 
         app.Run();
     }

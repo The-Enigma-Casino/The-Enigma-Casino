@@ -1,44 +1,54 @@
 #!/bin/bash
 
-# Detectar si esta instancia es de backend
-if [ "$(cat /etc/instance-type 2>/dev/null)" != "backend" ]; then
-  echo "⛔ Esta instancia no es de backend. Abortando install.sh." | tee -a "$LOG_FILE"
-  exit 0
-fi
-
-LOG_FILE="/tmp/backend-start.log"
-APP_ENV="/home/ubuntu/backend-code-deploy/.env.production"
+LOG_FILE="/tmp/startup-backend.log"
+APP_DLL="the-enigma-casino-server.dll"
+DEPLOY_DIR="/home/ubuntu/backend-runtime"
+ENV_FILE="/home/ubuntu/backend-code-deploy/.env.production"
+TEMP_ENV="/tmp/backend-env"
 
 echo "" >> "$LOG_FILE"
-echo "🚀 Ejecutando start.sh - $(date)" | tee -a "$LOG_FILE"
+echo "🚀 Lanzando backend - $(date)" | tee -a "$LOG_FILE"
 
-# Cargar variables de entorno (por si el servicio las necesita)
-if [ -f "$APP_ENV" ]; then
-  echo "📦 Cargando variables de entorno ($APP_ENV)..." | tee -a "$LOG_FILE"
-  set -o allexport
-  source "$APP_ENV"
-  set +o allexport
-else
-  echo "⚠️ No se encontró archivo .env.production en $APP_ENV" | tee -a "$LOG_FILE"
-fi
-
-# Asegurar que no hay procesos sueltos
-echo "🧼 Deteniendo backend si estaba activo..." | tee -a "$LOG_FILE"
-sudo systemctl stop enigma-backend.service 2>/dev/null || true
-
-# Recargar definición del servicio (por si se actualizó el .service)
-echo "🔁 Recargando systemd..." | tee -a "$LOG_FILE"
-sudo systemctl daemon-reload
-
-# Lanzar backend como servicio
-echo "🚀 Iniciando backend con systemctl..." | tee -a "$LOG_FILE"
-sudo systemctl start enigma-backend.service
-
-# Verificación
-sleep 2
-if sudo systemctl is-active --quiet enigma-backend.service; then
-  echo "🟢 Backend iniciado correctamente como servicio systemd." | tee -a "$LOG_FILE"
-else
-  echo "❌ Error al iniciar el backend como servicio." | tee -a "$LOG_FILE"
+# Comprobación básica
+if [ ! -f "$DEPLOY_DIR/$APP_DLL" ]; then
+  echo "❌ ERROR: No se encontró $APP_DLL en $DEPLOY_DIR" | tee -a "$LOG_FILE"
   exit 1
 fi
+
+# Exportar variables
+echo "📦 Cargando variables de entorno ($ENV_FILE)..." | tee -a "$LOG_FILE"
+rm -f "$TEMP_ENV"
+touch "$TEMP_ENV"
+
+while IFS= read -r line || [[ -n "$line" ]]; do
+  [[ "$line" =~ ^#.*$ || -z "${line//[[:space:]]/}" ]] && continue
+  [[ "$line" != *=* ]] && echo "❌ Línea inválida: $line" && exit 1
+
+  key="${line%%=*}"
+  value="${line#*=}"
+  value=$(echo "$value" | sed -E 's/^"(.*)"$/\1/')
+
+  [[ -z "$key" ]] && echo "❌ Clave vacía detectada: $line" && exit 1
+
+  echo "export $key=\"$value\"" >> "$TEMP_ENV"
+done < "$ENV_FILE"
+
+echo "✅ Variables cargadas desde $ENV_FILE" | tee -a "$LOG_FILE"
+
+# Parar backend si ya estuviera corriendo
+echo "🧼 Deteniendo backend si estaba activo..." | tee -a "$LOG_FILE"
+sudo pkill -f "$APP_DLL" || true
+sleep 2
+
+# Recargar systemd (por si ha cambiado algo)
+echo "🔁 Recargando systemd..." | tee -a "$LOG_FILE"
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+
+# Cargar entorno y lanzar
+echo "🟢 Ejecutando $APP_DLL" | tee -a "$LOG_FILE"
+set -a
+source "$TEMP_ENV"
+set +a
+
+exec /usr/bin/dotnet "$DEPLOY_DIR/$APP_DLL" --urls "http://0.0.0.0:5000"

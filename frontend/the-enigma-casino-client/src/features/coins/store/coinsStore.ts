@@ -1,4 +1,4 @@
-import { createStore, createEvent, sample } from "effector";
+import { createStore, createEvent } from "effector";
 import { getCoinsByUserFx } from "../actions/coinsActions";
 
 export const loadCoins = createEvent();
@@ -11,8 +11,3 @@ export const $coins = createStore<number>(0)
     return 0;
   })
   .reset(resetCoins);
-
-sample({
-  clock: loadCoins,
-  target: getCoinsByUserFx,
-});

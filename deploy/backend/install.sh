@@ -25,8 +25,16 @@ echo "🧹 Limpiando publicación temporal anterior en $PUBLISH_TEMP_DIR..." | t
 rm -rf "$PUBLISH_TEMP_DIR"/*
 
 echo "📦 Compilando backend desde $SOURCE_DIR..." | tee -a "$LOG_FILE"
+cd "$SOURCE_DIR" || {
+  echo "❌ No se pudo acceder al proyecto. Abortando." | tee -a "$LOG_FILE"
+  exit 1
+}
+
+export HOME=/home/ubuntu
+
 dotnet publish "$SOURCE_DIR/the-enigma-casino-server.csproj" -c Release -o "$PUBLISH_TEMP_DIR" 2>&1 | tee -a "$LOG_FILE"
 PUBLISH_EXIT_CODE=$?
+
 if [ $PUBLISH_EXIT_CODE -ne 0 ]; then
   echo "❌ Error durante dotnet publish (código $PUBLISH_EXIT_CODE)" | tee -a "$LOG_FILE"
   exit 1

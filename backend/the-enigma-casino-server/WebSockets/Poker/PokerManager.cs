@@ -14,9 +14,12 @@ public static class PokerManager
         int? previousDealer = PokerDealerStore.GetLastDealer(match.GameTableId);
         int newDealerUserId = GetNextDealer(match.Players, previousDealer);
 
+        ResetRoundStateForTable(match);
+
         PokerDealerStore.SetDealer(match.GameTableId, newDealerUserId);
 
-        PokerGame pokerGame = new(match.Players, newDealerUserId); 
+        PokerGame pokerGame = new(match.Players, newDealerUserId);
+
         pokerGame.StartRound();
 
         ActivePokerGameStore.Set(match.GameTableId, pokerGame);
@@ -135,4 +138,26 @@ public static class PokerManager
 
         return matchPlayers[nextIndex].UserId;
     }
+
+    private static void ResetRoundStateForTable(Match match)
+    {
+        int tableId = match.GameTableId;
+
+        foreach (var player in match.Players)
+        {
+            player.CurrentBet = 0;
+            player.PlayerState = PlayerState.Playing;
+            player.Hand = new Hand();
+            player.HasAbandoned = false;
+
+            PokerBetTracker.ClearPlayer(tableId, player.UserId);
+        }
+
+        foreach (var phase in new[] { "preflop", "flop", "turn", "river" })
+        {
+            PokerActionTracker.Clear(tableId, phase);
+        }
+    }
+
+
 }

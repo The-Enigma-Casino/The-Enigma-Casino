@@ -14,8 +14,6 @@ const ConfirmationComponent = ({ token }: ConfirmationProps) => {
   const [isConfirmed, setIsConfirmed] = useState<boolean | null>(null);
   const navigate = useNavigate();
   useEffect(() => {
-    let closeTimeout: NodeJS.Timeout;
-
     if (token) {
       const toastId = toast.loading("Confirmando tu email...");
 

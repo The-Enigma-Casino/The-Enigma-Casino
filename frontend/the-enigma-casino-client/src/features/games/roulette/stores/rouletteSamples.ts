@@ -18,6 +18,7 @@ import { $name } from "../../../auth/store/authStore";
 import { RoulettePlayer } from "../types/roulettePlayer.type";
 import { getPlayerAvatarsFx } from "../../actions/playerAvatarsAction";
 import { loadCoins } from "../../../coins/stores/coinsStore";
+import { forceLeaveTable } from "../../../gameTables/store/tablesIndex";
 
 sample({
   clock: playerPlaceBet,
@@ -63,8 +64,9 @@ sample({
 
     return "/";
   },
-  target: navigateTo,
+  target: [navigateTo, forceLeaveTable],
 });
+
 
 sample({
   clock: gameStateReceived,

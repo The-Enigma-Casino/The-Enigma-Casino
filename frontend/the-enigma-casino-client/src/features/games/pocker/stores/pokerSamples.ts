@@ -1,5 +1,5 @@
 import { sample } from "effector";
-import { $currentTableId } from "../../../gameTables/store/tablesIndex";
+import { $currentTableId, forceLeaveTable } from "../../../gameTables/store/tablesIndex";
 import { messageSent } from "../../../../websocket/store/wsIndex";
 import {
   matchReadyReceived,
@@ -42,7 +42,7 @@ sample({
     });
     return "/";
   },
-  target: navigateTo,
+  target: [navigateTo, forceLeaveTable],
 });
 
 sample({

@@ -16,18 +16,18 @@ function FriendsPanel() {
     });
   }, []);
 
-  const onlineFriends = friends.filter(f => f.isOnline).slice(0, 4);
+  const onlineFriends = friends.filter((f) => f.isOnline).slice(0, 4);
   return (
     <div className={classes.friendsPanel}>
       <div className={classes.friendsPanelContainer}>
         <div className={classes.friends}>
-          {onlineFriends.map(friend => {
+          {onlineFriends.map((friend) => {
             const encoded = encodeId(friend.id);
             return (
               <div key={friend.id} className={classes.friend}>
                 <Link to={`/profile/${encoded}`} className={classes.avatar}>
                   <img
-                    src={`${IMAGE_PROFILE_URL}${friend.image}`}
+                    src={`${IMAGE_PROFILE_URL}${friend.image}?cb=${Date.now()}`}
                     alt={`Imagen de ${friend.nickName}`}
                     className={classes.avatarImage}
                   />
@@ -41,9 +41,8 @@ function FriendsPanel() {
           )}
         </div>
       </div>
-    </div >
+    </div>
   );
 }
 
 export default FriendsPanel;
-

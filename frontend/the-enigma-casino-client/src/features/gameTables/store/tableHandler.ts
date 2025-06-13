@@ -29,16 +29,13 @@ const errorMessageMap: Record<string, string> = {
 socketMessageReceived.watch((data) => {
   if (data.type !== "game_table") return;
 
-
   switch (data.action) {
     case "table_update": {
       const tableId = Number(data.tableId);
       const nickNames = data.players as string[];
 
-
       if (nickNames.length > 0) {
         getPlayerAvatarsFx(nickNames).then((avatars) => {
-
           const enrichedPlayers = nickNames.map((nick) => {
             const avatarData = avatars.find((a) => a.nickName === nick);
             const player = {
@@ -53,7 +50,6 @@ socketMessageReceived.watch((data) => {
             players: enrichedPlayers,
             state: data.state,
           });
-
         });
       } else {
         tableUpdated({
@@ -124,6 +120,22 @@ socketMessageReceived.watch((data) => {
     case "join_denied": {
       const currentTableId = $currentTableId.getState();
       const deniedTableId = Number(data.tableId);
+      const reason = data.reason ?? "unknown";
+      const userMessage =
+        errorMessageMap[reason] ?? data.message ?? "No se pudo unir a la mesa.";
+
+      if (reason === "already_joined") {
+        if (currentTableId === deniedTableId) {
+          console.log(
+            "⚠️ join_denied (already_joined), pero ya estás en la mesa. No se resetea ni se muestra toast."
+          );
+          return;
+        }
+      } else {
+        toast.error(userMessage, {
+          id: `join_denied_${reason}`,
+        });
+      }
 
       const unrecoverable = [
         "already_left",
@@ -132,22 +144,11 @@ socketMessageReceived.watch((data) => {
         "not_enough_coins",
       ];
 
-      if (unrecoverable.includes(data.reason)) {
+      if (unrecoverable.includes(reason)) {
         resetTableId();
         markLeftTable();
-        return;
       }
 
-      if (data.reason === "already_joined") {
-        if (currentTableId === deniedTableId) {
-          console.log(
-            "⚠️ join_denied (already_joined), pero ya estás en la mesa. No se resetea."
-          );
-          return;
-        }
-      }
-
-      toast.error(data.reason ?? "No se pudo unir a la mesa.");
       break;
     }
 
@@ -159,7 +160,7 @@ socketMessageReceived.watch((data) => {
       if (Number(data.userId) === Number($userId.getState())) {
         resetTableId();
         markLeftTable();
-      } 
+      }
 
       tableCleanupCompleted();
       clearJoinProtection();

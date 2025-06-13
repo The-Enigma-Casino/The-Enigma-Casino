@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import Button from "../../../components/ui/button/Button";
-import { updateUserImageFx, UpdateUserImageDefaultFx } from "../store/editProfile/editProfile";
+import {
+  updateUserImageFx,
+  UpdateUserImageDefaultFx,
+} from "../store/editProfile/editProfile";
 import { IMAGE_PROFILE_URL } from "../../../config";
 import { imageUpdated } from "../store/editProfile/editEvent";
 import toast from "react-hot-toast";
@@ -17,6 +20,7 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
   const [isDefaultSelected, setIsDefaultSelected] = useState(false);
   const DEFAULT_IMAGE_PATH = "/img/user_default.webp";
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -28,13 +32,17 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
   };
 
   const handleConfirm = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
     try {
       await toast.promise(
         isDefaultSelected
           ? UpdateUserImageDefaultFx()
           : imageFile
-            ? updateUserImageFx(imageFile)
-            : Promise.reject("No se seleccionó ninguna imagen."),
+          ? updateUserImageFx(imageFile)
+          : Promise.reject("No se seleccionó ninguna imagen."),
         {
           loading: "Actualizando imagen...",
           success: () => {
@@ -47,6 +55,8 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
       );
     } catch (error) {
       console.error("Error al actualizar la imagen", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -60,7 +70,6 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 px-2">
       <div className="bg-Background-Overlay rounded-3xl px-6 py-10 w-full max-w-[700px] border border-Principal">
         <div className="flex flex-col lg:flex-row gap-10 items-center justify-center">
-
           {/* Imagen user */}
           <img
             src={
@@ -71,7 +80,6 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
             alt="Usuario"
             className="w-60 h-60 object-cover rounded-full aspect-square"
           />
-
 
           {/* Botones y selector */}
           <div className="flex flex-col gap-6 items-center w-full">
@@ -86,8 +94,17 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
             </Button>
 
             <label className="bg-white text-black px-4 py-4 rounded-full cursor-pointer text-center text-2xl w-[20rem] h-[4rem] overflow-hidden text-ellipsis whitespace-nowrap">
-              {imageFile ? imageFile.name : isDefaultSelected ? "user_default.webp" : "Seleccionar imagen"}
-              <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+              {imageFile
+                ? imageFile.name
+                : isDefaultSelected
+                ? "user_default.webp"
+                : "Seleccionar imagen"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
             </label>
           </div>
 
@@ -98,15 +115,12 @@ const ModalEditImage: React.FC<Props> = ({ onCancel, onConfirm, image }) => {
               color="green"
               font="bold"
               onClick={handleConfirm}
+              disabled={isSubmitting}
+              className={isSubmitting ? "cursor-not-allowed" : ""}
             >
               Aceptar
             </Button>
-            <Button
-              variant="short"
-              color="red"
-              font="bold"
-              onClick={onCancel}
-            >
+            <Button variant="short" color="red" font="bold" onClick={onCancel}>
               Cancelar
             </Button>
           </div>

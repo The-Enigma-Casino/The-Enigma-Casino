@@ -5,23 +5,21 @@
  
 ## 📚 Índice
 
-1. [⭐ The Enigma Casino](#the-enigma-casino)
-2. [👨‍💻 Autores del proyecto](#-autores-del-proyecto)
-3. [🛠️ Tecnologías utilizadas](#-tecnologías-utilizadas)
+- [⭐ The Enigma Casino](#the-enigma-casino)
+- [👨‍💻 Autores del proyecto](#-autores-del-proyecto)
+- [🛠️ Tecnologías utilizadas](#-tecnologías-utilizadas)
    * [Backend](#backend)
    * [Frontend](#frontend)
    * [Despliegue](#despliegue)
-4. [🎨 Diseño en Figma](#-diseño-en-figma)
-5. [📗Documentación](#-documentación)
-6. [✨ Vista previa](#-vista-previa)
-7. [📁 Arquitectura de sistemas](#-arquitectura-de-sistemas)
-8. [📄 Licencia](#-licencia)
-
-### Otros:
-
-- [AWS](/aws/README.md)
-- [Front](/frontend/README.md)
-- [Back](/backend/README.md)
+- [🎨 Diseño en Figma](#-diseño-en-figma)
+- [📗Documentación](#-documentación)
+- [✨ Vista previa](#-vista-previa)
+- [📁 Arquitectura de sistemas](#-arquitectura-de-sistemas)
+- [📄 Licencia](#-licencia)
+- [☁️ Readme AWS](/aws/README.md)
+- [🌐 Readme Front](/frontend/README.md)
+- [🌐 Readme Back](/backend/README.md)
+- [🧩 Readme Base de Datos](/backend/db/README.md)
 
 ## 👨‍💻 Autores del proyecto
 - Alejandro Barrionuevo Rosado 

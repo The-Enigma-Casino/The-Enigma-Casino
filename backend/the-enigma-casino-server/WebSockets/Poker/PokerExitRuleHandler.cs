@@ -11,7 +11,6 @@ public class PokerExitRuleHandler : IGameExitRuleHandler
         if (player.PlayerState is PlayerState.Playing or PlayerState.AllIn)
         {
             player.PlayerState = PlayerState.Fold;
-            Console.WriteLine($"⚠️ {player.User.NickName} se ha desconectado. Marcado como Fold.");
         }
         player.HasAbandoned = true;
 

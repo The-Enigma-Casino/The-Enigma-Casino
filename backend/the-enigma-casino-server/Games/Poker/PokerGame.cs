@@ -74,7 +74,6 @@ public class PokerGame
             if (player.User.Coins <= 0)
             {
                 player.PlayerState = PlayerState.Waiting;
-                Console.WriteLine($"{player.User.NickName} no tiene fichas y pasa a modo espera.");
             }
             else
             {
@@ -98,7 +97,6 @@ public class PokerGame
         if (firstToAct != null)
         {
             CurrentTurnUserId = firstToAct.UserId;
-            Console.WriteLine($"🎯 Primer turno asignado a {firstToAct.User.NickName}");
         }
         else
         {
@@ -112,7 +110,6 @@ public class PokerGame
         if (firstToAct != null)
         {
             CurrentTurnUserId = firstToAct.UserId;
-            Console.WriteLine($"🎯 Primer turno de la fase '{phase}': {firstToAct.User.NickName}");
         }
     }
 
@@ -135,13 +132,11 @@ public class PokerGame
 
         if (PokerHelper.OnlyOnePlayerLeft(_players))
         {
-            Console.WriteLine("🏆 Solo queda un jugador. Ganador automático.");
             return false;
         }
 
         if (PokerHelper.AllPlayersAllInOrNoChips(_players))
         {
-            Console.WriteLine("♠️ Todos están all-in o sin fichas. Se debe forzar showdown.");
             return false;
         }
 
@@ -161,7 +156,6 @@ public class PokerGame
             return true;
         }
 
-        Console.WriteLine("✅ Todos los jugadores activos han actuado. Debería avanzar fase.");
         return false;
     }
 
@@ -218,7 +212,6 @@ public class PokerGame
         if (amount == player.User.Coins)
             player.PlayerState = PlayerState.AllIn;
 
-        Console.WriteLine($"[DEBUG] Apostando en mesa {player.GameTableId} - Jugador {player.UserId}");
         PokerBetTracker.RegisterBet(player.GameTableId, player.UserId, amount);
 
         player.PlaceBet(amount);
@@ -250,7 +243,6 @@ public class PokerGame
 
         ResetCurrentPhaseBets();
 
-        Console.WriteLine("\n--- FLOP ---");
         PokerHelper.ShowCommunityCards(_communityCards);
     }
 
@@ -261,7 +253,6 @@ public class PokerGame
 
         ResetCurrentPhaseBets();
 
-        Console.WriteLine("\n--- TURN ---");
         PokerHelper.ShowCommunityCards(_communityCards);
     }
 
@@ -272,7 +263,6 @@ public class PokerGame
 
         ResetCurrentPhaseBets();
 
-        Console.WriteLine("\n--- RIVER  ---");
         PokerHelper.ShowCommunityCards(_communityCards);
     }
 
@@ -289,7 +279,6 @@ public class PokerGame
                 p.PlayerState is PlayerState.Playing or PlayerState.AllIn or PlayerState.Fold or PlayerState.Left)
             .ToList();
 
-        Console.WriteLine("\n♻️ Generando pots...");
         foreach (Player p in playersWithBets)
         {
             int contribution = PokerBetTracker.GetTotalBet(p.GameTableId, p.UserId);
@@ -311,7 +300,6 @@ public class PokerGame
             };
 
             _pots.Add(soloPot);
-            Console.WriteLine($"🏆 Solo queda un jugador ({eligiblePlayers[0].User.NickName}). Se le asignan directamente {totalAmount} fichas.");
             return;
         }
 
@@ -330,7 +318,6 @@ public class PokerGame
 
             // Limpiar contribuciones
             _pots.Add(mainPot);
-            Console.WriteLine("✅ Solo se ha generado un Main Pot.");
             return;
         }
 
@@ -363,8 +350,6 @@ public class PokerGame
                 .OrderBy(p => PokerBetTracker.GetTotalBet(p.GameTableId, p.UserId))
                 .ToList();
         }
-
-        Console.WriteLine($"⚠️ Se han generado {_pots.Count} pots debido a diferencias de apuestas.");
     }
 
 
@@ -377,16 +362,12 @@ public class PokerGame
             Pot pot = _pots[i];
             string label = i == 0 ? "Main Pot" : $"Side Pot {i}";
 
-            Console.WriteLine($"\n🪙 {label}: {pot.Amount} fichas");
-            Console.WriteLine($"   Participantes: {string.Join(", ", pot.EligiblePlayers.Select(p => p.User.NickName))}");
-
             List<EvaluatedHand> eligibleHands = evaluatedHands
                 .Where(e => pot.EligiblePlayers.Contains(e.Player))
                 .ToList();
 
             if (!eligibleHands.Any())
             {
-                Console.WriteLine($"❌ Nadie elegible para el {label}.");
                 continue;
             }
 
@@ -401,8 +382,6 @@ public class PokerGame
             int rake = CalculateRake(pot.Amount);
             int distributableAmount = pot.Amount - rake;
             int winnings = distributableAmount / winners.Count;
-
-            Console.WriteLine($"🏦 Rake: {rake} | Reparto: {distributableAmount} → {winnings} por ganador");
 
             foreach (var winner in winners)
             {
@@ -426,9 +405,6 @@ public class PokerGame
                         value = c.Value
                     })
                 });
-
-                Console.WriteLine($"✅ {winner.Player.User.NickName} gana {winnings} del {label} con: {finalDescription}");
-
             }
         }
 
@@ -467,30 +443,11 @@ public class PokerGame
     {
         _lastShowdownSummary.Clear();
 
-        Console.WriteLine("[DEBUG] Estados de los jugadores al entrar a Showdown():");
-        foreach (var p in _players)
-        {
-            Console.WriteLine($" - {p.User.NickName}: {p.PlayerState}");
-        }
-
         List<Player> activePlayers = _players
         .Where(p =>
             (p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn)
             && !p.HasAbandoned
         ).ToList();
-
-
-        Console.WriteLine("[DEBUG] Jugadores activos detectados para el showdown:");
-        foreach (var p in activePlayers)
-        {
-            Console.WriteLine($" - {p.User.NickName}");
-        }
-
-        if (!activePlayers.Any())
-        {
-            Console.WriteLine("No hay jugadores activos para el showdown.");
-            return;
-        }
 
         (int rake, int distributablePot) = CalculateRakeForShowdown();
         if (activePlayers.Count == 1)
@@ -522,7 +479,6 @@ public class PokerGame
 
         List<EvaluatedHand> evaluatedHands = EvaluatePlayerHands(activePlayers);
 
-        Console.WriteLine("[DEBUG] Evaluación de manos:");
         var bestHand = evaluatedHands.OrderByDescending(e => e, _handComparer).First();
 
         foreach (var hand in evaluatedHands)
@@ -534,7 +490,6 @@ public class PokerGame
                     ? $" (Perdió) → RankList: {string.Join(", ", hand.RankList)}"
                     : "";
 
-            Console.WriteLine($" - {hand.Player.User.NickName}: {hand.Description}{extra}");
         }
 
         _lastShowdownSummary.AddRange(DistributePots(evaluatedHands));
@@ -575,7 +530,6 @@ public class PokerGame
             if (player.User.Coins <= 0)
             {
                 player.PlayerState = PlayerState.Waiting;
-                Console.WriteLine($"{player.User.NickName} se queda sin fichas y pasa a 'Waiting'.");
             }
         }
     }
@@ -613,16 +567,12 @@ public class PokerGame
 
         if (WonByEarlyAbandonment())
         {
-            Console.WriteLine($"[RAKE] No se aplica rake: abandono temprano. Pot: {totalPot}.");
             return (0, totalPot);
         }
 
         int rake = CalculateRake(totalPot);
         int net = totalPot - rake;
 
-        Console.WriteLine($"[RAKE] Aplicando rake de {rake} fichas sobre pot de {totalPot}. Neto: {net}");
         return (rake, net);
     }
-
-
 }

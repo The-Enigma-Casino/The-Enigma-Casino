@@ -16,7 +16,6 @@ namespace the_enigma_casino_server.WebSockets.BlackJack
         public void RegisterInactivity(Player player)
         {
             _inactivityCounts.AddOrUpdate(player.UserId, 1, (_, current) => current + 1);
-            Console.WriteLine($"🚨 [BlackjackInactivityTracker] Jugador {player.User.NickName} suma una falta de inactividad. Total: {_inactivityCounts[player.UserId]}");
         }
 
         public void ResetActivity(Player player)

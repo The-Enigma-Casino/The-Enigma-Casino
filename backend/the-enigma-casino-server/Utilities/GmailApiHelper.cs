@@ -59,9 +59,6 @@ namespace the_enigma_casino_server.Utilities
 
             var gmailMessage = new Message { Raw = rawMessage };
             await _gmailService.Users.Messages.Send(gmailMessage, "me").ExecuteAsync();
-
-            Console.WriteLine($"📧 Correo enviado con Gmail API a {to}");
         }
-
     }
 }

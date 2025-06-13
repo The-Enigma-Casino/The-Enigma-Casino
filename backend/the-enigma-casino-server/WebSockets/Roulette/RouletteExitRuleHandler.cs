@@ -11,7 +11,6 @@ public class RouletteExitRuleHandler : IGameExitRuleHandler
         if (player.PlayerState == PlayerState.Playing)
         {
             player.PlayerState = PlayerState.Left;
-            Console.WriteLine($"🚪 [Ruleta] {player.User.NickName} abandonó el match. Estado cambiado a Left.");
         }
 
         return Task.FromResult(true);

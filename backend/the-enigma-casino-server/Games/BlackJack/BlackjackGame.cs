@@ -38,7 +38,6 @@ public class BlackjackGame
         {
             if (player.Hand.GetTotal() == 21 && player.Hand.Cards.Count == 2)
             {
-                Console.WriteLine($"🃏 {player.User.NickName} tiene Blackjack natural.");
                 player.PlayerState = PlayerState.Blackjack;
             }
         }
@@ -52,7 +51,6 @@ public class BlackjackGame
             var random = new Random();
             var randomPlayer = playingPlayers[random.Next(playingPlayers.Count)];
             SetCurrentPlayer(randomPlayer.UserId);
-            Console.WriteLine($"🎲 Turno inicial aleatorio: {randomPlayer.User.NickName} (UserId: {randomPlayer.UserId})");
         }
         else
         {
@@ -126,7 +124,6 @@ public class BlackjackGame
 
         foreach (Player player in playersSnapshot)
         {
-            Console.WriteLine($"⚠️ Evaluando resultado para jugador: {player.User.NickName}");
             int playerTotal = player.Hand.GetTotal();
             bool playerBust = player.Hand.IsBusted();
             string result = "";
@@ -141,49 +138,42 @@ public class BlackjackGame
                 player.Draw();
                 result = "draw";
                 coinsChange = 0;
-                Console.WriteLine($"{player.User.NickName} y el crupier empatan con Blackjack.");
             }
             else if (playerHasBlackjack)
             {
                 coinsChange = (int)(originalBet * 1.5);
                 result = "blackjack";
                 WinBlackjack(player);
-                Console.WriteLine($"{player.User.NickName} ha hecho Blackjack y gana {coinsChange} monedas.");
             }
             else if (playerBust)
             {
                 coinsChange = -originalBet;
                 result = "lose";
                 player.Bust();
-                Console.WriteLine($"{player.User.NickName} ha perdido por pasarse.");
             }
             else if (playerTotal < croupierTotal && !dealerBust)
             {
                 coinsChange = -originalBet;
                 result = "lose";
                 player.Lose();
-                Console.WriteLine($"{player.User.NickName} ha perdido.");
             }
             else if (dealerBust || playerTotal > croupierTotal)
             {
                 coinsChange = originalBet;
                 result = "win";
                 player.Win(originalBet * 2);
-                Console.WriteLine($"{player.User.NickName} ha ganado.");
             }
             else if (playerTotal == croupierTotal && !(dealerHasBlackjack && !playerHasBlackjack))
             {
                 coinsChange = 0;
                 result = "draw";
                 player.Draw();
-                Console.WriteLine($"{player.User.NickName} ha empatado.");
             }
             else if (dealerHasBlackjack && !playerHasBlackjack)
             {
                 coinsChange = -originalBet;
                 result = "lose";
                 player.Lose();
-                Console.WriteLine($"{player.User.NickName} pierde contra Blackjack del crupier.");
             }
 
             results.Add(new
@@ -209,26 +199,16 @@ public class BlackjackGame
 
     public void DoubleDown(Player player)
     {
-
-        if (player.PlayerState != PlayerState.Playing)
-        {
-            Console.WriteLine($"{player.User.NickName} no puede doblar su apuesta en este momento.");
-            return;
-        }
-
+        if (player.PlayerState != PlayerState.Playing) return;
+        
         int doubleBet = player.CurrentBet * 2;
 
-        if (doubleBet > player.User.Coins)
-        {
-            Console.WriteLine($"{player.User.NickName} no tiene suficientes monedas para doblar la apuesta.");
-            return;
-        }
+        if (doubleBet > player.User.Coins) return;
 
         player.User.Coins -= player.CurrentBet;
         player.CurrentBet = doubleBet;
         _lastBetAmounts[player.UserId] = doubleBet;
 
-        Console.WriteLine($"{player.User.NickName} ha doblado su apuesta a {player.CurrentBet} monedas.");
         PlayerHit(player);
 
         player.PlayerState = PlayerState.Stand;

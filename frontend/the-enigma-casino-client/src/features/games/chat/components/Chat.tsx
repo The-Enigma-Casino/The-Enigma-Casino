@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./Chat.module.css";
 import { ChatInput } from "./InputChat";
 import { useUnit } from "effector-react";
@@ -38,6 +38,12 @@ export const Chat = ({ gameType }: ChatProps) => {
   const onlineFriends = useUnit($friends);
 
   const [showInfo, setShowInfo] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
   const handleSend = (text: string) => {
     if (tableId !== null) {
@@ -79,6 +85,7 @@ export const Chat = ({ gameType }: ChatProps) => {
                 message={msg.text}
               />
             ))}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className={styles.inputWrapper}>

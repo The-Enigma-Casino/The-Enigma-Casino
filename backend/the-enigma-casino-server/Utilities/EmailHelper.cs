@@ -33,7 +33,6 @@ public class EmailHelper
 
         if (string.IsNullOrWhiteSpace(key))
         {
-            Console.WriteLine("❌ EMAIL_KEY no está configurado.");
             throw new InvalidOperationException("EMAIL_KEY no está configurado en variables de entorno.");
         }
 
@@ -64,7 +63,6 @@ public class EmailHelper
             }
 
             await client.SendMailAsync(mail);
-            Console.WriteLine($"📧 Enviado por SMTP a {to}");
         }
         catch (Exception ex)
         {

@@ -14,7 +14,7 @@ public class ConnectionManagerWS
 
 
     public event Action<string> OnUserDisconnected;
-    public event Action<string> OnUserConnected; //User connected friendsOnline
+    public event Action<string> OnUserConnected;
     public event Action<string> OnUserStatusChanged;
 
     public void AddConnection(string userId, WebSocket webSocket)
@@ -25,7 +25,6 @@ public class ConnectionManagerWS
             {
                 if (_reconnectAttempts.TryGetValue(userId, out var attempts) && attempts >= MaxReconnectAttempts)
                 {
-                    Console.WriteLine($"⛔ Usuario {userId} ha superado el límite de reconexiones ({MaxReconnectAttempts}). Conexión rechazada.");
                     try
                     {
                         webSocket.Abort();
@@ -40,14 +39,12 @@ public class ConnectionManagerWS
 
         _connections[userId] = webSocket;
         _reconnectAttempts.AddOrUpdate(userId, 1, (_, current) => current + 1);
-        Console.WriteLine($"✅ Conexión WebSocket activa para {userId} (Intento #{_reconnectAttempts[userId]})");
 
         OnUserConnected?.Invoke(userId);
 
         if (int.TryParse(userId, out int id))
         {
             UserStatusStore.SetStatus(id, UserStatus.Online);
-            Console.WriteLine($"🟢 Usuario {id} marcado como Online");
         }
     }
 
@@ -62,7 +59,6 @@ public class ConnectionManagerWS
                     await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Cierre limpio", CancellationToken.None);
                 }
                 socket.Dispose();
-                Console.WriteLine($"❎ Conexión eliminada para {userId}");
             }
             catch (Exception ex)
             {
@@ -72,7 +68,6 @@ public class ConnectionManagerWS
             if (int.TryParse(userId, out int id))
             {
                 UserStatusStore.SetStatus(id, UserStatus.Offline);
-                Console.WriteLine($"🔴 Usuario {id} marcado como Offline");
             }
 
             _reconnectAttempts.TryRemove(userId, out _);

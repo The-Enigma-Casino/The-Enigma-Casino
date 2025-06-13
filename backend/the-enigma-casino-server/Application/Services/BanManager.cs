@@ -23,8 +23,6 @@ public class BanManager
 
         if (_connectionManager.TryGetConnection(userIdStr, out WebSocket? ws))
         {
-            Console.WriteLine($"⚠️ [BanManager] Usuario {userId} sigue conectado. Cerrando conexión...");
-
             var payload = new
             {
                 type = "system",

@@ -13,12 +13,6 @@ public class PokerHandEvaluator
             .ThenByDescending(g => g.Key)
             .ToList();
 
-        Console.WriteLine("[DEBUG] Agrupación de cartas por rango:");
-        foreach (var g in grouped)
-        {
-            Console.WriteLine($"  - {g.Key} => {g.Count()} cartas");
-        }
-
         var flushGroup = allCards
             .GroupBy(c => c.Suit)
             .FirstOrDefault(g => g.Count() >= 5);

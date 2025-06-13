@@ -51,8 +51,6 @@ public static class PokerBetTracker
         {
             int newAmount = Math.Max(0, current - amount);
             dict[userId] = newAmount;
-
-            Console.WriteLine($"🧮 [DEBUG] Se reducen {amount} fichas de {userId} en mesa {tableId}. Total ahora: {newAmount}");
         }
     }
 
@@ -61,7 +59,6 @@ public static class PokerBetTracker
         if (_betsByTable.ContainsKey(tableId))
         {
             _betsByTable[tableId].Clear();
-            Console.WriteLine($"♻️ [DEBUG] Apuestas reiniciadas para la mesa {tableId}.");
         }
     }
 

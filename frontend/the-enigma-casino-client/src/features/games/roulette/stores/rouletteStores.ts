@@ -86,8 +86,9 @@ sample({
   source: $name,
   fn: (currentName, payload): LocalBet[] => {
     const current = payload.players.find(
-      (p) => p.nickName.toLowerCase() === currentName?.toLowerCase()
+      (p) => p.nickName?.toLowerCase?.() === currentName?.toLowerCase?.()
     );
+
     if (!current) return [];
     return current.bets.map((b) => ({
       key: mapBetLabelToKey(b.bet),

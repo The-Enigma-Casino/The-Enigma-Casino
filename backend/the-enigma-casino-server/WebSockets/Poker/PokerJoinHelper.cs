@@ -33,15 +33,11 @@ public class PokerJoinHelper : IGameJoinHelper
                 action = "match_ready",
                 message = "¡La siguiente ronda de Poker comienza y estás dentro! Prepárate para jugar."
             });
-
-            Console.WriteLine($"📩 [PokerJoinHelper] Jugador {player.User.NickName} notificado y marcado como 'Playing'.");
         }
     }
 
     public async Task NotifyPlayerJoinedNextMatch(int userId, IWebSocketSender sender)
     {
-        Console.WriteLine($"📩 [PokerJoinHelper] Enviando 'match_ready' a jugador promovido (userId={userId})");
-
         await sender.SendToUserAsync(userId.ToString(), new
         {
             type = "poker",

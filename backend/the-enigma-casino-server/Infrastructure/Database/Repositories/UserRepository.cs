@@ -102,13 +102,13 @@ public class UserRepository : Repository<User, int>
             .ToListAsync();
     }
 
-
     public async Task<List<User>> GetByNickNamesAsync(List<string> nickNames)
     {
         return await GetQueryable()
             .Where(u => nickNames.Contains(u.NickName))
             .ToListAsync();
     }
+
     public async Task<List<FriendDto>> SearchAddableUsersAsync(string query, int currentUserId, List<int> excludedIds)
     {
         var lowerQuery = query.ToLower();
@@ -127,16 +127,10 @@ public class UserRepository : Repository<User, int>
             .Take(20)
             .ToListAsync();
 
-        Console.WriteLine("[DEBUG] Usuarios candidatos: " + string.Join(", ", candidates.Select(c => $"{c.Id} - {c.NickName}")));
 
         var excludedSet = new HashSet<int>(excludedIds);
         var result = candidates.Where(u => !excludedSet.Contains(u.Id)).ToList();
 
-        Console.WriteLine("[DEBUG] Usuarios después del filtro: " + string.Join(", ", result.Select(r => $"{r.Id} - {r.NickName}")));
-
         return result;
     }
-
-
-
 }

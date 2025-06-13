@@ -38,8 +38,6 @@ public class ValidationService
 
                 _bannedWords.UnionWith(words);
             }
-
-            Console.WriteLine($"✅ Cargadas {_bannedWords.Count} palabras prohibidas.");
         }
         catch (Exception ex)
         {

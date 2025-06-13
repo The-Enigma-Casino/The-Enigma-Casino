@@ -29,8 +29,6 @@ public class RouletteJoinHelper : IGameJoinHelper
                 action = "match_ready",
                 message = "¡La ruleta está girando! Puedes empezar a apostar."
             });
-
-            Console.WriteLine($"📩 [RouletteJoinHelper] Jugador {player.User.NickName} notificado y marcado como 'Playing'.");
         }
     }
     public async Task NotifyPlayerJoinedNextMatch(int userId, IWebSocketSender sender)

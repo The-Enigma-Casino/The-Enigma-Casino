@@ -21,7 +21,6 @@ public class PokerInactivityTracker : IGameInactivityTracker
     public void RegisterInactivity(Player player)
     {
         int count = _inactivityCounts.AddOrUpdate(player.UserId, 1, (_, prev) => prev + 1);
-        Console.WriteLine($"📛 {player.User.NickName} inactividad acumulada: {count}");
     }
 
 

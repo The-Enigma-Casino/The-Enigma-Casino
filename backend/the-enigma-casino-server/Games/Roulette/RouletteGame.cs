@@ -71,8 +71,6 @@ public class RouletteGame
         LastBallRotation = ballRotation;
         AccumulatedRotation = wheelRotation;
 
-        Console.WriteLine($"[WS] Wheel saved: {LastWheelRotation}");
-
         var result = new RouletteResult(LastNumber, LastColor);
         _lastResults.Add(result);
 

@@ -78,15 +78,6 @@ public class PokerNotifier : IPokerNotifier
 
     public async Task NotifyPlayerTurnAsync(Match match, Player player, PokerGame pokerGame)
     {
-
-        Console.WriteLine("📊 [DEBUG] Estado actual de apuestas:");
-
-        foreach (var (p, bet) in pokerGame.GetAllCurrentBets())
-        {
-            Console.WriteLine($" - {p.User.NickName} | CurrentBet: {bet}, Coins: {p.User.Coins}, State: {p.PlayerState}");
-        }
-
-
         int currentMaxBet = pokerGame.GetHighestCurrentBet();
         int playerBet = pokerGame.GetCurrentBetForPlayer(player.UserId);
 
@@ -94,8 +85,6 @@ public class PokerNotifier : IPokerNotifier
 
 
         List<string> validMoves = new List<string>();
-
-        Console.WriteLine($"🧮 [toCall Debug] currentMaxBet: {currentMaxBet}, playerBet: {playerBet}, toCall: {toCall}, coins: {player.User.Coins}");
 
         if (toCall <= 0)
             validMoves.Add("check");
@@ -123,7 +112,6 @@ public class PokerNotifier : IPokerNotifier
 
         await _sender.SendToUserAsync(player.UserId.ToString(), response);
 
-        Console.WriteLine($"🌀 Notificado turno a {player.User.NickName}. Puede: {string.Join(", ", validMoves)}");
         var connectedUserIds = match.Players
         .Where(p => p.PlayerState == PlayerState.Playing || p.PlayerState == PlayerState.AllIn || p.PlayerState == PlayerState.Fold)
         .Select(p => p.UserId.ToString())
@@ -158,9 +146,6 @@ public class PokerNotifier : IPokerNotifier
             .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .Select(p => p.UserId.ToString());
         await _sender.BroadcastToUsersAsync(userIds, response);
-
-
-        Console.WriteLine($"📢 Acción enviada: {player.User.NickName} hizo '{move}' con apuesta de {player.CurrentBet} fichas.");
     }
 
     public async Task NotifyBetConfirmedAsync(Player player)

@@ -34,6 +34,7 @@ import { navigateTo } from "../../shared/router/navigateFx";
 import { Player, Croupier, GameState } from "../../shared/types";
 import { $userId } from "../../../auth/store/authStore";
 import toast from "react-hot-toast";
+import { forceLeaveTable } from "../../../gameTables/store/tablesIndex";
 
 export const $players = createStore<Player[]>([])
   .on(setPlayers, (prevPlayers, newPlayers) =>
@@ -228,7 +229,7 @@ sample({
     });
     return "/";
   },
-  target: navigateTo,
+  target: [navigateTo, forceLeaveTable],
 });
 
 sample({
@@ -239,7 +240,7 @@ sample({
     });
     return "/";
   },
-  target: navigateTo,
+  target: [navigateTo, forceLeaveTable],
 });
 
 

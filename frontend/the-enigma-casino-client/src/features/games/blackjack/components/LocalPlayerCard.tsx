@@ -8,7 +8,7 @@ import {
 import { IMAGE_PROFILE_URL } from "../../../../config";
 import { CardStack } from "../../shared/components/GameCardStack";
 import { ActionButton } from "../../shared/components/buttonActions/ActionButton";
-import { loadCoins } from "../../../coins/store/coinsStore";
+import { loadCoins } from "../../../coins/stores/coinsStore";
 import { GameCard } from "../../shared/interfaces/gameCard.interface";
 import { CardRank, GameType, Suit } from "../../shared/types/gameCard.type";
 import { $localPlayerRoundResult } from "../store/bjIndex";

@@ -10,7 +10,7 @@ import {
   playGachaponClicked,
   resetGachapon,
 } from "../../stores/gachaponStore";
-import { $coins, loadCoins } from "../../../coins/store/coinsStore";
+import { $coins, loadCoins } from "../../../coins/stores/coinsStore";
 import { $token } from "../../../auth/store/authStore";
 import toast from "react-hot-toast";
 

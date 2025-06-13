@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { socketMessageReceived } from "../../../websocket/store/wsEvents";
-import { loadCoins } from "../../coins/store/coinsStore";
+import { loadCoins } from "../../coins/stores/coinsStore";
 import { eliminatedNoCoinsReceived } from "./matchRemoval";
 import { returnToTableReceived } from "./returnToTable";
 

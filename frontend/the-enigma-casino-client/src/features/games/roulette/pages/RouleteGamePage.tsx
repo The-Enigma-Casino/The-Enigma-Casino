@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
 
 import { $currentTableId } from "../../../gameTables/store/tablesStores";
-import { $coins, loadCoins } from "../../../coins/store/coinsStore";
+import { $coins, loadCoins } from "../../../coins/stores/coinsStore";
 
 import { RouletteBetBoard } from "../components/RouletteBetBoard";
 import { RouletteHistory } from "../components/RouletteHistory";

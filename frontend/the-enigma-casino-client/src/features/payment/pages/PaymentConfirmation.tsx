@@ -3,7 +3,7 @@ import InfoOrder from "../components/InfoOrder";
 import { $lastOrder, resetClientSecret, resetLastOrder, resetPaymentStatus } from "../store/PaymentStore";
 import { useUnit } from "effector-react";
 import { useEffect } from "react";
-import { loadCoins } from "../../coins/store/coinsStore";
+import { loadCoins } from "../../coins/stores/coinsStore";
 
 function PaymentConfirmation() {
   const location = useLocation();

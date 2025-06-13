@@ -11,3 +11,5 @@ export const $coins = createStore<number>(0)
     return 0;
   })
   .reset(resetCoins);
+
+loadCoins.watch(() => console.log("🚀 loadCoins lanzado"));

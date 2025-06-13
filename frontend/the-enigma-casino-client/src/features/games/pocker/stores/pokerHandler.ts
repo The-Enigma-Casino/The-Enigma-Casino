@@ -1,6 +1,6 @@
 import { socketMessageReceived } from "../../../../websocket/store/wsIndex";
 import { $userId } from "../../../auth/store/authStore";
-import { loadCoins } from "../../../coins/store/coinsStore";
+import { loadCoins } from "../../../coins/stores/coinsStore";
 import { $currentTableId } from "../../../gameTables/store/tablesIndex";
 import {
   pokerPhaseChanged,

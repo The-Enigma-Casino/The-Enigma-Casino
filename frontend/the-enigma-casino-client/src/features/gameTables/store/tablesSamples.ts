@@ -13,7 +13,7 @@ import {
 import { messageSent } from "../../../websocket/store/wsIndex";
 import { $userId } from "../../auth/store/authStore";
 import { navigateTo } from "../../games/shared/router/navigateFx";
-import { $coins } from "../../coins/store/coinsStore";
+import { $coins } from "../../coins/stores/coinsStore";
 import toast from "react-hot-toast";
 import {
   $currentTableId,

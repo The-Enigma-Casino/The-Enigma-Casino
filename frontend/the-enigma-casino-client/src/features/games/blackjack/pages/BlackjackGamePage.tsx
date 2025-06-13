@@ -34,7 +34,7 @@ import {
   localBetPlaced,
 } from "../store/bjEvents";
 import { CardRank, Suit } from "../../shared/types/gameCard.type";
-import { $coins, loadCoins } from "../../../coins/store/coinsStore";
+import { $coins, loadCoins } from "../../../coins/stores/coinsStore";
 import { CountdownBar } from "../../shared/components/countdownBar/CountdownBar";
 
 import { LocalPlayerCard } from "../components/LocalPlayerCard";

@@ -6,7 +6,7 @@ import {
   $token,
   loadRole,
 } from "../../../features/auth/store/authStore";
-import { $coins, loadCoins } from "../../../features/coins/store/coinsStore";
+import { $coins, loadCoins } from "../../../features/coins/stores/coinsStore";
 
 import Button from "../../ui/button/Button";
 import classes from "./Header.module.css";

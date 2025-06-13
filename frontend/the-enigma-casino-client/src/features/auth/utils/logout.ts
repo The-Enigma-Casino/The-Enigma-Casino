@@ -1,6 +1,6 @@
 import { clearToken } from "../store/authStore";
 import { clearStorage } from "../../../utils/storageUtils";
-import { resetCoins } from "../../coins/store/coinsStore";
+import { resetCoins } from "../../coins/stores/coinsStore";
 
 export function useLogout() {
 

@@ -50,12 +50,16 @@ export default function Carousel() {
           <button
             key={index}
             onClick={() => scrollTo(index)}
-            className={`w-3 h-3 rounded-full transition ${
-              selectedIndex === index
-                ? "bg-[var(--Principal)] scale-110"
-                : "bg-white/30"
-            }`}
-          />
+            aria-label={`Ir al elemento ${index + 1}`}
+            className={`w-5 h-5 rounded-full transition flex items-center justify-center
+    ${
+      selectedIndex === index
+        ? "bg-[var(--Principal)] scale-110"
+        : "bg-white/30"
+    }`}
+          >
+            <span className="sr-only">{`Ir al elemento ${index + 1}`}</span>
+          </button>
         ))}
       </div>
     </div>

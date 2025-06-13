@@ -33,11 +33,15 @@ cp /home/ubuntu/.env.production "$EXTRACT_DIR"/
 echo "📦 Instalando dependencias npm..." | tee -a "$LOG_FILE"
 npm install >> "$LOG_FILE" 2>&1
 
-echo "🛠️ Construyendo frontend con npm run build..." | tee -a "$LOG_FILE"
-npm run build >> "$LOG_FILE" 2>&1
+echo "🧹 Limpiando build anterior..." | tee -a "$LOG_FILE"
+rm -rf "$BUILD_DIR"
 
-if [ ! -d "$BUILD_DIR" ]; then
-  echo "❌ ERROR: Carpeta 'dist' no generada correctamente." | tee -a "$LOG_FILE"
+echo "🛠️ Ejecutando build..." | tee -a "$LOG_FILE"
+npm run build >> "$LOG_FILE" 2>&1
+BUILD_EXIT=$?
+
+if [ $BUILD_EXIT -ne 0 ]; then
+  echo "❌ ERROR: El build falló con código $BUILD_EXIT" | tee -a "$LOG_FILE"
   exit 1
 fi
 

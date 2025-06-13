@@ -9,7 +9,6 @@ export const getUserHistoryFx = createEffect(async (page: number): Promise<Histo
   const res = await axios.get(`${USER_HISTORY}?page=${page}`, {
     headers: getAuthHeaders(),
   });
-  console.log(res.data);
   return res.data;
 });
 

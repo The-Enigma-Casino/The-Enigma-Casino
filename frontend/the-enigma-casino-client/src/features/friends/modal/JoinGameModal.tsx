@@ -77,7 +77,6 @@ const JoinGameModal = () => {
           color="red"
           font="bold"
           onClick={() => {
-            console.log("🛑 Botón CANCELAR pulsado");
             setMuted(false);
             clearJoinProtection();
             stopGameLoading();

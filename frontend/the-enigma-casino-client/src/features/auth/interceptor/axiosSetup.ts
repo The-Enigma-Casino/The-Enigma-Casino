@@ -6,7 +6,6 @@ axios.interceptors.response.use(
   response => response,
   
   error => {
-    console.log("Error response",error.response)
     if (error.response?.status === 401) {
             if (!isLoggingIn) {
         logoutWithReason("Token expirado");

@@ -1,8 +1,8 @@
 version: 0.0
 os: linux
 files:
-  - source: frontend/
-    destination: /home/ubuntu/frontend-code-deploy
+  - source: frontend/the-enigma-casino-client
+    destination: /home/ubuntu/frontend-code-deploy/the-enigma-casino-client
   - source: backend/
     destination: /home/ubuntu/backend-code-deploy
 hooks:

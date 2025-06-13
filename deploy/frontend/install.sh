@@ -2,7 +2,7 @@
 
 LOG_FILE="/tmp/frontend-install.log"
 DEPLOY_DIR="/var/www/theenigmacasino"
-EXTRACT_DIR="/home/ubuntu/frontend-code-deploy/frontend/the-enigma-casino-client"
+EXTRACT_DIR="/home/ubuntu/frontend-code-deploy/the-enigma-casino-client"
 BUILD_DIR="$EXTRACT_DIR/dist"
 
 echo "" >> "$LOG_FILE"

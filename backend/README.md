@@ -1,6 +1,6 @@
 ![banner](https://github.com/The-Enigma-Casino/.github/blob/main/img/Portada.png?raw=true)
 
-# The Enigma Casino – Backend
+# 🌐 Backend
 
 Este directorio contiene el código fuente del backend de **The Enigma Casino**, una plataforma online multijugador con juegos de casino como **Póker**, **Blackjack**, **Ruleta** y otros minijuegos. ¡Toda la lógica del juego, comunicación en tiempo real y acceso a base de datos se gestiona desde aquí!
 
@@ -42,6 +42,7 @@ Este directorio contiene el código fuente del backend de **The Enigma Casino**,
 <PackageReference Include="Stripe.net" Version="47.3.0" />
 <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
 <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
+<PackageReference Include="FreeSpire.Doc" Version="12.2.0" />
 ```
 
 ---

@@ -3,6 +3,26 @@
 
 **Enigma Casino** es una plataforma online multijugador donde los usuarios pueden disfrutar de juegos clásicos de casino como **Blackjack**, **Póker** y **Ruleta** y otros mini juegos. El sistema está diseñado para ofrecer partidas en tiempo real entre varios jugadores, con interacción directa a través de WebSockets, un diseño moderno y una experiencia inmersiva.
  
+## 📚 Índice
+
+1. [⭐ The Enigma Casino](#the-enigma-casino)
+2. [👨‍💻 Autores del proyecto](#-autores-del-proyecto)
+3. [🛠️ Tecnologías utilizadas](#-tecnologías-utilizadas)
+   * [Backend](#backend)
+   * [Frontend](#frontend)
+   * [Despliegue](#despliegue)
+4. [🎨 Diseño en Figma](#-diseño-en-figma)
+5. [📗Documentación](#-documentación)
+6. [✨ Vista previa](#-vista-previa)
+7. [📁 Arquitectura de sistemas](#-arquitectura-de-sistemas)
+8. [📄 Licencia](#-licencia)
+
+### Otros:
+
+- [AWS](/aws/README.md)
+- [Front](/frontend/README.md)
+- [Back](/backend/README.md)
+
 ## 👨‍💻 Autores del proyecto
 - Alejandro Barrionuevo Rosado 
 - Raquel López Bermúdez 
@@ -26,13 +46,43 @@
 - **AWS**
 - **Vercel**
 - **MonsterASP**
+
+## 🎨 Diseño en Figma
+
+Todo el diseño visual y flujo de pantallas ha sido creado en Figma para garantizar coherencia estética y usabilidad en todos los dispositivos.
+
+- 🔗 Accede al prototipo visual desde aquí:
+[Diseño en Figma](https://www.figma.com/design/LQaWzVCNxme6H3MrJEloKP/The-Enigma-Casino?m=auto&t=3nB4QIu4BKzvmWC7-1)
+
+- [Documento PDF](/document/Figma%20-%20The%20Enigma%20Casino.pdf)
  
 ## 📗 Documentación
 
-[Notion](https://aquatic-breadfruit-03f.notion.site/1ba5df69c5bd80b49b87d9999c427090?v=1ba5df69c5bd8043a150000c22dd6466)
+- [📙 Documento TFG](/document/The%20Enigma%20Casino.pdf)
 
-[Checkpoint](https://youtu.be/3HNNEJo4mmw)
+- [📘 Notion](https://aquatic-breadfruit-03f.notion.site/1ba5df69c5bd80b49b87d9999c427090?v=1ba5df69c5bd8043a150000c22dd6466)
 
+- [📹 Checkpoint](https://youtu.be/3HNNEJo4mmw)
+
+- [📹 Video final del proyecto](https://youtu.be/GevVd0DPXsU)
+
+- [👁️ Presentación](/document/Autores%20Raqué%20Lopez%20Bermudez%20Alejandro%20Barrionuevo%20Rosado%20José%20Molina%20Meléndez.pdf)
+
+## ✨ Vista previa
+
+![landing](/document/img/landing.png)
+
+![home](/document/img/home.png)
+
+![ruleta](/document/img/ruleta.png)
+
+![blackjack](/document/img/blackjack.png)
+
+![poker](/document/img/poker.png)
+
+## 📁 Arquitectura de sistemas
+
+![Diagrama](/aws/img/AWS.png)
 
 ## 📄 Licencia
 

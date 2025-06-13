@@ -1,6 +1,6 @@
 ![banner](https://github.com/The-Enigma-Casino/.github/blob/main/img/Portada.png?raw=true)
 
-# ☁️ AWS Deployment – The Enigma Casino
+# ☁️ AWS Deployment 
 
 Este directorio contiene la documentación relacionada con la infraestructura de despliegue en **AWS** para el proyecto _The Enigma Casino_, incluyendo frontend, backend, balanceadores y conexiones internas.
 
@@ -63,3 +63,8 @@ Consulta el estado detallado y el progreso del despliegue en este [📋 tablero 
     └── waf-watchdog.service       # Servicio Watchdog para el WAF
 
 ```
+
+
+## 📁 Arquitectura de sistemas
+
+![Diagrama](/aws/img/AWS.png)

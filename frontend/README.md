@@ -1,6 +1,6 @@
 ![banner](https://github.com/The-Enigma-Casino/.github/blob/main/img/Portada.png?raw=true)
 
-# The Enigma Casino – Frontend
+# 🌐 Frontend
 
 Este directorio contiene el código fuente del frontend principal de **The Enigma Casino**, una plataforma multijugador online con juegos de casino en tiempo real: **Blackjack**, **Póker**, **Ruleta**, y más.
 

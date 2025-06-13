@@ -13,6 +13,7 @@ const CustomInput: React.FC<InputProps> = ({
   name,
   id,
   showToggle = false,
+  paddingLeft,
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);

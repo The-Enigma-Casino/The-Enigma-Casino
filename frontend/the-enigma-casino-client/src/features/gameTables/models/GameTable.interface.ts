@@ -1,6 +1,7 @@
 export interface Player {
   name: string;
   avatar?: string;
+  userId?: number;
 }
 
   

@@ -9,4 +9,5 @@ public static class GameTableMessageTypes
     public const string CountdownStopped = "countdown_stopped";
     public const string GameStart = "game_start";
     public const string WaitingNextMatch = "waiting_next_match";
+    public const string GetAllPlayers = "get_all_players";
 }

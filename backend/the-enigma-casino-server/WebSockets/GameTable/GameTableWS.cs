@@ -57,6 +57,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             {
                 GameTableMessageTypes.JoinTable => HandleJoinTableAsync(userId, message),
                 GameTableMessageTypes.LeaveTable => HandleLeaveTableAsync(userId, message),
+                GameTableMessageTypes.GetAllPlayers => HandleGetAllPlayersAsync(userId),
                 _ => Task.CompletedTask
             });
         }
@@ -161,15 +162,16 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
 
             await ((IWebSocketSender)this).BroadcastToUsersAsync(
-                session.GetConnectedUserIds(),
-                new
-                {
-                    type = Type,
-                    action = GameTableMessageTypes.TableUpdate,
-                    tableId = table.Id,
-                    players = session.GetPlayerNames(),
-                    state = table.TableState.ToString()
-                });
+             session.GetConnectedUserIds(),
+             new
+             {
+                 type = Type,
+                 action = GameTableMessageTypes.TableUpdate,
+                 tableId = table.Id,
+                 players = GetPlayerInfos(table),
+                 state = table.TableState.ToString()
+             });
+
 
             if (table.TableState == TableState.InProgress)
             {
@@ -350,15 +352,6 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             return;
         }
 
-        if (player.GameMatch != null)
-        {
-            Console.WriteLine($"🔍 [LeaveTable] {player.User.NickName} sigue vinculado a un match con estado: {player.GameMatch.MatchState}");
-        }
-        else
-        {
-            Console.WriteLine($"🔍 [LeaveTable] {player.User.NickName} no está vinculado a ningún match.");
-        }
-
 
         tableManager.RegisterJoinAttempt(userId);
         PlayerLeaveResult result = tableManager.RemovePlayerFromTable(table, userId, out var removedPlayer);
@@ -380,7 +373,7 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 type = "game_table",
                 action = GameTableMessageTypes.TableUpdate,
                 tableId,
-                players = result.PlayerNames,
+                players = GetPlayerInfos(table),
                 state = result.State.ToString()
             });
 
@@ -397,17 +390,6 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             unitOfWork.GameTableRepository.Update(table);
             await unitOfWork.SaveAsync();
-
-            //BORRAR CONSOLES
-            Console.WriteLine("🔍 [Debug] Evaluando si la mesa está vacía tras el Leave:");
-            foreach (var p in table.Players)
-            {
-                Console.WriteLine($"👤 Jugador: {p.User.NickName} | Estado: {p.PlayerState} | Abandonado: {p.HasAbandoned}");
-            }
-
-            bool shouldRemove = table.Players.All(p => p.PlayerState == PlayerState.Left);
-            Console.WriteLine($"🔎 Resultado de .All(PlayerState == Left): {shouldRemove}");
-            //
 
             if (table.Players.All(p => p.PlayerState == PlayerState.Left || p.HasAbandoned))
             {
@@ -436,6 +418,31 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
             Console.WriteLine($"⚠️ [LeaveTable] No se eliminó a {player.User.NickName} porque no cumplía condiciones.");
         }
     }
+
+    private async Task HandleGetAllPlayersAsync(string userId)
+    {
+        Console.WriteLine($"📩 [GameTableWS] Recibido get_all_players de user {userId}");
+
+        var players = GetAllActivePlayers();
+        Console.WriteLine($"[🧾 GetAllPlayers] Total jugadores activos: {players.Count}");
+
+        var response = players.Select(p => new
+        {
+            tableId = p.TableId,
+            userId = p.UserId,
+            nickName = p.NickName,
+            image = p.Image
+        });
+
+        await ((IWebSocketSender)this).SendToUserAsync(userId, new
+        {
+            type = "game_table",
+            action = "all_players_list",
+            players = response
+        });
+    }
+
+
 
 
     public bool IsUserBusyInAnotherTable(int userId)
@@ -639,4 +646,41 @@ public class GameTableWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         return false;
     }
+
+
+    public List<(int TableId, int UserId, string NickName, string Image)> GetAllActivePlayers()
+    {
+        var result = new List<(int, int, string, string)>();
+
+        foreach (var session in ActiveGameSessionStore.GetAll().Values)
+        {
+            var tableId = session.Table.Id;
+
+            foreach (var player in session.Table.Players)
+            {
+                if (player.User != null &&
+                    player.PlayerState != PlayerState.Left &&
+                    !player.HasAbandoned)
+                {
+                    result.Add((tableId, player.User.Id, player.User.NickName, player.User.Image));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private List<object> GetPlayerInfos(Table table)
+    {
+        return table.Players
+            .Where(p => p.User != null && p.PlayerState != PlayerState.Left && !p.HasAbandoned)
+            .Select(p => new
+            {
+                userId = p.User.Id,
+                nickName = p.User.NickName,
+                image = string.IsNullOrWhiteSpace(p.User.Image) ? "user_default.webp" : p.User.Image
+            }).Cast<object>().ToList(); // cast para evitar error de tipo dinámico
+    }
+
+
 }

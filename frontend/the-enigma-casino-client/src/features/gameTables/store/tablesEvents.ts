@@ -40,3 +40,5 @@ export const clearPendingJoinTableId = createEvent();
 
 export const forceLeaveTable = createEvent();
 export const clearJoinProtection = createEvent();
+
+export const requestAllPlayers = createEvent();

@@ -6,16 +6,18 @@ import {
   $isInLobby,
   $joiningTableId,
   $pendingJoinTableId,
+  $playersInTable,
   $tables,
   $waitingOpponentTableId,
   clearPendingJoinTableId,
   exitLobbyPage,
   joinTableClicked,
   leaveTableClicked,
+  requestAllPlayers,
   sendLeaveTableMessage,
   tryJoinTable,
 } from "../store/tablesIndex";
-import { GameTable, Player } from "../models/GameTable.interface";
+import { GameTable } from "../models/GameTable.interface";
 import { useEffect } from "react";
 import { fetchTables } from "../actions/tableActions";
 
@@ -23,6 +25,7 @@ import "../../games/roulette/stores/rouletteHandler";
 import "../../games/pocker/stores/pokerHandler";
 import "../../games/match/matchHandler";
 import { IMAGE_PROFILE_URL } from "../../../config";
+import { $activePlayers } from "../store/activePlayers.store";
 
 function GameTablePage() {
   const { gameType } = useParams<string>();
@@ -33,6 +36,8 @@ function GameTablePage() {
   const pendingTableId = useUnit($pendingJoinTableId);
   const waitingOpponentTableId = useUnit($waitingOpponentTableId);
   const joiningTableId = useUnit($joiningTableId);
+
+  const playersInTable = useUnit($playersInTable);
 
   useEffect(() => {
     if (gameType) {
@@ -62,6 +67,16 @@ function GameTablePage() {
     }
   }, [pendingTableId, location.pathname]);
 
+  useEffect(() => {
+    requestAllPlayers();
+
+    const intervalId = setInterval(() => {
+      requestAllPlayers();
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const gameNames = ["Blackjack", "Poker", "Ruleta"];
   const gameName = gameNames[parseInt(gameType ?? "")] || "Desconocido";
 
@@ -70,54 +85,61 @@ function GameTablePage() {
   };
 
   const renderPlayerAvatars = (
-    players: (Player | null)[],
+    players: { name: string; avatar: string; userId: number | null }[],
     maxPlayers: number,
     tableId: number
   ) => {
     const isJoining = joiningTableId === tableId;
     const isDisabled = currentTableId !== null && currentTableId !== tableId;
 
+    const fixedPlayers = players.map((p) => ({
+      name: p.name,
+      avatar: p.avatar ?? "user_default.webp",
+      userId: p.userId ?? null,
+    }));
+
     const slots = Array.from({ length: maxPlayers }).map((_, i) => {
-      if (players[i]) {
+      const p = fixedPlayers[i];
+
+      if (p) {
+        const avatarSrc = `${IMAGE_PROFILE_URL}${p.avatar}?cb=${
+          p.userId ?? Date.now()
+        }`;
+        console.log(`🧩 Slot ${i}: ${p.name} → ${avatarSrc}`);
         return (
           <img
             key={i}
-            src={
-              IMAGE_PROFILE_URL + players[i]?.avatar || "/img/user_default.webp"
-            }
-            alt={`Jugador ${players[i]?.name}`}
-            className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full"
+            src={avatarSrc}
+            alt={`Jugador ${p.name}`}
+            className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full border-2 border-white"
           />
         );
-      } else {
-        return (
-          <div
-            key={i}
-            className={`w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full ${
-              isDisabled
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-500 cursor-pointer hover:bg-gray-600"
-            } flex justify-center items-center`}
-            onClick={() => {
-              if (!isJoining && !isDisabled) {
-                handleJoinTable(tableId);
-              }
-            }}
-          >
-            <span className="text-white text-lg font-bold">+</span>
-          </div>
-        );
       }
+
+      return (
+        <div
+          key={i}
+          className={`w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full ${
+            isDisabled
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-gray-500 cursor-pointer hover:bg-gray-600"
+          } flex justify-center items-center`}
+          onClick={() => {
+            if (!isJoining && !isDisabled) {
+              handleJoinTable(tableId);
+            }
+          }}
+        >
+          <span className="text-white text-lg font-bold">+</span>
+        </div>
+      );
     });
 
     const mid = Math.ceil(maxPlayers / 2);
-    const topRow = slots.slice(0, mid);
-    const bottomRow = slots.slice(mid);
-
     return (
       <div className="flex flex-col items-center gap-3">
-        <div className="flex justify-center gap-3">{topRow}</div>
-        <div className="flex justify-center gap-3">{bottomRow}</div>
+        <div className="flex justify-center gap-3">{slots.slice(0, mid)}</div>
+        <div className="flex justify-center gap-3">{slots.slice(mid)}</div>
       </div>
     );
   };
@@ -155,7 +177,7 @@ function GameTablePage() {
                   onClick={() => {
                     sendLeaveTableMessage();
                     leaveTableClicked();
-                    fetchTables(Number(gameType));;
+                    fetchTables(Number(gameType));
                     // navigate("/");
                   }}
                 >
@@ -196,7 +218,7 @@ function GameTablePage() {
                 </div>
                 <div className="mt-4">
                   {renderPlayerAvatars(
-                    table.players,
+                    playersInTable[table.id] ?? [],
                     table.maxPlayer,
                     table.id
                   )}

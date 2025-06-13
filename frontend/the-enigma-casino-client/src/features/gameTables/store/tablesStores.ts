@@ -1,4 +1,4 @@
-import { createStore } from "effector";
+import { combine, createStore } from "effector";
 import {
   clearJoinProtection,
   clearPendingJoinTableId,
@@ -23,6 +23,13 @@ import {
 import { GameTable } from "../models/GameTable.interface";
 
 import { fetchTables } from "../actions/tableActions";
+import { $activePlayers } from "./activePlayers.store";
+
+type EnrichedPlayer = {
+  name: string;
+  avatar: string;
+  userId: number | null;
+};
 
 export const $gameType = createStore<number>(0).on(
   setGameType,
@@ -33,7 +40,6 @@ export const $currentTableId = createStore<number | null>(null)
   .on(joinTableClicked, (_, tableId) => tableId)
   .on(leaveTableClicked, () => null)
   .reset(resetTableId);
-
 
 export const $tables = createStore<GameTable[]>([])
   .on(fetchTables.doneData, (_, tables) => tables)
@@ -104,9 +110,13 @@ export const $waitingOpponentTableId = createStore<number | null>(null)
 
 export const $joiningTableId = createStore<number | null>(null)
   .on(joinTableClicked, (_, id) => id)
-  .reset([resetTableId, markLeftTable, leaveTableClicked, tableCleanupCompleted]);
+  .reset([
+    resetTableId,
+    markLeftTable,
+    leaveTableClicked,
+    tableCleanupCompleted,
+  ]);
 
-  
 // Protección contra doble join
 const joinedTableUsers = new Set<number>();
 
@@ -124,4 +134,33 @@ export function unmarkUserAsJoined(userId: number) {
 
 clearJoinProtection.watch(() => {
   joinedTableUsers.clear();
+});
+
+export const $tablePlayers = combine(
+  $tables,
+  $currentTableId,
+  (tables, currentId) => {
+    const table = tables.find((t) => t.id === currentId);
+    return table?.players ?? [];
+  }
+);
+
+export const $playersInTable = $activePlayers.map((players) => {
+  const map: Record<number, EnrichedPlayer[]> = {};
+
+  for (const p of players) {
+    if (!p.tableId) continue;
+
+    if (!map[p.tableId]) {
+      map[p.tableId] = [];
+    }
+
+    map[p.tableId].push({
+      name: p.nickName,
+      avatar: p.image || "user_default.webp",
+      userId: p.userId,
+    });
+  }
+
+  return map;
 });

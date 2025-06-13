@@ -8,6 +8,7 @@ import {
   gameStarted,
   joinTableClicked,
   markLeftTable,
+  requestAllPlayers,
   resetTableId,
   sendLeaveTableMessage,
   tableCleanupCompleted,
@@ -153,3 +154,12 @@ sample({
   ],
 });
 
+sample({
+  clock: requestAllPlayers,
+  fn: () =>
+    JSON.stringify({
+      type: "game_table",
+      action: "get_all_players",
+    }),
+  target: messageSent,
+});

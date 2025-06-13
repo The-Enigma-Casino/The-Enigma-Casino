@@ -13,10 +13,15 @@ import {
 } from "./tablesEvents";
 
 import { stopGameLoading } from "../../friends/stores/friends.events";
-import { getPlayerAvatarsFx } from "../../games/actions/playerAvatarsAction";
 import { navigateTo } from "../../games/shared/router/navigateFx";
 import { $currentTableId, clearJoinProtection } from "./tablesIndex";
 import { $userId } from "../../auth/store/authStore";
+import {
+
+  removeActivePlayer,
+  setActivePlayers,
+  setPlayersForTable,
+} from "./activePlayers.store";
 
 const errorMessageMap: Record<string, string> = {
   already_left:
@@ -32,32 +37,32 @@ socketMessageReceived.watch((data) => {
   switch (data.action) {
     case "table_update": {
       const tableId = Number(data.tableId);
-      const nickNames = data.players as string[];
+      const playerList = data.players as {
+        userId: number;
+        nickName: string;
+        image: string;
+      }[];
 
-      if (nickNames.length > 0) {
-        getPlayerAvatarsFx(nickNames).then((avatars) => {
-          const enrichedPlayers = nickNames.map((nick) => {
-            const avatarData = avatars.find((a) => a.nickName === nick);
-            const player = {
-              name: nick,
-              avatar: avatarData?.image ?? "/img/user_default.webp",
-            };
-            return player;
-          });
+      const updated = playerList.map((p) => ({
+        tableId,
+        userId: p.userId,
+        nickName: p.nickName,
+        image: p.image || "user_default.webp",
+      }));
 
-          tableUpdated({
-            tableId,
-            players: enrichedPlayers,
-            state: data.state,
-          });
-        });
-      } else {
-        tableUpdated({
-          tableId,
-          players: [],
-          state: data.state,
-        });
-      }
+      setPlayersForTable({ tableId, players: updated });
+
+      const enrichedPlayers = playerList.map((p) => ({
+        name: p.nickName,
+        avatar: p.image || "user_default.webp",
+        userId: p.userId,
+      }));
+
+      tableUpdated({
+        tableId,
+        players: enrichedPlayers,
+        state: data.state,
+      });
 
       break;
     }
@@ -162,8 +167,17 @@ socketMessageReceived.watch((data) => {
         markLeftTable();
       }
 
+      removeActivePlayer(data.userId);
       tableCleanupCompleted();
       clearJoinProtection();
+      break;
+    }
+
+    case "all_players_list": {
+      if (Array.isArray(data.players)) {
+        setActivePlayers(data.players);
+      }
+
       break;
     }
 

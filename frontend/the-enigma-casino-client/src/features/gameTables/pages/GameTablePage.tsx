@@ -25,7 +25,7 @@ import "../../games/roulette/stores/rouletteHandler";
 import "../../games/pocker/stores/pokerHandler";
 import "../../games/match/matchHandler";
 import { IMAGE_PROFILE_URL } from "../../../config";
-import { $activePlayers } from "../store/activePlayers.store";
+import { $friends } from "../../friends/stores/friends.store";
 
 function GameTablePage() {
   const { gameType } = useParams<string>();
@@ -38,6 +38,8 @@ function GameTablePage() {
   const joiningTableId = useUnit($joiningTableId);
 
   const playersInTable = useUnit($playersInTable);
+  const friends = useUnit($friends);
+  const friendIds = new Set(friends.map((f) => Number(f.id)));
 
   useEffect(() => {
     if (gameType) {
@@ -102,16 +104,20 @@ function GameTablePage() {
       const p = fixedPlayers[i];
 
       if (p) {
+        const isFriend = p.userId !== null && friendIds.has(p.userId);
+
         const avatarSrc = `${IMAGE_PROFILE_URL}${p.avatar}?cb=${
           p.userId ?? Date.now()
         }`;
-        console.log(`🧩 Slot ${i}: ${p.name} → ${avatarSrc}`);
         return (
           <img
-            key={i}
+            style={{ borderWidth: "1.5px" }}
+            className={`w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full ${
+              isFriend ? "animate-pulseGlow border-Green-lines" : "border-white"
+            }`}
             src={avatarSrc}
             alt={`Jugador ${p.name}`}
-            className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full border-2 border-white"
+            key={i}
           />
         );
       }

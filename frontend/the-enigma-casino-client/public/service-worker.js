@@ -10,7 +10,6 @@ const OFFLINE_ROUTES = [
 ];
 
 self.addEventListener('install', (event) => {
-  console.log('📦 [SW] Instalando...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(OFFLINE_ROUTES);
@@ -20,7 +19,6 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('🔁 [SW] Activado');
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(

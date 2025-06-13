@@ -29,19 +29,15 @@ const errorMessageMap: Record<string, string> = {
 socketMessageReceived.watch((data) => {
   if (data.type !== "game_table") return;
 
-  console.log("🎯 [game_table] Acción recibida:", data.action, data);
 
   switch (data.action) {
     case "table_update": {
       const tableId = Number(data.tableId);
       const nickNames = data.players as string[];
 
-      console.log("🧩 [table_update] Mesa:", tableId);
-      console.log("👥 Nicknames recibidos:", nickNames);
 
       if (nickNames.length > 0) {
         getPlayerAvatarsFx(nickNames).then((avatars) => {
-          console.log("📦 Avatares recibidos del backend:", avatars);
 
           const enrichedPlayers = nickNames.map((nick) => {
             const avatarData = avatars.find((a) => a.nickName === nick);
@@ -49,7 +45,6 @@ socketMessageReceived.watch((data) => {
               name: nick,
               avatar: avatarData?.image ?? "/img/user_default.webp",
             };
-            console.log(`🎨 Avatar aplicado a ${nick}:`, player.avatar);
             return player;
           });
 
@@ -59,12 +54,8 @@ socketMessageReceived.watch((data) => {
             state: data.state,
           });
 
-          console.log(
-            "✅ [tableUpdated] Jugadores enriquecidos enviados al store."
-          );
         });
       } else {
-        console.log("⚠️ No hay jugadores en la mesa.");
         tableUpdated({
           tableId,
           players: [],

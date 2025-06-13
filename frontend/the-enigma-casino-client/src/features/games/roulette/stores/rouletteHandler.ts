@@ -50,8 +50,6 @@ socketMessageReceived.watch((data) => {
     case "match_ready": {
       const tableId = $currentTableId.getState();
 
-      console.log(tableId);
-
       if (tableId !== null) {
         matchReadyReceived(tableId);
       }
@@ -73,7 +71,6 @@ socketMessageReceived.watch((data) => {
       break;
 
     default:
-      console.log("A");
       break;
   }
 });

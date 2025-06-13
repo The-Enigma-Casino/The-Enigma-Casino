@@ -99,8 +99,6 @@ export const LocalPlayerCard = ({
       ? "w-full max-w-[380px] md:max-w-[420px] lg:max-w-[460px]"
       : "w-full max-w-[400px] md:max-w-[440px] lg:max-w-[480px]";
 
-  console.log("[🔍 result desde $localPlayerRoundResult]", result);
-
   return (
     <div
       className={`bg-black/40 rounded-xl p-4 flex flex-col transition-all duration-300 ease-in-out ${containerWidth}`}

@@ -5,7 +5,6 @@ import { PAYMENT_STATUS, EMBBEDED_CHECKOUT } from "../../../config";
 import { getAuthHeaders } from "../../auth/utils/authHeaders";
 
 export const fetchClientSecretFx = createEffect(async (coinsPackId: number) => {
-  console.log("🔄 Llamando a la API con ID:", coinsPackId);
 
   try {
     const response = await axios.post(
@@ -16,9 +15,6 @@ export const fetchClientSecretFx = createEffect(async (coinsPackId: number) => {
         headers: getAuthHeaders(),
       }
     );
-
-    console.log("📡 Estado de la respuesta:", response.status);
-    console.log("✅ Respuesta de la API:", response.data);
 
     return response.data;
   } catch (error) {
@@ -37,20 +33,11 @@ export const fetchClientSecretFx = createEffect(async (coinsPackId: number) => {
 });
 
 export const fetchPaymentStatusFx = createEffect(async (orderId: number) => {
-  console.log(`🔄 Solicitando estado del pago para orderId: ${orderId}`);
-
   try {
     const response = await axios.get(`${PAYMENT_STATUS}/${orderId}`, {
       withCredentials: true,
       headers: getAuthHeaders(),
     });
-
-    console.log(
-      "📡 Respuesta de la API:",
-      response.status,
-      response.statusText
-    );
-    console.log("✅ Estado del pago recibido:", response.data);
 
     return response.data.paymentStatus;
   } catch (error) {

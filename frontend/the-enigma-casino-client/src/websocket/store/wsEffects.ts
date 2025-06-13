@@ -63,12 +63,6 @@ export const sendMessageFx = createEffect(
   }
 );
 
-socketMessageReceived.watch((data) => {
-  if (data.type === "poker") {
-    console.log("📩 [WS] Mensaje de poker:", data.action, data);
-  }
-});
-
 // Obtener el numero de usuarios online en caso de que no haya WebSocket
 
 export const fetchOnlineUsersFx = createEffect(async () => {

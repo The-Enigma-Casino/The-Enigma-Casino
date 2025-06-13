@@ -133,7 +133,6 @@ export const Chat = ({ gameType }: ChatProps) => {
         gameType={gameType}
         onClose={() => {
           setShowInfo(false);
-          console.log("Cerrar modal");
         }}
       />
     </div>

@@ -19,8 +19,6 @@ export const $chatMessages = createStore<ChatMessage[]>([])
 socketMessageReceived.watch((data) => {
   if (data.type !== "chat") return;
 
-  console.log("[📨 Chat recibido]", data);
-
   if (data.action === "new_message") {
     messageReceived({
       userId: data.userId,
@@ -44,8 +42,4 @@ sample({
       text,
     }),
   target: messageSentToWS,
-});
-
-messageSentToWS.watch((msg) => {
-  console.log("📤 [Chat] Mensaje enviado al WS:", msg);
 });

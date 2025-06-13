@@ -28,7 +28,6 @@ sample({
       "move",
       "amount",
     ]);
-    console.log("📤 Enviando al WS:", message);
 
     return message;
   },

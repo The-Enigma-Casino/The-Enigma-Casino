@@ -37,8 +37,3 @@ export const tableCleanupCompleted = createEvent();
 // Friend
 export const setPendingJoinTableId = createEvent<number>();
 export const clearPendingJoinTableId = createEvent();
-
-
-joinTableClicked.watch((id) => {
-  console.log("🟢 [Effector] joinTableClicked lanzado con tableId:", id);
-});

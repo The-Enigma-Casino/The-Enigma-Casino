@@ -24,7 +24,6 @@ socketMessageReceived.watch((data) => {
       break;
 
     case "player_left_match":
-      console.log(data.action + "aaaaaaaaaaaaa");
       toast("👤 " + data.message, {
         id: "player_left_match",
       });

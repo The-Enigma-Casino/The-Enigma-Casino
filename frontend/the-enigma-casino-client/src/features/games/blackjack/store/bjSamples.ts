@@ -23,11 +23,12 @@ sample({
 sample({
   clock: playerStand,
   source: $currentTableId,
-  fn: (tableId) => JSON.stringify({
-    type: "blackjack",
-    action: "player_stand",
-    tableId: String(tableId),
-  }),
+  fn: (tableId) =>
+    JSON.stringify({
+      type: "blackjack",
+      action: "player_stand",
+      tableId: String(tableId),
+    }),
   target: messageSent,
 });
 
@@ -54,11 +55,6 @@ sample({
     }),
   target: messageSent,
 });
-
-messageSent.watch((msg) => {
-  console.log("Mensaje enviado al WS:", msg);
-});
-
 
 sample({
   source: { results: $roundResults, uid: $userId },

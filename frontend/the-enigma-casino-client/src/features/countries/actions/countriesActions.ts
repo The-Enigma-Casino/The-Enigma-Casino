@@ -5,7 +5,7 @@ import { Country } from "../models/country.interface";
 
 export const countriesFx = createEffect<void, Country[], Error>(async () => {
   try {
-    const response = await axios.get<Country[]>(`${COUNTRIES_API_URL}/all`, {
+    const response = await axios.get<Country[]>(`${COUNTRIES_API_URL}/all?fields=name,cca2,cca3,flags`, {
       headers: { "Content-Type": "application/json" },
     });
 

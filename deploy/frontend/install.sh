@@ -36,11 +36,11 @@ cp /home/ubuntu/.env.production . || {
   exit 1
 }
 
-# Instala dependencias con timeout
+# Instala dependencias
 echo "📦 Instalando dependencias npm..." | tee -a "$LOG_FILE"
-timeout 60s npm install >> "$LOG_FILE" 2>&1
+npm install >> "$LOG_FILE" 2>&1
 if [ $? -ne 0 ]; then
-  echo "❌ ERROR: npm install falló o se quedó colgado" | tee -a "$LOG_FILE"
+  echo "❌ ERROR: npm install falló" | tee -a "$LOG_FILE"
   exit 1
 fi
 

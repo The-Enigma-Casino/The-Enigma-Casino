@@ -50,7 +50,7 @@ rm -rf "$BUILD_DIR"
 
 # Ejecuta el build
 echo "🛠️ Ejecutando npm run build..." | tee -a "$LOG_FILE"
-timeout 120s npm run build >> "$LOG_FILE" 2>&1
+timeout 300s npm run build >> "$LOG_FILE" 2>&1
 BUILD_EXIT=$?
 if [ $BUILD_EXIT -ne 0 ]; then
   echo "❌ ERROR: El build falló con código $BUILD_EXIT" | tee -a "$LOG_FILE"

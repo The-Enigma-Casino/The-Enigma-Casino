@@ -6,6 +6,7 @@ interface ChipProps {
   color?: "red" | "blue" | "green" | "orange" | "yellow";
   mode?: "static" | "button";
   onClick?: () => void;
+  ariaLabel?: string; // 🔍 NUEVO
 }
 
 const COLOR_MAP: Record<string, string> = {
@@ -16,12 +17,11 @@ const COLOR_MAP: Record<string, string> = {
   yellow: "var(--Chip-Yellow)",
 };
 
-
 const SIZE_MAP: Record<string, number> = {
+  xsmall: 30,
   small: 40,
   medium: 56,
   large: 72,
-  xsmall: 30,
 };
 
 export const Chip: React.FC<ChipProps> = ({
@@ -30,6 +30,7 @@ export const Chip: React.FC<ChipProps> = ({
   color = "red",
   mode = "static",
   onClick,
+  ariaLabel, // 🔍 NUEVO
 }) => {
   const pixelSize = SIZE_MAP[size] || 56;
   const radius = 50;
@@ -46,6 +47,8 @@ export const Chip: React.FC<ChipProps> = ({
       className={`transition-transform duration-150 ${
         mode === "button" ? "hover:scale-105 cursor-pointer" : ""
       }`}
+      role={mode === "button" ? "img" : undefined}
+      aria-hidden={mode === "button" ? undefined : true}
     >
       <circle cx={radius} cy={radius} r={radius - 1} fill={baseColor} />
       {[...Array(segmentCount)].map((_, i) => {
@@ -95,10 +98,13 @@ export const Chip: React.FC<ChipProps> = ({
   if (mode === "button") {
     return (
       <button
+        type="button"
         onClick={onClick}
+        aria-label={ariaLabel || `Ficha de ${value}`}
         style={{ padding: 0, border: "none", background: "none" }}
       >
         {chipSVG}
+        {/* <span className="sr-only">{ariaLabel || `Ficha de ${value}`}</span> */}
       </button>
     );
   }

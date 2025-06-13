@@ -37,3 +37,6 @@ export const tableCleanupCompleted = createEvent();
 // Friend
 export const setPendingJoinTableId = createEvent<number>();
 export const clearPendingJoinTableId = createEvent();
+
+export const forceLeaveTable = createEvent();
+export const clearJoinProtection = createEvent();

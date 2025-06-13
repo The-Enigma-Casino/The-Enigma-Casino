@@ -1,5 +1,6 @@
 import { createStore } from "effector";
 import {
+  clearJoinProtection,
   clearPendingJoinTableId,
   clearWaitingOpponent,
   countdownCleared,
@@ -117,10 +118,10 @@ export function hasUserAlreadyJoined(userId: number): boolean {
   return joinedTableUsers.has(userId);
 }
 
-export function clearJoinProtection() {
-  joinedTableUsers.clear();
-}
-
 export function unmarkUserAsJoined(userId: number) {
   joinedTableUsers.delete(userId);
 }
+
+clearJoinProtection.watch(() => {
+  joinedTableUsers.clear();
+});

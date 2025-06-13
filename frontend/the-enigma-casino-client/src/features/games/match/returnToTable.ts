@@ -1,6 +1,7 @@
 import { createEvent, createStore, sample } from "effector";
 import toast from "react-hot-toast";
 import { navigateTo } from "../shared/router/navigateFx";
+import { forceLeaveTable } from "../../gameTables/store/tablesIndex";
 
 export const returnToTableReceived = createEvent<string>();
 
@@ -27,3 +28,10 @@ sample({
   },
   target: navigateTo,
 });
+
+
+sample({
+  clock: returnToTableReceived,
+  target: forceLeaveTable,
+});
+

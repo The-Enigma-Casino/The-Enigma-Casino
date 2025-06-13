@@ -1,11 +1,16 @@
 import { sample } from "effector";
 import {
+  clearJoinProtection,
   clearPendingJoinTableId,
   clearWaitingOpponent,
   countdownCleared,
+  forceLeaveTable,
   gameStarted,
   joinTableClicked,
+  markLeftTable,
+  resetTableId,
   sendLeaveTableMessage,
+  tableCleanupCompleted,
   tableUpdated,
   tableWaitingOpponent,
   tryJoinTable,
@@ -137,3 +142,14 @@ sample({
     return userId;
   },
 });
+
+sample({
+  clock: forceLeaveTable,
+  target: [
+    resetTableId,
+    markLeftTable,
+    tableCleanupCompleted,
+    clearJoinProtection,
+  ],
+});
+

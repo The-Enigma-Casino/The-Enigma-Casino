@@ -19,6 +19,12 @@ cd "$EXTRACT_DIR" || {
   exit 1
 }
 
+echo "📁 Contenido de $EXTRACT_DIR:" | tee -a "$LOG_FILE"
+ls -la "$EXTRACT_DIR" | tee -a "$LOG_FILE"
+
+echo "📄 Contenido de package.json (primeras líneas):" | tee -a "$LOG_FILE"
+head -n 20 "$EXTRACT_DIR/package.json" | tee -a "$LOG_FILE"
+
 echo "✅ Entorno frontend confirmado. Ejecutando en $(pwd)" | tee -a "$LOG_FILE"
 
 echo "📄 Copiando .env.production a la raíz del proyecto..." | tee -a "$LOG_FILE"

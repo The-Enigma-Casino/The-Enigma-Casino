@@ -15,21 +15,20 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
     {
     }
 
-    // 🔧 Utilidades de inyección de dependencias
+    // Utilidades de inyección de dependencias
     protected T GetScopedService<T>(out IServiceScope scope)
     {
         scope = _serviceProvider.CreateScope();
         return scope.ServiceProvider.GetRequiredService<T>();
     }
 
-    // 📤 Envío de mensajes a un usuario
+    // Envío de mensajes a un usuario
     async Task IWebSocketSender.SendToUserAsync(string userId, object payload)
     {
         WebSocket? socket = _connectionManager.GetConnectionById(userId);
 
         if (socket == null || socket.State != WebSocketState.Open)
         {
-            Console.WriteLine($"[WS] 🔌 WebSocket de {userId} no está abierto (estado: {socket?.State}), eliminando conexión...");
             await _connectionManager.RemoveConnectionAsync(userId);
             return;
         }
@@ -48,12 +47,11 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[WS] ⚠️ Error enviando a {userId}: {ex.Message} — eliminando conexión");
             await _connectionManager.RemoveConnectionAsync(userId);
         }
     }
 
-    // 📢 Broadcast a varios usuarios
+    // Broadcast a varios usuarios
     async Task IWebSocketSender.BroadcastToUsersAsync(IEnumerable<string> userIds, object payload)
     {
         foreach (string userId in userIds)
@@ -62,7 +60,7 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         }
     }
 
-    // ❌ Enviar error
+    // Enviar error
     public async Task SendErrorAsync(string userId, string errorMessage, string contextType)
     {
         var error = new
@@ -75,20 +73,19 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         await ((IWebSocketSender)this).SendToUserAsync(userId, error);
     }
 
-    // 📥 Parseo de tableId desde mensaje
+    // Parseo de tableId desde mensaje
     protected bool TryGetTableId(JsonElement message, out int tableId)
     {
         tableId = 0;
         if (!message.TryGetProperty("tableId", out var tableIdProp) ||
             !int.TryParse(tableIdProp.GetString(), out tableId))
         {
-            Console.WriteLine("❌ [WebSocket] TableId inválido.");
             return false;
         }
         return true;
     }
 
-    // 🔁 Getters reutilizables con error
+    // Getters reutilizables con error
     public bool TryGetWithError<T>(
         Func<int, T?> getter,
         int tableId,
@@ -101,7 +98,6 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
 
         if (result == null)
         {
-            Console.WriteLine($"❌ No se encontró {entityName} para mesa {tableId}");
             if (userId != null)
                 _ = SendErrorAsync(userId, $"No se encontró {entityName} en esta mesa.", contextType);
             return false;
@@ -121,7 +117,6 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
 
         if (result == null)
         {
-            Console.WriteLine($"❌ No se encontró {entityName}");
             if (userId != null)
                 _ = SendErrorAsync(userId, $"No se encontró {entityName}.", contextType);
             return false;
@@ -130,14 +125,14 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
         return true;
     }
 
-    // 🎮 Obtener Match
+    // Obtener Match
     protected bool TryGetMatch(int tableId, string userId, out Match match)
         => TryGetWithError(ActiveGameMatchStore.TryGetNullable, tableId, out match, "match", userId);
 
     protected bool TryGetMatch(int tableId, out Match match)
         => TryGetWithError(ActiveGameMatchStore.TryGetNullable, tableId, out match, "match");
 
-    // 🧑‍🤝‍🧑Obtener Player desde Match
+    // Obtener Player desde Match
     protected bool TryGetPlayer(Match match, string userId, out Player player)
         => TryGetWithError(
             () => TryGetPlayerFromMatch(match, userId),
@@ -165,5 +160,4 @@ public abstract class BaseWebSocketHandler : WebSocketService, IWebSocketSender
             return user;
         }
     }
-
 }

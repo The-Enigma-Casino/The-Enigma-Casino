@@ -34,15 +34,11 @@ public class Player
         CurrentBet += amount;
         User.Coins -= amount;
 
-        Console.WriteLine($"💰 [{User.NickName}] Hace apuesta de {amount}. CurrentBet ahora: {CurrentBet}, Coins restantes: {User.Coins}");
     }
 
     public void Win(int amount)
     {
-        Console.WriteLine($"[DEBUG] {User.NickName} gana {amount} fichas. Mesa: {GameTableId}");
-        Console.WriteLine($"🧪 [DEBUG] {User.NickName} gana {amount} fichas. Antes tenía: {User.Coins}");
         User.Coins += amount;
-        Console.WriteLine($"✅ [DEBUG] Ahora tiene: {User.Coins} fichas.");
         PlayerState = PlayerState.Win;
         CurrentBet = 0;
     }

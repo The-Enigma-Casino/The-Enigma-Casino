@@ -27,8 +27,6 @@ public class GameInactivityHandler
         {
             if (inactivityTracker.ShouldKickPlayer(player))
             {
-                Console.WriteLine($"🚪 [Inactividad] Expulsando a {player.User.NickName} de la mesa {table.Id} por inactividad.");
-
                 using var scope = _provider.CreateScope();
                 var tableManager = scope.ServiceProvider.GetRequiredService<GameTableManager>();
                 var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();

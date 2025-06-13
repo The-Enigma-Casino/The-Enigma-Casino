@@ -71,7 +71,6 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 // Notifica si esta conectado
                 if (_connectionManager.IsUserConnected(receiverId.ToString()))
                 {
-                    Console.WriteLine($"[WS] Enviando WS a {receiverId} desde {senderId}");
                     await ((IWebSocketSender)this).SendToUserAsync(receiverId.ToString(), new
                     {
                         type = Type,
@@ -95,7 +94,6 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[FriendWS] Error al enviar solicitud: {ex.Message}");
                 await SendErrorAsync(senderId.ToString(), "No se pudo enviar la solicitud.", Type);
             }
         }
@@ -134,7 +132,6 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[FriendWS] Error al aceptar solicitud: {ex.Message}");
                 await SendErrorAsync(receiverId.ToString(), "No se pudo aceptar la solicitud.", Type);
             }
         }
@@ -170,7 +167,6 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[FriendWS] Error al cancelar solicitud: {ex.Message}");
                 await SendErrorAsync(senderId.ToString(), "No se pudo cancelar la solicitud.", Type);
             }
         }
@@ -202,7 +198,6 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[FriendWS] Error al eliminar amistad: {ex.Message}");
                 await SendErrorAsync(userId.ToString(), "No se pudo eliminar la amistad.", Type);
             }
         }
@@ -360,11 +355,8 @@ public class FriendsWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         int tableId = table.Id;
 
-        if (!_connectionManager.IsUserConnected(friendId.ToString()))
-        {
-            Console.WriteLine($"[Invite] Usuario {friendId} no está conectado, no se envió la invitación.");
-            return;
-        }
+        if (!_connectionManager.IsUserConnected(friendId.ToString())) return;
+
 
         _pendingInvitations[friendId] = (inviterId, tableId, DateTime.UtcNow.Add(InvitationTimeout));
         var inviterUser = await GetUserById(inviterId);

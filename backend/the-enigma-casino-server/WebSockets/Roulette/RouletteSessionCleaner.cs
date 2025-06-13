@@ -8,6 +8,5 @@ public class RouletteSessionCleaner : IGameSessionCleaner
     public void Clean(int tableId)
     {
         ActiveRouletteGameStore.Remove(tableId);
-        Console.WriteLine($"Sesion de ruleta limpiada para mesa {tableId}");
     }
 }

@@ -49,9 +49,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         var rouletteGame = new RouletteGame();
 
-
         ActiveRouletteGameStore.Set(match.GameTableId, rouletteGame);
-        Console.WriteLine($"[StartRound] Nueva partida de ruleta creada para mesa {match.GameTableId}.");
 
         rouletteGame.Reset();
         rouletteGame.ResumeBetting();
@@ -60,15 +58,10 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         await BroadcastGameStateAsync(match.GameTableId);
 
         StartBettingPhase(match.GameTableId);
-
-        Console.WriteLine($"[RouletteWS] Nueva ronda iniciada en mesa {match.GameTableId}.");
     }
 
     private void StartBettingPhase(int tableId)
     {
-
-        Console.WriteLine($"[RouletteWS] Comienza fase de apuestas en mesa {tableId} (30s)");
-
         if (ActiveGameSessionStore.TryGet(tableId, out var session))
         {
             session.StartBettingTimer(30_000, async () =>
@@ -82,8 +75,6 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
     private static readonly SemaphoreSlim _betLock = new(1, 1); // Bloqueo solo 1 pasa, por turnos
     private async Task HandlePlaceBetAsync(string userId, JsonElement message)
     {
-        Console.WriteLine("🎯 Entrando en HandlePlaceBetAsync");
-
         if (!TryGetTableId(message, out int tableId)) return;
         if (!TryGetMatch(tableId, userId, out var match)) return;
         if (!TryGetPlayer(match, userId, out var player)) return;
@@ -123,7 +114,6 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error en apuesta: {ex.Message}");
             await SendErrorAsync(userId, ex.Message, Type);
         }
         finally
@@ -137,8 +127,6 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private async Task OnBettingPhaseEnded(int tableId)
     {
-        Console.WriteLine($"[RouletteWS] Fase de apuestas terminada en mesa {tableId}");
-
         if (!TryGetMatch(tableId, "SYSTEM", out var match))
         {
             Console.WriteLine($"[OnBettingPhaseEnded] No se encontró match para mesa {tableId}.");
@@ -158,13 +146,10 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (anyBets)
         {
-            Console.WriteLine($"[RouletteWS] Jugadores apostaron en mesa {tableId}. Realizando spin...");
             await HandleSpinAsync("SYSTEM", BuildSpinMessage(tableId));
         }
         else
         {
-            Console.WriteLine($"[RouletteWS] Sin apuestas en mesa {tableId}. Finalizando Match directamente...");
-
             using var finalizeScope = _serviceProvider.CreateScope();
             var gameMatchWS = finalizeScope.ServiceProvider.GetRequiredService<GameMatchWS>();
             await gameMatchWS.FinalizeAndEvaluateMatchAsync(tableId);
@@ -214,16 +199,12 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         table.TableState = TableState.Waiting;
         unitOfWork.GameTableRepository.Update(table);
         await unitOfWork.SaveAsync();
-
-        Console.WriteLine($"[RouletteWS] Todos los jugadores eliminados y mesa reseteada en mesa {tableId} tras ronda sin apuestas.");
     }
 
 
 
     public async Task HandleSpinAsync(string userId, JsonElement message, bool stopAfterSpin = false)
     {
-        Console.WriteLine("Entrando en HandleSpinAsync");
-
         if (!TryGetTableId(message, out int tableId)) return;
         if (!TryGetMatch(tableId, userId, out var match)) return;
         if (!TryGetRouletteGame(tableId, userId, out var rouletteGame)) return;
@@ -270,8 +251,6 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private void HandleInactivityTracking(int tableId, Match match, RouletteGame rouletteGame)
     {
-        Console.WriteLine($"[RouletteWS] Evaluando inactividad para jugadores de mesa {tableId}...");
-
         using (var scope = _serviceProvider.CreateScope())
         {
             var inactivityTracker = scope.ServiceProvider.GetRequiredService<RouletteInactivityTracker>();
@@ -285,18 +264,14 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 if (playerBet)
                 {
                     inactivityTracker.ResetActivity(player);
-                    Console.WriteLine($"[Inactividad] {player.User.NickName} apostó, actividad reseteada.");
                 }
                 else
                 {
                     inactivityTracker.RegisterInactivity(player);
-                    Console.WriteLine($"[Inactividad] {player.User.NickName} NO apostó, inactividad registrada.");
                 }
 
                 playersEvaluated++;
             }
-
-            Console.WriteLine($"[RouletteWS] Inactividad evaluada para {playersEvaluated} jugadores en mesa {tableId}.");
         }
     }
 
@@ -379,8 +354,6 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private void StartPostMatchEvaluationTimer(int tableId)
     {
-        Console.WriteLine($"[RouletteWS] Programando cierre de Match en mesa {tableId} tras spin...");
-
         if (ActiveGameSessionStore.TryGet(tableId, out var session))
         {
             session.StartPostMatchTimer(15_000, async () =>
@@ -390,9 +363,6 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
                     Console.WriteLine($"⛔ [PostMatchTimer] Mesa {tableId} ya no existe. Cancelando evaluación.");
                     return;
                 }
-
-                Console.WriteLine($"[RouletteWS] Finalizando Match para mesa {tableId} tras espera de resultados.");
-
                 using var scope = _serviceProvider.CreateScope();
                 var gameMatchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
 
@@ -571,9 +541,7 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!TryGetTableId(message, out int tableId)) return;
         if (!TryGetRouletteGame(tableId, userId, out var rouletteGame)) return;
 
-
         double rotation = RouletteRotationCache.GetRotation(tableId);
-        Console.WriteLine($"[WS] Enviando wheel_state: {rotation}");
 
         await ((IWebSocketSender)this).SendToUserAsync(userId, new
         {
@@ -605,13 +573,11 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
 
         session.CancelPostMatchTimer();
-        Console.WriteLine($"⛔ [RouletteWS] Timer de cierre cancelado en mesa {tableId}.");
 
         foreach (var s in spectators)
         {
             s.PlayerState = PlayerState.Waiting;
             s.HasAbandoned = false;
-            Console.WriteLine($"👤 [RouletteWS] Promovido {s.User.NickName} a jugador activo.");
         }
 
         using var scope = _serviceProvider.CreateScope();
@@ -621,7 +587,5 @@ public class RouletteWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         var matchWS = _serviceProvider.GetRequiredService<GameMatchWS>();
         await matchWS.StartMatchForTableAsync(tableId);
-
-        Console.WriteLine($"♻️ [RouletteWS] Ronda reiniciada automáticamente para espectadores en mesa {tableId}.");
     }
 }

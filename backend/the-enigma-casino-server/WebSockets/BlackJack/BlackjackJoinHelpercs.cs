@@ -33,8 +33,6 @@ public class BlackjackJoinHelper : IGameJoinHelper
                 action = "match_ready",
                 message = "¡Has llegado a tiempo! Puedes jugar esta ronda de Blackjack."
             });
-
-            Console.WriteLine($"📩 [BlackjackJoinHelper] Jugador {player.User.NickName} notificado y marcado como 'Playing'.");
         }
     }
 

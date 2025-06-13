@@ -24,7 +24,6 @@ public class GameTableManager
     public void RegisterJoinAttempt(int userId)
     {
         _lastJoinTimestamps[userId] = DateTime.Now;
-        Console.WriteLine($"🕒 [JoinCooldown] Timestamp actualizado manualmente para {userId}");
     }
 
     // Comentado para evitar bugs
@@ -46,7 +45,6 @@ public class GameTableManager
         //_lastJoinTimestamps[userId] = DateTime.Now;
         //return true;
     }
-
 
     public PlayerLeaveResult RemovePlayerFromTable(Table table, int userId, out Player removedPlayer)
     {
@@ -153,7 +151,6 @@ public class GameTableManager
         {
             if (existingPlayer.PlayerState == PlayerState.Left || existingPlayer.HasAbandoned)
             {
-                Console.WriteLine($"[JoinTable] Usuario {user.NickName} intentó volver pero ya abandonó la partida.");
                 return new(false, "already_left", "Ya abandonaste esta mesa y no puedes volver.");
             }
 

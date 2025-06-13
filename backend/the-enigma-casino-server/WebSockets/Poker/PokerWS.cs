@@ -158,12 +158,10 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
             if (shouldAdvance || move == "fold")
             {
-                Console.WriteLine("🔁 Avanzando turno después de acción del jugador...");
                 bool hasNextTurn = pokerGame.AdvanceTurn();
 
                 if (!hasNextTurn)
                 {
-                    Console.WriteLine($"✅ Todos actuaron en fase {phase}. Avanzando fase desde HandlePlayerActionAsync.");
                     await HandlePhaseAdvanceAsync(tableId, phase);
                     phaseAdvanced = true;
                 }
@@ -181,7 +179,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error en acción de jugador: {ex.Message}");
             await SendErrorAsync(userId, ex.Message, Type);
             return;
         }
@@ -203,8 +200,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
     private async Task HandlePlaceBetAsync(string userId, JsonElement message)
     {
-        Console.WriteLine("🎯 Entrando en HandlePlaceBetAsync");
-
         if (!TryGetTableId(message, out int tableId)) return;
         if (!TryGetMatch(tableId, userId, out var match)) return;
         if (!TryGetPlayer(match, userId, out var player)) return;
@@ -212,14 +207,12 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (!message.TryGetProperty("amount", out var amountProp) || !amountProp.TryGetInt32(out int amount))
         {
-            Console.WriteLine($"❌ Apuesta inválida recibida.");
             await SendErrorAsync(userId, "Monto de apuesta inválido.", Type);
             return;
         }
 
         if (!message.TryGetProperty("phase", out var phaseProp))
         {
-            Console.WriteLine("❌ Fase no especificada en el mensaje.");
             await SendErrorAsync(userId, "Fase no especificada.", Type);
             return;
         }
@@ -233,7 +226,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error al procesar la apuesta: {ex.Message}");
             await SendErrorAsync(userId, ex.Message, Type);
             return;
         }
@@ -303,8 +295,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         PokerActionTracker.Clear(tableId, phase);
 
-        Console.WriteLine($"🃏 [{phase.ToUpper()}] Repartido en mesa {tableId}. Acción: {actionName}");
-
         Player? nextPlayer = match.Players.FirstOrDefault(p => p.UserId == pokerGame.CurrentTurnUserId);
         if (nextPlayer != null)
         {
@@ -366,8 +356,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, response);
 
         PokerActionTracker.Clear(tableId, "flop");
-
-        Console.WriteLine($"🃏 [PokerWS] Flop repartido en mesa {tableId}, esperando apuestas.");
     }
 
     private async Task HandleDealTurnAsync(JsonElement message)
@@ -381,7 +369,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         List<Card> communityCards = pokerGame.GetCommunityCards();
 
-        Console.WriteLine("\n--- TURN ---");
         PokerHelper.ShowCommunityCards(communityCards);
 
         var response = new
@@ -404,8 +391,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, response);
 
         PokerActionTracker.Clear(tableId, "turn");
-
-        Console.WriteLine($"🃏 [PokerWS] Turn repartido en mesa {tableId}, esperando apuestas.");
     }
 
     private async Task HandleDealRiverAsync(JsonElement message)
@@ -439,8 +424,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         await ((IWebSocketSender)this).BroadcastToUsersAsync(playerIds, response);
 
         PokerActionTracker.Clear(tableId, "river");
-
-        Console.WriteLine($"🃏 [PokerWS] River repartido en mesa {tableId}, esperando apuestas.");
     }
 
     private async Task HandleShowdownAsync(int tableId)
@@ -448,10 +431,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (!TryGetPokerGame(tableId, out var pokerGame)) return;
         if (!TryGetMatch(tableId, out var match)) return;
 
-        Console.WriteLine($"[PokerWS] 💰 HandleShowdownAsync - Generando pots para mesa {tableId}");
         pokerGame.GeneratePots();
-
-        Console.WriteLine($"[PokerWS] 🎬 Ejecutando Showdown() en mesa {tableId}...");
         pokerGame.Showdown();
 
         using (var coinsScope = _serviceProvider.CreateScope())
@@ -462,7 +442,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             {
                 if (player.PlayerState is PlayerState.Playing or PlayerState.AllIn or PlayerState.Win)
                 {
-                    Console.WriteLine($"[PokerWS] 🔄 Actualizando fichas en DB para {player.User.NickName} ({player.User.Coins} fichas)");
                     unitOfWork.UserRepository.Update(player.User);
                 }
             }
@@ -501,11 +480,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             .Select(p => p.UserId.ToString())
             .ToList();
 
-        Console.WriteLine($"[PokerWS] 📩 Enviando 'round_result' a jugadores activos en mesa {tableId}...");
-
         await ((IWebSocketSender)this).BroadcastToUsersAsync(userIds, response);
-
-        Console.WriteLine($"[PokerWS] ✅ Match finalizado tras showdown en mesa {tableId}. Limpieza y evaluación post-partida...");
 
         using (IServiceScope scope = _serviceProvider.CreateScope())
         {
@@ -517,7 +492,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 sessionToCancel.CancelTurnTimer();
                 sessionToCancel.CancelBettingTimer();
                 sessionToCancel.CancelPostMatchTimer();
-                Console.WriteLine($"[PokerWS] 🛑 Timers cancelados tras showdown en mesa {tableId}.");
             }
 
             var tracker = scope.ServiceProvider.GetRequiredService<PokerInactivityTracker>();
@@ -525,16 +499,10 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             PokerBetTracker.ResetContributions(tableId);
         }
 
-        Console.WriteLine($"[PokerWS] ⏱️ Esperando 20s antes de evaluar siguiente partida en mesa {tableId}...");
-
         if (ActiveGameSessionStore.TryGet(tableId, out var session))
         {
-            Console.WriteLine($"[PokerWS] ⏱️ Timer configurado correctamente para mesa {tableId}");
-
             session.StartPostMatchTimer(20_000, async () =>
             {
-                Console.WriteLine($"[PokerWS] ⏱️ [Timer Callback] Ejecutando EvaluatePostMatch para mesa {tableId}...");
-
                 using var postMatchScope = _serviceProvider.CreateScope();
                 var gameMatchWS = postMatchScope.ServiceProvider.GetRequiredService<GameMatchWS>();
                 await gameMatchWS.EvaluatePostMatchAsync(tableId);
@@ -544,9 +512,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         {
             Console.WriteLine($"[PokerWS] ❌ No se encontró sesión activa para mesa {tableId}, no se configuró el timer.");
         }
-
-
-
     }
 
 
@@ -560,8 +525,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             await PokerManager.UpdatePlayerCoinsAsync(unitOfWork, player);
         }
         await notifier.NotifyBetConfirmedAsync(player);
-
-        Console.WriteLine($"✅ Apuesta confirmada. {player.User.NickName} tiene ahora {player.User.Coins} fichas.");
     }
 
     public async Task HandleImmediateWinnerAsync(int tableId, int? disconnectedUserId = null)
@@ -598,12 +561,10 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             Console.WriteLine($"[PokerWS] 🧹 Marcado {loser.User.NickName} como Fold antes del Showdown.");
         }
 
-        Console.WriteLine($"[PokerWS] 🏆 HandleImmediateWinnerAsync - Solo queda un jugador en mesa {tableId}. Ejecutando showdown automático...");
         await HandleShowdownAsync(tableId);
 
         if (!ActiveGameSessionStore.TryGet(tableId, out _))
         {
-            Console.WriteLine($"[PokerWS] ⚠️ La sesión fue eliminada antes del post-match. Ejecutando EvaluatePostMatch manualmente.");
             using var scope = _serviceProvider.CreateScope();
             var gameMatchWS = scope.ServiceProvider.GetRequiredService<GameMatchWS>();
             await gameMatchWS.EvaluatePostMatchAsync(tableId);
@@ -616,8 +577,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
     {
         if (!TryGetPokerGame(tableId, "system", out var pokerGame)) return;
         if (!TryGetMatch(tableId, "system", out var match)) return;
-
-        Console.WriteLine("♠️ [PokerWS] Todos los jugadores están all-in o sin fichas. Avanzando automáticamente a showdown.");
 
         while (pokerGame.GetCurrentPhase() != "river")
         {
@@ -650,7 +609,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (remaining == 1)
         {
-            Console.WriteLine($"[PokerWS] 🚫 No se notificará turno a {player.User.NickName} porque ya es el único jugador activo. Ejecutando showdown automático...");
             await HandleImmediateWinnerAsync(match.GameTableId);
             return;
         }
@@ -677,7 +635,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
     private async Task HandlePlayerTimeoutAsync(Match match, string phase, Player player)
     {
         int tableId = match.GameTableId;
-        Console.WriteLine($"⏰ Turno expirado para {player.User.NickName} en fase {phase}");
 
         using var scope = _serviceProvider.CreateScope();
         var tracker = scope.ServiceProvider.GetRequiredService<PokerInactivityTracker>();
@@ -688,7 +645,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (tracker.GetInactivityCount(player) >= 2)
         {
             player.HasAbandoned = true;
-            Console.WriteLine($"🚪 {player.User.NickName} ha sido marcado como abandonado por 2 faltas acumuladas.");
             tracker.RemovePlayer(player);
 
             await ((IWebSocketSender)this).SendToUserAsync(player.UserId.ToString(), new
@@ -697,8 +653,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
                 action = "removed_by_inactivity",
                 message = "Has sido eliminado de la partida de poker por inactividad."
             });
-
-            Console.WriteLine($"📨 [WS] Mensaje 'poker/removed_by_inactivity' enviado a {player.User.NickName} (UserId: {player.UserId})");
         }
 
 
@@ -710,7 +664,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
             if (pokerGame.CurrentTurnUserId == player.UserId)
             {
                 bool hasAdvanced = pokerGame.AdvanceTurn();
-                Console.WriteLine($"🔁 Turno forzado tras Fold automático. ¿Avanzó?: {hasAdvanced}");
             }
 
             int remaining = match.Players.Count(p => p.PlayerState is PlayerState.Playing or PlayerState.AllIn);
@@ -758,14 +711,7 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (player == null)
             return;
 
-        Console.WriteLine($"⚠️ [PokerWS] Jugador {player.User.NickName} desconectado. Evaluando avance...");
-
         string phase = pokerGame.GetCurrentPhase();
-
-        foreach (var p in match.Players)
-        {
-            Console.WriteLine($"👥 Estado de {p.User.NickName}: {p.PlayerState}, HasAbandoned={p.HasAbandoned}");
-        }
 
         var remainingPlayers = match.Players
          .Where(p => p.UserId != userId && p.PlayerState is PlayerState.Playing or PlayerState.AllIn)
@@ -774,8 +720,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         if (remainingPlayers.Count == 1)
         {
             var winner = remainingPlayers[0];
-
-            Console.WriteLine($"[PokerWS] 🛑 Solo queda {winner.User.NickName} tras salida de {player.User.NickName}. Notificando...");
 
             await ((IWebSocketSender)this).SendToUserAsync(winner.UserId.ToString(), new
             {
@@ -793,7 +737,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (!hasNextTurn)
         {
-            Console.WriteLine($"✅ Todos actuaron en fase {phase}. Avanzando fase tras desconexión.");
             await HandlePhaseAdvanceAsync(tableId, phase);
             return;
         }
@@ -812,7 +755,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
         foreach (var p in match.Players.Where(p => p.HasAbandoned || p.PlayerState == PlayerState.Left))
         {
             tracker.RemovePlayer(p);
-            Console.WriteLine($"🧹 [PokerWS] Inactividad limpiada para {p.User.NickName} tras su salida del match.");
         }
     }
 
@@ -825,7 +767,6 @@ public class PokerWS : BaseWebSocketHandler, IWebSocketMessageHandler
 
         if (remaining == 1)
         {
-            Console.WriteLine($"[PokerWS] ✅ [{context}] Solo queda un jugador activo en mesa {tableId}. Ejecutando flujo de ganador automático.");
             await HandleImmediateWinnerAsync(tableId);
             return true;
         }

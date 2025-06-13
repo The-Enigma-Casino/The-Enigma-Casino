@@ -105,7 +105,6 @@ public static class PokerManager
 
         if (PokerActionTracker.HaveAllPlayersActed(tableId, expected, phase))
         {
-            Console.WriteLine($"✅ Todos los jugadores han actuado en fase '{phase}'.");
             await advancePhaseCallback(tableId, phase);
         }
     }
@@ -113,12 +112,8 @@ public static class PokerManager
 
     public static async Task UpdatePlayerCoinsAsync(UnitOfWork unitOfWork, Player player)
     {
-        Console.WriteLine($"🔍 [EF DEBUG] ¿Está trackeado el User? {unitOfWork.DbContext.Entry(player.User).State}");
-
         unitOfWork.UserRepository.Update(player.User);
         await unitOfWork.SaveAsync();
-
-        Console.WriteLine($"✅ Fichas actualizadas en DB para {player.User.NickName}: {player.User.Coins} fichas.");
     }
 
     private static int GetNextDealer(List<Player> matchPlayers, int? previousDealerId)

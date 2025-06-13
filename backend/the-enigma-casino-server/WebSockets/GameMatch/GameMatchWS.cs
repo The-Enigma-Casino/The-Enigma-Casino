@@ -24,15 +24,12 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
     {
         connectionManager.OnUserDisconnected += async userId =>
         {
-            Console.WriteLine($"[WS DISCONNECT EVENT] Usuario desconectado: {userId}");
-
             if (!int.TryParse(userId, out int userIdInt)) return;
 
             foreach (var (tableId, match) in ActiveGameMatchStore.GetAll())
             {
                 if (match.Players.Any(p => p.UserId == userIdInt))
                 {
-                    Console.WriteLine($"[WS DISCONNECT HANDLER] Usuario {userIdInt} encontrado en mesa {tableId}, procesando salida de partida.");
                     await ProcessPlayerMatchLeaveAsync(tableId, userIdInt);
                     break;
                 }
@@ -72,11 +69,7 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
     private async Task HandleStartMatchAsync(string userId, JsonElement message)
     {
         if (!message.TryGetProperty("tableId", out var tableIdProp) ||
-            !int.TryParse(tableIdProp.GetString(), out int tableId))
-        {
-            Console.WriteLine($"start_match: tableId inválido.");
-            return;
-        }
+            !int.TryParse(tableIdProp.GetString(), out int tableId)) return;
 
         await StartMatchForTableAsync(tableId);
     }
@@ -96,20 +89,10 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         if (!ActiveGameSessionStore.TryGet(tableId, out ActiveGameSession session)) return;
 
         var existingMatch = ActiveGameMatchStore.TryGetNullable(tableId);
-        if (existingMatch != null && existingMatch.MatchState != MatchState.Finished)
-        {
-            Console.WriteLine($"⚠️ [StartMatch] Ya existe un match activo en mesa {tableId} (estado: {existingMatch.MatchState}). Abortando.");
-            return;
-        }
-
+        if (existingMatch != null && existingMatch.MatchState != MatchState.Finished) return;
+        
         Table table = session.Table;
-        //BORRAR
-        Console.WriteLine($"🧪 [StartMatch] Jugadores en table.Players antes del match:");
-        foreach (var p in table.Players)
-        {
-            Console.WriteLine($" - {p.User.NickName} | Estado: {p.PlayerState} | Abandonado: {p.HasAbandoned}");
-        }
-        //
+ 
         IServiceScope scope;
         GameMatchManager manager = CreateScopedManager(out scope);
         using (scope)
@@ -118,15 +101,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             if (match == null) return;
 
             ActiveGameMatchStore.Set(table.Id, match);
-            //BORRAR
-            foreach (var mp in match.Players)
-            {
-                Console.WriteLine($"🎮 Jugador en match: {mp.User.NickName} | Estado actual en tabla: {table.Players.FirstOrDefault(p => p.UserId == mp.UserId)?.PlayerState}");
-            }
-
-            Console.WriteLine($"[GameMatchWS] Partida iniciada en mesa {table.Id} con {match.Players.Count} jugadores.");
-            //
-           
 
             string[] userIds = match.Players.Select(p => p.UserId.ToString()).ToArray();
 
@@ -145,7 +119,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
     {
         if (!ActiveGameMatchStore.TryGet(tableId, out Match match)) return;
 
-        Console.WriteLine($"[DEBUG] Estado actual del Match en evento para mesa {tableId}: {match.MatchState}");
         if (match.MatchState != MatchState.InProgress) return;
 
         Player player = GameMatchHelper.FindPlayer(match, userId);
@@ -167,7 +140,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             }
             if (match.GameTable.GameType == GameType.Poker)
             {
-                Console.WriteLine($"[GameMatchWS] ⚠️ Se omite ClearPlayer en mesa {tableId} para preservar apuestas de {userId} antes del showdown.");
                 var pokerWS = _serviceProvider.GetRequiredService<PokerWS>();
                 await pokerWS.HandlePlayerDisconnectedAsync(tableId, userId);
             }
@@ -198,8 +170,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
                 ActiveGameSessionStore.Remove(table.Id);
                 ActiveGameMatchStore.Remove(table.Id);
-
-                Console.WriteLine($"🧹 [MatchWS] Todos los jugadores se fueron. Mesa {table.Id} eliminada y timers cancelados.");
             }
             else
             {
@@ -242,7 +212,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                 {
                     player.PlayerState = PlayerState.Left;
                     tableManager.RemovePlayerFromTable(match.GameTable, player.UserId, out _);
-                    Console.WriteLine($"🚪 {player.User.NickName} abandonó el match y fue eliminado de la mesa.");
                 }
             }
 
@@ -270,7 +239,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
             foreach (Player p in table.Players.Where(p => p.User.Coins < minimumCoins).ToList())
             {
-                Console.WriteLine($"🚪 [PostMatch] {p.User.NickName} no tiene mínimo para jugar ({p.User.Coins} fichas). Eliminándolo de la mesa.");
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
@@ -368,8 +336,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
         if (noPlayers)
         {
-            Console.WriteLine($"🧹 [Cleanup] Mesa {tableId} vacía al finalizar el match. Reseteando...");
-
             table.TableState = TableState.Waiting;
             unitOfWork.GameTableRepository.Update(table);
             await unitOfWork.SaveAsync();
@@ -381,26 +347,16 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
 
     private async Task HandleSoloPlayerPostMatchAsync(ActiveGameSession session, Table table)
     {
-
-
-        Console.WriteLine($"[HANDLE SOLO PLAYER] Evaluando mesa {table.Id} para jugador solitario...");
-
         var activePlayers = table.Players
             .Where(p => p.PlayerState != PlayerState.Spectating && !p.HasAbandoned)
             .ToList();
 
-        if (activePlayers.Count != 1)
-        {
-            Console.WriteLine($"[HANDLE SOLO PLAYER] Mesa {table.Id} no tiene exactamente un jugador activo. Se detectaron: {activePlayers.Count}");
-            return;
-        }
-
+        if (activePlayers.Count != 1) return;
+        
         var lone = activePlayers[0];
 
         session.CancelTurnTimer();
         session.CancelBettingTimer();
-
-        Console.WriteLine($"[HANDLE SOLO PLAYER] Evaluando si hay espectadores...");
 
         var spectators = table.Players
             .Where(p => p.PlayerState == PlayerState.Spectating && !p.HasAbandoned)
@@ -412,8 +368,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         {
             if (isPoker)
             {
-                Console.WriteLine($"[HANDLE SOLO PLAYER] Ningún espectador en mesa {table.Id}. Expulsando a {lone.User.NickName} y limpiando mesa.");
-
                 using var scope = _serviceProvider.CreateScope();
                 var tblMgr = scope.ServiceProvider.GetRequiredService<GameTableManager>();
                 var uow = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
@@ -437,7 +391,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
                     uow.GameTableRepository.Update(table);
                     await uow.SaveAsync();
 
-                    Console.WriteLine($"[HANDLE SOLO PLAYER] Mesa {table.Id} completamente vacía. Eliminando sesión activa.");
                     ActiveGameSessionStore.Remove(table.Id);
                     ActiveGameMatchStore.Remove(table.Id);
                 }
@@ -456,11 +409,8 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
         }
         else
         {
-            Console.WriteLine($"[HANDLE SOLO PLAYER] Se detectaron {spectators.Count} espectadores en mesa {table.Id}. Promocionando y reiniciando partida.");
-
             foreach (var spectator in spectators)
             {
-                Console.WriteLine($"[HANDLE SOLO PLAYER] Promoviendo a jugador: {spectator.User.NickName}");
                 spectator.PlayerState = PlayerState.Playing;
 
                 string actionType = table.GameType switch
@@ -487,7 +437,6 @@ public class GameMatchWS : BaseWebSocketHandler, IWebSocketMessageHandler, IWebS
             uow.GameTableRepository.Update(table);
             await uow.SaveAsync();
 
-            Console.WriteLine($"[HANDLE SOLO PLAYER] Llamando a StartMatchForTableAsync para mesa {table.Id}");
             await StartMatchForTableAsync(table.Id);
         }
     }

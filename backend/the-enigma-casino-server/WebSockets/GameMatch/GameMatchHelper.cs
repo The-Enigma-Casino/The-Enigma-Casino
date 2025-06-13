@@ -46,23 +46,14 @@ public static class GameMatchHelper
         string nickname,
         int tableId)
     {
-        if (!ActiveGameSessionStore.TryGet(tableId, out var session))
-        {
-            Console.WriteLine($"⚠️ [NotifyOthersPlayerLeftAsync] No se encontró sesión activa para la mesa {tableId}");
-            return;
-        }
+        if (!ActiveGameSessionStore.TryGet(tableId, out var session)) return;
+      
 
         var allConnected = session.GetConnectedUserIds();
         var otherUserIds = allConnected.Where(id => id != userId.ToString()).ToArray();
 
-        if (otherUserIds.Length == 0)
-        {
-            Console.WriteLine($"⚠️ [NotifyOthersPlayerLeftAsync] No hay jugadores conectados a los que enviar el mensaje.");
-            return;
-        }
-
-        Console.WriteLine($"📢 Enviando 'player_left_match' a: {string.Join(", ", otherUserIds)}");
-
+        if (otherUserIds.Length == 0) return;
+        
         await sender.BroadcastToUsersAsync(otherUserIds, new
         {
             type = Type,

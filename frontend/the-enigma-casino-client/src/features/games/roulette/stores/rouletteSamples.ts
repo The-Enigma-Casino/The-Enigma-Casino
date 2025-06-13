@@ -78,7 +78,10 @@ sample({
     if (!currentName) return payload.players;
 
     return payload.players.filter(
-      (p) => p.nickName.toLowerCase() !== currentName.toLowerCase()
+      (p) =>
+        typeof p.nickName === "string" &&
+        typeof currentName === "string" &&
+        p.nickName.toLowerCase() !== currentName.toLowerCase()
     );
   },
   target: setRoulettePlayers,
@@ -86,7 +89,11 @@ sample({
 
 sample({
   clock: setRoulettePlayers,
-  fn: (players: any[]) => players.map((p) => p.nickName),
+  fn: (players) =>
+    players
+      .filter((p) => p.nickName !== $name.getState())
+      .map((p) => p.nickName),
+  filter: (nicknames) => nicknames.length > 0,
   target: getPlayerAvatarsFx,
 });
 

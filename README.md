@@ -95,7 +95,7 @@ Actualmente, solo se pueden realizar **pagos de prueba** con tarjetas proporcion
 
 - 👉 [Tarjetas para pagos exitosos](https://docs.stripe.com/testing?locale=es-ES&testing-method=card-numbers#cards)
 
-### 🪙 Pago en Ethereum
+### ⧫ Pago en Ethereum
 
 ![Ethereum](https://img.shields.io/badge/Ethereum-3C3C3D?logo=ethereum&logoColor=fff&style=for-the-badge)
 
